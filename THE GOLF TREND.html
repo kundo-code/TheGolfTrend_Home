@@ -327,8 +327,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ADMIN PANEL */
 .admin-fab{position:fixed;bottom:30px;right:30px;z-index:99;width:56px;height:56px;border-radius:50%;background:var(--gold);color:#fff;border:none;cursor:pointer;font-size:1.4rem;box-shadow:0 8px 24px rgba(221,179,103,.5);transition:transform .2s}
 .admin-fab:hover{transform:scale(1.08) rotate(30deg)}
-.admin-panel{position:fixed;top:0;right:-540px;width:520px;max-width:100vw;height:100vh;z-index:210;background:rgba(0,0,0,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid var(--glass-border);transition:right .35s cubic-bezier(.4,.7,.2,1);display:flex;flex-direction:column}
-.admin-panel.open{right:0}
+.admin-panel{position:fixed;top:0;right:0;width:var(--admin-w,640px);max-width:100vw;height:100vh;z-index:210;background:rgba(0,0,0,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid var(--glass-border);transform:translateX(calc(100% + 24px));transition:transform .35s cubic-bezier(.4,.7,.2,1);display:flex;flex-direction:column}
+.admin-panel.open{transform:translateX(0)}
+.admin-resize-handle{position:absolute;top:0;left:-7px;width:14px;height:100%;cursor:ew-resize;z-index:5;touch-action:none}
+.admin-resize-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:44px;border-radius:100px;background:rgba(221,179,103,.35);transition:background .2s}
+.admin-resize-handle:hover::after,.admin-resize-handle.dragging::after{background:var(--gold)}
 .admin-head{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center}
 .admin-head h3{font-family:'Fraunces',serif;color:#fff;font-size:1.25rem;font-weight:500}
 .admin-head p{font-size:.78rem;color:rgba(247,245,240,.6);margin-top:2px}
@@ -347,9 +350,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-item-info{flex:1;min-width:0}
 .admin-item-info .n{font-size:.9rem;color:#fff;font-weight:500}
 .admin-item-info .k{font-size:.72rem;color:rgba(247,245,240,.5);margin-top:2px}
-.admin-item .file-btn{padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
-.admin-item .file-btn:hover{background:var(--gold-deep)}
-.admin-item .file-btn input{display:none}
+.file-btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.file-btn:hover{background:var(--gold-deep)}
+.file-btn input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.file-hint{display:block;font-size:.66rem;font-weight:400;color:rgba(247,245,240,.4);margin-top:4px;letter-spacing:normal;text-transform:none}
 .admin-info-box{padding:12px 14px;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:12px;font-size:.8rem;color:rgba(247,245,240,.85);line-height:1.5;margin-bottom:18px}
 .admin-info-box b{color:var(--gold)}
 .product-cat-select{width:100%;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:.92rem;font-family:'Inter','Noto Sans KR',sans-serif;margin-bottom:14px;cursor:pointer}
@@ -382,7 +386,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .reset-btn:hover{background:rgba(255,255,255,.06);color:#fff}
 .apply-btn{background:var(--cream);color:var(--pine);border-color:transparent}
 .apply-btn:hover{background:var(--gold);color:#fff}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay{position:fixed;inset:0;background:transparent;z-index:150;opacity:0;pointer-events:none}
 .overlay.show{opacity:1;pointer-events:auto}
 
 /* Band B2C/B2B CTA row */
@@ -560,8 +564,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .file-btn.danger:hover{background:rgba(255,100,100,.15);color:#fff}
 
 
-.headline{width:100%;padding:0;position:relative;background:transparent}
-.headline-frame{max-width:1460px;margin:0 auto;padding:0 24px;position:relative}
+.headline{width:100%;padding:0;position:relative;background:linear-gradient(180deg,#000000 0%,#0A1730 100%);overflow:hidden}
+.headline-ambient{position:absolute;inset:-25% -8%;background-size:cover;background-position:center;filter:blur(70px) saturate(1.3) brightness(.7);transform:scale(1.15);z-index:0;opacity:.85;pointer-events:none}
+.headline-ambient::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(3,13,38,.35) 100%)}
+.headline-frame{max-width:1460px;margin:0 auto;padding:22px 24px;position:relative;z-index:1}
 .headline-glow{position:absolute;left:24px;right:24px;bottom:-12px;height:40px;background:radial-gradient(ellipse at center,rgba(221,179,103,.35) 0%,transparent 70%);filter:blur(20px);z-index:-1;pointer-events:none}
 
 /* HERO SLOGAN */
@@ -656,7 +662,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .booking-wrap{padding:28px 20px}
   .form-grid{grid-template-columns:1fr}
   .foot-grid{grid-template-columns:1fr}
-  .admin-panel{width:100vw;right:-100vw}
+  .admin-panel{width:100vw!important}
+  .admin-resize-handle{display:none}
   .region-tabs{width:100%;overflow-x:auto}
   .apc-fields,.adv-body .grid-2{grid-template-columns:1fr}
   .pd-container{margin:16px auto;padding:0 12px 20px}
@@ -940,9 +947,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ── 법적고지 관리자 패널 ──────────────────────────────────────── */
 .legal-admin-item{
-  display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:center;
-  padding:12px 14px;background:rgba(255,255,255,.04);
-  border:1px solid var(--glass-border-soft);border-radius:10px;margin-bottom:8px;
+  display:flex;flex-direction:column;gap:8px;
+  padding:14px;background:rgba(255,255,255,.04);
+  border:1px solid var(--glass-border-soft);border-radius:10px;margin-bottom:10px;
 }
 .lai-label{font-size:.88rem;font-weight:600;color:rgba(247,245,240,.85);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .lai-label.hi{color:var(--gold)}
@@ -950,12 +957,29 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   font-size:.65rem;padding:2px 7px;background:rgba(221,179,103,.2);
   border:1px solid rgba(221,179,103,.4);border-radius:100px;color:var(--gold);font-weight:700;letter-spacing:.04em;
 }
+.lai-field-label{font-size:.66rem;color:rgba(247,245,240,.4);letter-spacing:.04em;display:block;margin-bottom:3px}
 .lai-input{
   padding:9px 11px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);
   border-radius:8px;color:#fff;font-size:.82rem;font-family:inherit;width:100%;
 }
 .lai-input:focus{outline:none;border-color:var(--gold)}
-@media(max-width:600px){.legal-admin-item{grid-template-columns:1fr;gap:6px}}
+.lai-content-textarea{
+  padding:9px 11px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;color:#fff;font-size:.8rem;font-family:inherit;width:100%;
+  min-height:76px;resize:vertical;line-height:1.55;
+}
+.lai-content-textarea:focus{outline:none;border-color:var(--gold)}
+
+/* ── 법적고지 공개 모달 (내용 직접 표시) ─────────────────────────── */
+.legal-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2500;display:none;align-items:center;justify-content:center;padding:40px 20px}
+.legal-modal-overlay.show{display:flex}
+.legal-modal{width:100%;max-width:640px;max-height:80vh;display:flex;flex-direction:column;background:rgba(255,255,255,.98);border-radius:20px;overflow:hidden;box-shadow:0 40px 90px rgba(10,23,48,.4);animation:popupIn .3s cubic-bezier(.22,1,.36,1) both}
+.legal-modal-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(10,23,48,.08);flex-shrink:0}
+.legal-modal-head h3{font-family:'Fraunces',serif;font-size:1.15rem;color:var(--pine-deep);font-weight:600}
+.legal-modal-close{background:transparent;border:none;font-size:1.5rem;color:rgba(10,23,48,.45);cursor:pointer;line-height:1}
+.legal-modal-close:hover{color:var(--pine-deep)}
+.legal-modal-body{padding:24px;overflow-y:auto;font-size:.9rem;line-height:1.8;color:rgba(10,23,48,.8);white-space:pre-wrap}
+.legal-modal-empty{color:rgba(10,23,48,.4);font-style:italic}
 
 /* ── 블로그 카드 subtitle ──────────────────────────────────────── */
 .blog-subtitle{
@@ -1284,9 +1308,46 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ── 관리자 포스터 영역 ─────────────────────────────────────── */
 .apkg-group-title{
   font-size:.85rem;font-weight:700;color:var(--gold);
-  letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:0;
 }
+.apkg-count{color:rgba(247,245,240,.45);font-weight:500;letter-spacing:normal;text-transform:none;font-size:.78rem;margin-left:4px}
 .admin-pkg-group{ padding:16px;background:rgba(0,0,0,.1);border-radius:12px; }
+.apkg-group-header{ display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;margin-bottom:14px; }
+.apkg-group-toggle{ display:flex;align-items:center;gap:10px;flex-shrink:0; }
+.apkg-chevron{ font-size:.7rem;color:rgba(247,245,240,.5);transition:transform .25s; }
+.apkg-preview-btn{
+  font-size:.68rem;padding:6px 11px;background:rgba(255,255,255,.06);
+  border:1px solid var(--glass-border-soft);border-radius:100px;
+  color:rgba(247,245,240,.75);cursor:pointer;white-space:nowrap;transition:all .2s;
+}
+.apkg-preview-btn:hover{ background:rgba(255,255,255,.1); }
+.apkg-preview-btn.active{ background:rgba(221,179,103,.18);border-color:var(--gold);color:var(--gold); }
+.apkg-group-body{ overflow:hidden;max-height:20000px;transition:max-height .3s ease,opacity .2s ease;opacity:1; }
+.admin-pkg-group.collapsed .apkg-group-body{ max-height:0!important;opacity:0; }
+.admin-pkg-group.collapsed .apkg-chevron{ transform:rotate(-90deg); }
+.admin-pkg-group.collapsed .apkg-preview{ display:none!important; }
+.apkg-preview{
+  position:relative;margin-bottom:14px;border-radius:12px;overflow:hidden;
+  background:#000;aspect-ratio:3/2;display:none;
+}
+.apkg-preview.show{ display:block; }
+.apkg-preview img{ position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .5s; }
+.apkg-preview img.active{ opacity:1; }
+.apkg-preview-empty{ position:absolute;inset:0;display:grid;place-items:center;color:rgba(247,245,240,.4);font-size:.82rem;text-align:center;padding:0 20px; }
+.apkg-preview-nav{
+  position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;
+  border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;
+  cursor:pointer;font-size:1rem;z-index:2;border:1px solid rgba(255,255,255,.2);
+}
+.apkg-preview-nav.prev{ left:8px; } .apkg-preview-nav.next{ right:8px; }
+.apkg-preview-dots{ position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:2; }
+.apkg-preview-dots button{ width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);border:none;cursor:pointer;padding:0; }
+.apkg-preview-dots button.active{ background:var(--gold);width:16px;border-radius:100px; }
+.apkg-preview-label{
+  position:absolute;bottom:10px;left:12px;right:52px;color:#fff;font-size:.76rem;
+  background:rgba(0,0,0,.55);padding:5px 12px;border-radius:100px;z-index:2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 .apkg-item{
   display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start;
   padding:10px;background:rgba(255,255,255,.04);
@@ -1490,6 +1551,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 <!-- HEADLINE BANNER -->
 <section class="headline">
+  <div class="headline-ambient" id="headlineAmbient"></div>
   <div class="headline-frame">
     <div class="headline-media" id="headlineMedia"></div>
     <div class="headline-glow"></div>
@@ -1513,6 +1575,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 <!-- POPUP OVERLAY (홈 진입 시 활성 요금 항목 최대 3개까지 순차 노출) -->
 <div class="popup-stage" id="popupStage" onclick="if(event.target===this)closePopupStage()"></div>
+
+<!-- LEGAL CONTENT MODAL -->
+<div class="legal-modal-overlay" id="legalModalOverlay" onclick="if(event.target===this)closeLegalModal()">
+  <div class="legal-modal">
+    <div class="legal-modal-head">
+      <h3 id="legalModalTitle"></h3>
+      <button class="legal-modal-close" onclick="closeLegalModal()" aria-label="닫기">×</button>
+    </div>
+    <div class="legal-modal-body" id="legalModalBody"></div>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero" id="top">
@@ -2001,6 +2074,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기" title="관리자 패널">🔧</button>
 <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
 <aside class="admin-panel" id="adminPanel" aria-label="관리자 패널">
+  <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>
   <div class="admin-head">
     <div><h3>관리자 패널</h3><p>이미지 · 상품 · 링크를 관리하세요</p></div>
     <button class="admin-close" onclick="toggleAdmin()" aria-label="닫기">×</button>
@@ -2018,21 +2092,35 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="admin-section">
         <h4>패키지 요금 포스터</h4>
         <div id="adminPkg">
-          <div class="admin-pkg-group">
-            <div class="apkg-group-title">🇰🇷 국내 골프 패키지 포스터</div>
-            <div id="adminPkgGroup_domestic"></div>
+          <div class="admin-pkg-group" id="adminPkgWrap_domestic">
+            <div class="apkg-group-header" onclick="toggleApkgGroup('domestic')">
+              <div class="apkg-group-title">🇰🇷 국내 골프 패키지 포스터 <span class="apkg-count" id="apkgCount_domestic"></span></div>
+              <div class="apkg-group-toggle">
+                <button type="button" class="apkg-preview-btn" id="apkgPreviewBtn_domestic" onclick="event.stopPropagation();toggleApkgPreview('domestic')">▶ 슬라이드 미리보기</button>
+                <span class="apkg-chevron">▾</span>
+              </div>
+            </div>
+            <div class="apkg-preview" id="apkgPreview_domestic"></div>
+            <div class="apkg-group-body" id="adminPkgGroup_domestic"></div>
           </div>
-          <div class="admin-pkg-group" style="margin-top:24px">
-            <div class="apkg-group-title">🌏 해외 골프 패키지 포스터</div>
-            <div id="adminPkgGroup_overseas"></div>
+          <div class="admin-pkg-group" id="adminPkgWrap_overseas" style="margin-top:24px">
+            <div class="apkg-group-header" onclick="toggleApkgGroup('overseas')">
+              <div class="apkg-group-title">🌏 해외 골프 패키지 포스터 <span class="apkg-count" id="apkgCount_overseas"></span></div>
+              <div class="apkg-group-toggle">
+                <button type="button" class="apkg-preview-btn" id="apkgPreviewBtn_overseas" onclick="event.stopPropagation();toggleApkgPreview('overseas')">▶ 슬라이드 미리보기</button>
+                <span class="apkg-chevron">▾</span>
+              </div>
+            </div>
+            <div class="apkg-preview" id="apkgPreview_overseas"></div>
+            <div class="apkg-group-body" id="adminPkgGroup_overseas"></div>
           </div>
         </div>
       </div>
       <div class="admin-info-box"><b>💡</b> 각 이미지 옆 <b>"교체"</b> 버튼을 눌러 새 이미지를 업로드하세요. 헤드라인은 <b>이미지·동영상</b> 모두 지원. 블로그는 <b>URL</b>만 입력하면 네이버·T-Story 등에서 <b>제목·대표 이미지가 자동으로 불러와집니다</b>. 자동 저장.</div>
       <div class="admin-section"><h4>헤드라인 배너</h4><div id="adminHeadline"></div></div>
-      <div class="admin-section"><h4>국내 권역</h4><div id="adminDomestic"></div></div>
-      <div class="admin-section"><h4>해외 국가</h4><div id="adminOverseas"></div></div>
-      <div class="admin-section"><h4>블로그 대표 이미지</h4><div id="adminBlog"></div></div>
+      <div class="admin-section"><h4>국내 권역 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminDomestic"></div></div>
+      <div class="admin-section"><h4>해외 국가 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminOverseas"></div></div>
+      <div class="admin-section"><h4>블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4><div id="adminBlog"></div></div>
     </div>
     <div id="tabProducts" style="display:none">
       <div class="admin-info-box"><b>💡</b> 편집할 여행지를 먼저 선택하세요. 기본 정보는 자동 저장됩니다. <b>"고급 편집"</b> 버튼으로 미디어·요금표·레이블·연락처를 관리할 수 있습니다.</div>
@@ -2052,7 +2140,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     </div>
   </div>
     <div id="tabLegal" style="display:none">
-      <div class="admin-info-box"><b>⚖️</b> 푸터에 표시될 <b>약관 및 정책 링크</b>를 관리합니다. URL을 비워두면 해당 항목이 푸터에서 숨겨집니다. 자동 저장됩니다.</div>
       <div id="adminLegal"></div>
     </div>
 
@@ -2393,6 +2480,7 @@ function renderAdminIdentity(){
         <img src="${getLogo()}" class="ai-logo-preview" alt="로고">
         <label class="file-btn">로고 교체<input type="file" accept="image/*" onchange="handleLogoUpload(this)"></label>
       </div>
+      <span class="file-hint">권장 240×72px 이상, 투명 배경 PNG</span>
     </div>
     <div class="admin-identity-section">
       <h5>사이트 부제목 (타이틀 하단 설명)</h5>
@@ -2409,6 +2497,7 @@ function renderAdminIdentity(){
         <label class="file-btn">🎬 동영상 업로드<input type="file" accept="video/*" onchange="handleAboutBannerUpload(\'video\',this)"></label>
         ${ab?`<button class="file-btn danger" onclick="clearAboutBanner()">기본값 복원</button>`:''}
       </div>
+      <span class="file-hint">권장 이미지 1600×420px 이상 (와이드 배너) · 이미지 5MB / 동영상 10MB 이하</span>
     </div>`;
 }
 
@@ -2436,6 +2525,10 @@ function renderHeadline(){
     c.innerHTML = `<video src="${escapeAttr(h.url)}" autoplay muted loop playsinline class="headline-img"></video>`;
   } else {
     c.innerHTML = `<img src="${escapeAttr(h.url)}" alt="THE GOLF TREND — 국내/해외 골프전문 여행사" class="headline-img">`;
+  }
+  const amb = document.getElementById('headlineAmbient');
+  if (amb){
+    amb.style.backgroundImage = h.type === 'video' ? 'none' : `url('${h.url}')`;
   }
 }
 async function handleHeadlineUpload(type, inputEl){
@@ -2766,6 +2859,7 @@ function renderAdminBlog(){
           <input type="file" accept="image/*" onchange="handleBlogImageUpload(${i},this)">
         </label>
         ${imgSrc?`<button class="abc-img-btn danger" onclick="clearBlogImage(${i})">이미지 제거</button>`:''}
+        <span class="file-hint">권장 1280×800px (16:10 비율)</span>
       </div>
       <!-- 입력 필드들 -->
       <div class="abc-fields">
@@ -3067,6 +3161,37 @@ function toggleAdmin(){
   overlay.classList.toggle('show',isOpen);
   if (isOpen) refreshCurrentAdminTab();
 }
+
+// 관리자 패널 너비 드래그 조절
+const ADMIN_WIDTH_KEY='kundo_admin_width_v1';
+(function initAdminResize(){
+  const panel=document.getElementById('adminPanel');
+  const handle=document.getElementById('adminResizeHandle');
+  if (!panel||!handle) return;
+  const savedW=parseInt(localStorage.getItem(ADMIN_WIDTH_KEY)||'',10);
+  if (savedW) panel.style.setProperty('--admin-w', savedW+'px');
+  let dragging=false, startX=0, startW=0;
+  handle.addEventListener('pointerdown', e=>{
+    dragging=true; startX=e.clientX; startW=panel.getBoundingClientRect().width;
+    handle.classList.add('dragging'); handle.setPointerCapture(e.pointerId);
+    document.body.style.userSelect='none';
+  });
+  handle.addEventListener('pointermove', e=>{
+    if (!dragging) return;
+    let w = startW + (startX - e.clientX);
+    w = Math.min(Math.max(w, 420), Math.min(window.innerWidth - 60, 960));
+    panel.style.setProperty('--admin-w', w+'px');
+  });
+  const endDrag=e=>{
+    if (!dragging) return;
+    dragging=false; handle.classList.remove('dragging');
+    document.body.style.userSelect='';
+    const w=parseInt(panel.style.getPropertyValue('--admin-w'),10);
+    if (w) try{localStorage.setItem(ADMIN_WIDTH_KEY, w);}catch(err){}
+  };
+  handle.addEventListener('pointerup', endDrag);
+  handle.addEventListener('pointercancel', endDrag);
+})();
 // ══ LEGAL LINKS (약관·정책 링크 관리) ══════════════════════════
 const LEGAL_KEY = 'kundo_legal_v1';
 const LEGAL_DEFAULT = [
@@ -3081,6 +3206,10 @@ const LEGAL_DEFAULT = [
 let legalOverrides = {};
 try{ legalOverrides = JSON.parse(localStorage.getItem(LEGAL_KEY)||'{}'); }catch(e){}
 
+const LEGAL_CONTENT_KEY = 'kundo_legal_content_v1';
+let legalContentOverrides = {};
+try{ legalContentOverrides = JSON.parse(localStorage.getItem(LEGAL_CONTENT_KEY)||'{}'); }catch(e){}
+
 function getLegalUrl(key){
   return (legalOverrides[key] !== undefined) ? legalOverrides[key]
        : (LEGAL_DEFAULT.find(l=>l.key===key)||{url:''}).url;
@@ -3090,37 +3219,75 @@ function setLegalUrl(key, url){
   try{ localStorage.setItem(LEGAL_KEY, JSON.stringify(legalOverrides)); }catch(e){ alert('저장 공간 부족'); }
   renderFooterLegal();
 }
+function getLegalContent(key){
+  return legalContentOverrides[key] || '';
+}
+function setLegalContent(key, text){
+  legalContentOverrides[key] = text;
+  try{ localStorage.setItem(LEGAL_CONTENT_KEY, JSON.stringify(legalContentOverrides)); }catch(e){ alert('저장 공간 부족'); }
+  renderFooterLegal();
+}
 function renderFooterLegal(){
   const c = document.getElementById('footerLegal'); if(!c) return;
   c.innerHTML = LEGAL_DEFAULT
-    .filter(l => getLegalUrl(l.key))
-    .map(l => `<a href="${escapeAttr(getLegalUrl(l.key))}" target="_blank" rel="noopener"${l.hi?' class="hi"':''}>${escapeAttr(l.label)}</a>`)
+    .filter(l => getLegalUrl(l.key) || getLegalContent(l.key))
+    .map(l => {
+      const content = getLegalContent(l.key);
+      const url = getLegalUrl(l.key);
+      return content
+        ? `<a onclick="openLegalModal('${l.key}')" role="button"${l.hi?' class="hi"':''}>${escapeAttr(l.label)}</a>`
+        : `<a href="${escapeAttr(url)}" target="_blank" rel="noopener"${l.hi?' class="hi"':''}>${escapeAttr(l.label)}</a>`;
+    })
     .join('');
+}
+function openLegalModal(key){
+  const l = LEGAL_DEFAULT.find(x=>x.key===key); if (!l) return;
+  const content = getLegalContent(key);
+  document.getElementById('legalModalTitle').textContent = l.label;
+  document.getElementById('legalModalBody').innerHTML = content
+    ? escapeAttr(content).replace(/\n/g,'<br>')
+    : '<span class="legal-modal-empty">등록된 내용이 없습니다.</span>';
+  document.getElementById('legalModalOverlay').classList.add('show');
+}
+function closeLegalModal(){
+  document.getElementById('legalModalOverlay').classList.remove('show');
 }
 function renderAdminLegal(){
   const c = document.getElementById('adminLegal'); if(!c) return;
   c.innerHTML =
     `<div class="admin-info-box" style="margin-bottom:14px">
-      ⚖️ URL을 입력하면 푸터 하단에 노출됩니다. 비워두면 해당 항목이 숨겨집니다.
-      <b>강조</b> 표시 항목은 볼드+언더라인으로 강조됩니다. 자동 저장됩니다.
+      ⚖️ <b>내용</b>을 입력하면 방문자가 푸터에서 클릭 시 <b>팝업으로 바로 읽을 수 있습니다</b>.
+      URL만 입력하면 외부 페이지로 새 탭에서 연결됩니다. 내용을 입력하면 URL보다 <b>내용 팝업이 우선</b> 표시됩니다.
+      둘 다 비워두면 해당 항목이 푸터에서 숨겨집니다. <b>강조</b> 항목은 볼드+언더라인으로 표시됩니다. 자동 저장됩니다.
     </div>` +
   LEGAL_DEFAULT.map(l => {
     const url = getLegalUrl(l.key);
+    const content = getLegalContent(l.key);
     return `
     <div class="legal-admin-item">
       <div class="lai-label${l.hi?' hi':''}">
         ${l.hi?'<span class="lai-badge">강조</span>':''}
         <span>${escapeAttr(l.label)}</span>
-        ${url?`<a href="${escapeAttr(url)}" target="_blank" rel="noopener" class="lai-test">🔗 확인</a>`:''}
+        ${content?`<a onclick="openLegalModal('${l.key}')" role="button" class="lai-test">🔗 미리보기</a>`
+          :url?`<a href="${escapeAttr(url)}" target="_blank" rel="noopener" class="lai-test">🔗 확인</a>`:''}
       </div>
-      <input type="url" class="lai-input"
-        value="${escapeAttr(url)}"
-        placeholder="https://... (비우면 푸터에서 숨겨짐)"
-        oninput="setLegalUrl('${l.key}',this.value)">
+      <div>
+        <span class="lai-field-label">외부 URL (선택)</span>
+        <input type="url" class="lai-input"
+          value="${escapeAttr(url)}"
+          placeholder="https://... (내용을 입력하면 사용되지 않음)"
+          oninput="setLegalUrl('${l.key}',this.value)">
+      </div>
+      <div>
+        <span class="lai-field-label">내용 (입력 시 팝업으로 표시, 줄바꿈 유지)</span>
+        <textarea class="lai-content-textarea"
+          placeholder="여기에 ${escapeAttr(l.label)} 전문을 붙여넣으세요..."
+          oninput="setLegalContent('${l.key}',this.value)">${escapeAttr(content)}</textarea>
+      </div>
     </div>`;
   }).join('') +
   `<div style="margin-top:14px;padding:12px 14px;background:rgba(221,179,103,.08);border-radius:8px;font-size:.78rem;color:rgba(247,245,240,.7)">
-    현재 노출 중: ${LEGAL_DEFAULT.filter(l=>getLegalUrl(l.key)).length} / ${LEGAL_DEFAULT.length}개
+    현재 노출 중: ${LEGAL_DEFAULT.filter(l=>getLegalUrl(l.key)||getLegalContent(l.key)).length} / ${LEGAL_DEFAULT.length}개
   </div>`;
 }
 
@@ -3254,7 +3421,7 @@ function renderAdminAbout(){
   }).join('');
 
   c.innerHTML = `
-    <div class="admin-info-box">💡 각 카드의 이미지를 업로드하면 홈페이지 카드 상단에 바로 반영됩니다. 5MB 이하 JPG/PNG.</div>
+    <div class="admin-info-box">💡 각 카드의 이미지를 업로드하면 홈페이지 카드 상단에 바로 반영됩니다. 권장 800×450px (16:9 비율), 5MB 이하 JPG/PNG.</div>
     <h5 class="aab-section-label">Core Values · 핵심가치 카드</h5>
     <div class="aab-grid">${cvCards}</div>
     <h5 class="aab-section-label" style="margin-top:20px">Our Strengths · 역량 및 강점 카드</h5>
@@ -3396,11 +3563,76 @@ function renderAdminPkg(){
         </div>
       </div>`).join('') + `
       <label class="apkg-add-btn">
-        📷 포스터 추가 (다중 선택 · JPG/PNG 15MB 이하)
+        📷 포스터 추가 (다중 선택 · 권장 900×1200px, 3:4 비율 · JPG/PNG 15MB 이하)
         <input type="file" accept="image/*" multiple
           onchange="handlePkgUpload('${type}',this)">
       </label>`;
+    const countEl = document.getElementById('apkgCount_'+type);
+    if (countEl) countEl.textContent = list.length ? `${list.length}장` : '';
+    if (apkgPreviewState[type].open) renderApkgPreview(type);
   });
+}
+
+// ── 관리자 포스터: 그룹 접기/펼치기 + 슬라이드 미리보기 ──────────────
+const apkgPreviewState = {
+  domestic:{open:false, idx:0, timer:null},
+  overseas:{open:false, idx:0, timer:null},
+};
+function toggleApkgGroup(type){
+  const wrap = document.getElementById('adminPkgWrap_'+type); if (!wrap) return;
+  wrap.classList.toggle('collapsed');
+}
+function toggleApkgPreview(type){
+  const state = apkgPreviewState[type];
+  const btn = document.getElementById('apkgPreviewBtn_'+type);
+  const box = document.getElementById('apkgPreview_'+type);
+  const wrap = document.getElementById('adminPkgWrap_'+type);
+  state.open = !state.open;
+  if (btn) btn.classList.toggle('active', state.open);
+  if (btn) btn.textContent = state.open ? '■ 미리보기 닫기' : '▶ 슬라이드 미리보기';
+  if (box) box.classList.toggle('show', state.open);
+  if (wrap && wrap.classList.contains('collapsed')) wrap.classList.remove('collapsed');
+  if (state.open){ state.idx = 0; renderApkgPreview(type); }
+  else apkgPreviewStopAuto(type);
+}
+function renderApkgPreview(type){
+  const box = document.getElementById('apkgPreview_'+type); if (!box) return;
+  const list = getPkgList(type);
+  if (!list.length){
+    box.innerHTML = `<div class="apkg-preview-empty">등록된 포스터가 없습니다. 아래에서 이미지를 추가하면 여기서 실제 슬라이드처럼 미리 볼 수 있습니다.</div>`;
+    apkgPreviewStopAuto(type);
+    return;
+  }
+  const state = apkgPreviewState[type];
+  if (state.idx >= list.length) state.idx = 0;
+  box.innerHTML = `
+    ${list.map((p,i)=>`<img src="${escapeAttr(p.url)}" class="${i===state.idx?'active':''}" alt="${escapeAttr(p.label||'')}">`).join('')}
+    ${list.length>1?`
+    <div class="apkg-preview-nav prev" onclick="apkgPreviewGoTo('${type}', ${state.idx-1<0?list.length-1:state.idx-1})">‹</div>
+    <div class="apkg-preview-nav next" onclick="apkgPreviewGoTo('${type}', ${(state.idx+1)%list.length})">›</div>
+    <div class="apkg-preview-dots">${list.map((_,i)=>`<button class="${i===state.idx?'active':''}" onclick="apkgPreviewGoTo('${type}',${i})"></button>`).join('')}</div>`:''}
+    ${list[state.idx].label?`<div class="apkg-preview-label">${escapeAttr(list[state.idx].label)}</div>`:''}
+  `;
+  apkgPreviewStartAuto(type);
+}
+function apkgPreviewGoTo(type, idx){
+  const state = apkgPreviewState[type];
+  state.idx = idx;
+  renderApkgPreview(type);
+}
+function apkgPreviewStartAuto(type){
+  apkgPreviewStopAuto(type);
+  const list = getPkgList(type);
+  if (list.length <= 1) return;
+  apkgPreviewState[type].timer = setInterval(()=>{
+    const st = apkgPreviewState[type];
+    st.idx = (st.idx + 1) % getPkgList(type).length;
+    renderApkgPreview(type);
+  }, 3500);
+}
+function apkgPreviewStopAuto(type){
+  const st = apkgPreviewState[type];
+  if (st.timer){ clearInterval(st.timer); st.timer = null; }
 }
 
 // 드래그&드롭 헬퍼
@@ -3517,7 +3749,7 @@ function setPkgLabel(type, idx, val){
 function switchTab(tab){
   activeAdminTab=tab;
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['tabImages','tabProducts','tabLinks'].forEach(id=>{
+  ['tabImages','tabProducts','tabLinks','tabLegal'].forEach(id=>{
     document.getElementById(id).style.display=(id==='tab'+tab[0].toUpperCase()+tab.slice(1))?'block':'none';
   });
   refreshCurrentAdminTab();
@@ -3550,6 +3782,7 @@ function renderAdminHeadline(){
         <label class="file-btn">🎬 동영상 업로드<input type="file" accept="video/*" onchange="handleHeadlineUpload('video',this)"></label>
         ${!isDefault ? `<button class="file-btn danger" onclick="clearHeadline()">기본값 복원</button>` : ''}
       </div>
+      <span class="file-hint">권장 1600×900px 이상 (16:9 와이드), 동영상은 15초 이하 무음 루프 권장</span>
     </div>
   `;
 }
@@ -3917,13 +4150,14 @@ function advMediaHTML(p){
         <label class="media-btn">동영상 업로드<input type="file" accept="video/*" onchange="handleTitleMediaUpload(this,'video')"></label>
         ${tm?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
       </div>
+      <span class="file-hint">권장 1200×750px 이상 (16:10 비율) · 이미지 5MB / 동영상 10MB 이하</span>
     </div>
 
     <label>갤러리 이미지 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(${p.gallery.length}/20 · 드래그하여 순서 변경)</span></label>
     <div class="media-slot">
       <div class="media-controls" style="margin-bottom:10px">
         <label class="media-btn ${p.gallery.length >= 20 ? 'disabled':''}">📷 이미지 추가 (다중 선택)<input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this)" ${p.gallery.length >= 20 ? 'disabled':''}></label>
-        <span style="font-size:.72rem;color:rgba(247,245,240,.5);margin-left:8px">최대 20장</span>
+        <span style="font-size:.72rem;color:rgba(247,245,240,.5);margin-left:8px">최대 20장 · 권장 1200×750px (16:10 비율)</span>
       </div>
       <div class="gallery-list" id="galleryList">
         ${p.gallery.map((g,i)=>`

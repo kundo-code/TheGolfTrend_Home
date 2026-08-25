@@ -587,7 +587,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* /* HEADLINE BANNER (top brand hero) */
 .headline-media{position:relative;width:100%;overflow:hidden;background:#0A1730}
-.headline-media video.headline-img,.headline-media img.headline-img{display:block;width:100%;height:auto;border-radius:0;box-shadow:none;border:none}
+.headline-media video.headline-img,.headline-media img.headline-img{display:block;width:100%;height:auto;object-fit:cover;border-radius:0;box-shadow:none;border:none}
+@media(max-width:1024px){
+  .headline-media video.headline-img,.headline-media img.headline-img{height:360px}
+}
+@media(max-width:780px){
+  .headline-media video.headline-img,.headline-media img.headline-img{height:260px}
+}
+@media(max-width:480px){
+  .headline-media video.headline-img,.headline-media img.headline-img{height:200px}
+}
 /* Admin headline preview */
 .admin-headline-item{padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--glass-border-soft);border-radius:12px}
 .admin-headline-preview{width:100%;height:auto;max-height:140px;object-fit:cover;border-radius:8px;margin-bottom:12px;background:#0A1730;display:block}

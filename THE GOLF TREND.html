@@ -71,9 +71,9 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .hero-wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:120px;z-index:1;pointer-events:none}
 .hero-wave path{fill:var(--pine-deep);opacity:.7}
 .hero-wave path.top{opacity:.4}
-.hero-inner{max-width:1280px;width:100%;position:relative;z-index:2;display:grid;grid-template-columns:1.35fr 1fr;gap:40px;align-items:center}
+.hero-inner{max-width:1280px;width:100%;position:relative;z-index:2;display:grid;grid-template-columns:1.35fr 1fr;gap:40px;align-items:stretch}
 .hero-main{padding:52px 48px;background:var(--glass-bg);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:32px;box-shadow:var(--glass-shadow)}
-.eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:100px;background:rgba(221,179,103,.18);border:1px solid rgba(221,179,103,.4);font-size:.78rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:24px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:100px;background:rgba(221,179,103,.18);border:1px solid rgba(221,179,103,.4);font-size:1.17rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);margin-bottom:24px}
 .eyebrow .pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(221,179,103,.6)}70%{box-shadow:0 0 0 12px rgba(221,179,103,0)}100%{box-shadow:0 0 0 0 rgba(221,179,103,0)}}
 .hero h1{font-size:clamp(2.6rem,5.5vw,4.6rem);color:#fff;font-weight:300;margin-bottom:24px;text-shadow:0 4px 20px rgba(0,0,0,.2)}
@@ -86,21 +86,21 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .btn-primary:hover{background:var(--gold);color:#fff;transform:translateY(-2px);box-shadow:0 10px 30px rgba(221,179,103,.35)}
 .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
-.hero-side{display:flex;flex-direction:column;gap:20px}
-.spotlight{padding:24px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
-.spotlight .kicker{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.hero-side{display:flex;flex-direction:column}
+.spotlight{flex:1;display:flex;flex-direction:column;padding:24px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
+.spotlight .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .spotlight .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
-.spot-visual{aspect-ratio:16/9;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
+.spot-visual{flex:1;min-height:220px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
 .spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.35rem;font-weight:500;color:#fff;margin-bottom:6px}
 .spot-meta{display:flex;gap:16px;font-size:.82rem;color:rgba(247,245,240,.8);margin-bottom:12px;flex-wrap:wrap}
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(255,255,255,.15)}
-.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.35rem;color:#fff;font-weight:500}
-.spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.72rem;color:var(--gold);font-weight:500;margin-left:2px}
-.spot-cta a{color:var(--gold);font-size:.85rem;font-weight:600;cursor:pointer}
-.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.7rem;color:#fff;font-weight:500}
+.spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
+.spot-cta a{color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-size:.85rem;font-weight:600;cursor:pointer}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
 .mini-stat{padding:16px 12px;text-align:center;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);border-radius:16px}
-.mini-stat .n{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.5rem;color:var(--gold);font-weight:500;display:block}
+.mini-stat .n{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.5rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;display:block}
 .mini-stat .l{font-size:.72rem;color:rgba(247,245,240,.7);letter-spacing:.05em;margin-top:2px}
 
 /* SECTIONS */
@@ -585,8 +585,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .headline-glow{position:absolute;left:0;right:0;bottom:-12px;height:40px;background:radial-gradient(ellipse at center,rgba(221,179,103,.35) 0%,transparent 70%);filter:blur(20px);z-index:-1;pointer-events:none}
 
 /* HERO SLOGAN */
-.hero-slogan{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.15rem;color:var(--gold);letter-spacing:.04em;margin:-14px 0 22px;font-weight:400;opacity:.95}
-.hero-slogan-sub{display:block;font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,.55);margin-top:4px}
+.hero-slogan{margin:-14px 0 22px}
+.hero-slogan-brand{display:block;font-family:'Anton','Noto Sans KR',sans-serif;font-size:clamp(1.15rem,2.4vw,1.75rem);letter-spacing:.03em;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);line-height:1.2}
+.hero-slogan-main{display:block;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(1.15rem,2.4vw,1.75rem);letter-spacing:.04em;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:400;margin-top:2px}
+.hero-slogan-sub{display:block;font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:clamp(.85rem,1.4vw,1.15rem);letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.5);margin-top:6px}
 
 /* ABOUT SECTION */
 .about-section{background:linear-gradient(180deg,transparent 0%,rgba(10,23,48,.03) 100%)}
@@ -684,7 +686,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pd-container{margin:16px auto;padding:0 12px 20px}
   .adv-editor{margin:16px 12px}
   .core-values{grid-template-columns:1fr}
-  .hero-slogan{font-size:.95rem;margin:-8px 0 20px}
+  .hero-slogan{margin:-8px 0 20px}
   .foot-terms{gap:5px}
   .foot-terms a{padding:6px 11px;font-size:.76rem}
   .foot-bottom .fbo-insurance{font-size:.78rem;padding:12px 14px}
@@ -1613,8 +1615,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <div class="hero-main">
       <span class="eyebrow"><span class="pulse"></span>2026 <span id="heroSeason">가을</span> 시즌 티타임 오픈</span>
       <h1><span class="line">필드에서 시작되는,</span><span class="line"><em>완벽한 여행.</em></span></h1>
-      <p class="hero-slogan">Beyond Golf, Into Life. <span class="hero-slogan-sub">Curated Golf Travel &amp; Lifestyle</span></p>
+      <p class="hero-slogan">
+        <span class="hero-slogan-brand">THE GOLF TREND</span>
+        <span class="hero-slogan-main">Beyond Golf, Into Life.</span>
+        <span class="hero-slogan-sub">Curated Golf Travel &amp; Lifestyle</span>
+      </p>
       <p class="lead">20년 이상 해외 골프 운영 경험을 가진 (주)더골프트렌드가 선보이는 프리미엄 골프 여행 브랜드. 국내 6개 권역부터 아시아 9개국 명문 코스까지 — 당신의 다음 한 라운드를 설계합니다.</p>
+      <div class="mini-stats">
+        <div class="mini-stat"><span class="n">15+</span><span class="l">국내외 여행지</span></div>
+        <div class="mini-stat"><span class="n">20년+</span><span class="l">해외 골프 운영</span></div>
+        <div class="mini-stat"><span class="n">40+</span><span class="l">B2B 파트너</span></div>
+      </div>
       <div class="hero-actions">
         <a href="#destinations" class="btn btn-primary">여행지 둘러보기 →</a>
         <a href="#booking" class="btn btn-ghost">티타임 상담</a>
@@ -1630,11 +1641,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <span class="price" id="spotPrice">1,890,000원<small> ~부터</small></span>
           <a id="spotLink">자세히 →</a>
         </div>
-      </div>
-      <div class="mini-stats">
-        <div class="mini-stat"><span class="n">15+</span><span class="l">국내외 여행지</span></div>
-        <div class="mini-stat"><span class="n">20년+</span><span class="l">해외 골프 운영</span></div>
-        <div class="mini-stat"><span class="n">40+</span><span class="l">B2B 파트너</span></div>
       </div>
     </aside>
   </div>

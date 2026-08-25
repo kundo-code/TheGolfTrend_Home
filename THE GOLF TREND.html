@@ -31,7 +31,7 @@ img{max-width:100%;display:block}
 
 /* AMBIENT */
 .ambient{position:fixed;inset:0;z-index:-2;overflow:hidden;
-  background:radial-gradient(1200px 800px at 15% 20%,rgba(221,179,103,.14) 0%,transparent 55%),radial-gradient(900px 700px at 85% 70%,rgba(10,23,48,.05) 0%,transparent 55%),linear-gradient(180deg,#FDFBF6 0%,#F7F2E8 45%,#F3ECDD 100%)}
+  background:radial-gradient(1400px 900px at 12% 15%,rgba(202,110,63,.5) 0%,transparent 60%),radial-gradient(1100px 800px at 88% 75%,rgba(160,80,50,.3) 0%,transparent 60%),linear-gradient(180deg,#FDF0E8 0%,#F8DCC6 45%,#F0C49E 100%)}
 .ambient .wave-layer{position:absolute;inset:0;width:100%;height:100%;opacity:.12;mix-blend-mode:multiply}
 .ambient .wave-layer path{fill:none;stroke:rgba(10,23,48,.4);stroke-width:1}
 .ambient .wave-layer.gold path{stroke:rgba(202,142,63,.6)}
@@ -48,8 +48,8 @@ img{max-width:100%;display:block}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
 @keyframes seasonFall{
   0%{transform:translate(0,-60px) rotate(0deg);opacity:0}
-  10%{opacity:.6}
-  85%{opacity:.6}
+  10%{opacity:.85}
+  85%{opacity:.85}
   100%{transform:translate(34px,780px) rotate(24deg);opacity:0}
 }
 
@@ -4361,18 +4361,18 @@ function advContactHTML(p){
 
 // SEASON THEME (관리자 패널에서 선택 · 방문자에게는 표시만 됨)
 const SEASON_NAMES={spring:'봄',summer:'여름',autumn:'가을',winter:'겨울'};
-function amb(c1,c2){
-  return `radial-gradient(1200px 800px at 15% 20%,${c1} 0%,transparent 55%),radial-gradient(900px 700px at 85% 70%,${c2} 0%,transparent 55%),linear-gradient(180deg,#FDFBF6 0%,#F7F2E8 45%,#F3ECDD 100%)`;
+function amb(c1,c2,base1,base2,base3){
+  return `radial-gradient(1400px 900px at 12% 15%,${c1} 0%,transparent 60%),radial-gradient(1100px 800px at 88% 75%,${c2} 0%,transparent 60%),linear-gradient(180deg,${base1} 0%,${base2} 45%,${base3} 100%)`;
 }
 const SEASON_THEMES={
-  spring1:{season:'spring',label:'벚꽃',gradient:amb('rgba(244,194,201,.42)','rgba(221,179,103,.14)'),particles:['🌸','🌸','🌸','🌸']},
-  spring2:{season:'spring',label:'개나리',gradient:amb('rgba(233,214,110,.4)','rgba(180,205,120,.22)'),particles:['🌼','🌼','🌼']},
-  summer1:{season:'summer',label:'푸른 잎',gradient:amb('rgba(110,180,160,.34)','rgba(90,150,175,.2)'),particles:['🍃','🍃','🍃','🍃']},
-  summer2:{season:'summer',label:'해바라기',gradient:amb('rgba(244,193,80,.36)','rgba(221,179,103,.22)'),particles:['🌻','🌻','🌻']},
-  autumn1:{season:'autumn',label:'단풍잎',gradient:amb('rgba(202,110,63,.36)','rgba(160,80,50,.18)'),particles:['🍁','🍁','🍁','🍁']},
-  autumn2:{season:'autumn',label:'한가위',gradient:amb('rgba(221,179,103,.4)','rgba(190,140,70,.2)'),particles:['🌾','🌕','🌾']},
-  winter1:{season:'winter',label:'크리스마스',gradient:amb('rgba(196,214,232,.4)','rgba(221,179,103,.16)'),particles:['❄️','⛄','❄️','🎄']},
-  winter2:{season:'winter',label:'설날',gradient:amb('rgba(198,74,74,.24)','rgba(221,179,103,.32)'),particles:['🧧','🎍','🧧']},
+  spring1:{season:'spring',label:'벚꽃',gradient:amb('rgba(244,150,170,.5)','rgba(221,179,103,.25)','#FDF4F6','#FBE7EC','#F6D9E1'),particles:['🌸','🌸','🌸','🌸']},
+  spring2:{season:'spring',label:'개나리',gradient:amb('rgba(240,205,60,.5)','rgba(150,190,110,.3)','#FDF8E8','#FBF0C8','#F5E7A8'),particles:['🌼','🌼','🌼']},
+  summer1:{season:'summer',label:'푸른 잎',gradient:amb('rgba(70,170,150,.4)','rgba(80,150,190,.3)','#EAF6F1','#D9EEE3','#C9E5D6'),particles:['🍃','🍃','🍃','🍃']},
+  summer2:{season:'summer',label:'해바라기',gradient:amb('rgba(244,180,40,.5)','rgba(221,179,103,.3)','#FFF7E2','#FCEBB0','#F7DD80'),particles:['🌻','🌻','🌻']},
+  autumn1:{season:'autumn',label:'단풍잎',gradient:amb('rgba(202,110,63,.5)','rgba(160,80,50,.3)','#FDF0E8','#F8DCC6','#F0C49E'),particles:['🍁','🍁','🍁','🍁']},
+  autumn2:{season:'autumn',label:'한가위',gradient:amb('rgba(221,179,103,.5)','rgba(190,140,70,.3)','#FDF6E3','#F8E9B8','#F0D888'),particles:['🌾','🌕','🌾']},
+  winter1:{season:'winter',label:'크리스마스',gradient:amb('rgba(150,190,230,.5)','rgba(198,74,74,.25)','#EEF4FA','#DCE9F5','#C7DCEF'),particles:['❄️','⛄','❄️','🎄']},
+  winter2:{season:'winter',label:'설날',gradient:amb('rgba(198,74,74,.45)','rgba(221,179,103,.4)','#FDF0EE','#F8D9D2','#F0BEB2'),particles:['🧧','🎍','🧧']},
 };
 const SEASON_THEME_KEY='kundo_season_theme_v1';
 const SEASON_PARTICLE_POS=[

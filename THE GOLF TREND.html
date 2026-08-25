@@ -117,6 +117,7 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
 .spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.4rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:1.02rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
+.spot-cta .price small .price-unit{color:#fff}
 .spot-cta a{color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-size:.85rem;font-weight:600;cursor:pointer}
 .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:52px}
 .mini-stat{padding:16px 12px;text-align:center;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);border-radius:16px;box-shadow:0 4px 14px rgba(3,13,38,.18)}
@@ -430,6 +431,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .band-cta.b2b{background:linear-gradient(135deg,rgba(24,119,242,.15),rgba(24,119,242,.05));border-color:rgba(24,119,242,.4)}
 .band-cta.b2b:hover{background:linear-gradient(135deg,rgba(24,119,242,.28),rgba(24,119,242,.12));border-color:#1877F2;box-shadow:0 10px 24px rgba(24,119,242,.25)}
 .band-cta .bc-badge{background:#00C73C;color:#fff;font-size:.72rem;font-weight:800;padding:5px 10px;border-radius:100px;letter-spacing:.06em}
+.band-cta .bc-label{color:var(--pine-deep)}
 .band-cta.b2b .bc-badge{background:#1877F2}
 .band-cta .bc-arr{margin-left:auto;color:var(--gold)}
 @media(max-width:780px){.band-cta-row{grid-template-columns:1fr}}
@@ -620,7 +622,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .core-values{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:64px}
 .cv-card{padding:30px 22px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);border-radius:20px;transition:all .3s;text-align:center}
 .cv-card:hover{transform:translateY(-4px);border-color:var(--glass-border);background:var(--glass-bg-strong)}
-.cv-icon{display:inline-flex;width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--gold),var(--gold-deep));align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:16px;box-shadow:0 8px 20px rgba(221,179,103,.3);color:#fff}
 .cv-en{font-size:.66rem;letter-spacing:.22em;color:var(--gold);font-weight:700;margin-bottom:6px}
 .cv-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.4rem;color:#fff;font-weight:500;margin-bottom:12px}
 .cv-card p{font-size:.85rem;color:rgba(247,245,240,.72);line-height:1.55}
@@ -830,7 +831,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   transform:translateY(-4px);
   box-shadow:0 20px 48px rgba(0,0,0,.3);
 }
-.str-icon{font-size:2rem;display:block;margin-bottom:14px}
 .str-title{
   font-size:1rem;font-weight:700;color:var(--gold);
   margin-bottom:10px;letter-spacing:.02em;font-family:'Bebas Neue','Noto Sans KR',sans-serif;
@@ -1077,7 +1077,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* cv-card 이미지 슬롯 */
 .cv-img-wrap{
-  width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;
+  width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;
   background:rgba(10,23,48,.06);border:1px dashed rgba(10,23,48,.2);
   margin-bottom:14px;position:relative;cursor:pointer;transition:all .2s;
 }
@@ -1108,7 +1108,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   transform:translateY(-4px);
   box-shadow:0 12px 32px rgba(10,23,48,.12);
 }
-.about-white-panel .cv-icon{ filter:none; }
 
 /* str-card 이미지 슬롯 */
 .str-img-wrap{
@@ -1689,7 +1688,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
           <div class="spot-meta" id="spotMeta0"></div>
           <div class="spot-cta">
-            <span class="price" id="spotPrice0">1,890,000<small>원 ~부터</small></span>
+            <span class="price" id="spotPrice0">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
             <a id="spotLink0">자세히 →</a>
           </div>
         </div>
@@ -1698,7 +1697,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
           <div class="spot-meta" id="spotMeta1"></div>
           <div class="spot-cta">
-            <span class="price" id="spotPrice1">1,290,000<small>원 ~부터</small></span>
+            <span class="price" id="spotPrice1">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
             <a id="spotLink1">자세히 →</a>
           </div>
         </div>
@@ -1760,7 +1759,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="cv-img-inner" id="cvImgInner_authenticity"></div>
           <span class="cv-img-hint">📷</span>
         </div>
-        <span class="cv-icon">🛡</span>
         <div class="cv-en">AUTHENTICITY</div>
         <div class="cv-ko">진정성</div>
         <p>고객의 신뢰를 바탕으로, 단순한 여행이 아닌 잊지 못할 경험을 제공합니다.</p>
@@ -1771,7 +1769,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="cv-img-inner" id="cvImgInner_customer"></div>
           <span class="cv-img-hint">📷</span>
         </div>
-        <span class="cv-icon">👤</span>
         <div class="cv-en">CUSTOMER-CENTRIC</div>
         <div class="cv-ko">고객 중심</div>
         <p>고객의 니즈를 이해하고, 최적의 맞춤형 골프 투어를 설계합니다.</p>
@@ -1782,7 +1779,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="cv-img-inner" id="cvImgInner_expertise"></div>
           <span class="cv-img-hint">📷</span>
         </div>
-        <span class="cv-icon">⛳</span>
         <div class="cv-en">EXPERTISE</div>
         <div class="cv-ko">전문성</div>
         <p>20년 이상의 해외 골프 운영 경험을 바탕으로, 최고의 품질과 서비스를 보장합니다.</p>
@@ -1793,7 +1789,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="cv-img-inner" id="cvImgInner_relationships"></div>
           <span class="cv-img-hint">📷</span>
         </div>
-        <span class="cv-icon">🤝</span>
         <div class="cv-en">RELATIONSHIPS</div>
         <div class="cv-ko">관계 구축</div>
         <p>현지 골프장 및 파트너사와의 협력을 통해 장기적인 신뢰를 구축합니다.</p>
@@ -1813,7 +1808,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <div class="str-img-inner" id="strImgInner_str0"></div>
             <span class="str-img-hint">📷</span>
           </div>
-          <span class="str-icon">🏆</span>
           <div class="str-title">풍부한 현장 경험</div>
           <p>20년 이상 국내·해외 골프 투어를 직접 운영하며 쌓아온 검증된 노하우와 네트워크를 보유합니다.</p>
           <input type="file" accept="image/*" id="strImgFile_str0" style="display:none" onchange="handleStrImgUpload('str0',this)">
@@ -1823,7 +1817,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <div class="str-img-inner" id="strImgInner_str1"></div>
             <span class="str-img-hint">📷</span>
           </div>
-          <span class="str-icon">🤝</span>
           <div class="str-title">현지 파트너십</div>
           <p>일본·말레이시아·동남아 명문 골프장과의 직접 제휴로 고객에게 독점적인 혜택과 패키지를 제공합니다.</p>
           <input type="file" accept="image/*" id="strImgFile_str1" style="display:none" onchange="handleStrImgUpload('str1',this)">
@@ -1833,7 +1826,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <div class="str-img-inner" id="strImgInner_str2"></div>
             <span class="str-img-hint">📷</span>
           </div>
-          <span class="str-icon">✈️</span>
           <div class="str-title">원스톱 서비스</div>
           <p>항공·숙박·라운드·식사·관광까지, 출발부터 귀국까지 모든 여정을 책임지는 토탈 케어 시스템입니다.</p>
           <input type="file" accept="image/*" id="strImgFile_str2" style="display:none" onchange="handleStrImgUpload('str2',this)">
@@ -1843,7 +1835,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <div class="str-img-inner" id="strImgInner_str3"></div>
             <span class="str-img-hint">📷</span>
           </div>
-          <span class="str-icon">💎</span>
           <div class="str-title">프리미엄 큐레이션</div>
           <p>단순 패키지가 아닌, 고객의 취향과 목적에 맞는 맞춤형 골프 여행을 설계합니다.</p>
           <input type="file" accept="image/*" id="strImgFile_str3" style="display:none" onchange="handleStrImgUpload('str3',this)">
@@ -1853,7 +1844,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <div class="str-img-inner" id="strImgInner_str4"></div>
             <span class="str-img-hint">📷</span>
           </div>
-          <span class="str-icon">📞</span>
           <div class="str-title">신속한 고객 대응</div>
           <p>전담 담당자 배정으로 상담부터 귀국 후 피드백까지 빠르고 정확한 소통을 보장합니다.</p>
           <input type="file" accept="image/*" id="strImgFile_str4" style="display:none" onchange="handleStrImgUpload('str4',this)">
@@ -1863,7 +1853,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <div class="str-img-inner" id="strImgInner_str5"></div>
             <span class="str-img-hint">📷</span>
           </div>
-          <span class="str-icon">🛡</span>
           <div class="str-title">안전·법적 신뢰성</div>
           <p>종합여행업 등록(제2023-6호), 영업배상책임보험 가입으로 법적·재정적으로 안전한 여행을 보장합니다.</p>
           <input type="file" accept="image/*" id="strImgFile_str5" style="display:none" onchange="handleStrImgUpload('str5',this)">
@@ -2886,7 +2875,7 @@ function renderSpotlight(){
     document.getElementById('spotVisual'+slot).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
     document.getElementById('spotTitle'+slot).textContent=s.title;
     document.getElementById('spotMeta'+slot).innerHTML=s.meta.map(m=>`<span>${m}</span>`).join('');
-    document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(s.from)}<small>원 ~부터</small>`;
+    document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(s.from)}<small><span class="price-unit">원</span> ~부터</small>`;
     document.getElementById('spotLink'+slot).onclick=(e)=>{e.preventDefault();selectCategory(s.catId)};
   });
 }
@@ -3083,8 +3072,8 @@ function renderLinks(){
   const b2cActive = isLinkActive('band_b2c');
   const b2bActive = isLinkActive('band_b2b');
   const ctaHTML = (b2cActive || b2bActive) ? `<div class="band-cta-row">
-    ${b2cActive ? `<a class="band-cta" href="${escapeAttr(getLinkUrl('band_b2c'))}" target="_blank" rel="noopener"><span class="bc-badge">B2C</span><span>고객 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
-    ${b2bActive ? `<a class="band-cta b2b" href="${escapeAttr(getLinkUrl('band_b2b'))}" target="_blank" rel="noopener"><span class="bc-badge">B2B</span><span>파트너 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
+    ${b2cActive ? `<a class="band-cta" href="${escapeAttr(getLinkUrl('band_b2c'))}" target="_blank" rel="noopener"><span class="bc-badge">B2C</span><span class="bc-label">고객 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
+    ${b2bActive ? `<a class="band-cta b2b" href="${escapeAttr(getLinkUrl('band_b2b'))}" target="_blank" rel="noopener"><span class="bc-badge">B2B</span><span class="bc-label">파트너 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
   </div>` : '';
   c.innerHTML = ctaHTML + groupHTML;
   if (!c.innerHTML.trim()){

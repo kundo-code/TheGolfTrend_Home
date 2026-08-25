@@ -45,6 +45,7 @@ img{max-width:100%;display:block}
 /* 시즌 테마 장식 파티클 */
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.32;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
 .hero-season-particles .ambient-particle{font-size:4.4rem;filter:drop-shadow(0 4px 12px rgba(3,13,38,.45));animation-name:seasonFall;animation-timing-function:linear}
+.hero-season-particles .ambient-particle::before{content:'';position:absolute;left:50%;bottom:100%;width:3px;height:42px;transform:translateX(-50%);background:linear-gradient(to top,rgba(255,255,255,.6),transparent);filter:blur(1px);pointer-events:none}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
 @keyframes seasonFall{
   0%{transform:translate(0,-60px) rotate(0deg);opacity:0}
@@ -1687,7 +1688,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
           <div class="spot-meta" id="spotMeta0"></div>
           <div class="spot-cta">
-            <span class="price" id="spotPrice0">1,890,000원<small> ~부터</small></span>
+            <span class="price" id="spotPrice0">1,890,000<small>원 ~부터</small></span>
             <a id="spotLink0">자세히 →</a>
           </div>
         </div>
@@ -1696,7 +1697,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
           <div class="spot-meta" id="spotMeta1"></div>
           <div class="spot-cta">
-            <span class="price" id="spotPrice1">1,290,000원<small> ~부터</small></span>
+            <span class="price" id="spotPrice1">1,290,000<small>원 ~부터</small></span>
             <a id="spotLink1">자세히 →</a>
           </div>
         </div>
@@ -2837,7 +2838,7 @@ function renderSpotlight(){
     document.getElementById('spotVisual'+slot).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
     document.getElementById('spotTitle'+slot).textContent=s.title;
     document.getElementById('spotMeta'+slot).innerHTML=s.meta.map(m=>`<span>${m}</span>`).join('');
-    document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(s.from)}원<small> ~부터</small>`;
+    document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(s.from)}<small>원 ~부터</small>`;
     document.getElementById('spotLink'+slot).onclick=(e)=>{e.preventDefault();selectCategory(s.catId)};
   });
 }
@@ -4389,7 +4390,7 @@ function buildHeroParticleHTML(theme){
   return Array.from({length:count},(_,i)=>{
     const emoji=theme.particles[i%theme.particles.length];
     const left=HERO_PARTICLE_LEFT[i%HERO_PARTICLE_LEFT.length];
-    const dur=14+(i%4)*4;
+    const dur=9+(i%4)*3;
     const delay=-(dur*(i/count));
     return `<span class="ambient-particle" style="top:-6%;left:${left};animation-duration:${dur}s;animation-delay:${delay}s">${emoji}</span>`;
   }).join('');

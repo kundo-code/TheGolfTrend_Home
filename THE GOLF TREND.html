@@ -44,8 +44,14 @@ img{max-width:100%;display:block}
 
 /* 시즌 테마 장식 파티클 */
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.22;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
-.hero-season-particles .ambient-particle{font-size:3.2rem;opacity:.55;filter:drop-shadow(0 4px 10px rgba(3,13,38,.35))}
+.hero-season-particles .ambient-particle{font-size:3.2rem;filter:drop-shadow(0 4px 10px rgba(3,13,38,.35));animation-name:seasonFall;animation-timing-function:linear}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
+@keyframes seasonFall{
+  0%{transform:translate(0,-60px) rotate(0deg);opacity:0}
+  10%{opacity:.6}
+  85%{opacity:.6}
+  100%{transform:translate(34px,780px) rotate(24deg);opacity:0}
+}
 
 /* HEADER */
 header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:1280px;z-index:100;
@@ -4370,8 +4376,8 @@ const SEASON_THEMES={
 };
 const SEASON_THEME_KEY='kundo_season_theme_v1';
 const SEASON_PARTICLE_POS=[
-  {top:'6%',left:'8%'},{top:'14%',left:'88%'},{top:'62%',left:'4%'},
-  {top:'70%',left:'92%'},{top:'40%',left:'50%'},
+  {top:'-4%',left:'8%'},{top:'-4%',left:'88%'},{top:'-4%',left:'20%'},
+  {top:'-4%',left:'70%'},{top:'-4%',left:'45%'},
 ];
 function getSeasonTheme(){
   const saved=localStorage.getItem(SEASON_THEME_KEY);
@@ -4385,8 +4391,9 @@ function applySeasonTheme(key, persist){
   if (heroSeasonEl) heroSeasonEl.textContent=SEASON_NAMES[theme.season];
   const particleHTML=theme.particles.map((emoji,i)=>{
     const pos=SEASON_PARTICLE_POS[i%SEASON_PARTICLE_POS.length];
-    const dur=18+i*4;
-    return `<span class="ambient-particle" style="top:${pos.top};left:${pos.left};animation-duration:${dur}s;animation-delay:${i*.6}s">${emoji}</span>`;
+    const dur=22+i*6;
+    const delay=-(dur*(i/theme.particles.length));
+    return `<span class="ambient-particle" style="top:${pos.top};left:${pos.left};animation-duration:${dur}s;animation-delay:${delay}s">${emoji}</span>`;
   }).join('');
   // 히어로 배경 위에 계절 파티클을 직접 노출 — 방문자가 스크롤 없이 바로 확인 가능
   const heroPcontainer=document.getElementById('heroSeasonParticles');

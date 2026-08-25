@@ -44,14 +44,13 @@ img{max-width:100%;display:block}
 
 /* 시즌 테마 장식 파티클 */
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.32;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
-.hero-season-particles .ambient-particle{font-size:4.4rem;filter:drop-shadow(0 4px 12px rgba(3,13,38,.45));animation-name:seasonFall;animation-timing-function:linear}
-.hero-season-particles .ambient-particle::before{content:'';position:absolute;left:50%;bottom:100%;width:3px;height:42px;transform:translateX(-50%);background:linear-gradient(to top,rgba(255,255,255,.6),transparent);filter:blur(1px);pointer-events:none}
+.hero-season-particles .ambient-particle{filter:drop-shadow(0 2px 4px rgba(3,13,38,.3));animation-name:seasonFall;animation-timing-function:linear}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
 @keyframes seasonFall{
   0%{transform:translate(0,-60px) rotate(0deg);opacity:0}
-  8%{opacity:1}
-  90%{opacity:1}
-  100%{transform:translate(34px,780px) rotate(24deg);opacity:0}
+  8%{opacity:.9}
+  90%{opacity:.9}
+  100%{transform:translate(var(--driftX,30px),780px) rotate(var(--rotEnd,300deg));opacity:0}
 }
 
 /* HEADER */
@@ -4384,15 +4383,17 @@ function getSeasonTheme(){
   const saved=localStorage.getItem(SEASON_THEME_KEY);
   return (saved && SEASON_THEMES[saved]) ? saved : 'autumn1';
 }
-const HERO_PARTICLE_LEFT=['4%','16%','28%','40%','52%','64%','76%','88%'];
 function buildHeroParticleHTML(theme){
-  const count=8;
+  const count=22;
   return Array.from({length:count},(_,i)=>{
     const emoji=theme.particles[i%theme.particles.length];
-    const left=HERO_PARTICLE_LEFT[i%HERO_PARTICLE_LEFT.length];
-    const dur=9+(i%4)*3;
-    const delay=-(dur*(i/count));
-    return `<span class="ambient-particle" style="top:-6%;left:${left};animation-duration:${dur}s;animation-delay:${delay}s">${emoji}</span>`;
+    const left=(Math.random()*96+2).toFixed(1);
+    const size=(1.1+Math.random()*1.1).toFixed(2);
+    const dur=9+Math.random()*10;
+    const delay=-(Math.random()*dur);
+    const driftX=Math.round(-40+Math.random()*100);
+    const rotEnd=Math.round(180+Math.random()*220);
+    return `<span class="ambient-particle" style="top:-6%;left:${left}%;font-size:${size}rem;animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s;--driftX:${driftX}px;--rotEnd:${rotEnd}deg">${emoji}</span>`;
   }).join('');
 }
 function applySeasonTheme(key, persist){

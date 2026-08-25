@@ -76,7 +76,14 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:100px;background:rgba(221,179,103,.18);border:1px solid rgba(221,179,103,.4);font-size:1.17rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);margin-bottom:24px}
 .eyebrow .pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(221,179,103,.6)}70%{box-shadow:0 0 0 12px rgba(221,179,103,0)}100%{box-shadow:0 0 0 0 rgba(221,179,103,0)}}
-.hero h1{font-size:clamp(2.6rem,5.5vw,4.6rem);color:#fff;font-weight:300;margin-bottom:24px}
+.hero-values{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15)}
+.hv-item{position:relative;text-align:center;padding:0 6px}
+.hv-item+.hv-item::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:1px;background:rgba(221,179,103,.3)}
+.hv-icon{width:28px;height:28px;color:var(--gold);margin:0 auto 10px;display:block;filter:drop-shadow(0 2px 6px rgba(3,13,38,.5))}
+.hv-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
+.hv-en{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.5);margin-top:2px;margin-bottom:8px}
+.hv-desc{font-size:.72rem;color:rgba(247,245,240,.75);line-height:1.4}
+.hero h1{font-size:clamp(2.6rem,5.5vw,4.6rem);color:#fff;font-weight:300;margin-bottom:40px}
 .hero h1 em{font-style:italic;font-weight:400;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .hero h1 .line{display:block;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .hero h1 .line:first-child{margin-bottom:.5em}
@@ -95,16 +102,16 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
 .spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
-.spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.2rem;font-weight:500;color:#fff;margin-bottom:4px}
-.spot-meta{display:flex;gap:16px;font-size:.78rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
+.spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.44rem;font-weight:500;color:#fff;margin-bottom:4px}
+.spot-meta{display:flex;gap:16px;font-size:.94rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
-.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2rem;color:#fff;font-weight:500}
-.spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
+.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.4rem;color:#fff;font-weight:500}
+.spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:1.02rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
 .spot-cta a{color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-size:.85rem;font-weight:600;cursor:pointer}
 .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:52px}
 .mini-stat{padding:16px 12px;text-align:center;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);border-radius:16px}
 .mini-stat .n{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.5rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;display:block}
-.mini-stat .l{font-size:.72rem;color:rgba(247,245,240,.7);letter-spacing:.05em;margin-top:2px}
+.mini-stat .l{font-size:.86rem;color:rgba(247,245,240,.7);letter-spacing:.05em;margin-top:2px}
 
 /* SECTIONS */
 section.block{padding:100px 24px;position:relative}
@@ -672,6 +679,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .headline-frame{padding:0}
   .headline-img{border-radius:0}
   .hero-main{padding:32px 24px}
+  .hero-values{grid-template-columns:repeat(2,1fr);row-gap:20px}
+  .hv-item:nth-child(3)::before{display:none}
   section.block{padding:70px 16px}
   .cat-grid,.product-grid,.blog-grid,.link-groups{grid-template-columns:1fr}
   .category-view{padding:24px 20px}
@@ -1616,10 +1625,35 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </svg>
   <div class="hero-inner">
     <div class="hero-main">
-      <span class="eyebrow"><span class="pulse"></span>2026 <span id="heroSeason">가을</span> 시즌 티타임 오픈</span>
+      <span class="eyebrow"><span class="pulse"></span>THE GOLF TREND</span>
+      <div class="hero-values">
+        <div class="hv-item">
+          <svg class="hv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+          <div class="hv-ko">정직</div>
+          <div class="hv-en">Honesty</div>
+          <div class="hv-desc">투명하고 정직한<br>상품 운영</div>
+        </div>
+        <div class="hv-item">
+          <svg class="hv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+          <div class="hv-ko">신속함</div>
+          <div class="hv-en">Speed</div>
+          <div class="hv-desc">빠르고 정확한<br>응대</div>
+        </div>
+        <div class="hv-item">
+          <svg class="hv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-9.3-8.8C1.4 8 2.6 5 5.6 4.3c1.8-.4 3.6.3 4.7 1.8l1.7 2.1 1.7-2.1c1.1-1.5 2.9-2.2 4.7-1.8 3 .7 4.2 3.7 2.9 6.9C19 15.5 12 20 12 20z"/></svg>
+          <div class="hv-ko">공감</div>
+          <div class="hv-en">Empathy</div>
+          <div class="hv-desc">고객 입장에서<br>생각하는 서비스</div>
+        </div>
+        <div class="hv-item">
+          <svg class="hv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg>
+          <div class="hv-ko">고객중심</div>
+          <div class="hv-en">Customer First</div>
+          <div class="hv-desc">고객 감성<br>최우선</div>
+        </div>
+      </div>
       <h1><span class="line">필드에서 시작되는,</span><span class="line"><em>완벽한 여행.</em></span></h1>
       <p class="hero-slogan">
-        <span class="hero-slogan-brand">THE GOLF TREND</span>
         <span class="hero-slogan-main">Beyond Golf, Into Life.</span>
         <span class="hero-slogan-sub">Curated Golf Travel &amp; Lifestyle</span>
       </p>

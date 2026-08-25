@@ -722,7 +722,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-bottom:1px solid rgba(221,179,103,.18);
   padding:20px 40px 18px;
   display:flex;align-items:center;gap:28px;
-  position:relative;z-index:100;
+  position:sticky;top:0;z-index:201;
 }
 .top-bar-logo-link{flex-shrink:0;display:block}
 .top-bar-logo{
@@ -764,7 +764,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ═══════════════ NAV BAR (헤드라인 하단) ═══════════════ */
 .nav{
-  position:sticky;top:0;z-index:200;
+  position:sticky;top:var(--topbar-h,108px);z-index:200;
   background:rgba(0,0,0,.92);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid rgba(221,179,103,.15);
@@ -2565,7 +2565,15 @@ function renderTopBar(){
   if(logo)logo.src=getLogo();
   const tl=document.getElementById('topBarTagline');
   if(tl)tl.textContent=getTagline();
+  syncTopBarHeight();
 }
+// 탑바가 메뉴바(.nav)처럼 스크롤 시 상단에 고정되도록, 실제 렌더링된 높이를
+// --topbar-h 로 반영해 메뉴바가 그 바로 아래에 이어 붙어 고정되게 함
+function syncTopBarHeight(){
+  const el=document.getElementById('topBarArea');
+  if(el) document.documentElement.style.setProperty('--topbar-h', el.offsetHeight+'px');
+}
+window.addEventListener('resize', syncTopBarHeight);
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;
   const b=getAboutBanner();

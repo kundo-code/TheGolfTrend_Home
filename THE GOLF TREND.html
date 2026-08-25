@@ -76,9 +76,10 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:100px;background:rgba(221,179,103,.18);border:1px solid rgba(221,179,103,.4);font-size:1.17rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);margin-bottom:24px}
 .eyebrow .pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(221,179,103,.6)}70%{box-shadow:0 0 0 12px rgba(221,179,103,0)}100%{box-shadow:0 0 0 0 rgba(221,179,103,0)}}
-.hero h1{font-size:clamp(2.6rem,5.5vw,4.6rem);color:#fff;font-weight:300;margin-bottom:24px;text-shadow:0 4px 20px rgba(0,0,0,.2)}
+.hero h1{font-size:clamp(2.6rem,5.5vw,4.6rem);color:#fff;font-weight:300;margin-bottom:24px}
 .hero h1 em{font-style:italic;font-weight:400;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
-.hero h1 .line{display:block}
+.hero h1 .line{display:block;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
+.hero h1 .line:first-child{margin-bottom:.5em}
 .hero .lead{font-size:1.05rem;color:rgba(247,245,240,.92);max-width:520px;margin-bottom:36px}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:36px}
 .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 30px;border-radius:100px;font-weight:600;font-size:.95rem;border:1px solid transparent;cursor:pointer;transition:all .25s;font-family:'Pretendard','Noto Sans KR',sans-serif}
@@ -87,18 +88,20 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
 .hero-side{display:flex;flex-direction:column}
-.spotlight{flex:1;display:flex;flex-direction:column;padding:24px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
-.spotlight .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.spotlight .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
-.spot-visual{flex:1;min-height:220px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
+.spotlight-header{margin-bottom:14px}
+.spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
+.spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
+.spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
+.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
+.spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
-.spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.35rem;font-weight:500;color:#fff;margin-bottom:6px}
-.spot-meta{display:flex;gap:16px;font-size:.82rem;color:rgba(247,245,240,.8);margin-bottom:12px;flex-wrap:wrap}
-.spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(255,255,255,.15)}
-.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.7rem;color:#fff;font-weight:500}
+.spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.2rem;font-weight:500;color:#fff;margin-bottom:4px}
+.spot-meta{display:flex;gap:16px;font-size:.78rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
+.spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
+.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2rem;color:#fff;font-weight:500}
 .spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
 .spot-cta a{color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-size:.85rem;font-weight:600;cursor:pointer}
-.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:52px}
 .mini-stat{padding:16px 12px;text-align:center;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);border-radius:16px}
 .mini-stat .n{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.5rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;display:block}
 .mini-stat .l{font-size:.72rem;color:rgba(247,245,240,.7);letter-spacing:.05em;margin-top:2px}
@@ -586,7 +589,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* HERO SLOGAN */
 .hero-slogan{margin:-14px 0 22px}
-.hero-slogan-brand{display:block;font-family:'Anton','Noto Sans KR',sans-serif;font-size:clamp(1.15rem,2.4vw,1.75rem);letter-spacing:.03em;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);line-height:1.2}
+.hero-slogan-brand{display:block;font-family:'Anton','Noto Sans KR',sans-serif;font-size:clamp(1.15rem,2.4vw,1.75rem);letter-spacing:.03em;color:#fff;line-height:1.2}
 .hero-slogan-main{display:block;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(1.15rem,2.4vw,1.75rem);letter-spacing:.04em;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:400;margin-top:2px}
 .hero-slogan-sub{display:block;font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:clamp(.85rem,1.4vw,1.15rem);letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.5);margin-top:6px}
 
@@ -1632,14 +1635,27 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       </div>
     </div>
     <aside class="hero-side">
-      <div class="spotlight">
+      <div class="spotlight-header">
         <div class="kicker">Editor's Pick · 이번 주 추천</div>
-        <div class="spot-visual" id="spotVisual"></div>
-        <h3 id="spotTitle">일본 · 카와나 후지 코스</h3>
-        <div class="spot-meta" id="spotMeta"></div>
-        <div class="spot-cta">
-          <span class="price" id="spotPrice">1,890,000원<small> ~부터</small></span>
-          <a id="spotLink">자세히 →</a>
+      </div>
+      <div class="spotlight-grid">
+        <div class="spotlight">
+          <div class="spot-visual" id="spotVisual0"></div>
+          <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
+          <div class="spot-meta" id="spotMeta0"></div>
+          <div class="spot-cta">
+            <span class="price" id="spotPrice0">1,890,000원<small> ~부터</small></span>
+            <a id="spotLink0">자세히 →</a>
+          </div>
+        </div>
+        <div class="spotlight">
+          <div class="spot-visual" id="spotVisual1"></div>
+          <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
+          <div class="spot-meta" id="spotMeta1"></div>
+          <div class="spot-cta">
+            <span class="price" id="spotPrice1">1,290,000원<small> ~부터</small></span>
+            <a id="spotLink1">자세히 →</a>
+          </div>
         </div>
       </div>
     </aside>
@@ -2770,16 +2786,19 @@ function cycleHero(){
   slides[heroSlideIdx].classList.add('active');
 }
 function renderSpotlight(){
-  const s=SPOTLIGHT[spotIndex];
-  const cat=findCat(s.catId);
-  document.getElementById('spotVisual').style.cssText=getCatBgStyle(cat);
-  document.getElementById('spotVisual').innerHTML='<span class="badge">EDITOR\'S PICK</span>';
-  document.getElementById('spotTitle').textContent=s.title;
-  document.getElementById('spotMeta').innerHTML=s.meta.map(m=>`<span>${m}</span>`).join('');
-  document.getElementById('spotPrice').innerHTML=`${fmtPrice(s.from)}원<small> ~부터</small>`;
-  document.getElementById('spotLink').onclick=(e)=>{e.preventDefault();selectCategory(s.catId)};
+  const n=SPOTLIGHT.length;
+  [0,1].forEach(slot=>{
+    const s=SPOTLIGHT[(spotIndex+slot)%n];
+    const cat=findCat(s.catId);
+    document.getElementById('spotVisual'+slot).style.cssText=getCatBgStyle(cat);
+    document.getElementById('spotVisual'+slot).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
+    document.getElementById('spotTitle'+slot).textContent=s.title;
+    document.getElementById('spotMeta'+slot).innerHTML=s.meta.map(m=>`<span>${m}</span>`).join('');
+    document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(s.from)}원<small> ~부터</small>`;
+    document.getElementById('spotLink'+slot).onclick=(e)=>{e.preventDefault();selectCategory(s.catId)};
+  });
 }
-function cycleSpot(){spotIndex=(spotIndex+1)%SPOTLIGHT.length;renderSpotlight()}
+function cycleSpot(){spotIndex=(spotIndex+2)%SPOTLIGHT.length;renderSpotlight()}
 
 // BLOG
 function renderBlog(){

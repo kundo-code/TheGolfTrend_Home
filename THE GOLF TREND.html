@@ -115,7 +115,7 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.44rem;font-weight:500;color:#fff;margin-bottom:4px}
 .spot-meta{display:flex;gap:16px;font-size:.94rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
-.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.4rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
+.spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:3.12rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:1.02rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
 .spot-cta .price small .price-unit{color:#fff}
 .spot-cta a{color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-size:.85rem;font-weight:600;cursor:pointer}
@@ -176,7 +176,8 @@ section.block{padding:100px 24px;position:relative}
 .product h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.1rem;color:var(--pine-deep);font-weight:500;margin-bottom:6px;line-height:1.3}
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
-.product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;color:var(--pine-deep);font-weight:500}
+.product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.625rem;color:var(--pine-deep);font-weight:500}
+.product-foot .price .unit{font-size:.72rem;color:inherit}
 .product-foot .price .from{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.72rem;color:var(--gold-deep);font-weight:600;margin-left:4px;letter-spacing:.05em}
 .product-foot .details{color:var(--gold-deep);font-size:.85rem;font-weight:600}
 .empty-state{text-align:center;padding:60px 20px;color:rgba(10,23,48,.5)}
@@ -225,9 +226,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .emph.special{background:rgba(255,107,74,.2);color:#FFB0A0;border:1px solid rgba(255,107,74,.4)}
 .pd-price-entry .headline{color:#fff;font-weight:600;font-size:.98rem;line-height:1.3}
 .pd-price-entry .prices{display:flex;align-items:baseline;gap:10px;margin-top:2px}
-.pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.4rem;font-weight:500;color:#fff}
+.pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.82rem;font-weight:500;color:#fff}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.75rem;color:var(--gold);font-weight:500;margin-left:2px}
-.pd-price-entry .price-original{font-size:.85rem;color:rgba(247,245,240,.4);text-decoration:line-through}
+.pd-price-entry .price-original{font-size:1.105rem;color:rgba(247,245,240,.4);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
 .pd-price-entry .go{color:var(--gold);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:4px}
 .pd-contact{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
@@ -2840,7 +2841,7 @@ function productCardHTML(p, catId, idx){
     <h4>${p.title}</h4>
     <div class="meta"><span>🗓 ${p.nights||'-'}</span><span>⛳ ${p.rounds||'-'}</span></div>
     <div class="product-foot">
-      <span class="price">${fmtPrice(displayPrice)}원<span class="from"> ~부터</span></span>
+      <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span><span class="from"> ~부터</span></span>
       <span class="details">자세히 →</span>
     </div>
   </article>`;

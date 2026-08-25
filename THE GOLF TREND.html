@@ -46,12 +46,14 @@ img{max-width:100%;display:block}
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.32;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
 .hero-season-particles .ambient-particle{opacity:.85;filter:drop-shadow(0 2px 4px rgba(3,13,38,.3));animation-timing-function:linear}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
-@keyframes seasonFallA{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-35px,780px) rotate(210deg);opacity:0}}
-@keyframes seasonFallB{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(15px,780px) rotate(260deg);opacity:0}}
-@keyframes seasonFallC{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(45px,780px) rotate(320deg);opacity:0}}
-@keyframes seasonFallD{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-20px,780px) rotate(-240deg);opacity:0}}
-@keyframes seasonFallE{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(55px,780px) rotate(-300deg);opacity:0}}
-@keyframes seasonFallF{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-50px,780px) rotate(360deg);opacity:0}}
+@keyframes seasonFallA{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-140px,780px) rotate(180deg);opacity:0}}
+@keyframes seasonFallB{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(150px,780px) rotate(-200deg);opacity:0}}
+@keyframes seasonFallC{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(8px,780px) rotate(100deg);opacity:0}}
+@keyframes seasonFallD{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-12px,780px) rotate(-420deg);opacity:0}}
+@keyframes seasonFallE{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}30%{transform:translate(55px,220px) rotate(70deg);animation-timing-function:ease-in-out}60%{transform:translate(-30px,460px) rotate(190deg);animation-timing-function:ease-in-out}90%{opacity:.9}100%{transform:translate(40px,780px) rotate(300deg);opacity:0}}
+@keyframes seasonFallF{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}30%{transform:translate(-50px,200px) rotate(-65deg);animation-timing-function:ease-in-out}60%{transform:translate(28px,440px) rotate(-175deg);animation-timing-function:ease-in-out}90%{opacity:.9}100%{transform:translate(-38px,780px) rotate(-290deg);opacity:0}}
+@keyframes seasonFallG{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(165px,780px) rotate(340deg);opacity:0}}
+@keyframes seasonFallH{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-160px,780px) rotate(-360deg);opacity:0}}
 
 /* HEADER */
 header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:1280px;z-index:100;
@@ -75,7 +77,7 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .hero-bg .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease-in-out;filter:blur(2px) saturate(1.1);transform:scale(1.05)}
 .hero-bg .slide.active{opacity:1}
 .hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.15) 40%,rgba(0,0,0,.6) 100%)}
-.hero-season-particles{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+.hero-season-particles{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}
 .hero-wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:120px;z-index:1;pointer-events:none}
 .hero-wave path{fill:var(--pine-deep);opacity:.7}
 .hero-wave path.top{opacity:.4}
@@ -4389,10 +4391,10 @@ function buildHeroParticleHTML(theme){
     const emoji=theme.particles[i%theme.particles.length];
     const left=(Math.random()*96+2).toFixed(1);
     const top=(Math.random()*78).toFixed(1);
-    const size=(1.6+Math.random()*1.4).toFixed(2);
+    const size=(1.2+Math.random()*2.4).toFixed(2);
     const dur=9+Math.random()*10;
     const delay=-(Math.random()*dur);
-    const variant='ABCDEF'[Math.floor(Math.random()*6)];
+    const variant='ABCDEFGH'[Math.floor(Math.random()*8)];
     // top을 화면 안쪽 값으로 둬서, OS가 "동작 줄이기"로 애니메이션을 꺼도 파티클이 화면 밖(-%)에 갇혀 안 보이는 대신 정적으로라도 보이게 함
     // !important: 사이트 전역 prefers-reduced-motion 규칙이 모든 애니메이션을 강제로 끄기 때문에, 이 장식 효과만 의도적으로 예외 처리
     return `<span class="ambient-particle" style="top:${top}%;left:${left}%;font-size:${size}rem;animation-name:seasonFall${variant}!important;animation-duration:${dur.toFixed(1)}s!important;animation-delay:${delay.toFixed(1)}s!important;animation-timing-function:linear!important;animation-iteration-count:infinite!important;animation-fill-mode:none!important;animation-play-state:running!important">${emoji}</span>`;

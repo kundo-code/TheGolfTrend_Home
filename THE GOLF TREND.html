@@ -44,14 +44,14 @@ img{max-width:100%;display:block}
 
 /* 시즌 테마 장식 파티클 */
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.32;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
-.hero-season-particles .ambient-particle{filter:drop-shadow(0 2px 4px rgba(3,13,38,.3));animation-name:seasonFall;animation-timing-function:linear}
+.hero-season-particles .ambient-particle{filter:drop-shadow(0 2px 4px rgba(3,13,38,.3));animation-timing-function:linear}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
-@keyframes seasonFall{
-  0%{transform:translate(0,-60px) rotate(0deg);opacity:0}
-  8%{opacity:.9}
-  90%{opacity:.9}
-  100%{transform:translate(var(--driftX,30px),780px) rotate(var(--rotEnd,300deg));opacity:0}
-}
+@keyframes seasonFallA{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-35px,780px) rotate(210deg);opacity:0}}
+@keyframes seasonFallB{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(15px,780px) rotate(260deg);opacity:0}}
+@keyframes seasonFallC{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(45px,780px) rotate(320deg);opacity:0}}
+@keyframes seasonFallD{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-20px,780px) rotate(-240deg);opacity:0}}
+@keyframes seasonFallE{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(55px,780px) rotate(-300deg);opacity:0}}
+@keyframes seasonFallF{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-50px,780px) rotate(360deg);opacity:0}}
 
 /* HEADER */
 header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:1280px;z-index:100;
@@ -4391,9 +4391,8 @@ function buildHeroParticleHTML(theme){
     const size=(1.1+Math.random()*1.1).toFixed(2);
     const dur=9+Math.random()*10;
     const delay=-(Math.random()*dur);
-    const driftX=Math.round(-40+Math.random()*100);
-    const rotEnd=Math.round(180+Math.random()*220);
-    return `<span class="ambient-particle" style="top:-6%;left:${left}%;font-size:${size}rem;animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s;--driftX:${driftX}px;--rotEnd:${rotEnd}deg">${emoji}</span>`;
+    const variant='ABCDEF'[Math.floor(Math.random()*6)];
+    return `<span class="ambient-particle" style="top:-6%;left:${left}%;font-size:${size}rem;animation-name:seasonFall${variant};animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s">${emoji}</span>`;
   }).join('');
 }
 function applySeasonTheme(key, persist){

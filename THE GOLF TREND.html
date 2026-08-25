@@ -4389,12 +4389,13 @@ function buildHeroParticleHTML(theme){
     const emoji=theme.particles[i%theme.particles.length];
     const left=(Math.random()*96+2).toFixed(1);
     const top=(Math.random()*78).toFixed(1);
-    const size=(1.1+Math.random()*1.1).toFixed(2);
+    const size=(1.6+Math.random()*1.4).toFixed(2);
     const dur=9+Math.random()*10;
     const delay=-(Math.random()*dur);
     const variant='ABCDEF'[Math.floor(Math.random()*6)];
     // top을 화면 안쪽 값으로 둬서, OS가 "동작 줄이기"로 애니메이션을 꺼도 파티클이 화면 밖(-%)에 갇혀 안 보이는 대신 정적으로라도 보이게 함
-    return `<span class="ambient-particle" style="top:${top}%;left:${left}%;font-size:${size}rem;animation-name:seasonFall${variant};animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s">${emoji}</span>`;
+    // !important: 사이트 전역 prefers-reduced-motion 규칙이 모든 애니메이션을 강제로 끄기 때문에, 이 장식 효과만 의도적으로 예외 처리
+    return `<span class="ambient-particle" style="top:${top}%;left:${left}%;font-size:${size}rem;animation-name:seasonFall${variant}!important;animation-duration:${dur.toFixed(1)}s!important;animation-delay:${delay.toFixed(1)}s!important;animation-timing-function:linear!important;animation-iteration-count:infinite!important;animation-fill-mode:none!important;animation-play-state:running!important">${emoji}</span>`;
   }).join('');
 }
 function applySeasonTheme(key, persist){

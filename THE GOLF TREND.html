@@ -44,7 +44,7 @@ img{max-width:100%;display:block}
 
 /* 시즌 테마 장식 파티클 */
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.32;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
-.hero-season-particles .ambient-particle{filter:drop-shadow(0 2px 4px rgba(3,13,38,.3));animation-timing-function:linear}
+.hero-season-particles .ambient-particle{opacity:.85;filter:drop-shadow(0 2px 4px rgba(3,13,38,.3));animation-timing-function:linear}
 @keyframes seasonFloat{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(16px,-26px) rotate(8deg)}}
 @keyframes seasonFallA{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-35px,780px) rotate(210deg);opacity:0}}
 @keyframes seasonFallB{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(15px,780px) rotate(260deg);opacity:0}}
@@ -4388,11 +4388,13 @@ function buildHeroParticleHTML(theme){
   return Array.from({length:count},(_,i)=>{
     const emoji=theme.particles[i%theme.particles.length];
     const left=(Math.random()*96+2).toFixed(1);
+    const top=(Math.random()*78).toFixed(1);
     const size=(1.1+Math.random()*1.1).toFixed(2);
     const dur=9+Math.random()*10;
     const delay=-(Math.random()*dur);
     const variant='ABCDEF'[Math.floor(Math.random()*6)];
-    return `<span class="ambient-particle" style="top:-6%;left:${left}%;font-size:${size}rem;animation-name:seasonFall${variant};animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s">${emoji}</span>`;
+    // top을 화면 안쪽 값으로 둬서, OS가 "동작 줄이기"로 애니메이션을 꺼도 파티클이 화면 밖(-%)에 갇혀 안 보이는 대신 정적으로라도 보이게 함
+    return `<span class="ambient-particle" style="top:${top}%;left:${left}%;font-size:${size}rem;animation-name:seasonFall${variant};animation-duration:${dur.toFixed(1)}s;animation-delay:${delay.toFixed(1)}s">${emoji}</span>`;
   }).join('');
 }
 function applySeasonTheme(key, persist){

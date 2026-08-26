@@ -476,6 +476,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .adv-body label:first-child{margin-top:0}
 .adv-body input,.adv-body select,.adv-body textarea{width:100%;padding:9px 11px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:.88rem;font-family:'Pretendard','Noto Sans KR',sans-serif}
 .adv-body input:focus,.adv-body select:focus,.adv-body textarea:focus{outline:none;border-color:var(--gold);background:rgba(0,0,0,.3)}
+.adv-body input:disabled,.adv-body select:disabled{opacity:.4;cursor:not-allowed;background:rgba(0,0,0,.12)}
 .adv-body select option{background:var(--pine)}
 .adv-body textarea{resize:vertical;min-height:70px}
 .media-slot{padding:16px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:12px;text-align:center;margin-top:6px}
@@ -4110,14 +4111,41 @@ function updateAdvField(field, value, type){
 // 화폐 단위 옵션
 const CURRENCIES = [['KRW','KRW ₩ 원'],['USD','USD $ 달러'],['JPY','JPY ¥ 엔'],['EUR','EUR € 유로'],['THB','THB ฿ 밧'],['VND','VND ₫ 동'],['PHP','PHP ₱ 페소'],['MYR','MYR RM 링깃'],['IDR','IDR Rp 루피아'],['CNY','CNY ¥ 위안']];
 const CURRENCY_SYMBOL = {KRW:'원',USD:'$',JPY:'¥',EUR:'€',THB:'฿',VND:'₫',PHP:'₱',MYR:'RM',IDR:'Rp',CNY:'¥'};
+// 출발 공항 (국내 8개 공항)
+const DEPARTURE_AIRPORTS = ['인천','김포','김해','제주','청주','대구','무안','양양'];
+// 도착 국가별 취항 항공사 (IATA 코드)
+const AIRLINES_BY_COUNTRY = {
+  japan:      [['NH','전일본공수(ANA)'],['JL','일본항공(JAL)']],
+  china:      [['CA','중국국제항공'],['CZ','중국남방항공'],['MU','중국동방항공'],['HU','하이난항공']],
+  mongolia:   [['KE','대한항공'],['OZ','아시아나항공']],
+  vietnam:    [['VN','베트남항공'],['VJ','비엣젯항공'],['QH','뱀부항공']],
+  thailand:   [['TG','타이항공']],
+  philippines:[['PR','필리핀항공'],['5J','세부퍼시픽']],
+  malaysia:   [['MH','말레이시아항공']],
+  indonesia:  [['GA','가루다인도네시아']],
+  guam:       [['AA','아메리칸항공'],['DL','델타항공'],['UA','유나이티드항공'],['WN','사우스웨스트항공'],['AS','알래스카항공']]
+};
 
 function advBasicHTML(p){
   const popupCount = countActivePopups();
+  const isDomestic = !!(currentAdv && CATEGORIES.domestic.some(c=>c.id===currentAdv.catId));
+  const dis = isDomestic ? 'disabled' : '';
+  const depAirportOpts = DEPARTURE_AIRPORTS.map(a=>`<option value="${a}" ${p.depAirport===a?'selected':''}>${a}</option>`).join('');
+  const arrAirportOpts = CATEGORIES.overseas.map(c=>`<option value="${c.id}" ${p.arrAirport===c.id?'selected':''}>${c.ko}</option>`).join('');
+  const airlineOpts = CATEGORIES.overseas.map(c=>{
+    const opts=(AIRLINES_BY_COUNTRY[c.id]||[]).map(([code,name])=>`<option value="${code}" ${p.airline===code?'selected':''}>${name} (${code})</option>`).join('');
+    return `<optgroup label="${c.ko}">${opts}</optgroup>`;
+  }).join('');
   return `
     <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
     <div class="grid-2">
       <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
       <div><label>라운드</label><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
+      <div><label>숙박</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+      <div><label>식사</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+      <div><label>출발공항${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('depAirport',this.value)"><option value="">선택 안함</option>${depAirportOpts}</select></div>
+      <div><label>도착공항${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('arrAirport',this.value)"><option value="">선택 안함</option>${arrAirportOpts}</select></div>
+      <div><label>항공편${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('airline',this.value)"><option value="">선택 안함</option>${airlineOpts}</select></div>
       <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label><input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')"></div>
       <div><label>카드 태그</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="BEST 등" oninput="updateAdvField('tag',this.value)"></div>
     </div>

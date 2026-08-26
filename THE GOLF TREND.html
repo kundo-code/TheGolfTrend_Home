@@ -2842,7 +2842,7 @@ function productCardHTML(p, catId, idx){
     <h4>${p.title}</h4>
     <div class="meta"><span>🗓 ${p.nights||'-'}</span><span>⛳ ${p.rounds||'-'}</span></div>
     <div class="product-foot">
-      <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span><span class="from"> ~부터</span></span>
+      <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
       <span class="details">자세히 →</span>
     </div>
   </article>`;
@@ -4121,7 +4121,7 @@ const AIRLINES_BY_COUNTRY = {
   vietnam:    [['VN','베트남항공'],['VJ','비엣젯항공'],['QH','뱀부항공']],
   thailand:   [['TG','타이항공']],
   philippines:[['PR','필리핀항공'],['5J','세부퍼시픽']],
-  malaysia:   [['MH','말레이시아항공']],
+  malaysia:   [['MH','말레이시아항공'],['KE','대한항공'],['OD','바틱항공'],['D7','에어아시아X']],
   indonesia:  [['GA','가루다인도네시아']],
   guam:       [['AA','아메리칸항공'],['DL','델타항공'],['UA','유나이티드항공'],['WN','사우스웨스트항공'],['AS','알래스카항공']]
 };
@@ -4132,8 +4132,13 @@ function advBasicHTML(p){
   const dis = isDomestic ? 'disabled' : '';
   const depAirportOpts = DEPARTURE_AIRPORTS.map(a=>`<option value="${a}" ${p.depAirport===a?'selected':''}>${a}</option>`).join('');
   const arrAirportOpts = CATEGORIES.overseas.map(c=>`<option value="${c.id}" ${p.arrAirport===c.id?'selected':''}>${c.ko}</option>`).join('');
+  const selectedAirlines = Array.isArray(p.airline) ? p.airline : (p.airline ? [p.airline] : []);
+  // 국가별 옵션값은 "국가ID::IATA코드"로 고유화 (동일 항공사가 여러 국가에 취항하는 경우 대비)
   const airlineOpts = CATEGORIES.overseas.map(c=>{
-    const opts=(AIRLINES_BY_COUNTRY[c.id]||[]).map(([code,name])=>`<option value="${code}" ${p.airline===code?'selected':''}>${name} (${code})</option>`).join('');
+    const opts=(AIRLINES_BY_COUNTRY[c.id]||[]).map(([code,name])=>{
+      const val=`${c.id}::${code}`;
+      return `<option value="${val}" ${selectedAirlines.includes(val)?'selected':''}>${name} (${code})</option>`;
+    }).join('');
     return `<optgroup label="${c.ko}">${opts}</optgroup>`;
   }).join('');
   return `
@@ -4145,8 +4150,16 @@ function advBasicHTML(p){
       <div><label>식사</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
       <div><label>출발공항${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('depAirport',this.value)"><option value="">선택 안함</option>${depAirportOpts}</select></div>
       <div><label>도착공항${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('arrAirport',this.value)"><option value="">선택 안함</option>${arrAirportOpts}</select></div>
-      <div><label>항공편${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('airline',this.value)"><option value="">선택 안함</option>${airlineOpts}</select></div>
-      <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label><input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')"></div>
+      <div class="full"><label>항공편${isDomestic?' (해외 상품 전용, Ctrl/⌘+클릭으로 복수 선택)':' (Ctrl/⌘+클릭으로 복수 선택)'}</label><select ${dis} multiple size="6" onchange="updateAdvField('airline',Array.from(this.selectedOptions).map(o=>o.value))">${airlineOpts}</select></div>
+      <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label>
+        <div class="price-row">
+          <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
+          <label class="from-toggle" title="'~부터' 표시 여부">
+            <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
+            <span>~부터</span>
+          </label>
+        </div>
+      </div>
       <div><label>카드 태그</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="BEST 등" oninput="updateAdvField('tag',this.value)"></div>
     </div>
 

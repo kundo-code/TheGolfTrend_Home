@@ -110,6 +110,7 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
 .spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
+.spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
 .spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
 .spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.44rem;font-weight:500;color:#fff;margin-bottom:4px}
@@ -186,7 +187,7 @@ section.block{padding:100px 24px;position:relative}
 .empty-state .big{font-size:2.5rem;margin-bottom:12px}
 
 /* PRODUCT DETAIL MODAL — Litt.ly style */
-.pd-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
+.pd-overlay{position:fixed;inset:0;z-index:205;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
 .pd-overlay.show{display:block;opacity:1}
 .pd-container{max-width:560px;margin:40px auto;padding:0 16px 40px;position:relative}
 .pd-close{position:sticky;top:20px;left:100%;margin-left:auto;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transform:translateX(-4px)}
@@ -1702,6 +1703,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       </div>
       <div class="spotlight-grid">
         <div class="spotlight">
+          <span class="spot-region-tag">해외</span>
           <div class="spot-visual" id="spotVisual0"></div>
           <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
           <div class="spot-meta" id="spotMeta0"></div>
@@ -1711,6 +1713,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           </div>
         </div>
         <div class="spotlight">
+          <span class="spot-region-tag">국내</span>
           <div class="spot-visual" id="spotVisual1"></div>
           <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
           <div class="spot-meta" id="spotMeta1"></div>
@@ -2492,12 +2495,10 @@ function saveBlogList(list){
 // 레거시 호환 (기존 BLOG 참조 방지)
 const BLOG = [];
 
-const SPOTLIGHT = [
-  {catId:'japan',title:'일본 · 카와나 후지 코스',meta:['📍 시즈오카','⛳ 18홀 · 72파','⭐ 4.9'],from:1890000},
-  {catId:'vietnam',title:'베트남 · 바나힐스 GC',meta:['📍 다낭','⛳ 18홀 · 71파','⭐ 4.8'],from:1290000},
-  {catId:'jeju',title:'제주 · 나인브릿지',meta:['📍 서귀포','⛳ 18홀 · 72파','⭐ 5.0'],from:1490000},
-  {catId:'thailand',title:'태국 · 시암 CC 올드코스',meta:['📍 파타야','⛳ 18홀 · 72파','⭐ 4.8'],from:1190000}
-];
+// Editor's Pick: 상단(해외)/하단(국내)에 각각 노출할 실제 상품 (catId, idx) 큐레이션.
+// 자세히 → 클릭 시 해당 실제 상품의 상세 정보(openProductDetail)로 이동.
+const SPOTLIGHT_OVERSEAS = [{catId:'japan',idx:0}, {catId:'vietnam',idx:0}, {catId:'thailand',idx:0}];
+const SPOTLIGHT_DOMESTIC = [{catId:'jeju',idx:0}, {catId:'gangwon',idx:0}];
 
 
 // 국내 6권역 · 해외 9개국 이미지를 base64로 인라인 임베드 (파일 폴더 없이 완전 작동)
@@ -2807,7 +2808,7 @@ function usingComposite(cat){return false} // 통합 이미지 시스템 제거
 function findCat(id){return CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===id)}
 
 // STATE
-let activeRegion='domestic', activeCategoryId=null, spotIndex=0, heroSlideIdx=0;
+let activeRegion='domestic', activeCategoryId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 let currentAdv=null; // {catId, idx}
@@ -2847,14 +2848,8 @@ function selectCategory(id){
 
 function closeCategory(){document.getElementById('categoryView').style.display='none';document.getElementById('destinations').scrollIntoView({behavior:'smooth',block:'start'})}
 
-function productCardHTML(p, catId, idx){
-  const cat=findCat(catId);
-  const bgStyle=getCatBgStyle(cat);
-  // If product has titleMedia image, use that instead
-  const useMedia = p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url;
-  const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : bgStyle;
-  const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
-  // 상품 카드는 원(KRW) 판매가만 반영, 없으면 from 폴백
+// 상품 카드/스팟라이트 공통: 원(KRW) 판매가만 반영, 없으면 카드 표시 최저가(from) 폴백
+function getDisplayPrice(p){
   let displayPrice = p.from;
   if (p.priceEntries && p.priceEntries.length){
     const krwSales = p.priceEntries.filter(e=>e.salePrice && (e.saleCurrency||'KRW')==='KRW');
@@ -2863,6 +2858,16 @@ function productCardHTML(p, catId, idx){
       if (!isFinite(displayPrice)) displayPrice = p.from;
     }
   }
+  return displayPrice;
+}
+function productCardHTML(p, catId, idx){
+  const cat=findCat(catId);
+  const bgStyle=getCatBgStyle(cat);
+  // If product has titleMedia image, use that instead
+  const useMedia = p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url;
+  const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : bgStyle;
+  const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
+  const displayPrice = getDisplayPrice(p);
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" style="${visualStyle}">
       ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay></video>`:''}
@@ -2913,20 +2918,29 @@ function cycleHero(){
   heroSlideIdx=(heroSlideIdx+1)%slides.length;
   slides[heroSlideIdx].classList.add('active');
 }
-function renderSpotlight(){
-  const n=SPOTLIGHT.length;
-  [0,1].forEach(slot=>{
-    const s=SPOTLIGHT[(spotIndex+slot)%n];
-    const cat=findCat(s.catId);
-    document.getElementById('spotVisual'+slot).style.cssText=getCatBgStyle(cat);
-    document.getElementById('spotVisual'+slot).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
-    document.getElementById('spotTitle'+slot).textContent=s.title;
-    document.getElementById('spotMeta'+slot).innerHTML=s.meta.map(m=>`<span>${m}</span>`).join('');
-    document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(s.from)}<small><span class="price-unit">원</span> ~부터</small>`;
-    document.getElementById('spotLink'+slot).onclick=(e)=>{e.preventDefault();selectCategory(s.catId)};
-  });
+function renderSpotlightSlot(slot, entry){
+  const products=getProducts(entry.catId);
+  const idx=entry.idx<products.length?entry.idx:0;
+  const p=products[idx]; if (!p) return;
+  const cat=findCat(entry.catId);
+  document.getElementById('spotVisual'+slot).style.cssText=getCatBgStyle(cat);
+  document.getElementById('spotVisual'+slot).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
+  document.getElementById('spotTitle'+slot).textContent=`${cat.ko} · ${p.title}`;
+  const meta=[p.nights?`🗓 ${p.nights}`:'', p.rounds?`⛳ ${p.rounds}`:''].filter(Boolean);
+  document.getElementById('spotMeta'+slot).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
+  const displayPrice=getDisplayPrice(p);
+  document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
+  document.getElementById('spotLink'+slot).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
 }
-function cycleSpot(){spotIndex=(spotIndex+2)%SPOTLIGHT.length;renderSpotlight()}
+function renderSpotlight(){
+  renderSpotlightSlot(0, SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length]);
+  renderSpotlightSlot(1, SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length]);
+}
+function cycleSpot(){
+  spotOverseasIdx=(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length;
+  spotDomesticIdx=(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length;
+  renderSpotlight();
+}
 
 // BLOG
 function renderBlog(){

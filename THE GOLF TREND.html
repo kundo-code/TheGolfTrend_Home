@@ -110,8 +110,9 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
-.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);transition:opacity .8s ease}
-.spotlight.spot-fading{opacity:0}
+.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
+.spot-content{flex:1;display:flex;flex-direction:column;min-height:0;transition:opacity var(--spot-fade-ms,800ms) ease}
+.spot-content.spot-fading{opacity:0}
 .spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
 .spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
@@ -1279,8 +1280,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-track{
   display:flex;gap:16px;align-items:flex-start;
-  transition:transform .6s cubic-bezier(.4,0,.2,1);
   will-change:transform;
+  /* transform 전환은 연속 자동 스크롤과의 충돌을 피하기 위해 JS(pkgNudgeTo)에서 필요할 때만 인라인으로 적용 */
 }
 .pkg-card{
   flex:0 0 calc((100% - 16px * 2) / 3);
@@ -1289,7 +1290,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:#0A1730;
   box-shadow:0 4px 20px rgba(0,0,0,.35);
   border:1px solid rgba(255,255,255,.07);
-  transition:transform .25s, box-shadow .25s, opacity .6s ease;
+  transition:transform .25s, box-shadow .25s, opacity var(--pkg-hover-fade-ms,1000ms) ease;
 }
 .pkg-card.pkg-dim{ opacity:.6; }
 .pkg-card:hover{
@@ -1299,7 +1300,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-img{
   display:block;width:100%;height:var(--pkg-img-h,auto);object-fit:cover;
-  opacity:.9;transition:opacity .45s ease,height .35s ease;
+  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease,height .35s ease;
 }
 .pkg-card:hover .pkg-img{ opacity:1; }
 .pkg-card.pkg-dim:hover{ opacity:1; }
@@ -1717,23 +1718,27 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       </div>
       <div class="spotlight-grid">
         <div class="spotlight">
-          <span class="spot-region-tag">해외</span>
-          <div class="spot-visual" id="spotVisual0"></div>
-          <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
-          <div class="spot-meta" id="spotMeta0"></div>
-          <div class="spot-cta">
-            <span class="price" id="spotPrice0">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
-            <a id="spotLink0">자세히 →</a>
+          <div class="spot-content" id="spotContent0">
+            <span class="spot-region-tag">해외</span>
+            <div class="spot-visual" id="spotVisual0"></div>
+            <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
+            <div class="spot-meta" id="spotMeta0"></div>
+            <div class="spot-cta">
+              <span class="price" id="spotPrice0">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
+              <a id="spotLink0">자세히 →</a>
+            </div>
           </div>
         </div>
         <div class="spotlight">
-          <span class="spot-region-tag">국내</span>
-          <div class="spot-visual" id="spotVisual1"></div>
-          <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
-          <div class="spot-meta" id="spotMeta1"></div>
-          <div class="spot-cta">
-            <span class="price" id="spotPrice1">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
-            <a id="spotLink1">자세히 →</a>
+          <div class="spot-content" id="spotContent1">
+            <span class="spot-region-tag">국내</span>
+            <div class="spot-visual" id="spotVisual1"></div>
+            <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
+            <div class="spot-meta" id="spotMeta1"></div>
+            <div class="spot-cta">
+              <span class="price" id="spotPrice1">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
+              <a id="spotLink1">자세히 →</a>
+            </div>
           </div>
         </div>
       </div>
@@ -3063,6 +3068,10 @@ function renderSpotlight(){
   renderSpotlightSlot(0, SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length]);
   renderSpotlightSlot(1, SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length]);
 }
+// ── 조정 가능한 옵션값 ──────────────────────────────────────────
+const SPOT_FADE_MS = 800; // Editor's Pick 콘텐츠 페이드인/아웃 전환 시간(ms) — 값이 클수록 더 천천히 전환 (기본값 800)
+document.documentElement.style.setProperty('--spot-fade-ms', SPOT_FADE_MS+'ms');
+
 function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function preloadImage(url){
   return new Promise(resolve=>{
@@ -3074,21 +3083,22 @@ function preloadImage(url){
   });
 }
 function cycleSpot(){
-  const cards=document.querySelectorAll('.spotlight-grid .spotlight');
-  cards.forEach(c=>c.classList.add('spot-fading'));
+  // 카드 틀(테두리·배경)은 고정한 채, 안쪽 콘텐츠(.spot-content)만 페이드인/아웃
+  const contents=document.querySelectorAll('.spotlight-grid .spot-content');
+  contents.forEach(c=>c.classList.add('spot-fading'));
   const nextOverseasCat=findCat(SPOTLIGHT_OVERSEAS[(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length].catId);
   const nextDomesticCat=findCat(SPOTLIGHT_DOMESTIC[(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length].catId);
   // 다음 이미지를 미리 로드해 둔 뒤(네트워크 저장 이미지의 늦은 로딩으로 인한 깜빡임 방지),
-  // 페이드아웃 트랜지션이 실제로 끝날 시간(800ms)까지 기다렸다가 내용을 교체하고 다시 페이드인
+  // 페이드아웃 트랜지션이 실제로 끝날 시간(SPOT_FADE_MS)까지 기다렸다가 내용을 교체하고 다시 페이드인
   Promise.all([
     preloadImage(getImage(nextOverseasCat.id)),
     preloadImage(getImage(nextDomesticCat.id)),
-    delay(800)
+    delay(SPOT_FADE_MS)
   ]).then(()=>{
     spotOverseasIdx=(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length;
     spotDomesticIdx=(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length;
     renderSpotlight();
-    requestAnimationFrame(()=>cards.forEach(c=>c.classList.remove('spot-fading')));
+    requestAnimationFrame(()=>contents.forEach(c=>c.classList.remove('spot-fading')));
   });
 }
 
@@ -3855,13 +3865,16 @@ let pkgPosters = {domestic:[], overseas:[]};
 try{ pkgPosters = JSON.parse(localStorage.getItem(PKG_KEY)||'{"domestic":[],"overseas":[]}'); }catch(e){}
 function savePkgPosters(){ try{localStorage.setItem(PKG_KEY,JSON.stringify(pkgPosters));}catch(e){alert('저장 공간 부족');} }
 
-// 슬라이드 상태
+// 슬라이드 상태 — 연속(마퀴) 스크롤 방식: posPx가 매 프레임 조금씩 증가하며 트랙 전체가 왼쪽으로 흐름
 const pkgState = {
-  domestic: {idx:0, timer:null},
-  overseas:  {idx:0, timer:null},
+  domestic: {idx:0, timer:null, posPx:0, rafId:null, lastTs:null, cardW:0, slideW:0, listLen:0, resumeTimeout:null},
+  overseas:  {idx:0, timer:null, posPx:0, rafId:null, lastTs:null, cardW:0, slideW:0, listLen:0, resumeTimeout:null},
 };
-const PKG_VISIBLE = 1;  // 한 번에 보이는(활성) 카드 수
-const PKG_AUTO_MS = 4000;
+// ── 조정 가능한 옵션값 ──────────────────────────────────────────
+const PKG_SCROLL_SPEED = 40;    // 자동 슬라이드 속도(px/초) — 값이 클수록 더 빠르게 왼쪽으로 흐름 (기본값 40)
+const PKG_NUDGE_MS = 600;       // 이전/다음 버튼·도트 클릭 시 한 칸 이동하는 전환 시간(ms) (기본값 600)
+const PKG_HOVER_FADE_MS = 1000; // 카드에 마우스를 올렸을 때 반투명→선명 페이드인 전환 시간(ms) — 값이 클수록 더 천천히 선명해짐 (기본값 1000)
+document.documentElement.style.setProperty('--pkg-hover-fade-ms', PKG_HOVER_FADE_MS+'ms');
 const pkgImgDims = {}; // url -> {w,h} 캐시 (이미지 높이 평균 계산용)
 function pkgLoadImgDims(url){
   return new Promise(resolve=>{
@@ -3876,11 +3889,14 @@ function pkgLoadImgDims(url){
 function getPkgList(type){ return pkgPosters[type]||[]; }
 
 // ── 포스터 렌더 (두 그룹 공통) ──────────────────────────────────
+// 목록을 2벌 이어붙여(A B C A B C) 끊김 없이 순환하는 연속 스크롤을 구현
 function renderPkgGroup(type){
   const list = getPkgList(type);
   const track = document.getElementById('pkgTrack_'+type);
   const dots  = document.getElementById('pkgDots_'+type);
   if(!track) return;
+
+  pkgStopAuto(type);
 
   if(!list.length){
     track.innerHTML = '<div class="pkg-empty">등록된 포스터가 없습니다. 관리자 패널 → 이미지 탭에서 추가하세요.</div>';
@@ -3888,23 +3904,22 @@ function renderPkgGroup(type){
     return;
   }
 
-  track.innerHTML = list.map((p,i)=>`
-    <div class="pkg-card" data-idx="${i}" onclick="openPkgLightbox('${type}',${i})">
+  const cardHTML = (p,origIdx)=>`
+    <div class="pkg-card" data-idx="${origIdx}" onclick="openPkgLightbox('${type}',${origIdx})">
       <img src="${escapeAttr(p.url)}" alt="${escapeAttr(p.label||'')}" class="pkg-img" loading="lazy">
       ${p.label?`<div class="pkg-label">${escapeAttr(p.label)}</div>`:''}
       <div class="pkg-zoom-hint">🔍</div>
-    </div>`).join('');
+    </div>`;
+  track.innerHTML = list.map((p,i)=>cardHTML(p,i)).join('') + list.map((p,i)=>cardHTML(p,i)).join('');
 
-  const total = list.length;
   if(dots){
-    const dotCount = Math.max(1, total - PKG_VISIBLE + 1);
-    dots.innerHTML = Array.from({length: Math.min(total, dotCount)}).map((_,i)=>
+    dots.innerHTML = list.map((_,i)=>
       `<button class="pkg-dot" onclick="pkgGoTo('${type}',${i})"></button>`
     ).join('');
   }
 
-  pkgState[type].idx = 0;
-  pkgApplySlide(type);
+  pkgState[type].posPx = 0;
+  pkgMeasure(type);
   pkgStartAuto(type);
 }
 
@@ -3913,10 +3928,9 @@ function renderPkgAll(){
   renderPkgGroup('overseas');
 }
 
-// px 기반 정확한 슬라이드 적용 — 화면 폭에 맞춰 더 많은 카드를 노출하고,
-// 현재 활성(active) 3장만 선명하게, 나머지는 반투명(60%)하게 보여줌
+// px 기반 카드 폭/이미지 높이 계산 — 화면 폭에 맞춰 더 많은 카드를 노출
 const PKG_TARGET_CARD_W = 220; // 카드 1장당 대략적인 목표 폭(px) — 화면이 넓을수록 더 많은 카드가 노출됨
-function pkgApplySlide(type){
+function pkgMeasure(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
   if(!track || !wrap) return;
@@ -3928,30 +3942,21 @@ function pkgApplySlide(type){
   const visibleCount = Math.max(1, Math.min(list.length, Math.floor((wrapW+gap)/(PKG_TARGET_CARD_W+gap))));
   const cardW  = (wrapW - gap*(visibleCount-1)) / visibleCount;
   const slideW = cardW + gap;
-  const max    = Math.max(0, list.length - PKG_VISIBLE);
-  const idx    = Math.min(Math.max(pkgState[type].idx, 0), max);
-  pkgState[type].idx = idx;
 
-  // 활성 3장 앞뒤로 반투명 카드가 대칭적으로 보이도록 오프셋 계산
-  const peekBefore = Math.max(0, Math.floor((visibleCount - PKG_VISIBLE)/2));
-  const maxShift = Math.max(0, list.length - visibleCount);
-  const shiftIdx = Math.max(0, Math.min(idx - peekBefore, maxShift));
+  const st = pkgState[type];
+  const oldSlideW = st.slideW || slideW;
+  if(oldSlideW>0 && oldSlideW!==slideW){
+    st.posPx = st.posPx / oldSlideW * slideW; // 리사이즈 시 위치 비율 유지(점프 최소화)
+  }
+  st.cardW = cardW; st.slideW = slideW; st.listLen = list.length;
 
-  track.querySelectorAll('.pkg-card').forEach((card,i)=>{
-    card.style.flex = `0 0 ${cardW}px`;
-    card.classList.toggle('pkg-dim', !(i>=idx && i<idx+PKG_VISIBLE));
-  });
-  track.style.transform = `translateX(-${shiftIdx * slideW}px)`;
-
-  // 도트 업데이트
-  const dots = document.getElementById('pkgDots_'+type);
-  if(dots) dots.querySelectorAll('.pkg-dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+  track.querySelectorAll('.pkg-card').forEach(card=>{ card.style.flex = `0 0 ${cardW}px`; });
 
   // 이미지 높이 통일: 가장 작은 이미지와 가장 큰 이미지 높이의 평균값으로 고정
   const urls = list.map(p=>p.url).filter(Boolean);
   const missing = urls.filter(u=>!pkgImgDims[u]);
   if(missing.length){
-    Promise.all(missing.map(pkgLoadImgDims)).then(()=>pkgApplySlide(type));
+    Promise.all(missing.map(pkgLoadImgDims)).then(()=>pkgMeasure(type));
   }
   const heights = urls.map(u=>{
     const d = pkgImgDims[u];
@@ -3961,38 +3966,110 @@ function pkgApplySlide(type){
     const uniformH = (Math.min(...heights) + Math.max(...heights)) / 2;
     track.style.setProperty('--pkg-img-h', uniformH+'px');
   }
+
+  pkgPositionFrame(type);
+  pkgUpdateActiveCard(type);
 }
 
+function pkgPositionFrame(type){
+  const track = document.getElementById('pkgTrack_'+type);
+  if(!track) return;
+  track.style.transform = `translateX(-${pkgState[type].posPx}px)`;
+}
+
+// 트랙 중앙에 가장 가까운 카드를 "활성"으로, 나머지는 반투명 처리
+function pkgUpdateActiveCard(type){
+  const track = document.getElementById('pkgTrack_'+type);
+  const wrap  = track?.parentElement;
+  const st = pkgState[type];
+  if(!track || !wrap || !st.slideW || !st.listLen) return;
+  const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
+  const targetContentX = st.posPx + wrapW/2;
+  const totalCards = st.listLen*2;
+  let nearestIdx = Math.round((targetContentX - st.cardW/2) / st.slideW);
+  nearestIdx = ((nearestIdx % totalCards)+totalCards) % totalCards;
+
+  track.querySelectorAll('.pkg-card').forEach((card,i)=>{
+    card.classList.toggle('pkg-dim', i!==nearestIdx);
+  });
+  const dots = document.getElementById('pkgDots_'+type);
+  if(dots){
+    const activeOrigIdx = nearestIdx % st.listLen;
+    dots.querySelectorAll('.pkg-dot').forEach((d,i)=>d.classList.toggle('active', i===activeOrigIdx));
+  }
+}
+
+// 이전/다음 버튼: 한 칸만큼 부드럽게 이동한 뒤 연속 스크롤 재개
 function pkgScroll(type, dir){
+  const st = pkgState[type];
+  if(!st.slideW || !st.listLen) return;
   pkgStopAuto(type);
-  const list = getPkgList(type);
-  const max  = Math.max(0, list.length - PKG_VISIBLE);
-  pkgState[type].idx = Math.min(Math.max(pkgState[type].idx + dir, 0), max);
-  pkgApplySlide(type);
-  pkgStartAuto(type);
+  const singleSetWidth = st.listLen * st.slideW;
+  let target = st.posPx + dir*st.slideW;
+  target = ((target % singleSetWidth)+singleSetWidth) % singleSetWidth;
+  pkgNudgeTo(type, target);
 }
+// 도트 클릭: 해당 포스터가 중앙에 오도록 부드럽게 이동한 뒤 연속 스크롤 재개
 function pkgGoTo(type, idx){
+  const st = pkgState[type];
+  const wrap = document.getElementById('pkgTrack_'+type)?.parentElement;
+  if(!st.slideW || !st.listLen || !wrap) return;
   pkgStopAuto(type);
-  pkgState[type].idx = idx;
-  pkgApplySlide(type);
-  pkgStartAuto(type);
+  const singleSetWidth = st.listLen * st.slideW;
+  const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
+  let target = idx*st.slideW + st.cardW/2 - wrapW/2;
+  target = ((target % singleSetWidth)+singleSetWidth) % singleSetWidth;
+  pkgNudgeTo(type, target);
 }
+function pkgNudgeTo(type, targetPosPx){
+  const st = pkgState[type];
+  const track = document.getElementById('pkgTrack_'+type);
+  if(!track) return;
+  track.style.transition = `transform ${PKG_NUDGE_MS}ms cubic-bezier(.4,0,.2,1)`;
+  st.posPx = targetPosPx;
+  pkgPositionFrame(type);
+  pkgUpdateActiveCard(type);
+  clearTimeout(st.resumeTimeout);
+  st.resumeTimeout = setTimeout(()=>{
+    track.style.transition = '';
+    pkgStartAuto(type);
+  }, PKG_NUDGE_MS);
+}
+
+// requestAnimationFrame 기반 연속 스크롤 — 트랙 전체가 일정한 속도로 계속 왼쪽으로 흐름
 function pkgStartAuto(type){
   pkgStopAuto(type);
+  const st = pkgState[type];
   const list = getPkgList(type);
-  if(list.length <= PKG_VISIBLE) return;
-  pkgState[type].timer = setInterval(()=>{
-    const max = Math.max(0, list.length - PKG_VISIBLE);
-    pkgState[type].idx = pkgState[type].idx >= max ? 0 : pkgState[type].idx + 1;
-    pkgApplySlide(type);
-  }, PKG_AUTO_MS);
+  if(!list.length) return;
+  st.lastTs = null;
+  function step(ts){
+    if(st.lastTs==null) st.lastTs = ts;
+    const dt = Math.min((ts - st.lastTs)/1000, 0.1);
+    st.lastTs = ts;
+    const singleSetWidth = st.listLen * st.slideW;
+    if(singleSetWidth>0){
+      st.posPx += PKG_SCROLL_SPEED * dt;
+      if(st.posPx >= singleSetWidth) st.posPx -= singleSetWidth;
+      pkgPositionFrame(type);
+      pkgUpdateActiveCard(type);
+    }
+    st.rafId = requestAnimationFrame(step);
+  }
+  st.rafId = requestAnimationFrame(step);
 }
-function pkgStopAuto(type){ clearInterval(pkgState[type].timer); }
+function pkgStopAuto(type){
+  const st = pkgState[type];
+  if(st.rafId) cancelAnimationFrame(st.rafId);
+  st.rafId = null;
+  clearTimeout(st.resumeTimeout);
+  clearInterval(st.timer);
+}
 
-// 윈도우 리사이즈 시 슬라이드 재계산
+// 윈도우 리사이즈 시 카드 크기/이미지 높이 재계산
 window.addEventListener('resize', ()=>{
-  pkgApplySlide('domestic');
-  pkgApplySlide('overseas');
+  pkgMeasure('domestic');
+  pkgMeasure('overseas');
 });
 
 function renderAdminPkg(){
@@ -4141,7 +4218,7 @@ async function handlePkgUpload(type, inputEl){
 function removePkgPoster(type, idx){
   if(!confirm('이 포스터를 삭제하시겠습니까?')) return;
   pkgPosters[type].splice(idx,1);
-  pkgState[type].idx=0;
+  pkgState[type].posPx=0;
   savePkgPosters(); renderPkgGroup(type); renderAdminPkg();
 }
 
@@ -4165,7 +4242,7 @@ function apkgDrop(e,type,targetIdx){
   const list=pkgPosters[type];
   const [item]=list.splice(_apkgDragIdx,1);
   list.splice(targetIdx,0,item);
-  pkgState[type].idx=0;
+  pkgState[type].posPx=0;
   _apkgDragIdx=-1;
   savePkgPosters(); renderPkgGroup(type); renderAdminPkg();
 }

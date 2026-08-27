@@ -2596,9 +2596,11 @@ async function adminLogout(){
   renderAdminAuthGate();
 }
 function storagePath(prefix, file){
-  const ext = (file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
+  // 리사이즈된 canvas.toBlob() 결과처럼 .name이 없는 순수 Blob도 대비해 확장자 기본값을 둠
+  const name = (file && file.name) || '';
+  const ext = (name.includes('.') ? name.split('.').pop() : (file && file.type ? file.type.split('/').pop() : 'jpg')).toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
   const rand = Math.random().toString(36).slice(2,8);
-  return `${prefix}/${Date.now()}-${rand}${ext?'.'+ext:''}`;
+  return `${prefix}/${Date.now()}-${rand}.${ext}`;
 }
 // 업로드 성공 시 공개 URL을 반환. 실패하면 예외를 던지므로 호출부에서 메시지를 그대로 노출.
 async function uploadToStorage(file, prefix){
@@ -2706,7 +2708,10 @@ function renderAboutBanner(){
 async function handleLogoUpload(inputEl){
   const file=inputEl.files[0];if(!file)return;
   if(file.size>3*1024*1024){alert('로고는 3MB 이하로 업로드해주세요.');inputEl.value='';return;}
-  try{setLogo(await readFileAsDataURL(file));}catch(e){alert('업로드 실패');}
+  try{
+    const url=await uploadToStorage(file, 'logo');
+    setLogo(url);
+  }catch(e){alert('업로드 실패: '+(e.message||e));}
   inputEl.value='';
 }
 async function handleAboutBannerUpload(type,inputEl){
@@ -2919,7 +2924,6 @@ function getLinkUrl(key){
 }
 function setLinkUrl(key,url){linkOverrides[key]=url;saveLinks();renderLinks();renderFootSocials()}
 
-function readFileAsDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 function fmtPrice(n){return Number(n||0).toLocaleString('ko-KR')}
 function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
@@ -3200,14 +3204,14 @@ function renderAdminBlog(){
 // 블로그 이미지 직접 업로드
 async function handleBlogImageUpload(idx, inputEl){
   const file=inputEl.files[0]; if(!file) return;
-  if(file.size>5*1024*1024){alert('이미지는 5MB 이하로 업로드해주세요.'); inputEl.value=''; return;}
+  if(file.size>10*1024*1024){alert('이미지는 10MB 이하로 업로드해주세요.'); inputEl.value=''; return;}
   try{
-    const url = await readFileAsDataURL(file);
+    const url = await uploadToStorage(file, 'blog');
     const list = getBlogList();
     list[idx].image = url;
     saveBlogList(list);
     renderBlog(); renderAdminBlog();
-  }catch(e){alert('업로드 실패');}
+  }catch(e){alert('업로드 실패: '+(e.message||e));}
   inputEl.value='';
 }
 function clearBlogImage(idx){
@@ -3739,20 +3743,20 @@ function triggerStrImgUpload(id){ document.getElementById('strImgFile_'+id)?.cli
 
 async function handleCvImgUpload(id, inputEl){
   const file=inputEl.files[0]; if(!file) return;
-  if(file.size>5*1024*1024){alert('이미지는 5MB 이하로 업로드해주세요.');inputEl.value='';return;}
+  if(file.size>10*1024*1024){alert('이미지는 10MB 이하로 업로드해주세요.');inputEl.value='';return;}
   try{
-    cvImageOverrides[id] = await readFileAsDataURL(file);
+    cvImageOverrides[id] = await uploadToStorage(file, 'about');
     saveCvImages(); renderCvImages(); renderAdminAbout();
-  }catch(e){alert('업로드 실패');}
+  }catch(e){alert('업로드 실패: '+(e.message||e));}
   inputEl.value='';
 }
 async function handleStrImgUpload(id, inputEl){
   const file=inputEl.files[0]; if(!file) return;
-  if(file.size>5*1024*1024){alert('이미지는 5MB 이하로 업로드해주세요.');inputEl.value='';return;}
+  if(file.size>10*1024*1024){alert('이미지는 10MB 이하로 업로드해주세요.');inputEl.value='';return;}
   try{
-    strImageOverrides[id] = await readFileAsDataURL(file);
+    strImageOverrides[id] = await uploadToStorage(file, 'about');
     saveStrImages(); renderStrImages(); renderAdminAbout();
-  }catch(e){alert('업로드 실패');}
+  }catch(e){alert('업로드 실패: '+(e.message||e));}
   inputEl.value='';
 }
 function clearCvImage(id){
@@ -3790,7 +3794,7 @@ function renderAdminAbout(){
       <div class="aab-info">
         <div class="aab-name">${m.ko} <span class="aab-en">${m.en}</span></div>
         <div class="aab-btns">
-          <label class="file-btn">📷 업로드<input type="file" accept="image/*" onchange="(async()=>{const f=this.files[0];if(!f)return;if(f.size>5*1024*1024){alert('5MB 이하');this.value='';return;}try{cvImageOverrides['${m.id}']=await readFileAsDataURL(f);saveCvImages();renderCvImages();renderAdminAbout();}catch(e){alert('실패');}this.value='';})()"></label>
+          <label class="file-btn">📷 업로드<input type="file" accept="image/*" onchange="handleCvImgUpload('${m.id}',this)"></label>
           ${url?`<button class="file-btn danger" onclick="clearCvImage('${m.id}')">제거</button>`:''}
         </div>
       </div>
@@ -3806,7 +3810,7 @@ function renderAdminAbout(){
       <div class="aab-info">
         <div class="aab-name">${m.title}</div>
         <div class="aab-btns">
-          <label class="file-btn">📷 업로드<input type="file" accept="image/*" onchange="(async()=>{const f=this.files[0];if(!f)return;if(f.size>5*1024*1024){alert('5MB 이하');this.value='';return;}try{strImageOverrides['${m.id}']=await readFileAsDataURL(f);saveStrImages();renderStrImages();renderAdminAbout();}catch(e){alert('실패');}this.value='';})()"></label>
+          <label class="file-btn">📷 업로드<input type="file" accept="image/*" onchange="handleStrImgUpload('${m.id}',this)"></label>
           ${url?`<button class="file-btn danger" onclick="clearStrImage('${m.id}')">제거</button>`:''}
         </div>
       </div>
@@ -3814,7 +3818,7 @@ function renderAdminAbout(){
   }).join('');
 
   c.innerHTML = `
-    <div class="admin-info-box">💡 각 카드의 이미지를 업로드하면 홈페이지 카드 상단에 바로 반영됩니다. 권장 800×450px (16:9 비율), 5MB 이하 JPG/PNG.</div>
+    <div class="admin-info-box">💡 각 카드의 이미지를 업로드하면 홈페이지 카드 상단에 바로 반영됩니다. 권장 800×450px (16:9 비율), 10MB 이하 JPG/PNG.</div>
     <h5 class="aab-section-label">Core Values · 핵심가치 카드</h5>
     <div class="aab-grid">${cvCards}</div>
     <h5 class="aab-section-label" style="margin-top:20px">Our Strengths · 역량 및 강점 카드</h5>
@@ -4042,7 +4046,7 @@ function resizePkgImage(file, maxH){
         const canvas=document.createElement('canvas');
         canvas.width=w; canvas.height=h;
         canvas.getContext('2d').drawImage(imgEl,0,0,w,h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('이미지 변환 실패')), 'image/jpeg', 0.85);
       };
       imgEl.onerror=reject;
       imgEl.src=ev.target.result;
@@ -4064,9 +4068,10 @@ async function handlePkgUpload(type, inputEl){
   for(const file of toAdd){
     if(file.size>15*1024*1024){ alert(file.name+' 는 15MB 초과'); continue; }
     try{
-      const url=await resizePkgImage(file, 1200);
+      const resized=await resizePkgImage(file, 1200);
+      const url=await uploadToStorage(resized, 'posters');
       pkgPosters[type].push({url, label:''});
-    }catch(e){ console.error('upload err',e); }
+    }catch(e){ console.error('upload err',e); alert(`${file.name} 업로드 실패: `+(e.message||e)); }
   }
   savePkgPosters(); renderPkgGroup(type); renderAdminPkg();
   inputEl.value='';
@@ -4202,9 +4207,12 @@ function renderAdminImages(){
 }
 async function handleImageUpload(key,inputEl){
   const file=inputEl.files[0]; if (!file) return;
-  if (file.size>5*1024*1024){alert('이미지 크기는 5MB 이하로 업로드해주세요.');return}
-  try{setImageOverride(key,await readFileAsDataURL(file));renderAdminImages()}
-  catch(e){alert('업로드 실패')}
+  if (file.size>10*1024*1024){alert('이미지 크기는 10MB 이하로 업로드해주세요.');return}
+  try{
+    const url=await uploadToStorage(file, 'categories');
+    setImageOverride(key,url);
+    renderAdminImages();
+  }catch(e){alert('업로드 실패: '+(e.message||e))}
   inputEl.value='';
 }
 

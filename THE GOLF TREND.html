@@ -110,8 +110,8 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
-.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);transition:opacity .6s ease,transform .6s ease}
-.spotlight.spot-fading{opacity:0;transform:translateY(10px)}
+.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);transition:opacity .8s ease}
+.spotlight.spot-fading{opacity:0}
 .spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
 .spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
@@ -1298,10 +1298,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-color:rgba(221,179,103,.3);
 }
 .pkg-img{
-  display:block;width:100%;height:auto;
-  transition:transform .4s ease;
+  display:block;width:100%;height:var(--pkg-img-h,auto);object-fit:cover;
+  opacity:.9;transition:opacity .45s ease,height .35s ease;
 }
-.pkg-card:hover .pkg-img{ transform:scale(1.1); }
+.pkg-card:hover .pkg-img{ opacity:1; }
+.pkg-card.pkg-dim:hover{ opacity:1; }
 .pkg-label{
   position:absolute;bottom:0;left:0;right:0;
   padding:10px 12px;
@@ -3078,11 +3079,11 @@ function cycleSpot(){
   const nextOverseasCat=findCat(SPOTLIGHT_OVERSEAS[(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length].catId);
   const nextDomesticCat=findCat(SPOTLIGHT_DOMESTIC[(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length].catId);
   // 다음 이미지를 미리 로드해 둔 뒤(네트워크 저장 이미지의 늦은 로딩으로 인한 깜빡임 방지),
-  // 페이드아웃 트랜지션이 실제로 끝날 시간(550ms)까지 기다렸다가 내용을 교체하고 다시 페이드인
+  // 페이드아웃 트랜지션이 실제로 끝날 시간(800ms)까지 기다렸다가 내용을 교체하고 다시 페이드인
   Promise.all([
     preloadImage(getImage(nextOverseasCat.id)),
     preloadImage(getImage(nextDomesticCat.id)),
-    delay(550)
+    delay(800)
   ]).then(()=>{
     spotOverseasIdx=(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length;
     spotDomesticIdx=(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length;
@@ -3859,8 +3860,18 @@ const pkgState = {
   domestic: {idx:0, timer:null},
   overseas:  {idx:0, timer:null},
 };
-const PKG_VISIBLE = 3;  // 한 번에 보이는 카드 수
+const PKG_VISIBLE = 1;  // 한 번에 보이는(활성) 카드 수
 const PKG_AUTO_MS = 4000;
+const pkgImgDims = {}; // url -> {w,h} 캐시 (이미지 높이 평균 계산용)
+function pkgLoadImgDims(url){
+  return new Promise(resolve=>{
+    if(!url || pkgImgDims[url]){ resolve(pkgImgDims[url]); return; }
+    const img = new Image();
+    img.onload = ()=>{ pkgImgDims[url] = {w:img.naturalWidth||1, h:img.naturalHeight||1}; resolve(pkgImgDims[url]); };
+    img.onerror = ()=>{ pkgImgDims[url] = {w:1, h:1}; resolve(pkgImgDims[url]); };
+    img.src = url;
+  });
+}
 
 function getPkgList(type){ return pkgPosters[type]||[]; }
 
@@ -3935,6 +3946,21 @@ function pkgApplySlide(type){
   // 도트 업데이트
   const dots = document.getElementById('pkgDots_'+type);
   if(dots) dots.querySelectorAll('.pkg-dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+
+  // 이미지 높이 통일: 가장 작은 이미지와 가장 큰 이미지 높이의 평균값으로 고정
+  const urls = list.map(p=>p.url).filter(Boolean);
+  const missing = urls.filter(u=>!pkgImgDims[u]);
+  if(missing.length){
+    Promise.all(missing.map(pkgLoadImgDims)).then(()=>pkgApplySlide(type));
+  }
+  const heights = urls.map(u=>{
+    const d = pkgImgDims[u];
+    return d ? cardW * (d.h/d.w) : null;
+  }).filter(h=>h!=null && isFinite(h) && h>0);
+  if(heights.length){
+    const uniformH = (Math.min(...heights) + Math.max(...heights)) / 2;
+    track.style.setProperty('--pkg-img-h', uniformH+'px');
+  }
 }
 
 function pkgScroll(type, dir){

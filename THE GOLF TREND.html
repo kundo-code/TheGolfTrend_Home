@@ -2605,14 +2605,19 @@ function syncTopBarHeight(){
   if(el) document.documentElement.style.setProperty('--topbar-h', el.offsetHeight+'px');
 }
 window.addEventListener('resize', syncTopBarHeight);
+let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;
   const b=getAboutBanner();
+  if (aboutBannerVideoObjectUrl){ URL.revokeObjectURL(aboutBannerVideoObjectUrl); aboutBannerVideoObjectUrl=null; }
   if(!b){c.innerHTML='';c.style.display='none';return;}
   c.style.display='block';
-  c.innerHTML=b.type==='video'
-    ?`<video src="${escapeAttr(b.url)}" autoplay muted loop playsinline class="about-banner-img"></video>`
-    :`<img src="${escapeAttr(b.url)}" class="about-banner-img" alt="회사소개 배너">`;
+  if (b.type==='video'){
+    aboutBannerVideoObjectUrl = dataURLToObjectURL(b.url);
+    c.innerHTML = `<video src="${escapeAttr(aboutBannerVideoObjectUrl)}" autoplay muted loop playsinline class="about-banner-img"></video>`;
+  } else {
+    c.innerHTML = `<img src="${escapeAttr(b.url)}" class="about-banner-img" alt="회사소개 배너">`;
+  }
 }
 async function handleLogoUpload(inputEl){
   const file=inputEl.files[0];if(!file)return;
@@ -2674,12 +2679,34 @@ async function clearHeadline(){
   try{ await idbDelete(HEADLINE_KEY); }catch(e){}
   renderHeadline(); renderAdminHeadline();
 }
+// data: URI(특히 대용량 동영상)를 Blob URL로 변환 — <video src="data:..."> 로 직접 재생하면
+// 브라우저가 거대한 base64 문자열을 DOM 속성/메모리에 계속 물고 있어야 해서
+// 오래 켜두면 메모리 사용량이 과도하게 늘어남(“일정 시간 후 화면이 하얗게 변함” 원인).
+// Blob URL로 바꾸면 인코딩된 바이너리 핸들만 참조하므로 훨씬 가볍다.
+function dataURLToObjectURL(dataUrl){
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+  try{
+    const commaIdx = dataUrl.indexOf(',');
+    const header = dataUrl.slice(0, commaIdx);
+    const isBase64 = header.endsWith(';base64');
+    const mime = (header.match(/^data:([^;]+)/)||[])[1] || '';
+    const data = dataUrl.slice(commaIdx+1);
+    const binary = isBase64 ? atob(data) : decodeURIComponent(data);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i=0;i<len;i++) bytes[i]=binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], {type:mime}));
+  }catch(e){ return dataUrl; }
+}
+let headlineVideoObjectUrl=null;
 function renderHeadline(){
   const h = getHeadline();
   const c = document.getElementById('headlineMedia');
   if (!c) return;
+  if (headlineVideoObjectUrl){ URL.revokeObjectURL(headlineVideoObjectUrl); headlineVideoObjectUrl=null; }
   if (h.type === 'video'){
-    c.innerHTML = `<video src="${escapeAttr(h.url)}" autoplay muted loop playsinline class="headline-img"></video>`;
+    headlineVideoObjectUrl = dataURLToObjectURL(h.url);
+    c.innerHTML = `<video src="${escapeAttr(headlineVideoObjectUrl)}" autoplay muted loop playsinline class="headline-img"></video>`;
   } else {
     c.innerHTML = `<img src="${escapeAttr(h.url)}" alt="THE GOLF TREND — 국내/해외 골프전문 여행사" class="headline-img">`;
   }
@@ -2688,6 +2715,12 @@ function renderHeadline(){
     amb.style.backgroundImage = h.type === 'video' ? 'none' : `url('${h.url}')`;
   }
 }
+// 탭이 백그라운드일 때는 오토플레이 동영상을 일시정지해 불필요한 디코딩/메모리 사용을 줄임
+document.addEventListener('visibilitychange', ()=>{
+  document.querySelectorAll('.headline-media video, .about-banner-wrap video').forEach(v=>{
+    if (document.visibilityState==='hidden') v.pause(); else v.play().catch(()=>{});
+  });
+});
 async function handleHeadlineUpload(type, inputEl){
   const file = inputEl.files[0]; if (!file) return;
   const limit = type === 'video' ? 10*1024*1024 : 5*1024*1024;

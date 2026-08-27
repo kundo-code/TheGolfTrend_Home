@@ -4126,6 +4126,33 @@ const AIRLINES_BY_COUNTRY = {
   guam:       [['AA','아메리칸항공'],['DL','델타항공'],['UA','유나이티드항공'],['WN','사우스웨스트항공'],['AS','알래스카항공']]
 };
 
+// 포함사항 · 불포함사항 · 참고사항 입력 가이드 (placeholder 예시)
+const INCLUDED_GUIDE = `✅ 포함사항 (1박 기준)
+▪️ ⛳️  그린피 + 🛺 카트비
+▪️ 🏨  숙박(2인실)
+▪️ 🥘  식사 (3회)
+▪️ 🚐  호텔 ⇔ 골프장 이동
+▪️ 💰  관광세`;
+const NOT_INCLUDED_GUIDE = `❌ 불포함사항
+▪️✈️  왕복 항공 요금
+▪️🚐  공항 ⇔ 호텔 왕복 송영비
+- 2인 (100$ / 인)
+- 3인 (70$ / 인)
+- 4인 (50$ / 인)
+▪️🧕 캐디피+팁 (사전 신청 필수)
+▪️🧰 여행자보험`;
+const NOTES_GUIDE = `✳️ 참고사항
+🛏️  7박 이상 예약시 1인당 5천원 할인
+   매우중요👉 귀국일 저녁 7시까지 레이트 체크 아웃 서비스!!
+🚘  주말 및 공휴일 : 오후 라운딩 진행
+⛳️ 18홀 추가(주중) :30$/인 (그린피+카트비)_9홀 추가시 요금 동일
+💰  싱글카트 (주중: 15$, 주말: 20$) / 18H 기준 인당 (2인 1캐디)
+🛏️  싱글룸 1박당  30$
+💁🏻‍♀️  캐디피 + 팁  20$ (2인 1캐디 - 캐디 사전 신청 필수)
+🙅🏻‍♂️  월요일 캐디사용 불가
+⛳️  페어웨이 카트 진입 20$ / 18H 기준 1대당
+☔️  우천시 & 페어웨이 상태에 따라 카트 진입 가능 여부 판단`;
+
 function advBasicHTML(p){
   const popupCount = countActivePopups();
   const isDomestic = !!(currentAdv && CATEGORIES.domestic.some(c=>c.id===currentAdv.catId));
@@ -4150,6 +4177,9 @@ function advBasicHTML(p){
       <div><label>출발공항${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('depAirport',this.value)"><option value="">선택 안함</option>${depAirportOpts}</select></div>
       <div><label>도착공항${isDomestic?' (해외 상품 전용)':''}</label><input type="text" ${dis} value="${escapeAttr(p.arrAirport||'')}" placeholder="예: 시즈오카" oninput="updateAdvField('arrAirport',this.value)"></div>
       <div class="full"><label>항공편${isDomestic?' (해외 상품 전용, Ctrl/⌘+클릭으로 복수 선택)':' (Ctrl/⌘+클릭으로 복수 선택)'}</label><select ${dis} multiple size="6" onchange="updateAdvField('airline',Array.from(this.selectedOptions).map(o=>o.value))">${airlineOpts}</select></div>
+      <div class="full"><label>포함사항</label><textarea style="min-height:140px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('included',this.value)">${escapeAttr(p.included||'')}</textarea></div>
+      <div class="full"><label>불포함사항</label><textarea style="min-height:140px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('notIncluded',this.value)">${escapeAttr(p.notIncluded||'')}</textarea></div>
+      <div class="full"><label>참고 및 추가 안내사항</label><textarea style="min-height:180px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value)">${escapeAttr(p.notes||'')}</textarea></div>
       <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label>
         <div class="price-row">
           <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">

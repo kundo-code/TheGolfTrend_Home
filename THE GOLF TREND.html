@@ -111,8 +111,9 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
 .spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
-.spot-content{flex:1;display:flex;flex-direction:column;min-height:0;transition:opacity var(--spot-fade-ms,800ms) ease}
-.spot-content.spot-fading{opacity:0}
+.spot-stack{position:relative;flex:1;display:flex;min-height:0}
+.spot-content{position:absolute;inset:0;display:flex;flex-direction:column;opacity:1;transition:opacity var(--spot-fade-ms,900ms) ease}
+.spot-content.spot-back{opacity:0;pointer-events:none}
 .spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
 .spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
@@ -1718,26 +1719,48 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       </div>
       <div class="spotlight-grid">
         <div class="spotlight">
-          <div class="spot-content" id="spotContent0">
-            <span class="spot-region-tag">해외</span>
-            <div class="spot-visual" id="spotVisual0"></div>
-            <h3 id="spotTitle0">일본 · 카와나 후지 코스</h3>
-            <div class="spot-meta" id="spotMeta0"></div>
-            <div class="spot-cta">
-              <span class="price" id="spotPrice0">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
-              <a id="spotLink0">자세히 →</a>
+          <span class="spot-region-tag">해외</span>
+          <div class="spot-stack">
+            <div class="spot-content" id="spotLayer0a">
+              <div class="spot-visual" id="spotVisual0a"></div>
+              <h3 id="spotTitle0a">일본 · 카와나 후지 코스</h3>
+              <div class="spot-meta" id="spotMeta0a"></div>
+              <div class="spot-cta">
+                <span class="price" id="spotPrice0a">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
+                <a id="spotLink0a">자세히 →</a>
+              </div>
+            </div>
+            <div class="spot-content spot-back" id="spotLayer0b">
+              <div class="spot-visual" id="spotVisual0b"></div>
+              <h3 id="spotTitle0b"></h3>
+              <div class="spot-meta" id="spotMeta0b"></div>
+              <div class="spot-cta">
+                <span class="price" id="spotPrice0b"></span>
+                <a id="spotLink0b">자세히 →</a>
+              </div>
             </div>
           </div>
         </div>
         <div class="spotlight">
-          <div class="spot-content" id="spotContent1">
-            <span class="spot-region-tag">국내</span>
-            <div class="spot-visual" id="spotVisual1"></div>
-            <h3 id="spotTitle1">베트남 · 바나힐스 GC</h3>
-            <div class="spot-meta" id="spotMeta1"></div>
-            <div class="spot-cta">
-              <span class="price" id="spotPrice1">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
-              <a id="spotLink1">자세히 →</a>
+          <span class="spot-region-tag">국내</span>
+          <div class="spot-stack">
+            <div class="spot-content" id="spotLayer1a">
+              <div class="spot-visual" id="spotVisual1a"></div>
+              <h3 id="spotTitle1a">베트남 · 바나힐스 GC</h3>
+              <div class="spot-meta" id="spotMeta1a"></div>
+              <div class="spot-cta">
+                <span class="price" id="spotPrice1a">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
+                <a id="spotLink1a">자세히 →</a>
+              </div>
+            </div>
+            <div class="spot-content spot-back" id="spotLayer1b">
+              <div class="spot-visual" id="spotVisual1b"></div>
+              <h3 id="spotTitle1b"></h3>
+              <div class="spot-meta" id="spotMeta1b"></div>
+              <div class="spot-cta">
+                <span class="price" id="spotPrice1b"></span>
+                <a id="spotLink1b">자세히 →</a>
+              </div>
             </div>
           </div>
         </div>
@@ -3045,34 +3068,36 @@ function cycleHero(){
   heroSlideIdx=(heroSlideIdx+1)%slides.length;
   slides[heroSlideIdx].classList.add('active');
 }
-function renderSpotlightSlot(slot, entry){
+// slot(0/1)별로 현재 화면에 보이는 레이어가 'a'인지 'b'인지 추적 — 교차 페이드(crossfade)에 사용
+const spotFront = {0:'a', 1:'a'};
+function renderSpotlightSlot(slot, layer, entry){
   const products=getProducts(entry.catId);
   const idx=entry.idx<products.length?entry.idx:0;
   const p=products[idx]; if (!p) return;
   const cat=findCat(entry.catId);
-  document.getElementById('spotVisual'+slot).style.cssText=getCatBgStyle(cat);
-  document.getElementById('spotVisual'+slot).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
-  document.getElementById('spotTitle'+slot).textContent=`${cat.ko} · ${p.title}`;
+  const sfx=slot+layer;
+  document.getElementById('spotVisual'+sfx).style.cssText=getCatBgStyle(cat);
+  document.getElementById('spotVisual'+sfx).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
+  document.getElementById('spotTitle'+sfx).textContent=`${cat.ko} · ${p.title}`;
   const meta=[
     p.nights?`🗓 ${p.nights}`:'',
     p.rounds?`⛳ ${p.rounds}`:'',
     p.stay?`🏨 ${p.stay}`:'',
     p.meals?`🍽 ${p.meals}`:''
   ].filter(Boolean);
-  document.getElementById('spotMeta'+slot).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
+  document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   const displayPrice=getDisplayPrice(p);
-  document.getElementById('spotPrice'+slot).innerHTML=`${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
-  document.getElementById('spotLink'+slot).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
+  document.getElementById('spotPrice'+sfx).innerHTML=`${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
+  document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
 }
 function renderSpotlight(){
-  renderSpotlightSlot(0, SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length]);
-  renderSpotlightSlot(1, SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length]);
+  renderSpotlightSlot(0, spotFront[0], SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length]);
+  renderSpotlightSlot(1, spotFront[1], SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length]);
 }
 // ── 조정 가능한 옵션값 ──────────────────────────────────────────
-const SPOT_FADE_MS = 800; // Editor's Pick 콘텐츠 페이드인/아웃 전환 시간(ms) — 값이 클수록 더 천천히 전환 (기본값 800)
+const SPOT_FADE_MS = 900; // Editor's Pick 콘텐츠 교차 페이드(crossfade) 전환 시간(ms) — 값이 클수록 더 천천히 전환 (기본값 900)
 document.documentElement.style.setProperty('--spot-fade-ms', SPOT_FADE_MS+'ms');
 
-function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function preloadImage(url){
   return new Promise(resolve=>{
     if (!url){ resolve(); return; }
@@ -3082,23 +3107,34 @@ function preloadImage(url){
     setTimeout(resolve, 1200); // 느린/깨진 이미지가 전환을 무한정 붙잡지 않도록 안전장치
   });
 }
+// 보이지 않는 뒤 레이어에 다음 콘텐츠를 미리 채워 넣은 뒤, 두 레이어를 "동시에" 교차 페이드
+// (기존 레이어는 사라지면서 새 레이어가 나타남 — 완전히 사라졌다 나타나는 끊김이 없음)
 function cycleSpot(){
-  // 카드 틀(테두리·배경)은 고정한 채, 안쪽 콘텐츠(.spot-content)만 페이드인/아웃
-  const contents=document.querySelectorAll('.spotlight-grid .spot-content');
-  contents.forEach(c=>c.classList.add('spot-fading'));
-  const nextOverseasCat=findCat(SPOTLIGHT_OVERSEAS[(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length].catId);
-  const nextDomesticCat=findCat(SPOTLIGHT_DOMESTIC[(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length].catId);
-  // 다음 이미지를 미리 로드해 둔 뒤(네트워크 저장 이미지의 늦은 로딩으로 인한 깜빡임 방지),
-  // 페이드아웃 트랜지션이 실제로 끝날 시간(SPOT_FADE_MS)까지 기다렸다가 내용을 교체하고 다시 페이드인
+  const nextOverseasEntry=SPOTLIGHT_OVERSEAS[(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length];
+  const nextDomesticEntry=SPOTLIGHT_DOMESTIC[(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length];
+  const nextOverseasCat=findCat(nextOverseasEntry.catId);
+  const nextDomesticCat=findCat(nextDomesticEntry.catId);
   Promise.all([
     preloadImage(getImage(nextOverseasCat.id)),
     preloadImage(getImage(nextDomesticCat.id)),
-    delay(SPOT_FADE_MS)
   ]).then(()=>{
     spotOverseasIdx=(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length;
     spotDomesticIdx=(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length;
-    renderSpotlight();
-    requestAnimationFrame(()=>contents.forEach(c=>c.classList.remove('spot-fading')));
+    const entries={
+      0: SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length],
+      1: SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length],
+    };
+    [0,1].forEach(slot=>{
+      const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
+      renderSpotlightSlot(slot, backLayer, entries[slot]);
+      const frontEl=document.getElementById('spotLayer'+slot+spotFront[slot]);
+      const backEl=document.getElementById('spotLayer'+slot+backLayer);
+      requestAnimationFrame(()=>{
+        frontEl.classList.add('spot-back');
+        backEl.classList.remove('spot-back');
+      });
+      spotFront[slot]=backLayer;
+    });
   });
 }
 

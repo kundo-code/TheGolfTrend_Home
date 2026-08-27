@@ -110,8 +110,8 @@ header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(10
 .spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
-.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);transition:opacity .32s ease,transform .32s ease}
-.spotlight.spot-fading{opacity:0;transform:translateY(8px)}
+.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);transition:opacity .6s ease,transform .6s ease}
+.spotlight.spot-fading{opacity:0;transform:translateY(10px)}
 .spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
 .spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
@@ -1278,8 +1278,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   position:relative;
 }
 .pkg-track{
-  display:flex;gap:16px;
-  transition:transform .45s cubic-bezier(.25,.46,.45,.94);
+  display:flex;gap:16px;align-items:flex-start;
+  transition:transform .7s cubic-bezier(.25,.46,.45,.94);
   will-change:transform;
 }
 .pkg-card{
@@ -1289,8 +1289,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:#0A1730;
   box-shadow:0 4px 20px rgba(0,0,0,.35);
   border:1px solid rgba(255,255,255,.07);
-  transition:transform .25s, box-shadow .25s;
+  transition:transform .25s, box-shadow .25s, opacity .6s ease;
 }
+.pkg-card.pkg-dim{ opacity:.6; }
 .pkg-card:hover{
   transform:translateY(-4px) scale(1.01);
   box-shadow:0 14px 40px rgba(0,0,0,.5);
@@ -1452,12 +1453,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apkg-add-btn input[type=file]{ display:none; }
 
 /* 반응형 */
-@media(max-width:1024px){
-  .pkg-card{ flex:0 0 calc((100% - 16px) / 2); }
-}
 @media(max-width:640px){
-  .pkg-wrap{ padding:0 16px; }
-  .pkg-card{ flex:0 0 100%; }
   .pkg-group-title{ font-size:1.1rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
@@ -3066,15 +3062,33 @@ function renderSpotlight(){
   renderSpotlightSlot(0, SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length]);
   renderSpotlightSlot(1, SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length]);
 }
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function preloadImage(url){
+  return new Promise(resolve=>{
+    if (!url){ resolve(); return; }
+    const img=new Image();
+    img.onload=resolve; img.onerror=resolve;
+    img.src=url;
+    setTimeout(resolve, 1200); // 느린/깨진 이미지가 전환을 무한정 붙잡지 않도록 안전장치
+  });
+}
 function cycleSpot(){
   const cards=document.querySelectorAll('.spotlight-grid .spotlight');
   cards.forEach(c=>c.classList.add('spot-fading'));
-  setTimeout(()=>{
+  const nextOverseasCat=findCat(SPOTLIGHT_OVERSEAS[(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length].catId);
+  const nextDomesticCat=findCat(SPOTLIGHT_DOMESTIC[(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length].catId);
+  // 다음 이미지를 미리 로드해 둔 뒤(네트워크 저장 이미지의 늦은 로딩으로 인한 깜빡임 방지),
+  // 페이드아웃 트랜지션이 실제로 끝날 시간(550ms)까지 기다렸다가 내용을 교체하고 다시 페이드인
+  Promise.all([
+    preloadImage(getImage(nextOverseasCat.id)),
+    preloadImage(getImage(nextDomesticCat.id)),
+    delay(550)
+  ]).then(()=>{
     spotOverseasIdx=(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length;
     spotDomesticIdx=(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length;
     renderSpotlight();
-    cards.forEach(c=>c.classList.remove('spot-fading'));
-  }, 320);
+    requestAnimationFrame(()=>cards.forEach(c=>c.classList.remove('spot-fading')));
+  });
 }
 
 // BLOG
@@ -3888,7 +3902,9 @@ function renderPkgAll(){
   renderPkgGroup('overseas');
 }
 
-// px 기반 정확한 슬라이드 적용
+// px 기반 정확한 슬라이드 적용 — 화면 폭에 맞춰 더 많은 카드를 노출하고,
+// 현재 활성(active) 3장만 선명하게, 나머지는 반투명(60%)하게 보여줌
+const PKG_TARGET_CARD_W = 220; // 카드 1장당 대략적인 목표 폭(px) — 화면이 넓을수록 더 많은 카드가 노출됨
 function pkgApplySlide(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
@@ -3896,15 +3912,25 @@ function pkgApplySlide(type){
   const list = getPkgList(type);
   if(!list.length) return;
 
-  const gap      = 16;
-  const wrapW    = wrap.clientWidth || wrap.offsetWidth || 300;
-  const cardW    = (wrapW - gap*(PKG_VISIBLE-1)) / PKG_VISIBLE;
-  const slideW   = cardW + gap;
-  const max      = Math.max(0, list.length - PKG_VISIBLE);
-  const idx      = Math.min(Math.max(pkgState[type].idx, 0), max);
+  const gap = 16;
+  const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
+  const visibleCount = Math.max(1, Math.min(list.length, Math.floor((wrapW+gap)/(PKG_TARGET_CARD_W+gap))));
+  const cardW  = (wrapW - gap*(visibleCount-1)) / visibleCount;
+  const slideW = cardW + gap;
+  const max    = Math.max(0, list.length - PKG_VISIBLE);
+  const idx    = Math.min(Math.max(pkgState[type].idx, 0), max);
   pkgState[type].idx = idx;
 
-  track.style.transform = `translateX(-${idx * slideW}px)`;
+  // 활성 3장 앞뒤로 반투명 카드가 대칭적으로 보이도록 오프셋 계산
+  const peekBefore = Math.max(0, Math.floor((visibleCount - PKG_VISIBLE)/2));
+  const maxShift = Math.max(0, list.length - visibleCount);
+  const shiftIdx = Math.max(0, Math.min(idx - peekBefore, maxShift));
+
+  track.querySelectorAll('.pkg-card').forEach((card,i)=>{
+    card.style.flex = `0 0 ${cardW}px`;
+    card.classList.toggle('pkg-dim', !(i>=idx && i<idx+PKG_VISIBLE));
+  });
+  track.style.transform = `translateX(-${shiftIdx * slideW}px)`;
 
   // 도트 업데이트
   const dots = document.getElementById('pkgDots_'+type);

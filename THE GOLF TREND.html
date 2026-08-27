@@ -2203,9 +2203,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
   <div class="admin-body">
     <div id="tabImages">
-      <div class="admin-section"><h4>시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
-      <div class="admin-section"><h4>사이트 아이덴티티 (로고·태그라인·회사소개 배너)</h4><div id="adminIdentity"></div></div>
       <div class="admin-section"><h4>헤드라인 배너</h4><div id="adminHeadline"></div></div>
+      <div class="admin-section"><h4>사이트 아이덴티티 (로고·태그라인·회사소개 배너)</h4><div id="adminIdentity"></div></div>
+      <div class="admin-section"><h4>시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
       <div class="admin-section"><h4>회사소개 카드 이미지 (핵심가치 · 역량 및 강점)</h4><div id="adminAbout"></div></div>
       <div class="admin-section">
         <h4>패키지 요금 포스터</h4>
@@ -4836,7 +4836,7 @@ function renderAdminSeasonTheme(){
   const c=document.getElementById('adminSeasonTheme'); if(!c) return;
   const active=getSeasonTheme();
   const groups=[['spring','봄'],['summer','여름'],['autumn','가을'],['winter','겨울']];
-  c.innerHTML=`<div class="admin-info-box" style="margin-bottom:14px">🌤 홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.</div>` +
+  c.innerHTML=`<div class="admin-info-box" style="margin-bottom:14px">🌤 홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.<br>권장 규격: 정사각형(1:1) 200×200px 이상, 배경 투명 PNG · 5MB 이하</div>` +
     groups.map(([season,label])=>{
       const keys=Object.keys(SEASON_THEMES).filter(k=>SEASON_THEMES[k].season===season);
       return `<div class="ast-group">

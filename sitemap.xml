@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  THE GOLF TREND — sitemap.xml
+  현재는 단일 HTML 페이지로 서비스되므로 실제로 존재하는 URL만 포함합니다.
+  국가/지역/골프장/패키지별 독립 URL이 생기면 이 파일에 <url> 항목을 추가하세요.
+  향후 확장 예시는 docs/SEO_GEO_AEO_PHASE3.md의 "sitemap.xml 향후 확장 예시" 섹션을 참고하세요.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kundo-code.github.io/TheGolfTrend_Home/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

@@ -4,9 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>THE GOLF TREND — Beyond Golf, Into Life | (주)더골프트렌드</title>
-<meta name="description" content="20년 이상 해외 골프 운영 경험의 (주)더골프트렌드 THE GOLF TREND. 일본·동남아 명문 코스와 국내 6권역 골프 여행을 큐레이션합니다.">
+<meta name="description" content="20년 이상 해외 골프 운영 경험의 (주)더골프트렌드 THE GOLF TREND. 일본·중국·동남아 명문 코스와 국내 6권역(강원·충청·호남·영남·수도권·제주) 골프 여행을 큐레이션하는 골프 전문 여행사입니다.">
+<!-- [Phase 3 SEO/GEO 강화] canonical·robots·author·theme-color -->
+<link rel="canonical" href="https://kundo-code.github.io/TheGolfTrend_Home/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="(주)더골프트렌드">
+<meta name="theme-color" content="#030D26">
+<!-- 단일 국문 페이지이므로 hreflang 불필요 (다국어 버전 생성 시 검토) -->
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="THE GOLF TREND">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="THE GOLF TREND — Beyond Golf, Into Life | (주)더골프트렌드">
+<meta property="og:description" content="20년 이상 해외 골프 운영 경험의 (주)더골프트렌드 THE GOLF TREND. 일본·중국·동남아 명문 코스와 국내 6권역 골프 여행을 큐레이션하는 골프 전문 여행사입니다.">
+<meta property="og:url" content="https://kundo-code.github.io/TheGolfTrend_Home/">
+<meta property="og:image" content="https://kundo-code.github.io/TheGolfTrend_Home/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="일본 후지산 인근 골프장 전경 — THE GOLF TREND 해외 골프여행">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="THE GOLF TREND — Beyond Golf, Into Life">
+<meta name="twitter:description" content="국내·해외 골프여행 전문 큐레이션 — (주)더골프트렌드">
+<meta name="twitter:image" content="https://kundo-code.github.io/TheGolfTrend_Home/assets/og-image.jpg">
+<!-- Favicon -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<!-- preconnect: 폰트 외에 Supabase(스토리지/DB)·jsDelivr(supabase-js, Pretendard) 오리진 추가 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://zjanojlayndtgmzohpyb.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Noto+Serif+KR:wght@400;600;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <style>
@@ -335,6 +365,13 @@ section.block{padding:100px 24px;position:relative}
 .barcode{height:44px;background:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 5px,#fff 5px 7px,transparent 7px 11px);opacity:.85;border-radius:2px}
 .form-note{text-align:center;font-size:.85rem;color:rgba(247,245,240,.6);margin-top:24px}
 .form-note b{color:var(--gold);font-weight:600}
+.form-note a:hover b{text-decoration:underline}
+/* [Phase 3 SEO/GEO 강화] 스크린리더/AI 크롤러 전용 텍스트 (화면 시각적 노출 없음) */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* [Phase 3 SEO/GEO 강화] 본문 바로가기 스킵 링크 - 평소 숨김, 키보드 포커스 시에만 노출 */
+.skip-link{position:absolute;left:12px;top:-60px;z-index:1000;background:var(--gold);color:var(--pine-deep);padding:10px 18px;border-radius:0 0 10px 10px;font-weight:700;font-size:.85rem;transition:top .2s}
+.skip-link:focus{top:0}
+/* prefers-reduced-motion 대응은 799번째 줄 부근에 이미 전역 규칙이 있어 중복 추가하지 않음 */
 .success{display:none;text-align:center;padding:60px 20px}
 .success.show{display:block}
 .success .big{font-size:3.6rem;margin-bottom:16px}
@@ -1025,6 +1062,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;
 }
 .call-btn:hover{background:var(--gold);color:var(--pine-deep);transform:translateY(-1px);box-shadow:0 10px 30px rgba(221,179,103,.35)}
+.kakao-btn{
+  flex:1;padding:14px 16px;background:#FEE500;border:1px solid #FEE500;
+  color:#391B1B;border-radius:12px;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;
+}
+.kakao-btn:hover{background:#FDD800;border-color:#FDD800;transform:translateY(-1px);box-shadow:0 10px 30px rgba(254,229,0,.4)}
 @media(max-width:500px){.submit-row{flex-direction:column}}
 
 /* ── 법적고지 관리자 패널 ──────────────────────────────────────── */
@@ -1652,8 +1695,86 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .lead-details{margin-top:6px;font-size:.82rem;color:rgba(247,245,240,.75);white-space:pre-wrap}
 
 </style>
+<!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
+     footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.
+     sameAs의 SNS 링크는 관리자 패널에서 켠 링크만 반영되도록 renderLinks()에서 런타임에 별도 스크립트(#orgSameAsJsonLd)로 보강. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["TravelAgency", "Organization"],
+      "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#organization",
+      "name": "(주)더골프트렌드",
+      "alternateName": "THE GOLF TREND",
+      "legalName": "(주)더골프트렌드",
+      "url": "https://kundo-code.github.io/TheGolfTrend_Home/",
+      "logo": "https://kundo-code.github.io/TheGolfTrend_Home/assets/logo.png",
+      "image": "https://kundo-code.github.io/TheGolfTrend_Home/assets/og-image.jpg",
+      "description": "20년 이상 해외 골프 운영 경험을 보유한 국내·해외 골프 전문 여행사. 일본·중국·동남아 명문 골프장과 국내 6권역(강원·충청·호남·영남·수도권·제주) 골프 패키지를 큐레이션하고 맞춤형 골프여행 상담을 제공합니다.",
+      "slogan": "Beyond Golf, Into Life.",
+      "founder": { "@type": "Person", "name": "오선영" },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "충민로 66, 가든파이브라이프 7층 리빙관 7074호",
+        "addressLocality": "송파구",
+        "addressRegion": "서울특별시",
+        "addressCountry": "KR"
+      },
+      "telephone": "+82-10-9405-6842",
+      "email": "edgar.meshugas@gmail.com",
+      "taxID": "707-81-03126",
+      "areaServed": [
+        { "@type": "Country", "name": "대한민국" },
+        { "@type": "Country", "name": "일본" },
+        { "@type": "Country", "name": "중국" },
+        { "@type": "Country", "name": "몽골" },
+        { "@type": "Country", "name": "베트남" },
+        { "@type": "Country", "name": "태국" },
+        { "@type": "Country", "name": "필리핀" },
+        { "@type": "Country", "name": "말레이시아" },
+        { "@type": "Country", "name": "인도네시아" },
+        { "@type": "Country", "name": "괌" }
+      ],
+      "knowsAbout": ["국내 골프여행", "일본 골프여행", "중국 골프여행", "동남아 골프여행", "골프 패키지", "골프장 정보", "맞춤형 골프여행 상담"],
+      "sameAs": ["http://pf.kakao.com/_SSxgFG"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#website",
+      "url": "https://kundo-code.github.io/TheGolfTrend_Home/",
+      "name": "THE GOLF TREND",
+      "inLanguage": "ko-KR",
+      "publisher": { "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#organization" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#webpage",
+      "url": "https://kundo-code.github.io/TheGolfTrend_Home/",
+      "name": "THE GOLF TREND — Beyond Golf, Into Life | (주)더골프트렌드",
+      "description": "20년 이상 해외 골프 운영 경험의 (주)더골프트렌드 THE GOLF TREND. 일본·중국·동남아 명문 코스와 국내 6권역 골프 여행을 큐레이션하는 골프 전문 여행사입니다.",
+      "isPartOf": { "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#website" },
+      "about": { "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#organization" },
+      "inLanguage": "ko-KR",
+      "primaryImageOfPage": "https://kundo-code.github.io/TheGolfTrend_Home/assets/og-image.jpg",
+      "breadcrumb": { "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#breadcrumb" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://kundo-code.github.io/TheGolfTrend_Home/#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kundo-code.github.io/TheGolfTrend_Home/" }
+      ]
+    }
+  ]
+}
+</script>
+<!-- 상품별 독립 URL이 생기기 전까지는 Product/Offer Schema를 미리 주입하지 않음(잘못된 구조화 데이터 방지).
+     buildProductJsonLd(catId, idx) 함수(본문 JS, getAdvProduct 근처)가 향후 상세페이지 전환 시 바로 쓸 수 있도록 준비되어 있음. -->
 </head>
 <body>
+<!-- [Phase 3 접근성/SEO 강화] 스킵 링크: 키보드 사용자가 반복 메뉴를 건너뛰고 바로 본문으로 이동 -->
+<a href="#main" class="skip-link">본문 바로가기</a>
 
 <div class="ambient" aria-hidden="true">
   <svg class="wave-layer" viewBox="0 0 1440 900" preserveAspectRatio="none">
@@ -1668,6 +1789,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 </div>
 <div class="grain" aria-hidden="true"></div>
 
+<!-- [Phase 3 Semantic HTML] 로고·헤드라인 배너·내비게이션을 <header>로 묶음 (class/id·JS 동작은 변경 없음) -->
+<header>
 <!-- TOP BAR : 로고 + 사이트 타이틀 + 태그라인 -->
 <div class="top-bar" id="topBarArea">
   <a href="#top" class="top-bar-logo-link">
@@ -1700,9 +1823,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </ul>
   <div class="nav-right">
     <a href="#booking" class="cta">티타임 상담</a>
-    <button class="menu-btn" aria-label="메뉴" onclick="document.getElementById('navMenu').classList.toggle('open')">☰</button>
+    <button class="menu-btn" id="navMenuBtn" aria-label="메뉴" aria-expanded="false" aria-controls="navMenu" onclick="toggleNavMenu()">☰</button>
   </div>
 </nav>
+</header>
 
 <!-- POPUP OVERLAY (홈 진입 시 활성 요금 항목 최대 3개까지 순차 노출) -->
 <div class="popup-stage" id="popupStage" onclick="if(event.target===this)closePopupStage()"></div>
@@ -1718,6 +1842,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
 </div>
 
+<!-- [Phase 3 Semantic HTML] 히어로부터 예약 문의까지 핵심 콘텐츠를 <main>으로 묶음 (class/id 변경 없음) -->
+<main id="main">
 <!-- HERO -->
 <section class="hero" id="top">
   <div class="hero-bg" id="heroBg" aria-hidden="true"></div>
@@ -2207,12 +2333,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
                 <label>골프 여행 선호 스타일 · Travel Style <em style="font-size:.78rem;color:rgba(247,245,240,.55);font-style:normal">(복수 선택 가능)</em></label>
                 <div class="style-dropdown-wrap" id="styleDropdownWrap">
                   <!-- 선택된 태그 표시 영역 -->
-                  <div class="sd-tags" id="sdTags" onclick="toggleStyleMenu()">
+                  <div class="sd-tags" id="sdTags" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="sdPanel" onclick="toggleStyleMenu()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStyleMenu();}">
                     <span class="sd-placeholder" id="sdPlaceholder">클릭하여 스타일 선택...</span>
                     <span class="sd-arrow">▾</span>
                   </div>
                   <!-- 드롭다운 패널 -->
-                  <div class="sd-panel" id="sdPanel">
+                  <div class="sd-panel" id="sdPanel" role="listbox" aria-multiselectable="true">
                     <div class="sd-group-label">숙박 타입</div>
                     <label class="sd-opt"><input type="checkbox" name="style" value="골프텔 (체류형)" onchange="syncStyleTags()">🏨 골프텔 (체류형)</label>
                     <label class="sd-opt"><input type="checkbox" name="style" value="시내 호텔 (이동형)" onchange="syncStyleTags()">🏙 시내 호텔 (이동형)</label>
@@ -2237,6 +2363,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="field full"><label>세부 요청 · Details</label><textarea name="details" placeholder="원하시는 여행 스타일에 대해 자유롭게 적어주세요">원하시는 여행 스타일에 대해 자유롭게 적어주세요</textarea></div>
               <div class="field full"><div class="submit-row">
                 <button type="submit" class="submit-btn">📧 상담 신청하기</button>
+                <button type="button" class="kakao-btn" onclick="openKakaoChat()">💬 카톡 상담</button>
                 <button type="button" class="call-btn" onclick="callHotline()">📞 전화하기</button>
               </div></div>
             </div>
@@ -2250,10 +2377,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="barcode" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · 카카오톡 <b>@thegolftrend</b> · <b>edgar.meshugas@gmail.com</b></p>
+      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>edgar.meshugas@gmail.com</b></p>
     </div>
   </div>
 </section>
+</main>
 
 <!-- FOOTER -->
 <footer>
@@ -2266,15 +2394,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <p>골프를 여행의 중심에 둔 종합 여행사. 필드 위의 시간부터 그 후의 저녁 식사까지, 모든 순간을 설계합니다.</p>
       <div class="foot-socials" id="footSocials"></div>
     </div>
+    <!-- [Phase 3 내부 링크 강화] href+data-route 추가: 크롤러가 따라갈 수 있는 실제 링크가 되고,
+         향후 국가/지역별 독립 URL(/domestic/gangwon 등) 전환 시 data-route를 그대로 라우팅에 쓸 수 있음 -->
     <div><h4>국내 권역</h4><ul>
-      <li><a onclick="selectCategory('gangwon')">강원권</a></li><li><a onclick="selectCategory('chungcheong')">충청권</a></li>
-      <li><a onclick="selectCategory('honam')">호남권</a></li><li><a onclick="selectCategory('yeongnam')">영남권</a></li>
-      <li><a onclick="selectCategory('capital')">수도권</a></li><li><a onclick="selectCategory('jeju')">제주</a></li>
+      <li><a href="#destinations" data-route="/domestic/gangwon" onclick="selectCategory('gangwon')">강원권</a></li><li><a href="#destinations" data-route="/domestic/chungcheong" onclick="selectCategory('chungcheong')">충청권</a></li>
+      <li><a href="#destinations" data-route="/domestic/honam" onclick="selectCategory('honam')">호남권</a></li><li><a href="#destinations" data-route="/domestic/yeongnam" onclick="selectCategory('yeongnam')">영남권</a></li>
+      <li><a href="#destinations" data-route="/domestic/capital" onclick="selectCategory('capital')">수도권</a></li><li><a href="#destinations" data-route="/domestic/jeju" onclick="selectCategory('jeju')">제주</a></li>
     </ul></div>
     <div><h4>해외 국가</h4><ul>
-      <li><a onclick="selectCategory('japan')">일본</a></li><li><a onclick="selectCategory('china')">중국</a></li>
-      <li><a onclick="selectCategory('mongolia')">몽골</a></li><li><a onclick="selectCategory('vietnam')">베트남</a></li>
-      <li><a onclick="selectCategory('thailand')">태국</a></li><li><a onclick="selectCategory('philippines')">필리핀</a></li>
+      <li><a href="#destinations" data-route="/overseas/japan" onclick="selectCategory('japan')">일본</a></li><li><a href="#destinations" data-route="/overseas/china" onclick="selectCategory('china')">중국</a></li>
+      <li><a href="#destinations" data-route="/overseas/mongolia" onclick="selectCategory('mongolia')">몽골</a></li><li><a href="#destinations" data-route="/overseas/vietnam" onclick="selectCategory('vietnam')">베트남</a></li>
+      <li><a href="#destinations" data-route="/overseas/thailand" onclick="selectCategory('thailand')">태국</a></li><li><a href="#destinations" data-route="/overseas/philippines" onclick="selectCategory('philippines')">필리핀</a></li>
     </ul></div>
     <div><h4>Support</h4><ul>
       <li><a href="#booking">티타임 상담</a></li><li><a href="#blog">여행 이야기</a></li>
@@ -2290,7 +2420,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <!-- 중단부: 사업자 정보 -->
   <div class="foot-company">
     <div class="fc-line"><b>(주)더골프트렌드</b> · 대표: 오선영 · 사업자번호: 707-81-03126 · 통신판매업: 제 2024-서울송파-0795호</div>
-    <div class="fc-line">주소: 서울특별시 송파구 충민로 66, 가든파이브라이프 7층 리빙관 7074호 · 고객센터: <b>707-7500-5981</b> · 이메일: kitty2yamyam@gmail.com</div>
+    <div class="fc-line">주소: 서울특별시 송파구 충민로 66, 가든파이브라이프 7층 리빙관 7074호 · 고객센터: <b>707-7500-5981</b></div>
     <div class="fc-line">관광사업등록번호: <b>제2023-6호</b> (종합여행업)</div>
   </div>
 
@@ -2312,7 +2442,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <!-- ADMIN -->
 <button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기" title="관리자 패널">🔧</button>
 <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
-<aside class="admin-panel" id="adminPanel" aria-label="관리자 패널">
+<aside class="admin-panel" id="adminPanel" aria-label="관리자 패널" aria-hidden="true">
   <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>
   <div class="admin-head">
     <div><h3>관리자 패널</h3><p>이미지 · 상품 · 링크 · AI 리드를 관리하세요</p></div>
@@ -3066,7 +3196,7 @@ function renderAboutBanner(){
     aboutBannerVideoObjectUrl = dataURLToObjectURL(b.url);
     c.innerHTML = `<video src="${escapeAttr(aboutBannerVideoObjectUrl)}" autoplay muted loop playsinline class="about-banner-img"></video>`;
   } else {
-    c.innerHTML = `<img src="${escapeAttr(b.url)}" class="about-banner-img" alt="회사소개 배너">`;
+    c.innerHTML = `<img src="${escapeAttr(b.url)}" class="about-banner-img" alt="(주)더골프트렌드 회사소개 배너" loading="lazy" decoding="async">`;
   }
 }
 async function handleLogoUpload(inputEl){
@@ -3220,6 +3350,46 @@ const SITE_CONTACT = {
   email:'edgar.meshugas@gmail.com'
 };
 
+// [Phase 3 GEO/AEO 강화] 상품별 독립 URL(예: /japan/shizuoka/xxx-cc)이 생기면
+// 해당 상세페이지 <head>에 이 함수의 반환값을 JSON-LD(Product/Offer)로 주입하면 됨.
+// 지금은 상품이 앵커(#) 기반 모달로만 열리고 고유 URL이 없어, 잘못된 Product Schema를
+// 검색엔진에 노출하지 않기 위해 어디에서도 자동 주입하지 않음 — 준비된 함수로만 존재.
+function buildProductJsonLd(catId, idx, pageUrl){
+  const cat = findCat(catId);
+  const products = getProducts(catId);
+  const p = products && products[idx];
+  if (!cat || !p) return null;
+  const priceEntry = (p.priceEntries && p.priceEntries[0]) || null;
+  const price = (priceEntry && priceEntry.salePrice) || p.from || 0;
+  const currency = (priceEntry && priceEntry.saleCurrency) || 'KRW';
+  const image = (p.gallery && p.gallery[0] && p.gallery[0].url)
+    || (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
+    || getImage(catId);
+  const isDomestic = CATEGORIES.domestic.some(c=>c.id===catId);
+  const additionalProperty = [
+    p.nights ? {'@type':'PropertyValue', name:'일정', value:p.nights} : null,
+    p.rounds ? {'@type':'PropertyValue', name:'골프 라운드', value:p.rounds} : null,
+  ].filter(Boolean);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.title,
+    category: (isDomestic ? '국내 골프여행 > ' : '해외 골프여행 > ') + cat.ko,
+    brand: {'@type':'Organization', name:'THE GOLF TREND'},
+    image: image ? [image] : undefined,
+    description: `${cat.ko} ${p.title} — ${p.nights||''} ${p.rounds||''} 골프 패키지`.trim(),
+    additionalProperty: additionalProperty.length ? additionalProperty : undefined,
+    offers: {
+      '@type': 'Offer',
+      price: price || undefined,
+      priceCurrency: currency,
+      url: pageUrl || undefined, // 실제 상세페이지 URL 확정 전에는 반드시 채워서 사용할 것
+      availability: 'https://schema.org/InStock',
+      areaServed: cat.ko
+    }
+  };
+}
+
 // SNS 아이콘을 base64로 인라인 임베드 — 이미지 파일이 없어도 아이콘이 표시됨
 const ICON_DATA = {
   'icon-band':'data:image/png;base64,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Wq1WvQFarRaco7q4lL//9NNP40Mf+hA++MEP4nd/97/hnb/4TvzZBz6A2bk5VCHAOcZNN70Mt77mNbjvvvvR7oxjbm4ey5ZN48ILL8Jn77gDjz3+KADgBVddhc2bN2Pv3j3odsdQFG20Wm0QOYg2K5vE2mCCLTjY9SbgM0gCDI+n3DM/xKxFpSHY4OB9kcrBgtnZQzj33I1Yu241iAh33303Dh06hPXr16PX6430Adrf1vOfWbGdThdjY5NYtmw5pqeXYbw7NtIHWJYBc3OzgEaMT03hga0P4cYbX4rnP//5AIAnnvgO/uN//DU8/fR3oKrYsmULrr32WjzzzDOw9kUaaUPLPQbttgFc3/M9r8bP/tzPYeu3Hko1j1HmUVHYJvB++P3x8XGsXbsWN954I2644QaMjY3h937vd/FHf/SeFKso1q9fh9e/7nWYnJzArl27MDk5iRACVq9ejd27duG+b90PAFi1ahXO37wZBw4cSM8n1Ja3LkrVDQF6wibepVqAE3iFxHhVAFSZNVCpK2OZAVNVVWqxDijLCmvWrMPk5DSqKuCpp57C2NgYOp1OXbFrLoAVUob1g0suuRjveMfP4/Wv/3789E//NH7hF34Ba9asgari8W1P4t577sHmCy/AstUr8dhjj4IIeP3rX4+pqSkAiplDh3D77bfjqae+AyJCp9PCzTffDGbGE088gampybq+niuU/X6/rkiOj3fxqu95FZ533nnYtWsPxsYm68csEuvyd/a/malcVZWRNloFbr75ZmxYew7e94d/jHvvvrt+vFu2bMGGDRuwe/cedLudZAWWYa43j2effRYAMDU1hTVr1qLXm099hznApJFWsyavoYYf6RipXeLTzABT10tYQDMicwua6/WoiZU5WCkKxuTkONrtNubn5zE/P4eiXaDdbkNV0e12R4ghJhZhD7OqKlxwwQX4sR/7EbztbW/BW97yFlxxxRXw3mMw6OP222/Hhz50O174ghdi+fQ0tj7wAC664CJs3ry57qp96NFHcOToUTz99NOJAAo8//kXY8uWLdixYwfGxydAQH3iiQhPPfUU3vWud2H37t1gdli7bi1+/Cf/CQblADOzh4cUa9eCc0Vdws1WMPMdBgPTLdi1axde/oqb0G53cP+3tmLv3gP14nbHuuj3j6SNw5iYmID3BY4enYOIYGpqHN1OAUOk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',
@@ -3315,6 +3485,10 @@ function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replac
 function getCatBgStyle(cat){
   return `background-image:url('${getImage(cat.id)}');background-size:cover;background-position:center`;
 }
+// [Phase 3 이미지 SEO/GEO 강화] CSS 배경이미지(div)는 <img alt>가 없어 검색엔진/AI가 맥락을 알기 어려움.
+// 실제 화면 문구(지역/국가명, 상품명)와 일치하는 설명을 role="img"+aria-label로 부여 (시각적 디자인 변경 없음).
+function catImgAlt(cat){ return `${cat.ko} 골프 여행지 대표 이미지 — ${cat.tagline}`; }
+function productImgAlt(cat, p){ return `${cat.ko} ${p.title} 골프 패키지 이미지`; }
 function usingComposite(cat){return false} // 통합 이미지 시스템 제거
 function findCat(id){return CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===id)}
 
@@ -3335,7 +3509,7 @@ function renderCategoryGrid(){
     const style=getCatBgStyle(c);
     const koreaClass=usingComposite(c)?'bg-korea':'';
     return `<article class="cat-card" onclick="selectCategory('${c.id}')">
-      <div class="bg ${koreaClass}" style="${style}"></div>
+      <div class="bg ${koreaClass}" style="${style}" role="img" aria-label="${escapeAttr(catImgAlt(c))}"></div>
       <div class="content">
         <div class="top"><span class="tagline">${c.tagline}</span><span class="count-badge">${count}개 상품</span></div>
         <div><div class="divider"><span>✦</span></div><div class="name-ko">${c.ko}</div><div class="name-en">${c.en}</div></div>
@@ -3380,8 +3554,8 @@ function productCardHTML(p, catId, idx){
   const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
   const displayPrice = getDisplayPrice(p);
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
-    <div class="product-visual" style="${visualStyle}">
-      ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay></video>`:''}
+    <div class="product-visual" style="${visualStyle}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
+      ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}
       ${p.tag?`<span class="tag-abs">${p.tag}</span>`:''}
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
@@ -3719,6 +3893,28 @@ function renderLinks(){
     c.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:rgba(247,245,240,.5)">
       아직 등록된 연계 채널이 없습니다. 관리자 패널 → 브랜드 링크에서 URL을 등록해주세요.</div>`;
   }
+  updateOrganizationSameAs();
+}
+// [Phase 3 SEO/GEO 강화] 관리자 패널에서 켠(isLinkActive) SNS/블로그/밴드 링크만 Organization
+// sameAs로 반영 — 화면에 보이는 활성 링크와 구조화 데이터가 항상 일치하도록 renderLinks()에서 매번 호출.
+function updateOrganizationSameAs(){
+  const urls = new Set([SITE_CONTACT.kakaoChannel]);
+  Object.values(LINK_DEFS).forEach(g=>{
+    g.items.forEach(it=>{ if (isLinkActive(it.key)){ const u = getLinkUrl(it.key); if (u) urls.add(u); } });
+  });
+  let el = document.getElementById('orgSameAsJsonLd');
+  if (!el){
+    el = document.createElement('script');
+    el.type = 'application/ld+json';
+    el.id = 'orgSameAsJsonLd';
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': 'https://kundo-code.github.io/TheGolfTrend_Home/#organization',
+    sameAs: Array.from(urls)
+  });
 }
 function renderFootSocials(){
   const c=document.getElementById('footSocials');
@@ -3791,17 +3987,20 @@ function airlineNamesFromCodes(codes){
 
 function renderProductDetail(p,cat){
   const c=document.getElementById('pdContent');
-  const titleBg=(p.titleMedia&&p.titleMedia.url)
-    ? '' : getCatBgStyle(cat);
+  const hasTitleMedia = p.titleMedia && p.titleMedia.url;
+  const titleBg = hasTitleMedia ? '' : getCatBgStyle(cat);
+  // [Phase 3 이미지 SEO/GEO 강화] 상품 전용 이미지가 없어 지역 대표 이미지를 배경으로 쓸 때만 aria-label 부여
+  // (전용 이미지가 있으면 아래 <img alt>가 대신 설명하므로 중복 라벨을 달지 않음)
+  const titleBgAria = hasTitleMedia ? '' : ` role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}"`;
 
   // Title slot
   let html = `<div class="pd-slot pd-title-slot">
-    <div class="pd-title-media" style="${titleBg}">`;
+    <div class="pd-title-media" style="${titleBg}"${titleBgAria}>`;
   if (p.titleMedia && p.titleMedia.url){
     if (p.titleMedia.type==='video'){
       html += `<video src="${escapeAttr(p.titleMedia.url)}" autoplay muted loop playsinline></video>`;
     } else {
-      html += `<img src="${escapeAttr(p.titleMedia.url)}" alt="">`;
+      html += `<img src="${escapeAttr(p.titleMedia.url)}" alt="${escapeAttr(productImgAlt(cat,p))}" loading="eager" decoding="async">`;
     }
   }
   html += `<div class="pd-title-body">
@@ -3838,7 +4037,7 @@ function renderProductDetail(p,cat){
     html += `<div class="pd-slot pd-gallery">
       <div class="pd-section-title">갤러리</div>
       <div class="pd-gallery-main">
-        ${p.gallery.map((g,i)=>`<img src="${escapeAttr(g.url)}" class="${i===0?'active':''}" alt="">`).join('')}
+        ${p.gallery.map((g,i)=>`<img src="${escapeAttr(g.url)}" class="${i===0?'active':''}" alt="${escapeAttr(productImgAlt(cat,p))} - 사진 ${i+1}" loading="${i===0?'eager':'lazy'}" decoding="async">`).join('')}
         ${p.gallery.length>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryGo(${p.gallery.length===0?0:'('+pdGalleryIdx+'-1+'+p.gallery.length+')%'+p.gallery.length});pdGalleryNext(-1)" aria-label="이전">‹</button>
         <button class="pd-gallery-nav next" onclick="pdGalleryNext(1)" aria-label="다음">›</button>
         <span class="pd-gallery-counter">1 / ${p.gallery.length}</span>`:''}
@@ -3976,6 +4175,7 @@ async function toggleAdmin(){
   const overlay=document.getElementById('overlay');
   const isOpen=panel.classList.toggle('open');
   overlay.classList.toggle('show',isOpen);
+  panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true'); // [Phase 3 접근성/SEO 강화] 닫혀있을 때 스크린리더·크롤러에 노출되지 않도록
   if (isOpen){
     await refreshAdminSession();
     renderAdminAuthGate();
@@ -4326,7 +4526,7 @@ function renderPkgGroup(type){
 
   const cardHTML = (p,origIdx)=>`
     <div class="pkg-card" data-idx="${origIdx}" onclick="openPkgLightbox('${type}',${origIdx})">
-      <img src="${escapeAttr(p.url)}" alt="${escapeAttr(p.label||'')}" class="pkg-img" loading="lazy">
+      <img src="${escapeAttr(p.url)}" alt="${escapeAttr(p.label || (type==='domestic'?'국내 골프 패키지 요금표':'해외 골프 패키지 요금표'))}" class="pkg-img" loading="lazy" decoding="async">
       ${p.label?`<div class="pkg-label">${escapeAttr(p.label)}</div>`:''}
       <div class="pkg-zoom-hint">🔍</div>
     </div>`;
@@ -5467,6 +5667,7 @@ function toggleStyleMenu(){
   if(isOpen) closeStyleMenu();
   else {
     panel.classList.add('open');
+    document.getElementById('sdTags')?.setAttribute('aria-expanded','true'); // [Phase 3 접근성 강화]
     // 외부 클릭 시 닫기
     setTimeout(()=>{
       document.addEventListener('click', _sdOutsideClick, {once:true});
@@ -5480,6 +5681,7 @@ function _sdOutsideClick(e){
 function closeStyleMenu(){
   const panel = document.getElementById('sdPanel');
   if(panel) panel.classList.remove('open');
+  document.getElementById('sdTags')?.setAttribute('aria-expanded','false'); // [Phase 3 접근성 강화]
 }
 function syncStyleTags(){
   const checks = document.querySelectorAll('#sdPanel input[type=checkbox]:checked');
@@ -5652,6 +5854,10 @@ function callHotline(){
     window.location.href = 'tel:010-9405-6842';
   }
 }
+// 카카오톡 채널 1:1 채팅 (새 탭) - 이메일/메일 클라이언트 설정 여부와 무관하게 바로 상담 가능
+function openKakaoChat(){
+  window.open(SITE_CONTACT.kakaoChat || 'http://pf.kakao.com/_SSxgFG/chat', '_blank', 'noopener');
+}
 // 상담 신청 - 이메일 전송 (mailto:) 및 성공 화면
 document.getElementById('bookingForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -5691,11 +5897,26 @@ ${fd.get('details')||'-'}
     document.getElementById('successMsg').classList.add('show');
   }, 500);
 });
-document.querySelectorAll('#navMenu a').forEach(a=>a.addEventListener('click',()=>document.getElementById('navMenu').classList.remove('open')));
+// [Phase 3 접근성 강화] 메뉴 버튼의 aria-expanded를 실제 열림 상태와 동기화
+function toggleNavMenu(){
+  const menu = document.getElementById('navMenu');
+  const btn = document.getElementById('navMenuBtn');
+  const open = menu.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+document.querySelectorAll('#navMenu a').forEach(a=>a.addEventListener('click',()=>{
+  document.getElementById('navMenu').classList.remove('open');
+  const btn = document.getElementById('navMenuBtn');
+  if (btn) btn.setAttribute('aria-expanded','false');
+}));
 document.addEventListener('keydown',e=>{
   if (e.key==='Escape'){
     if (document.getElementById('advOverlay').classList.contains('show')) closeAdvEditor();
     else if (document.getElementById('pdOverlay').classList.contains('show')) closeProductDetail();
+    // [Phase 3 접근성 강화] 관리자 패널·법적고지 모달·홈 진입 팝업도 ESC로 닫기
+    else if (document.getElementById('adminPanel').classList.contains('open')) toggleAdmin();
+    else if (document.getElementById('legalModalOverlay').classList.contains('show')) closeLegalModal();
+    else if (document.getElementById('popupStage').classList.contains('show')) closePopupStage();
   }
 });
 

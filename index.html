@@ -2992,7 +2992,8 @@ function renderHeadline(){
 }
 // 탭이 백그라운드일 때는 오토플레이 동영상을 일시정지해 불필요한 디코딩/메모리 사용을 줄임
 document.addEventListener('visibilitychange', ()=>{
-  document.querySelectorAll('.headline-media video, .about-banner-wrap video').forEach(v=>{
+  // #heroBg video.active만 선택 — 비활성 히어로 배경 영상은 애초에 재생 중이 아니므로 건드릴 필요 없음
+  document.querySelectorAll('.headline-media video, .about-banner-wrap video, #heroBg video.active').forEach(v=>{
     if (document.visibilityState==='hidden') v.pause(); else v.play().catch(()=>{});
   });
 });
@@ -3220,10 +3221,14 @@ function renderHeroBg(){
   heroSlideIdx=0;
   const list=getHeroBgList();
   if (list.length){
+    // autoplay 속성을 넣지 않음 — 보이지 않는(active가 아닌) 영상까지 전부 동시에 디코딩되며
+    // 장시간 켜두면 메모리/CPU 사용량이 계속 늘어나는 원인이 되므로, 현재 활성 슬라이드 하나만
+    // 아래에서 직접 재생시키고 나머지는 대기 상태로 둔다 (전환은 cycleHero()가 재생/정지를 넘겨받음)
     bg.innerHTML = list.map((item,i)=> item.type==='video'
-      ? `<video class="slide hero-bg-video ${i===0?'active':''}" src="${escapeAttr(item.url)}" muted playsinline autoplay loop></video>`
+      ? `<video class="slide hero-bg-video ${i===0?'active':''}" src="${escapeAttr(item.url)}" muted playsinline loop></video>`
       : `<div class="slide ${i===0?'active':''}" style="background-image:url('${escapeAttr(item.url)}')"></div>`
     ).join('');
+    bg.querySelector('.slide.hero-bg-video.active')?.play().catch(()=>{});
     return;
   }
   const ids=['japan','thailand','jeju','guam'];
@@ -3237,9 +3242,13 @@ function cycleHero(){
   if (!slides.length) return;
   // 방어적 가드: 슬라이드 개수가 바뀐 직후 등 heroSlideIdx가 범위를 벗어난 경우 안전하게 보정
   if (heroSlideIdx>=slides.length) heroSlideIdx=0;
-  slides[heroSlideIdx]?.classList.remove('active');
+  const prevSlide=slides[heroSlideIdx];
+  prevSlide?.classList.remove('active');
+  if (prevSlide?.tagName==='VIDEO') prevSlide.pause(); // 화면에서 사라진 영상은 계속 디코딩하지 않도록 정지
   heroSlideIdx=(heroSlideIdx+1)%slides.length;
-  slides[heroSlideIdx]?.classList.add('active');
+  const nextSlide=slides[heroSlideIdx];
+  nextSlide?.classList.add('active');
+  if (nextSlide?.tagName==='VIDEO') nextSlide.play().catch(()=>{});
 }
 // slot(0/1)별로 현재 화면에 보이는 레이어가 'a'인지 'b'인지 추적 — 교차 페이드(crossfade)에 사용
 const spotFront = {0:'a', 1:'a'};
@@ -4199,6 +4208,10 @@ function pkgUpdateActiveCard(type){
   const totalCards = st.listLen*2;
   let nearestIdx = Math.round((targetContentX - st.cardW/2) / st.slideW);
   nearestIdx = ((nearestIdx % totalCards)+totalCards) % totalCards;
+  // 활성 카드가 실제로 바뀔 때만 DOM을 건드림 — 이 함수는 rAF 루프에서 매 프레임(초당 60회) 호출되므로,
+  // 매번 querySelectorAll을 새로 실행하면 페이지를 오래 켜둘수록 불필요한 GC 부하가 계속 누적됨
+  if (nearestIdx === st.lastActiveIdx) return;
+  st.lastActiveIdx = nearestIdx;
 
   track.querySelectorAll('.pkg-card').forEach((card,i)=>{
     card.classList.toggle('pkg-dim', i!==nearestIdx);

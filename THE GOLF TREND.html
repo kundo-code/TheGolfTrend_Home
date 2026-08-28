@@ -3191,6 +3191,9 @@ function quietRefreshCategory(){
 // HERO + SPOTLIGHT
 function renderHeroBg(){
   const bg=document.getElementById('heroBg');
+  // 슬라이드를 다시 그릴 때마다 항상 0번을 active로 만드므로, 이전 개수 기준으로 남아있던
+  // heroSlideIdx가 새 슬라이드 개수 범위를 벗어나 cycleHero()에서 에러가 나지 않도록 초기화
+  heroSlideIdx=0;
   const list=getHeroBgList();
   if (list.length){
     bg.innerHTML = list.map((item,i)=> item.type==='video'
@@ -3208,9 +3211,11 @@ function renderHeroBg(){
 function cycleHero(){
   const slides=document.querySelectorAll('#heroBg .slide');
   if (!slides.length) return;
-  slides[heroSlideIdx].classList.remove('active');
+  // 방어적 가드: 슬라이드 개수가 바뀐 직후 등 heroSlideIdx가 범위를 벗어난 경우 안전하게 보정
+  if (heroSlideIdx>=slides.length) heroSlideIdx=0;
+  slides[heroSlideIdx]?.classList.remove('active');
   heroSlideIdx=(heroSlideIdx+1)%slides.length;
-  slides[heroSlideIdx].classList.add('active');
+  slides[heroSlideIdx]?.classList.add('active');
 }
 // slot(0/1)별로 현재 화면에 보이는 레이어가 'a'인지 'b'인지 추적 — 교차 페이드(crossfade)에 사용
 const spotFront = {0:'a', 1:'a'};

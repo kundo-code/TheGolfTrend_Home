@@ -973,35 +973,35 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .sd-tag:hover{background:rgba(221,179,103,.35);color:#fff}
 .sd-panel{
   position:absolute;left:0;right:0;top:calc(100% + 6px);
-  background:linear-gradient(180deg,#0A1730,#000000);
-  border:1px solid rgba(221,179,103,.25);border-radius:14px;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  background:#fff;
+  border:1px solid rgba(10,23,48,.15);border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
   z-index:500;max-height:320px;overflow-y:auto;
   display:none;flex-direction:column;padding:8px 0;
 }
 .sd-panel.open{display:flex}
 .sd-panel::-webkit-scrollbar{width:4px}
-.sd-panel::-webkit-scrollbar-thumb{background:rgba(221,179,103,.3);border-radius:4px}
+.sd-panel::-webkit-scrollbar-thumb{background:rgba(202,142,63,.4);border-radius:4px}
 .sd-group-label{
   padding:10px 16px 4px;font-size:.7rem;font-weight:700;
-  color:var(--gold);letter-spacing:.1em;text-transform:uppercase;
-  border-top:1px solid rgba(255,255,255,.06);margin-top:4px;
+  color:var(--gold-deep);letter-spacing:.1em;text-transform:uppercase;
+  border-top:1px solid rgba(10,23,48,.08);margin-top:4px;
 }
 .sd-group-label:first-child{border-top:none;margin-top:0}
 .sd-opt{
   display:flex;align-items:center;gap:10px;
-  padding:9px 16px;cursor:pointer;font-size:.88rem;color:rgba(247,245,240,.85);
+  padding:9px 16px;cursor:pointer;font-size:.88rem;color:rgba(10,23,48,.85);
   transition:background .15s;
 }
-.sd-opt:hover{background:rgba(255,255,255,.06)}
-.sd-opt.sd-sub{padding-left:28px;font-size:.83rem;color:rgba(247,245,240,.7)}
+.sd-opt:hover{background:rgba(10,23,48,.05)}
+.sd-opt.sd-sub{padding-left:28px;font-size:.83rem;color:rgba(10,23,48,.6)}
 .sd-opt input[type=checkbox]{
-  width:15px;height:15px;accent-color:var(--gold);
+  width:15px;height:15px;accent-color:var(--gold-deep);
   cursor:pointer;flex-shrink:0;
 }
-.sd-opt:has(input:checked){background:rgba(221,179,103,.1);color:#fff}
+.sd-opt:has(input:checked){background:rgba(221,179,103,.15);color:#0A1730;font-weight:600}
 .sd-footer{
-  padding:10px 16px;border-top:1px solid rgba(255,255,255,.08);margin-top:4px;
+  padding:10px 16px;border-top:1px solid rgba(10,23,48,.08);margin-top:4px;
 }
 .sd-footer button{
   width:100%;padding:9px;background:var(--gold);border:none;border-radius:8px;

@@ -4572,19 +4572,23 @@ function pkgMeasure(type){
 
   track.querySelectorAll('.pkg-card').forEach(card=>{ card.style.flex = `0 0 ${cardW}px`; });
 
-  // 이미지 높이 통일: 가장 작은 이미지와 가장 큰 이미지 높이의 평균값으로 고정
-  const urls = list.map(p=>p.url).filter(Boolean);
-  const missing = urls.filter(u=>!pkgImgDims[u]);
+  // [Phase 3] 이미지 높이 통일: 국내·해외 각각 따로 계산하면 두 섹션의 카드 높이가 서로 달라질 수 있어,
+  // 국내+해외 포스터를 함께 모아 하나의 균일 높이를 계산하고 두 트랙에 동일하게 적용한다.
+  const allUrls = [].concat(getPkgList('domestic').map(p=>p.url), getPkgList('overseas').map(p=>p.url)).filter(Boolean);
+  const missing = allUrls.filter(u=>!pkgImgDims[u]);
   if(missing.length){
     Promise.all(missing.map(pkgLoadImgDims)).then(()=>pkgMeasure(type));
   }
-  const heights = urls.map(u=>{
+  const heights = allUrls.map(u=>{
     const d = pkgImgDims[u];
     return d ? cardW * (d.h/d.w) : null;
   }).filter(h=>h!=null && isFinite(h) && h>0);
   if(heights.length){
     const uniformH = (Math.min(...heights) + Math.max(...heights)) / 2;
-    track.style.setProperty('--pkg-img-h', uniformH+'px');
+    ['domestic','overseas'].forEach(t=>{
+      const tr = document.getElementById('pkgTrack_'+t);
+      if (tr) tr.style.setProperty('--pkg-img-h', uniformH+'px');
+    });
   }
 
   pkgPositionFrame(type);

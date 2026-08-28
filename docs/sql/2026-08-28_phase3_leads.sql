@@ -46,3 +46,10 @@ create policy "authenticated can update leads"
   with check (true);
 
 create index if not exists kundo_leads_created_at_idx on public.kundo_leads (created_at desc);
+
+-- RLS 정책과 별개로, 역할 자체에 테이블 접근 권한(GRANT)이 없으면
+-- "permission denied for table kundo_leads" (42501) 에러가 발생한다.
+-- SQL Editor로 테이블을 직접 생성한 경우 이 기본 권한이 자동으로 부여되지 않을 수 있어 명시적으로 부여한다.
+grant usage on schema public to anon, authenticated;
+grant insert on public.kundo_leads to anon;
+grant select, update on public.kundo_leads to authenticated;

@@ -4564,6 +4564,7 @@ function renderPkgAll(){
 
 // px 기반 카드 폭/이미지 높이 계산 — 화면 폭에 맞춰 더 많은 카드를 노출
 const PKG_TARGET_CARD_W = 220; // 카드 1장당 대략적인 목표 폭(px) — 화면이 넓을수록 더 많은 카드가 노출됨
+const PKG_CARD_SCALE = 1.1; // [Phase 3] 요청: 패키지 요금표 이미지를 가로세로 110%로 확대
 function pkgMeasure(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
@@ -4578,7 +4579,9 @@ function pkgMeasure(type){
   // 기준으로 삼아 국내/해외 카드 폭이 항상 같아지도록 한다.
   const sharedListLen = Math.max(getPkgList('domestic').length, getPkgList('overseas').length, 1);
   const visibleCount = Math.max(1, Math.min(sharedListLen, Math.floor((wrapW+gap)/(PKG_TARGET_CARD_W+gap))));
-  const cardW  = (wrapW - gap*(visibleCount-1)) / visibleCount;
+  // [Phase 3] 화면에 맞춘 기본 카드 폭을 구한 뒤 PKG_CARD_SCALE(110%)만큼 키운다.
+  // 높이(--pkg-img-h)는 이 cardW를 기준으로 원본 비율을 곱해 계산되므로 가로세로가 함께 110%로 커진다.
+  const cardW  = ((wrapW - gap*(visibleCount-1)) / visibleCount) * PKG_CARD_SCALE;
   const slideW = cardW + gap;
 
   const st = pkgState[type];

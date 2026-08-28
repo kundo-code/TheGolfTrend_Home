@@ -335,6 +335,7 @@ section.block{padding:100px 24px;position:relative}
 .barcode{height:44px;background:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 5px,#fff 5px 7px,transparent 7px 11px);opacity:.85;border-radius:2px}
 .form-note{text-align:center;font-size:.85rem;color:rgba(247,245,240,.6);margin-top:24px}
 .form-note b{color:var(--gold);font-weight:600}
+.form-note a:hover b{text-decoration:underline}
 .success{display:none;text-align:center;padding:60px 20px}
 .success.show{display:block}
 .success .big{font-size:3.6rem;margin-bottom:16px}
@@ -1025,6 +1026,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;
 }
 .call-btn:hover{background:var(--gold);color:var(--pine-deep);transform:translateY(-1px);box-shadow:0 10px 30px rgba(221,179,103,.35)}
+.kakao-btn{
+  flex:1;padding:14px 16px;background:#FEE500;border:1px solid #FEE500;
+  color:#391B1B;border-radius:12px;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;
+}
+.kakao-btn:hover{background:#FDD800;border-color:#FDD800;transform:translateY(-1px);box-shadow:0 10px 30px rgba(254,229,0,.4)}
 @media(max-width:500px){.submit-row{flex-direction:column}}
 
 /* ── 법적고지 관리자 패널 ──────────────────────────────────────── */
@@ -2237,6 +2244,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="field full"><label>세부 요청 · Details</label><textarea name="details" placeholder="원하시는 여행 스타일에 대해 자유롭게 적어주세요">원하시는 여행 스타일에 대해 자유롭게 적어주세요</textarea></div>
               <div class="field full"><div class="submit-row">
                 <button type="submit" class="submit-btn">📧 상담 신청하기</button>
+                <button type="button" class="kakao-btn" onclick="openKakaoChat()">💬 카톡 상담</button>
                 <button type="button" class="call-btn" onclick="callHotline()">📞 전화하기</button>
               </div></div>
             </div>
@@ -2250,7 +2258,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="barcode" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · 카카오톡 <b>@thegolftrend</b> · <b>edgar.meshugas@gmail.com</b></p>
+      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>edgar.meshugas@gmail.com</b></p>
     </div>
   </div>
 </section>
@@ -5651,6 +5659,10 @@ function callHotline(){
   if (confirm('010-9405-6842로 전화 연결하시겠습니까?')){
     window.location.href = 'tel:010-9405-6842';
   }
+}
+// 카카오톡 채널 1:1 채팅 (새 탭) - 이메일/메일 클라이언트 설정 여부와 무관하게 바로 상담 가능
+function openKakaoChat(){
+  window.open(SITE_CONTACT.kakaoChat || 'http://pf.kakao.com/_SSxgFG/chat', '_blank', 'noopener');
 }
 // 상담 신청 - 이메일 전송 (mailto:) 및 성공 화면
 document.getElementById('bookingForm').addEventListener('submit', async e=>{

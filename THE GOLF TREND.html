@@ -5653,7 +5653,7 @@ function callHotline(){
   }
 }
 // 상담 신청 - 이메일 전송 (mailto:) 및 성공 화면
-document.getElementById('bookingForm').addEventListener('submit',e=>{
+document.getElementById('bookingForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const form=e.target;
   const fd=new FormData(form);
@@ -5676,8 +5676,14 @@ ${fd.get('details')||'-'}
 `;
   const subject = `[THE GOLF TREND] 상담 신청 - ${fd.get('name')||''} ${fd.get('destination')||''}`;
   const mailto = `mailto:edgar.meshugas@gmail.com,kitty2yamyam@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  // 이메일 발송과 별개로 Supabase에도 리드 저장 (실패해도 상담 신청 흐름에는 영향 없음)
-  insertLead(fd);
+  // 이메일 발송과 별개로 Supabase에도 리드 저장 (실패해도 상담 신청 흐름에는 영향 없음).
+  // mailto: 이동이 (Outlook on the web 등) 브라우저 탭 자체를 이동시켜버리는 환경에서는
+  // 저장 요청이 끝나기 전에 페이지가 넘어가 리드가 유실될 수 있어, 완료되거나 일정 시간(2.5초)이
+  // 지날 때까지 잠깐 기다린 뒤에 메일 클라이언트로 이동한다.
+  await Promise.race([
+    insertLead(fd),
+    new Promise(resolve=>setTimeout(resolve, 2500))
+  ]);
   // 메일 클라이언트 오픈 후 성공 화면 전환
   window.location.href = mailto;
   setTimeout(()=>{

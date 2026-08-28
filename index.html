@@ -92,7 +92,9 @@ img{max-width:100%;display:block}
    topbar/헤드라인배너/내비게이션 전체가 하나의 둥근 알약형 박스로 붕 뜨는 문제를 일으켰다.
    죽은 규칙을 제거하고, 대신 topbar가 position:fixed로 빠지면서 생기는 빈 공간만큼
    <header>에 padding-top을 줘서 헤드라인 배너가 topbar 바로 아래에서 시작하게 한다. */
-header{padding-top:var(--topbar-h,108px)}
+/* [Phase 3 수정] topbar(가변 높이) + nav(고정 54px)가 모두 화면에 고정되므로, 헤드라인 배너가
+   그 두 바 아래에서 시작하도록 header에 둘을 합친 만큼 padding-top을 준다. */
+header{padding-top:calc(var(--topbar-h,108px) + 54px)}
 .nav{padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .logo{display:flex;align-items:center;gap:12px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.35rem;font-weight:500;color:var(--pine-deep)}
 .logo .mark{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0%,#F7F5F0 40%,#DDB367 100%);box-shadow:0 4px 12px rgba(0,0,0,.2),inset -3px -3px 8px rgba(0,0,0,.15);position:relative;flex-shrink:0}
@@ -846,10 +848,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ═══════════════ NAV BAR (헤드라인 하단) ═══════════════ */
 .nav{
-  /* [Phase 3 수정] nav는 더 이상 별도로 고정되지 않고, 헤드라인 배너와 함께 일반 흐름으로 스크롤됨
-     (고정되는 건 topbar 하나뿐). relative는 유지 — 모바일 드롭다운(.nav ul)이 이 요소를 기준으로
-     absolute 배치되기 때문에 static으로 바꾸면 드롭다운 위치가 어긋난다. */
-  position:relative;z-index:200;
+  /* [Phase 3 수정] nav는 topbar 바로 아래에 붙어서 스크롤 내내 함께 고정된다 (요청 반영).
+     sticky 대신 fixed를 쓰는 이유는 .top-bar와 마찬가지로, <header>처럼 키가 낮은 조상 안에서는
+     sticky가 그 조상 박스 높이만큼만 붙어있다가 이탈해버리기 때문 — fixed는 그 영향을 받지 않는다. */
+  position:fixed;top:var(--topbar-h,108px);left:0;width:100%;z-index:200;
   background:rgba(0,0,0,.92);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid rgba(221,179,103,.15);

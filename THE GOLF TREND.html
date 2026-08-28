@@ -2543,6 +2543,7 @@ function getBlogList(){ return blogOverride || JSON.parse(JSON.stringify(BLOG_DE
 function saveBlogList(list){
   blogOverride = list;
   try{ localStorage.setItem(BLOG_KEY, JSON.stringify(list)); }catch(e){ alert('저장 공간 부족'); }
+  queueSiteStateSync();
 }
 // 레거시 호환 (기존 BLOG 참조 방지)
 const BLOG = [];
@@ -2637,6 +2638,80 @@ async function uploadToStorage(file, prefix){
   return data.publicUrl;
 }
 
+// ── 사이트 콘텐츠(어떤 이미지/문구를 쓸지 등) 동기화 ─────────────────
+// 업로드된 파일 자체는 위 Storage에 저장되지만, "어느 상품에 어떤 이미지를 쓸지" 같은
+// 매핑 정보는 지금까지 브라우저 localStorage에만 있어서 기기/브라우저마다 따로 놀았음.
+// 이 정보를 하나의 JSON으로 묶어 Supabase 테이블(단일 행)에 저장해 모든 기기가 공유하도록 함.
+// localStorage/IndexedDB는 그대로 유지 — 오프라인이거나 Supabase 연결 전 첫 페인트에 쓰는 로컬 캐시 역할.
+const SITE_STATE_TABLE = 'kundo_site_state';
+function collectSiteState(){
+  return {
+    imageOverrides, productOverrides, linkOverrides, linkActiveOverrides,
+    legalOverrides, legalContentOverrides, cvImageOverrides, strImageOverrides,
+    pkgPosters, blogOverride, logoOverride, taglineOverride,
+    seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
+    headlineOverride, aboutBannerOverride,
+  };
+}
+function applySiteState(state){
+  if (!state) return;
+  if (state.imageOverrides) imageOverrides = state.imageOverrides;
+  if (state.productOverrides) productOverrides = state.productOverrides;
+  if (state.linkOverrides) linkOverrides = state.linkOverrides;
+  if (state.linkActiveOverrides) linkActiveOverrides = state.linkActiveOverrides;
+  if (state.legalOverrides) legalOverrides = state.legalOverrides;
+  if (state.legalContentOverrides) legalContentOverrides = state.legalContentOverrides;
+  if (state.cvImageOverrides) cvImageOverrides = state.cvImageOverrides;
+  if (state.strImageOverrides) strImageOverrides = state.strImageOverrides;
+  if (state.pkgPosters) pkgPosters = state.pkgPosters;
+  if (state.blogOverride !== undefined) blogOverride = state.blogOverride;
+  if (state.logoOverride !== undefined) logoOverride = state.logoOverride;
+  if (state.taglineOverride !== undefined) taglineOverride = state.taglineOverride;
+  if (state.seasonStickerOverrides) seasonStickerOverrides = state.seasonStickerOverrides;
+  if (state.headlineOverride !== undefined) headlineOverride = state.headlineOverride;
+  if (state.aboutBannerOverride !== undefined) aboutBannerOverride = state.aboutBannerOverride;
+  try{
+    localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
+    localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
+    localStorage.setItem(LINK_KEY, JSON.stringify(linkOverrides));
+    localStorage.setItem(LINK_ACTIVE_KEY, JSON.stringify(linkActiveOverrides));
+    localStorage.setItem(LEGAL_KEY, JSON.stringify(legalOverrides));
+    localStorage.setItem(LEGAL_CONTENT_KEY, JSON.stringify(legalContentOverrides));
+    localStorage.setItem(CV_IMG_KEY, JSON.stringify(cvImageOverrides));
+    localStorage.setItem(STR_IMG_KEY, JSON.stringify(strImageOverrides));
+    localStorage.setItem(PKG_KEY, JSON.stringify(pkgPosters));
+    if (blogOverride!=null) localStorage.setItem(BLOG_KEY, JSON.stringify(blogOverride));
+    if (logoOverride!=null) localStorage.setItem(LOGO_KEY, logoOverride);
+    if (taglineOverride!=null) localStorage.setItem(TAGLINE_KEY, taglineOverride);
+    localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides));
+    if (state.seasonTheme) localStorage.setItem(SEASON_THEME_KEY, state.seasonTheme);
+  }catch(e){}
+  if (state.headlineOverride !== undefined) idbSet(HEADLINE_KEY, headlineOverride).catch(()=>{});
+  if (state.aboutBannerOverride !== undefined) idbSet(ABOUT_BANNER_KEY, aboutBannerOverride).catch(()=>{});
+}
+let _siteStateSyncTimer=null;
+function queueSiteStateSync(){
+  clearTimeout(_siteStateSyncTimer);
+  _siteStateSyncTimer=setTimeout(pushSiteState, 600);
+}
+async function pushSiteState(){
+  const client=getSupabaseClient();
+  if (!client || !adminSession) return; // 로그인 상태(관리자)일 때만 공유 상태에 반영
+  try{
+    await client.from(SITE_STATE_TABLE).upsert({ id:1, data: collectSiteState(), updated_at: new Date().toISOString() });
+  }catch(e){ console.error('site state sync failed', e); }
+}
+async function pullSiteState(){
+  const client=getSupabaseClient();
+  if (!client) return false;
+  try{
+    const { data, error } = await client.from(SITE_STATE_TABLE).select('data').eq('id',1).maybeSingle();
+    if (error || !data) return false;
+    applySiteState(data.data);
+    return true;
+  }catch(e){ console.error('site state pull failed', e); return false; }
+}
+
 // 이미지/동영상처럼 용량이 큰 업로드는 localStorage(브라우저별 5~10MB 한도)를 바로 초과해
 // "저장 공간 부족" 오류가 났었음 — IndexedDB(수백MB 이상 여유)로 저장하도록 분리
 const IDB_NAME='kundo_media_v1', IDB_STORE='media';
@@ -2687,18 +2762,18 @@ function getLogo(){return logoOverride||DEFAULT_LOGO;}
 function getTagline(){return taglineOverride||DEFAULT_TAGLINE;}
 function getAboutBanner(){return aboutBannerOverride||null;}
 
-function setLogo(url){logoOverride=url;try{localStorage.setItem(LOGO_KEY,url)}catch(e){alert('저장 공간 부족')}renderTopBar();renderAdminIdentity();}
-function setTagline(txt){taglineOverride=txt;try{localStorage.setItem(TAGLINE_KEY,txt)}catch(e){}renderTopBar();renderAdminIdentity();}
+function setLogo(url){logoOverride=url;try{localStorage.setItem(LOGO_KEY,url)}catch(e){alert('저장 공간 부족')}renderTopBar();renderAdminIdentity();queueSiteStateSync();}
+function setTagline(txt){taglineOverride=txt;try{localStorage.setItem(TAGLINE_KEY,txt)}catch(e){}renderTopBar();renderAdminIdentity();queueSiteStateSync();}
 async function setAboutBanner(type,url){
   aboutBannerOverride={type,url};
   try{ await idbSet(ABOUT_BANNER_KEY, aboutBannerOverride); }catch(e){ alert('저장 공간 부족'); }
-  renderAboutBanner();renderAdminIdentity();
+  renderAboutBanner();renderAdminIdentity();queueSiteStateSync();
 }
 async function clearAboutBanner(){
   if(!confirm('회사소개 헤드라인을 기본(없음)으로 되돌리시겠습니까?'))return;
   aboutBannerOverride=null;
   try{ await idbDelete(ABOUT_BANNER_KEY); }catch(e){}
-  renderAboutBanner();renderAdminIdentity();
+  renderAboutBanner();renderAdminIdentity();queueSiteStateSync();
 }
 function renderTopBar(){
   const logo=document.getElementById('topBarLogo');
@@ -2786,13 +2861,13 @@ function getHeadline(){ return headlineOverride || DEFAULT_HEADLINE; }
 async function setHeadline(type, url){
   headlineOverride = {type, url};
   try{ await idbSet(HEADLINE_KEY, headlineOverride); }catch(e){ alert('저장 공간 부족'); }
-  renderHeadline(); renderAdminHeadline();
+  renderHeadline(); renderAdminHeadline();queueSiteStateSync();
 }
 async function clearHeadline(){
   if(!confirm('헤드라인을 기본 이미지로 되돌리시겠습니까?')) return;
   headlineOverride = null;
   try{ await idbDelete(HEADLINE_KEY); }catch(e){}
-  renderHeadline(); renderAdminHeadline();
+  renderHeadline(); renderAdminHeadline();queueSiteStateSync();
 }
 // data: URI(특히 대용량 동영상)를 Blob URL로 변환 — <video src="data:..."> 로 직접 재생하면
 // 브라우저가 거대한 base64 문자열을 DOM 속성/메모리에 계속 물고 있어야 해서
@@ -2911,10 +2986,10 @@ try{productOverrides=JSON.parse(localStorage.getItem(PROD_KEY)||'{}')}catch(e){}
 try{linkOverrides=JSON.parse(localStorage.getItem(LINK_KEY)||'{}')}catch(e){}
 try{linkActiveOverrides=JSON.parse(localStorage.getItem(LINK_ACTIVE_KEY)||'{}')}catch(e){}
 
-function saveImages(){try{localStorage.setItem(IMG_KEY,JSON.stringify(imageOverrides))}catch(e){alert('저장 공간 부족')}}
-function saveProducts(){try{localStorage.setItem(PROD_KEY,JSON.stringify(productOverrides))}catch(e){alert('저장 공간 부족')}}
-function saveLinks(){try{localStorage.setItem(LINK_KEY,JSON.stringify(linkOverrides))}catch(e){alert('저장 공간 부족')}}
-function saveLinkActive(){try{localStorage.setItem(LINK_ACTIVE_KEY,JSON.stringify(linkActiveOverrides))}catch(e){alert('저장 공간 부족')}}
+function saveImages(){try{localStorage.setItem(IMG_KEY,JSON.stringify(imageOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+function saveProducts(){try{localStorage.setItem(PROD_KEY,JSON.stringify(productOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+function saveLinks(){try{localStorage.setItem(LINK_KEY,JSON.stringify(linkOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+function saveLinkActive(){try{localStorage.setItem(LINK_ACTIVE_KEY,JSON.stringify(linkActiveOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 
 // 링크 활성 상태: URL이 비면 무조건 비활성. URL이 있으면 override가 false일 때만 비활성
 function isLinkActive(key){
@@ -3684,6 +3759,7 @@ function setLegalUrl(key, url){
   legalOverrides[key] = url;
   try{ localStorage.setItem(LEGAL_KEY, JSON.stringify(legalOverrides)); }catch(e){ alert('저장 공간 부족'); }
   renderFooterLegal();
+  queueSiteStateSync();
 }
 function getLegalContent(key){
   return legalContentOverrides[key] || '';
@@ -3692,6 +3768,7 @@ function setLegalContent(key, text){
   legalContentOverrides[key] = text;
   try{ localStorage.setItem(LEGAL_CONTENT_KEY, JSON.stringify(legalContentOverrides)); }catch(e){ alert('저장 공간 부족'); }
   renderFooterLegal();
+  queueSiteStateSync();
 }
 function renderFooterLegal(){
   const c = document.getElementById('footerLegal'); if(!c) return;
@@ -3768,8 +3845,8 @@ let strImageOverrides = {};
 try{ cvImageOverrides  = JSON.parse(localStorage.getItem(CV_IMG_KEY)||'{}'); }catch(e){}
 try{ strImageOverrides = JSON.parse(localStorage.getItem(STR_IMG_KEY)||'{}'); }catch(e){}
 
-function saveCvImages(){  try{localStorage.setItem(CV_IMG_KEY,  JSON.stringify(cvImageOverrides))}catch(e){alert('저장 공간 부족')} }
-function saveStrImages(){ try{localStorage.setItem(STR_IMG_KEY, JSON.stringify(strImageOverrides))}catch(e){alert('저장 공간 부족')} }
+function saveCvImages(){  try{localStorage.setItem(CV_IMG_KEY,  JSON.stringify(cvImageOverrides))}catch(e){alert('저장 공간 부족')} queueSiteStateSync(); }
+function saveStrImages(){ try{localStorage.setItem(STR_IMG_KEY, JSON.stringify(strImageOverrides))}catch(e){alert('저장 공간 부족')} queueSiteStateSync(); }
 
 // Core Values 카드 이미지 렌더
 function renderCvImages(){
@@ -3899,7 +3976,7 @@ function renderAdminAbout(){
 const PKG_KEY = 'kundo_pkg_posters_v1';
 let pkgPosters = {domestic:[], overseas:[]};
 try{ pkgPosters = JSON.parse(localStorage.getItem(PKG_KEY)||'{"domestic":[],"overseas":[]}'); }catch(e){}
-function savePkgPosters(){ try{localStorage.setItem(PKG_KEY,JSON.stringify(pkgPosters));}catch(e){alert('저장 공간 부족');} }
+function savePkgPosters(){ try{localStorage.setItem(PKG_KEY,JSON.stringify(pkgPosters));}catch(e){alert('저장 공간 부족');} queueSiteStateSync(); }
 
 // 슬라이드 상태 — 연속(마퀴) 스크롤 방식: posPx가 매 프레임 조금씩 증가하며 트랙 전체가 왼쪽으로 흐름
 const pkgState = {
@@ -4469,7 +4546,7 @@ function resetAllOverrides(){
   if (!confirm('모든 이미지·헤드라인·상품·링크 변경사항을 초기화하시겠습니까?')) return;
   imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;
   localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
-  renderAll();refreshCurrentAdminTab();
+  renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 
 // LINKS ADMIN
@@ -4946,7 +5023,7 @@ const SEASON_THEME_KEY='kundo_season_theme_v1';
 const SEASON_STICKER_KEY='kundo_season_stickers_v1';
 let seasonStickerOverrides={};
 try{ seasonStickerOverrides=JSON.parse(localStorage.getItem(SEASON_STICKER_KEY)||'{}'); }catch(e){ seasonStickerOverrides={}; }
-function saveSeasonStickers(){ try{ localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides)); }catch(e){} }
+function saveSeasonStickers(){ try{ localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides)); }catch(e){} queueSiteStateSync(); }
 function getThemeSticker(key){ return seasonStickerOverrides[key]||null; }
 async function handleSeasonStickerUpload(themeKey, inputEl){
   const file=inputEl.files[0]; if (!file) return;
@@ -5020,7 +5097,7 @@ function applySeasonTheme(key, persist){
   }
   document.querySelectorAll('.season-theme-btn').forEach(b=>b.classList.toggle('active', b.dataset.themeKey===key));
 }
-function setSeasonTheme(key){ applySeasonTheme(key, true); }
+function setSeasonTheme(key){ applySeasonTheme(key, true); queueSiteStateSync(); }
 function renderAdminSeasonTheme(){
   const c=document.getElementById('adminSeasonTheme'); if(!c) return;
   const active=getSeasonTheme();
@@ -5161,6 +5238,11 @@ document.addEventListener('keydown',e=>{
 renderAll();
 setInterval(cycleHero,6000);
 setInterval(cycleSpot,8000);
+
+// 로컬(localStorage/IndexedDB) 데이터로 먼저 빠르게 그린 뒤, Supabase에 저장된 공유 상태를
+// 백그라운드에서 가져와 있으면(다른 기기/브라우저에서 저장한 최신 내용) 다시 렌더링해 동기화.
+// 오프라인이거나 Supabase 연결 전이면 조용히 무시하고 로컬 데이터 그대로 유지.
+pullSiteState().then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); } }).catch(()=>{});
 
 // 홈 진입 시 팝업 최대 3개 표시 (세션당 1회)
 function showEntryPopups(){

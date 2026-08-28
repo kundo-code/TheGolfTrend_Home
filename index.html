@@ -87,9 +87,12 @@ img{max-width:100%;display:block}
 @keyframes seasonFallH{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:.9}90%{opacity:.9}100%{transform:translate(-160px,780px) rotate(-360deg);opacity:0}}
 
 /* HEADER */
-header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:1280px;z-index:100;
-  background:rgba(255,255,255,.88);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
-  border:1px solid rgba(10,23,48,.08);border-radius:100px;box-shadow:0 10px 32px rgba(10,23,48,.10),inset 0 1px 0 rgba(255,255,255,.6)}
+/* [Phase 3 수정] 예전에 쓰이지 않던(당시 실제 <header> 태그가 없었음) 이 위치의 헤더 전용
+   position:fixed 규칙이, <header> 시맨틱 태그를 새로 추가하면서 의도치 않게 활성화되어
+   topbar/헤드라인배너/내비게이션 전체가 하나의 둥근 알약형 박스로 붕 뜨는 문제를 일으켰다.
+   죽은 규칙을 제거하고, 대신 topbar가 position:fixed로 빠지면서 생기는 빈 공간만큼
+   <header>에 padding-top을 줘서 헤드라인 배너가 topbar 바로 아래에서 시작하게 한다. */
+header{padding-top:var(--topbar-h,108px)}
 .nav{padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .logo{display:flex;align-items:center;gap:12px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.35rem;font-weight:500;color:var(--pine-deep)}
 .logo .mark{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0%,#F7F5F0 40%,#DDB367 100%);box-shadow:0 4px 12px rgba(0,0,0,.2),inset -3px -3px 8px rgba(0,0,0,.15);position:relative;flex-shrink:0}
@@ -802,7 +805,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-bottom:1px solid rgba(221,179,103,.18);
   padding:20px 40px 18px;
   display:flex;align-items:center;gap:28px;
-  position:sticky;top:0;z-index:201;
+  /* [Phase 3 수정] 스크롤 내내 topbar만 화면 상단에 고정되도록 sticky 대신 fixed 사용.
+     (sticky는 부모(<header>)의 박스 높이 안에서만 붙어있고, 그 범위를 벗어나면 같이 스크롤되어 버림) */
+  position:fixed;top:0;left:0;z-index:201;
 }
 .top-bar-logo-link{flex-shrink:0;display:block}
 .top-bar-logo{
@@ -841,7 +846,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ═══════════════ NAV BAR (헤드라인 하단) ═══════════════ */
 .nav{
-  position:sticky;top:var(--topbar-h,108px);z-index:200;
+  /* [Phase 3 수정] nav는 더 이상 별도로 고정되지 않고, 헤드라인 배너와 함께 일반 흐름으로 스크롤됨
+     (고정되는 건 topbar 하나뿐). relative는 유지 — 모바일 드롭다운(.nav ul)이 이 요소를 기준으로
+     absolute 배치되기 때문에 static으로 바꾸면 드롭다운 위치가 어긋난다. */
+  position:relative;z-index:200;
   background:rgba(0,0,0,.92);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid rgba(221,179,103,.15);
@@ -3178,8 +3186,9 @@ function renderTopBar(){
   if(tl)tl.textContent=getTagline();
   syncTopBarHeight();
 }
-// 탑바가 메뉴바(.nav)처럼 스크롤 시 상단에 고정되도록, 실제 렌더링된 높이를
-// --topbar-h 로 반영해 메뉴바가 그 바로 아래에 이어 붙어 고정되게 함
+// [Phase 3] topbar만 스크롤 내내 화면 상단에 고정(position:fixed)되고, 헤드라인 배너·내비게이션바는
+// 일반 흐름으로 그 바로 아래에서 시작해 함께 스크롤된다. 실제 렌더링된 topbar 높이를 --topbar-h로
+// 반영해 <header>의 padding-top(= topbar가 차지하던 자리)과 앵커 스크롤 여백 계산에 사용한다.
 function syncTopBarHeight(){
   const el=document.getElementById('topBarArea');
   if(el) document.documentElement.style.setProperty('--topbar-h', el.offsetHeight+'px');
@@ -4559,7 +4568,11 @@ function pkgMeasure(type){
 
   const gap = 16;
   const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
-  const visibleCount = Math.max(1, Math.min(list.length, Math.floor((wrapW+gap)/(PKG_TARGET_CARD_W+gap))));
+  // [Phase 3] 카드 폭 통일: 원래는 이 타입(국내/해외) 자신의 포스터 개수(list.length)로만 visibleCount를
+  // 제한해서, 국내·해외 등록 개수가 다르면 카드 폭 자체가 서로 달라졌다. 두 그룹 중 더 많은 쪽의 개수를
+  // 기준으로 삼아 국내/해외 카드 폭이 항상 같아지도록 한다.
+  const sharedListLen = Math.max(getPkgList('domestic').length, getPkgList('overseas').length, 1);
+  const visibleCount = Math.max(1, Math.min(sharedListLen, Math.floor((wrapW+gap)/(PKG_TARGET_CARD_W+gap))));
   const cardW  = (wrapW - gap*(visibleCount-1)) / visibleCount;
   const slideW = cardW + gap;
 

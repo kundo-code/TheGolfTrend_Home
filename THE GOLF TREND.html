@@ -1339,9 +1339,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:#0A1730;
   box-shadow:0 4px 20px rgba(0,0,0,.35);
   border:1px solid rgba(255,255,255,.07);
-  transition:transform .25s, box-shadow .25s, opacity var(--pkg-hover-fade-ms,1000ms) ease;
+  transition:transform .25s, box-shadow .25s;
 }
-.pkg-card.pkg-dim{ opacity:.6; }
 .pkg-card:hover{
   transform:translateY(-4px) scale(1.01);
   box-shadow:0 14px 40px rgba(0,0,0,.5);
@@ -1349,10 +1348,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-img{
   display:block;width:100%;height:var(--pkg-img-h,auto);object-fit:cover;
-  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease,height .35s ease;
+  transition:height .35s ease;
 }
-.pkg-card:hover .pkg-img{ opacity:1; }
-.pkg-card.pkg-dim:hover{ opacity:1; }
 .pkg-label{
   position:absolute;bottom:0;left:0;right:0;
   padding:10px 12px;
@@ -4493,8 +4490,6 @@ const pkgState = {
 // ── 조정 가능한 옵션값 ──────────────────────────────────────────
 const PKG_SCROLL_SPEED = 40;    // 자동 슬라이드 속도(px/초) — 값이 클수록 더 빠르게 왼쪽으로 흐름 (기본값 40)
 const PKG_NUDGE_MS = 600;       // 이전/다음 버튼·도트 클릭 시 한 칸 이동하는 전환 시간(ms) (기본값 600)
-const PKG_HOVER_FADE_MS = 1000; // 카드에 마우스를 올렸을 때 반투명→선명 페이드인 전환 시간(ms) — 값이 클수록 더 천천히 선명해짐 (기본값 1000)
-document.documentElement.style.setProperty('--pkg-hover-fade-ms', PKG_HOVER_FADE_MS+'ms');
 const pkgImgDims = {}; // url -> {w,h} 캐시 (이미지 높이 평균 계산용)
 function pkgLoadImgDims(url){
   return new Promise(resolve=>{
@@ -4608,14 +4603,11 @@ function pkgUpdateActiveCard(type){
   const totalCards = st.listLen*2;
   let nearestIdx = Math.round((targetContentX - st.cardW/2) / st.slideW);
   nearestIdx = ((nearestIdx % totalCards)+totalCards) % totalCards;
-  // 활성 카드가 실제로 바뀔 때만 DOM을 건드림 — 이 함수는 rAF 루프에서 매 프레임(초당 60회) 호출되므로,
-  // 매번 querySelectorAll을 새로 실행하면 페이지를 오래 켜둘수록 불필요한 GC 부하가 계속 누적됨
+  // 활성(중앙) 카드가 실제로 바뀔 때만 DOM을 건드림 — 이 함수는 rAF 루프에서 매 프레임(초당 60회) 호출되므로,
+  // 매번 도트를 새로 갱신하면 페이지를 오래 켜둘수록 불필요한 GC 부하가 계속 누적됨
   if (nearestIdx === st.lastActiveIdx) return;
   st.lastActiveIdx = nearestIdx;
 
-  track.querySelectorAll('.pkg-card').forEach((card,i)=>{
-    card.classList.toggle('pkg-dim', i!==nearestIdx);
-  });
   const dots = document.getElementById('pkgDots_'+type);
   if(dots){
     const activeOrigIdx = nearestIdx % st.listLen;

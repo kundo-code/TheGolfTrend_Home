@@ -1,0 +1,12 @@
+# THE GOLF TREND — robots.txt
+# 기본 정책: 모든 크롤러의 전체 페이지 수집을 허용합니다.
+# (관리자 패널은 별도 URL/경로가 아니라 같은 페이지 안에서 로그인 후에만 열리는 JS 오버레이라
+#  현재는 robots.txt로 따로 차단할 경로가 없습니다. 관리자 기능이 /admin 같은 별도 경로나
+#  서브도메인으로 분리되면, 아래 주석을 해제해 검색엔진 수집을 막아주세요.)
+
+User-agent: *
+Allow: /
+# Disallow: /admin
+# Disallow: /admin/*
+
+Sitemap: https://kundo-code.github.io/TheGolfTrend_Home/sitemap.xml

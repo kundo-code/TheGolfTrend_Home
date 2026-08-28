@@ -1599,6 +1599,58 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .lai-label.hi{color:var(--gold)}
 
+/* ── AI 추천 (Phase 3) ──────────────────────────────────────────── */
+.ai-recommend-section .wrap{max-width:1280px}
+.ai-quiz{padding:40px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:28px;box-shadow:var(--glass-shadow);display:grid;gap:24px}
+.ai-q-group.full{grid-column:1/-1}
+.ai-q-label{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-bottom:10px}
+.ai-q-label em{font-style:normal;font-weight:500;color:rgba(10,23,48,.5);font-size:.8rem}
+.ai-chip-group{display:flex;flex-wrap:wrap;gap:8px}
+.ai-chip{padding:9px 16px;border-radius:100px;border:1px solid rgba(10,23,48,.18);background:#fff;color:var(--pine);font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s}
+.ai-chip:hover{border-color:var(--gold)}
+.ai-chip.active{background:var(--pine);border-color:var(--pine);color:#fff}
+#aiStyleChips .ai-chip.active{background:var(--gold-deep);border-color:var(--gold-deep)}
+.ai-submit-btn{justify-self:start;padding:15px 32px;background:var(--gold);border:1px solid rgba(221,179,103,.5);color:#fff;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s}
+.ai-submit-btn:hover{background:var(--gold-deep);transform:translateY(-1px)}
+.ai-results{margin-top:32px;display:grid;gap:20px}
+.ai-results-head{font-size:.95rem;font-weight:700;color:var(--pine-deep)}
+.ai-empty{padding:32px;text-align:center;color:rgba(10,23,48,.55);background:rgba(255,255,255,.7);border-radius:16px}
+.ai-result-card{display:grid;grid-template-columns:200px 1fr;gap:0;background:rgba(255,255,255,.92);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--glass-shadow)}
+.ai-result-img{background-size:cover;background-position:center;min-height:160px}
+.ai-result-body{padding:22px 26px}
+.ai-result-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ai-result-cat{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);font-weight:700}
+.ai-result-tag{font-size:.72rem;padding:2px 9px;background:rgba(221,179,103,.15);border:1px solid rgba(221,179,103,.35);border-radius:100px;color:var(--gold-deep)}
+.ai-result-body h4{font-size:1.15rem;color:var(--pine-deep);font-weight:600;margin-bottom:6px}
+.ai-result-meta{font-size:.86rem;color:rgba(10,23,48,.6);margin-bottom:10px}
+.ai-result-reasons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.ai-reason-chip{font-size:.74rem;padding:4px 10px;background:rgba(10,23,48,.06);border-radius:100px;color:var(--pine)}
+.ai-result-actions{display:flex;gap:10px;flex-wrap:wrap}
+.ai-detail-btn{padding:10px 16px;border-radius:10px;border:1px solid rgba(10,23,48,.2);background:transparent;color:var(--pine);font-weight:600;font-size:.84rem;cursor:pointer}
+.ai-detail-btn:hover{border-color:var(--pine)}
+.ai-inquire-btn{padding:10px 16px;border-radius:10px;border:1px solid var(--gold-deep);background:var(--gold);color:#fff;font-weight:700;font-size:.84rem;cursor:pointer}
+.ai-inquire-btn:hover{background:var(--gold-deep)}
+@media (max-width:680px){
+  .ai-result-card{grid-template-columns:1fr}
+  .ai-result-img{min-height:140px}
+}
+
+/* ── 관리자 리드(문의) 탭 ──────────────────────────────────────── */
+.leads-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.86rem;color:rgba(247,245,240,.7)}
+.leads-toolbar div{display:flex;gap:8px}
+.leads-refresh-btn,.leads-export-btn{padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font-size:.8rem;cursor:pointer;transition:all .2s}
+.leads-refresh-btn:hover,.leads-export-btn:hover{border-color:var(--gold);color:var(--gold)}
+.leads-empty{padding:28px 10px;text-align:center;color:rgba(247,245,240,.5);font-size:.88rem}
+.lead-row{padding:14px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:10px}
+.lead-row-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lead-name{font-weight:700;color:#fff;font-size:.94rem}
+.lead-phone{font-weight:500;color:rgba(247,245,240,.6);font-size:.82rem;margin-left:6px}
+.lead-status-select{padding:5px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.3);color:var(--gold);font-size:.78rem;font-weight:700}
+.lead-row-meta{margin-top:6px;font-size:.8rem;color:rgba(247,245,240,.6)}
+.lead-ai-tag{margin-top:6px;font-size:.78rem;color:var(--gold);font-weight:600}
+.lead-styles{margin-top:4px;font-size:.78rem;color:rgba(247,245,240,.55)}
+.lead-details{margin-top:6px;font-size:.82rem;color:rgba(247,245,240,.75);white-space:pre-wrap}
+
 </style>
 </head>
 <body>
@@ -1641,6 +1693,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <ul id="navMenu">
     <li><a href="#destinations">여행지</a></li>
     <li><a href="#about">회사 소개</a></li>
+    <li><a href="#aiRecommend">AI 추천</a></li>
     <li><a href="#links">연계 채널</a></li>
     <li><a href="#blog">여행 이야기</a></li>
     <li><a href="#booking">예약 문의</a></li>
@@ -2051,6 +2104,55 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
 </section>
 
+<!-- AI RECOMMEND -->
+<section class="block ai-recommend-section" id="aiRecommend">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="left">
+        <span class="tag">AI Concierge</span>
+        <h2>AI 골프 여행 <em>추천</em></h2>
+        <p>몇 가지 질문에 답하면, 전체 상품 중 지금 조건에 가장 잘 맞는 여행을 AI가 즉시 골라드립니다.</p>
+      </div>
+    </div>
+    <div class="ai-quiz" id="aiQuiz">
+      <div class="ai-q-group">
+        <div class="ai-q-label">① 여행 권역</div>
+        <div class="ai-chip-group" data-field="region">
+          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
+          <button type="button" class="ai-chip" data-value="domestic">국내</button>
+          <button type="button" class="ai-chip" data-value="overseas">해외</button>
+        </div>
+      </div>
+      <div class="ai-q-group">
+        <div class="ai-q-label">② 예산대 <em>(1인 기준)</em></div>
+        <div class="ai-chip-group" data-field="budget">
+          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
+          <button type="button" class="ai-chip" data-value="60">~60만원</button>
+          <button type="button" class="ai-chip" data-value="100">~100만원</button>
+          <button type="button" class="ai-chip" data-value="150">~150만원</button>
+          <button type="button" class="ai-chip" data-value="200">~200만원</button>
+          <button type="button" class="ai-chip" data-value="9999">200만원+</button>
+        </div>
+      </div>
+      <div class="ai-q-group">
+        <div class="ai-q-label">③ 일정</div>
+        <div class="ai-chip-group" data-field="duration">
+          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
+          <button type="button" class="ai-chip" data-value="short">1~2박</button>
+          <button type="button" class="ai-chip" data-value="mid">3~4박</button>
+          <button type="button" class="ai-chip" data-value="long">5박+</button>
+        </div>
+      </div>
+      <div class="ai-q-group full">
+        <div class="ai-q-label">④ 선호 스타일 <em>(복수 선택 가능)</em></div>
+        <div class="ai-chip-group" id="aiStyleChips" data-field="style"></div>
+      </div>
+      <button type="button" class="ai-submit-btn" onclick="runAiRecommend()">✨ AI 추천 받기</button>
+    </div>
+    <div class="ai-results" id="aiResults"></div>
+  </div>
+</section>
+
 <!-- BOOKING -->
 <section class="block booking-section" id="booking">
   <div class="wrap">
@@ -2069,6 +2171,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
             <span class="code">TGT · 2026</span>
           </div>
           <form id="bookingForm">
+            <input type="hidden" name="source" id="leadSource" value="direct">
+            <input type="hidden" name="recommendedProduct" id="leadProduct" value="">
             <div class="form-grid">
               <div class="field"><label>이름 · Passenger</label><input type="text" name="name" placeholder="홍길동" required></div>
               <div class="field"><label>연락처 · Contact</label><input type="tel" name="phone" placeholder="010-0000-0000" required></div>
@@ -2211,7 +2315,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <aside class="admin-panel" id="adminPanel" aria-label="관리자 패널">
   <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>
   <div class="admin-head">
-    <div><h3>관리자 패널</h3><p>이미지 · 상품 · 링크를 관리하세요</p></div>
+    <div><h3>관리자 패널</h3><p>이미지 · 상품 · 링크 · AI 리드를 관리하세요</p></div>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
     <button class="admin-close" onclick="toggleAdmin()" aria-label="닫기">×</button>
   </div>
@@ -2228,6 +2332,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <button data-tab="products" onclick="switchTab('products')">상품</button>
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
+    <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
   </div>
   <div class="admin-body">
     <div id="tabImages">
@@ -2282,6 +2387,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="admin-section"><h4>네이버 밴드</h4><div id="adminBand"></div></div>
       <div class="admin-section"><h4>블로그</h4><div id="adminBlogLinks"></div></div>
       <div class="admin-section"><h4>SNS</h4><div id="adminSNS"></div></div>
+    </div>
+    <div id="tabLeads" style="display:none">
+      <div class="admin-info-box"><b>💡</b> AI 추천에서 시작된 문의는 <b>✨ AI 추천</b> 표시와 함께 추천 상품명이 함께 표시됩니다. 상태를 바꾸면 즉시 저장됩니다.</div>
+      <div class="leads-toolbar">
+        <span id="leadsCount">0건</span>
+        <div>
+          <button type="button" class="leads-refresh-btn" onclick="fetchLeads()">🔄 새로고침</button>
+          <button type="button" class="leads-export-btn" onclick="exportLeadsCsv()">⬇ CSV 내보내기</button>
+        </div>
+      </div>
+      <div id="leadsList"></div>
     </div>
   </div>
     <div id="tabLegal" style="display:none">
@@ -2650,6 +2766,7 @@ async function uploadToStorage(file, prefix){
 // 이 정보를 하나의 JSON으로 묶어 Supabase 테이블(단일 행)에 저장해 모든 기기가 공유하도록 함.
 // localStorage/IndexedDB는 그대로 유지 — 오프라인이거나 Supabase 연결 전 첫 페인트에 쓰는 로컬 캐시 역할.
 const SITE_STATE_TABLE = 'kundo_site_state';
+const LEADS_TABLE = 'kundo_leads';
 function collectSiteState(){
   return {
     imageOverrides, productOverrides, linkOverrides, linkActiveOverrides,
@@ -2727,6 +2844,89 @@ async function pullSiteState(){
     applySiteState(data.data);
     return true;
   }catch(e){ console.error('site state pull failed', e); return false; }
+}
+
+// ── AI 리드(문의) 관리 ─────────────────────────────────────────
+// 상담 신청 폼 제출 시 mailto: 발송과 별개로 Supabase kundo_leads 테이블에도 저장해
+// 관리자 패널 "AI 리드" 탭에서 조회·상태관리·CSV 내보내기가 가능하도록 함.
+// 테이블이 아직 생성되지 않은 환경에서도 사이트 동작에 지장이 없도록 항상 조용히 실패한다.
+async function insertLead(fd){
+  const client=getSupabaseClient();
+  if (!client) return;
+  const payload = {
+    name: fd.get('name')||'',
+    phone: fd.get('phone')||'',
+    destination: fd.get('destination')||'',
+    departure_date: fd.get('departureDate')||null,
+    party_size: fd.get('partySize')||'',
+    room_type: fd.get('roomType')||'',
+    stay_duration: fd.get('stayDuration')||'',
+    styles: fd.getAll('style').join(', '),
+    details: fd.get('details')||'',
+    source: fd.get('source')||'direct',
+    recommended_product: fd.get('recommendedProduct')||null,
+  };
+  try{ await client.from(LEADS_TABLE).insert(payload); }
+  catch(e){ console.error('lead insert failed', e); }
+}
+let _leadsCache=[];
+const LEAD_STATUS_OPTIONS=['신규','연락중','성사','보류','취소'];
+async function fetchLeads(){
+  const client=getSupabaseClient();
+  const listEl=document.getElementById('leadsList');
+  if (!client || !adminSession){ if (listEl) listEl.innerHTML='<div class="leads-empty">로그인이 필요합니다.</div>'; return; }
+  if (listEl) listEl.innerHTML='<div class="leads-empty">불러오는 중...</div>';
+  try{
+    const { data, error } = await client.from(LEADS_TABLE).select('*').order('created_at',{ascending:false}).limit(200);
+    if (error) throw error;
+    _leadsCache = data||[];
+    renderLeadsList();
+  }catch(e){
+    console.error('leads fetch failed', e);
+    if (listEl) listEl.innerHTML='<div class="leads-empty">불러오기 실패 (kundo_leads 테이블이 아직 없다면 SQL 마이그레이션을 먼저 적용해주세요).</div>';
+  }
+}
+function renderLeadsList(){
+  const listEl=document.getElementById('leadsList');
+  if (!listEl) return;
+  const countEl=document.getElementById('leadsCount');
+  if (countEl) countEl.textContent = `${_leadsCache.length}건`;
+  if (!_leadsCache.length){ listEl.innerHTML='<div class="leads-empty">아직 접수된 문의가 없습니다.</div>'; return; }
+  listEl.innerHTML = _leadsCache.map(l=>{
+    const created = l.created_at ? new Date(l.created_at).toLocaleString('ko-KR') : '';
+    const status = l.status || '신규';
+    return `<div class="lead-row">
+      <div class="lead-row-top">
+        <div class="lead-name">${escapeAttr(l.name||'-')}<span class="lead-phone">${escapeAttr(l.phone||'-')}</span></div>
+        <select class="lead-status-select" onchange="updateLeadStatus(${l.id}, this.value)">
+          ${LEAD_STATUS_OPTIONS.map(s=>`<option value="${s}" ${status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="lead-row-meta">${escapeAttr(l.destination||'-')} · 출발 ${escapeAttr(l.departure_date||'미정')} · ${escapeAttr(l.party_size||'-')} · ${created}</div>
+      ${l.source==='ai_recommend'?`<div class="lead-ai-tag">✨ AI 추천 상품: ${escapeAttr(l.recommended_product||'-')}</div>`:''}
+      ${l.styles?`<div class="lead-styles">${escapeAttr(l.styles)}</div>`:''}
+      ${l.details?`<div class="lead-details">${escapeAttr(l.details)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+async function updateLeadStatus(id, status){
+  const client=getSupabaseClient();
+  if (!client) return;
+  try{
+    await client.from(LEADS_TABLE).update({status}).eq('id', id);
+    const l=_leadsCache.find(x=>x.id===id); if (l) l.status=status;
+  }catch(e){ console.error('lead status update failed', e); alert('상태 변경에 실패했습니다.'); }
+}
+function exportLeadsCsv(){
+  if (!_leadsCache.length){ alert('내보낼 문의가 없습니다.'); return; }
+  const cols=['created_at','name','phone','destination','departure_date','party_size','room_type','stay_duration','styles','source','recommended_product','status','details'];
+  const rows=[cols.join(',')].concat(_leadsCache.map(l=>cols.map(c=>`"${String(l[c]==null?'':l[c]).replace(/"/g,'""')}"`).join(',')));
+  const blob=new Blob(['﻿'+rows.join('\n')], {type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`golftrend_leads_${Date.now()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // 이미지/동영상처럼 용량이 큰 업로드는 localStorage(브라우저별 5~10MB 한도)를 바로 초과해
@@ -4512,7 +4712,7 @@ function setPkgLabel(type, idx, val){
 function switchTab(tab){
   activeAdminTab=tab;
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['tabImages','tabProducts','tabLinks','tabLegal'].forEach(id=>{
+  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads'].forEach(id=>{
     document.getElementById(id).style.display=(id==='tab'+tab[0].toUpperCase()+tab.slice(1))?'block':'none';
   });
   refreshCurrentAdminTab();
@@ -4522,6 +4722,7 @@ function refreshCurrentAdminTab(){
   else if (activeAdminTab==='products'){renderProductCatSelect();renderProductAdmin()}
   else if (activeAdminTab==='links') renderAdminLinks();
   else if (activeAdminTab==='legal') renderAdminLegal();
+  else if (activeAdminTab==='leads') fetchLeads();
   if (activeAdminTab==='images') { renderAdminAbout(); renderAdminPkg(); }
 }
 
@@ -5305,6 +5506,146 @@ function syncStyleTags(){
   }
 }
 
+// ══ AI 골프 여행 추천 엔진 ══════════════════════════════════════
+// 별도 서버/외부 AI API 없이, 전체 상품 카탈로그(getProducts)를 대상으로
+// 지역·예산·일정·스타일 조건을 규칙 기반으로 스코어링하는 클라이언트 사이드 추천.
+// 상품 태그/요금표 문구는 관리자가 실데이터를 채워갈수록 스타일 매칭 정확도가 함께 좋아진다.
+const STYLE_OPTIONS = [
+  {value:'골프텔 (체류형)', label:'🏨 골프텔 체류형'},
+  {value:'시내 호텔 (이동형)', label:'🏙 시내호텔 이동형'},
+  {value:'미식 및 주변 관광 중심', label:'🍴 미식·관광 중심'},
+  {value:'미식 및 쇼핑 중심', label:'🛍 미식·쇼핑 중심'},
+  {value:'골프장 퀄리티 중시', label:'⛳ 골프장 퀄리티'},
+  {value:'숙박 시설 중시 (5성급 준)', label:'🌟 5성급 숙박'},
+  {value:'어려운 골프장 선호', label:'🔥 어려운 코스'},
+  {value:'쉬운 골프장 선호', label:'🌿 쉬운 코스'},
+  {value:'올인원 패키지 (그린피·숙박·식사·카트·캐디피)', label:'🎁 올인원 패키지'},
+  {value:'일반형 (기본 패키지)', label:'📦 일반형'},
+  {value:'실속형 (그린피·숙박·2일차 조식)', label:'💡 실속형'},
+  {value:'특가 (그린피·숙박)', label:'🏷 특가'}
+];
+const STYLE_KEYWORDS = {
+  '골프텔 (체류형)': ['리조트','체류'],
+  '시내 호텔 (이동형)': ['시내','투어'],
+  '미식 및 주변 관광 중심': ['오션뷰','힐링','투어'],
+  '미식 및 쇼핑 중심': ['쇼핑','오션뷰'],
+  '골프장 퀄리티 중시': ['명문','프리미엄','BEST','베스트'],
+  '숙박 시설 중시 (5성급 준)': ['프리미엄','리조트','스위트','명문'],
+  '어려운 골프장 선호': ['명문','챔피언','프리미엄'],
+  '쉬운 골프장 선호': ['가성비','실속','편안'],
+  '올인원 패키지 (그린피·숙박·식사·카트·캐디피)': ['올인원'],
+  '일반형 (기본 패키지)': [],
+  '실속형 (그린피·숙박·2일차 조식)': ['가성비','실속','평일특가'],
+  '특가 (그린피·숙박)': ['특가','가성비']
+};
+const DEST_LABELS = {
+  gangwon:'강원권', chungcheong:'충청권 (충북·충남·대전·세종)', honam:'호남권 (전북·전남·광주)',
+  yeongnam:'영남권 (경북·대구·경남·부산·울산)', capital:'수도권', jeju:'제주',
+  japan:'일본', china:'중국', mongolia:'몽골', vietnam:'베트남', thailand:'태국',
+  philippines:'필리핀', malaysia:'말레이시아', indonesia:'인도네시아', guam:'미국령-괌'
+};
+function aiBudgetScore(price, pref){
+  if (pref==='any') return 12;
+  if (pref==='9999') return price>=2000000 ? 30 : Math.max(0, 30-(2000000-price)/50000);
+  const cap = Number(pref)*10000;
+  if (price<=cap) return 30;
+  return Math.max(0, 30-(price-cap)/50000);
+}
+function computeAiRecommendations(criteria){
+  const regionIds = criteria.region==='domestic' ? CATEGORIES.domestic.map(c=>c.id)
+                   : criteria.region==='overseas' ? CATEGORIES.overseas.map(c=>c.id)
+                   : CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>c.id);
+  const results=[];
+  regionIds.forEach(catId=>{
+    const cat=findCat(catId);
+    getProducts(catId).forEach((p,idx)=>{
+      const price = (p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0;
+      const nightsMatch = /([0-9]+)\s*박/.exec(p.nights||'');
+      const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
+      const bucket = nights<=2 ? 'short' : (nights<=4 ? 'mid' : 'long');
+      const reasons=[]; let score=0;
+      const bScore = aiBudgetScore(price, criteria.budget);
+      if (criteria.budget!=='any' && bScore>=25) reasons.push('예산 적합');
+      score += bScore;
+      if (criteria.duration==='any') score += 10;
+      else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
+      else score += 5;
+      const haystack = [p.tag||'', p.title||''].concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(pe.emphasis||''))).join(' ');
+      criteria.styles.forEach(styleVal=>{
+        const kws = STYLE_KEYWORDS[styleVal]||[];
+        if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }
+      });
+      if (criteria.region!=='any'){ score+=5; reasons.push(criteria.region==='domestic'?'국내 권역 선호 반영':'해외 권역 선호 반영'); }
+      results.push({catId, idx, p, cat, score, reasons});
+    });
+  });
+  results.sort((a,b)=>b.score-a.score);
+  const perCat={}, final=[];
+  for (const r of results){
+    perCat[r.catId]=(perCat[r.catId]||0)+1;
+    if (perCat[r.catId]>2) continue;
+    final.push(r);
+    if (final.length>=6) break;
+  }
+  return final;
+}
+function renderAiResults(results){
+  const wrap=document.getElementById('aiResults');
+  if (!wrap) return;
+  if (!results.length){ wrap.innerHTML='<div class="ai-empty">조건에 맞는 상품을 찾지 못했습니다. 조건을 조정해보세요.</div>'; return; }
+  wrap.innerHTML = `<div class="ai-results-head">✨ AI가 고른 추천 여행 ${results.length}건</div>` + results.map(r=>{
+    const img = getImage(r.catId);
+    return `<div class="ai-result-card">
+      <div class="ai-result-img" style="background-image:url('${img}')"></div>
+      <div class="ai-result-body">
+        <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${r.p.tag?`<span class="ai-result-tag">${escapeAttr(r.p.tag)}</span>`:''}</div>
+        <h4>${r.p.title}</h4>
+        <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${fmtPrice(r.p.from)}원~</div>
+        <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>
+        <div class="ai-result-actions">
+          <button type="button" class="ai-detail-btn" onclick="openProductDetail('${r.catId}',${r.idx})">상세보기</button>
+          <button type="button" class="ai-inquire-btn" onclick="selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function runAiRecommend(){
+  const region = document.querySelector('#aiQuiz .ai-chip-group[data-field="region"] .ai-chip.active')?.dataset.value || 'any';
+  const budget = document.querySelector('#aiQuiz .ai-chip-group[data-field="budget"] .ai-chip.active')?.dataset.value || 'any';
+  const duration = document.querySelector('#aiQuiz .ai-chip-group[data-field="duration"] .ai-chip.active')?.dataset.value || 'any';
+  const styles = Array.from(document.querySelectorAll('#aiStyleChips .ai-chip.active')).map(b=>b.dataset.value);
+  renderAiResults(computeAiRecommendations({region, budget, duration, styles}));
+}
+function selectAiProduct(catId, idx){
+  const p = getProducts(catId)[idx];
+  if (!p) return;
+  const destSel = document.getElementById('bookDest');
+  if (destSel && DEST_LABELS[catId]) destSel.value = DEST_LABELS[catId];
+  const activeStyles = Array.from(document.querySelectorAll('#aiStyleChips .ai-chip.active')).map(b=>b.dataset.value);
+  document.querySelectorAll('#sdPanel input[type=checkbox]').forEach(cb=>{ cb.checked = activeStyles.includes(cb.value); });
+  syncStyleTags();
+  const details = document.querySelector('#bookingForm textarea[name=details]');
+  if (details) details.value = `[AI 추천] ${p.title} 상품에 대해 상담을 원합니다.`;
+  const src = document.getElementById('leadSource'); if (src) src.value = 'ai_recommend';
+  const rp = document.getElementById('leadProduct'); if (rp) rp.value = p.title;
+  const bookingSec = document.getElementById('booking');
+  if (bookingSec) bookingSec.scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(()=>{ document.querySelector('#bookingForm input[name=name]')?.focus(); }, 400);
+}
+(function initAiRecommend(){
+  const chipsEl = document.getElementById('aiStyleChips');
+  if (chipsEl) chipsEl.innerHTML = STYLE_OPTIONS.map(o=>`<button type="button" class="ai-chip" data-value="${escapeAttr(o.value)}">${o.label}</button>`).join('');
+  document.querySelectorAll('#aiQuiz .ai-chip-group').forEach(group=>{
+    group.addEventListener('click', e=>{
+      const btn = e.target.closest('.ai-chip');
+      if (!btn) return;
+      if (group.dataset.field==='style'){ btn.classList.toggle('active'); }
+      else { group.querySelectorAll('.ai-chip').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+    });
+  });
+})();
+
 // 전화 연결 확인 팝업
 function callHotline(){
   if (confirm('010-9405-6842로 전화 연결하시겠습니까?')){
@@ -5335,6 +5676,8 @@ ${fd.get('details')||'-'}
 `;
   const subject = `[THE GOLF TREND] 상담 신청 - ${fd.get('name')||''} ${fd.get('destination')||''}`;
   const mailto = `mailto:edgar.meshugas@gmail.com,kitty2yamyam@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  // 이메일 발송과 별개로 Supabase에도 리드 저장 (실패해도 상담 신청 흐름에는 영향 없음)
+  insertLead(fd);
   // 메일 클라이언트 오픈 후 성공 화면 전환
   window.location.href = mailto;
   setTimeout(()=>{

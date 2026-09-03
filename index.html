@@ -284,6 +284,39 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(247,245,240,.4);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
 .pd-price-entry .go{color:var(--gold);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:4px}
+/* [Phase 3 상품등록 개선 v2] 요금 항목 카드 내 출발요일·항공패턴 메타 정보 */
+.pd-price-entry .pe-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.pd-price-entry .pe-meta .chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:100px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);font-size:.72rem;color:rgba(247,245,240,.9)}
+.pd-price-entry .pe-meta .chip .k{color:var(--gold);font-weight:600;font-size:.66rem;letter-spacing:.04em}
+.pd-price-entry .pe-fee-note{font-size:.76rem;line-height:1.5;color:rgba(247,245,240,.65);margin-top:2px}
+/* 포함사항/불포함사항 체크리스트 */
+.pd-check-list{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
+.pd-check-list .row{display:flex;align-items:flex-start;gap:8px;font-size:.85rem;line-height:1.55;color:rgba(247,245,240,.88)}
+.pd-check-list .row .ic{flex-shrink:0;font-weight:800;width:16px;text-align:center}
+.pd-check-list.included .row .ic{color:#4ade80}
+.pd-check-list.excluded .row .ic{color:#f87171}
+/* 주의사항 콜아웃 */
+.pd-precaution-box{margin:0 20px 18px;padding:12px 16px;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.25);border-radius:12px;font-size:.78rem;line-height:1.6;color:rgba(247,245,240,.85)}
+/* 상품 정보 박스 내 상세보기 링크 */
+.pd-info-link{margin:2px 20px 16px;display:inline-flex;align-items:center;gap:4px;color:var(--gold);font-size:.85rem;font-weight:600}
+/* 일정 요약 타임라인 */
+.pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
+.pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(247,245,240,.75);line-height:1.6}
+.pd-schedule-note{padding:12px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.22);border-radius:10px;font-size:.76rem;line-height:1.6;color:rgba(247,245,240,.8)}
+.pd-sch-group{border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;background:rgba(0,0,0,.15)}
+.pd-sch-group-head{padding:12px 16px;background:rgba(221,179,103,.16)}
+.pd-sch-group-head .t{font-size:.7rem;color:rgba(247,245,240,.6);letter-spacing:.04em}
+.pd-sch-group-head .h{font-size:.95rem;font-weight:700;color:#fff;margin-top:2px}
+.pd-sch-days{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
+.pd-sch-day{display:flex;gap:10px}
+.pd-sch-day-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--pine-deep);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.pd-sch-day-body{flex:1;min-width:0}
+.pd-sch-day-label{font-size:.85rem;font-weight:700;color:#fff}
+.pd-sch-day-route{font-size:.72rem;color:var(--gold);margin-left:6px}
+.pd-sch-opt{margin-top:4px;font-size:.78rem;line-height:1.55;color:rgba(247,245,240,.85)}
+.pd-sch-opt .tag{display:inline-flex;align-items:center;justify-content:center;min-width:18px;padding:1px 5px;margin-right:6px;border-radius:5px;background:rgba(221,179,103,.25);color:var(--gold);font-size:.68rem;font-weight:700}
+.pd-sch-meals{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.pd-sch-meals span{font-size:.68rem;padding:3px 9px;border-radius:100px;background:rgba(255,255,255,.08);color:rgba(247,245,240,.75)}
 .pd-contact{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .pd-contact a{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-size:.88rem;font-weight:600;transition:all .2s}
 .pd-contact a:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}
@@ -1376,6 +1409,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-img{
   display:block;width:100%;height:var(--pkg-img-h,auto);object-fit:cover;
+  max-height:min(48vh,520px); /* [Phase 3] 자동 노출 이미지가 지나치게 커지지 않도록 상한 */
   opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease,height .35s ease;
 }
 .pkg-card:hover .pkg-img{ opacity:1; }
@@ -1548,6 +1582,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pkg-group-title{ font-size:1.1rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
+  .pkg-img{ max-height:min(34vh,320px); } /* [Phase 3] 모바일 화면에서 한 화면에 들어오도록 더 낮은 상한 */
 }
 
 
@@ -2678,13 +2713,26 @@ function newPriceEntry(){
     salePrice:0, saleCurrency:'KRW', saleFromLabel:true,
     originalPrice:0, originalCurrency:'KRW', originalFromLabel:false,
     labels: newLabels(),
-    popup:false
+    popup:false,
+    schedule: newSchedule() // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
   };
+}
+// [Phase 3 상품등록 개선 v2] 요금 항목별 "일정 요약 타임라인" — 이 요금 항목(예: 3박4일)의 일자별 상세 일정
+function newSchedule(){
+  return { enabled:false, days:[] };
+}
+function newScheduleDay(){
+  return { dayLabel:'', route:'', options:[newScheduleOption()], meals:{breakfast:'',lunch:'',dinner:''} };
+}
+function newScheduleOption(){
+  return { tag:'', flight:'', activity:'' };
 }
 function newExtendedFields(){
   return {
     titleMedia:null, gallery:[], galleryConfig:{layout:'slide',autoSlide:true},
     videoGallery:[], pkgPoster:null, editorsPick:false, bookingPolicy:'', // [Phase 3 상품등록 개선]
+    extraFeeNote:'', precautions:'', linkUrl:'', // [Phase 3 상품등록 개선 v2]
+    scheduleOverview:'', scheduleNote:'', // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구
     priceEntries:[],
     contact:{phone:'',kakaoChannel:'',kakaoFriend:''},
     calendarMode:'none'
@@ -2713,6 +2761,24 @@ function ensureLabels(L){
   delete L.roundsCount; delete L.mealsCount; // [Phase 3 상품등록 개선] 제거된 필드
   return L;
 }
+// [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 데이터 정규화
+function ensureSchedule(S){
+  if (!S) S = newSchedule();
+  if (S.enabled===undefined) S.enabled=false;
+  if (!Array.isArray(S.days)) S.days=[];
+  S.days.forEach(d=>{
+    if (d.dayLabel===undefined) d.dayLabel='';
+    if (d.route===undefined) d.route='';
+    if (!Array.isArray(d.options) || !d.options.length) d.options=[newScheduleOption()];
+    d.options.forEach(o=>{
+      if (o.tag===undefined) o.tag='';
+      if (o.flight===undefined) o.flight='';
+      if (o.activity===undefined) o.activity='';
+    });
+    if (!d.meals || typeof d.meals!=='object') d.meals={breakfast:'',lunch:'',dinner:''};
+  });
+  return S;
+}
 function ensureExtended(p){
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
@@ -2720,6 +2786,11 @@ function ensureExtended(p){
   if (p.pkgPoster===undefined) p.pkgPoster=null; // [Phase 3 상품등록 개선]
   if (p.editorsPick===undefined) p.editorsPick=false; // [Phase 3 상품등록 개선]
   if (p.bookingPolicy===undefined) p.bookingPolicy=''; // [Phase 3 상품등록 개선]
+  if (p.extraFeeNote===undefined) p.extraFeeNote=''; // [Phase 3 상품등록 개선 v2]
+  if (p.precautions===undefined) p.precautions='';
+  if (p.linkUrl===undefined) p.linkUrl='';
+  if (p.scheduleOverview===undefined) p.scheduleOverview='';
+  if (p.scheduleNote===undefined) p.scheduleNote='';
   if (!p.galleryConfig) p.galleryConfig={layout:'slide',autoSlide:true};
   if (!p.priceEntries) p.priceEntries=[];
   if (!p.calendarMode) p.calendarMode='none';
@@ -2746,6 +2817,7 @@ function ensureExtended(p){
     if (pe.popup===undefined) pe.popup = false;
     if (!Array.isArray(pe.emphasis)) pe.emphasis = pe.emphasis ? [pe.emphasis] : []; // [Phase 3 상품등록 개선] 강조태그 복수 선택
     pe.labels = ensureLabels(pe.labels);
+    pe.schedule = ensureSchedule(pe.schedule); // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
   });
   // Legacy p.labels 는 무시 (요금표 단위로 이관)
   delete p.labels;
@@ -2881,8 +2953,12 @@ const DEFAULT_SPOTLIGHT_DOMESTIC = [{catId:'jeju',idx:0}, {catId:'gangwon',idx:0
 function getSpotlightList(region){
   const cats = CATEGORIES[region];
   const picks = [];
+  // [메모리/성능 안정화] 8초마다 반복 호출되므로(cycleSpot), 매번 getProducts()로 전체 상품을
+  // ensureExtended() 복제하지 않고 productOverrides를 직접 스캔한다 — 화면을 오래 켜둘수록
+  // 불필요한 객체 생성이 누적되어 GC 부하가 커지는 것을 방지
   cats.forEach(cat=>{
-    getProducts(cat.id).forEach((p,idx)=>{ if (p.editorsPick) picks.push({catId:cat.id, idx}); });
+    const list = productOverrides[cat.id];
+    if (list) list.forEach((p,idx)=>{ if (p && p.editorsPick) picks.push({catId:cat.id, idx}); });
   });
   if (picks.length) return picks;
   return region==='overseas' ? DEFAULT_SPOTLIGHT_OVERSEAS : DEFAULT_SPOTLIGHT_DOMESTIC;
@@ -3717,14 +3793,23 @@ function renderSpotlightSlot(slot, layer, entry){
   const p=products[idx]; if (!p) return;
   const cat=findCat(entry.catId);
   const sfx=slot+layer;
-  document.getElementById('spotVisual'+sfx).style.cssText=getCatBgStyle(cat);
-  document.getElementById('spotVisual'+sfx).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
+  // [Phase 3] 등록한 "타이틀 이미지"가 있으면 지역 대표 이미지 대신 그 이미지를 노출 — 상품 카드와 동일한 규칙
+  const useMedia = p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url;
+  const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url; // 구버전 데이터 호환
+  const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : getCatBgStyle(cat);
+  const visualEl = document.getElementById('spotVisual'+sfx);
+  visualEl.style.cssText = visualStyle;
+  visualEl.innerHTML = (hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'') + '<span class="badge">EDITOR\'S PICK</span>';
   document.getElementById('spotTitle'+sfx).textContent=`${cat.ko} · ${p.title}`;
+  // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다
+  const firstPe = (p.priceEntries && p.priceEntries[0]) || null;
+  const airfare = firstPe && firstPe.labels && firstPe.labels.airfare;
   const meta=[
     p.nights?`🗓 ${p.nights}`:'',
     p.rounds?`⛳ ${p.rounds}`:'',
     p.stay?`🏨 ${p.stay}`:'',
-    p.meals?`🍽 ${p.meals}`:''
+    p.meals?`🍽 ${p.meals}`:'',
+    (airfare && airfare!=='none')?`✈️ ${AIRFARE_TXT[airfare]||airfare}`:''
   ].filter(Boolean);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   const displayPrice=getDisplayPrice(p);
@@ -3752,16 +3837,21 @@ function preloadImage(url){
 }
 // 보이지 않는 뒤 레이어에 다음 콘텐츠를 미리 채워 넣은 뒤, 두 레이어를 "동시에" 교차 페이드
 // (기존 레이어는 사라지면서 새 레이어가 나타남 — 완전히 사라졌다 나타나는 끊김이 없음)
+// entry(catId,idx)가 가리키는 상품의 실제 노출 이미지 — 등록된 타이틀 이미지가 있으면 그것, 없으면 지역 대표 이미지
+function spotlightVisualUrl(entry){
+  const products=getProducts(entry.catId);
+  const p=products[entry.idx<products.length?entry.idx:0];
+  if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
+  return getImage(entry.catId);
+}
 function cycleSpot(){
   const overseasList = getSpotlightList('overseas');
   const domesticList = getSpotlightList('domestic');
   const nextOverseasEntry=overseasList[(spotOverseasIdx+1)%overseasList.length];
   const nextDomesticEntry=domesticList[(spotDomesticIdx+1)%domesticList.length];
-  const nextOverseasCat=findCat(nextOverseasEntry.catId);
-  const nextDomesticCat=findCat(nextDomesticEntry.catId);
   Promise.all([
-    preloadImage(getImage(nextOverseasCat.id)),
-    preloadImage(getImage(nextDomesticCat.id)),
+    preloadImage(spotlightVisualUrl(nextOverseasEntry)),
+    preloadImage(spotlightVisualUrl(nextDomesticEntry)),
   ]).then(()=>{
     const overseasList2 = getSpotlightList('overseas');
     const domesticList2 = getSpotlightList('domestic');
@@ -4129,7 +4219,20 @@ function renderProductDetail(p,cat){
     }</div></div>`;
   }
 
-  // Gallery (동영상 갤러리가 있으면 이미지보다 먼저 노출)
+  // [Phase 3 상품등록 개선 v2] 상품 정보를 갤러리보다 먼저 노출 — 제목/기간/숙박/식사 + 연결 링크(있으면 "상세보기→")
+  const infoRows=[];
+  if (p.title) infoRows.push(['제목', p.title]);
+  if (p.nights) infoRows.push(['기간', p.nights]);
+  if (p.stay) infoRows.push(['숙박', p.stay]);
+  if (p.meals) infoRows.push(['식사', p.meals]);
+  if (infoRows.length || p.linkUrl){
+    html += `<div class="pd-slot"><div class="pd-section-title">상품 정보</div>
+      ${infoRows.length?`<div class="pd-info-table">${infoRows.map(([k,v])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>`:''}
+      ${p.linkUrl?`<a class="pd-info-link" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">상세보기 →</a>`:''}
+    </div>`;
+  }
+
+  // Gallery (상품 정보 아래, 동영상 갤러리가 있으면 이미지보다 먼저 노출)
   const pdMedia = pdMediaList(p);
   if (pdMedia.length){
     html += `<div class="pd-slot pd-gallery">
@@ -4146,22 +4249,6 @@ function renderProductDetail(p,cat){
       ${(!p.galleryConfig || p.galleryConfig.layout==='thumb') && pdMedia.length>1 ? `<div class="pd-thumbs">
         ${pdMedia.map((m,i)=>`<div class="pd-thumb ${i===0?'active':''} ${m.type==='video'?'video-thumb':''}" style="background-image:url('${escapeAttr(m.type==='video'?'':m.url)}')" onclick="pdGalleryGo(${i})">${m.type==='video'?'<span class=\"pd-thumb-play\">▶</span>':''}</div>`).join('')}
       </div>` : ''}
-    </div>`;
-  }
-
-  // Basic info (above 요금표): 제목/기간/숙박/식사/출발공항/도착공항/항공편
-  const infoRows=[];
-  if (p.title) infoRows.push(['제목', p.title]);
-  if (p.nights) infoRows.push(['기간', p.nights]);
-  if (p.stay) infoRows.push(['숙박', p.stay]);
-  if (p.meals) infoRows.push(['식사', p.meals]);
-  if (p.depAirport) infoRows.push(['출발공항', p.depAirport]);
-  if (p.arrAirport) infoRows.push(['도착공항', p.arrAirport]);
-  const airlineTxt = airlineNamesFromCodes(p.airline);
-  if (airlineTxt) infoRows.push(['항공편', airlineTxt]);
-  if (infoRows.length){
-    html += `<div class="pd-slot"><div class="pd-section-title">상품 정보</div>
-      <div class="pd-info-table">${infoRows.map(([k,v])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>
     </div>`;
   }
 
@@ -4182,6 +4269,11 @@ function renderProductDetail(p,cat){
           const sameCurrency = (pe.saleCurrency||'KRW')===(pe.originalCurrency||'KRW');
           const discount = (sale && orig && orig>sale && sameCurrency) ? Math.round((1-sale/orig)*100) : 0;
           const clickAttr = pe.link ? `onclick="window.open('${escapeAttr(pe.link)}','_blank','noopener')"` : '';
+          // [Phase 3 상품등록 개선 v2] 요금표에 출발요일·항공패턴 정보 노출
+          const L = pe.labels||{};
+          const metaChips=[];
+          if (L.departureDay && L.departureDay.length) metaChips.push({k:'출발요일', v:L.departureDay.join(', ')});
+          if (L.airPattern && L.airPattern.length) metaChips.push({k:'항공패턴', v:L.airPattern.join(', ')});
           return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
             ${emphArr.length?`<span class="emph-group">${emphArr.map(t=>`<span class="emph ${emphCls(t)}">${escapeAttr(t)}</span>`).join('')}</span>`:''}
             ${pe.headline?`<div class="headline">${pe.headline}</div>`:''}
@@ -4190,6 +4282,8 @@ function renderProductDetail(p,cat){
               ${orig&&orig>sale?`<span class="price-original">${fmtPrice(orig)}${origSym}${origFrom}</span>`:''}
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
             </div>
+            ${metaChips.length?`<div class="pe-meta">${metaChips.map(m=>`<span class="chip"><span class="k">${m.k}</span>${escapeAttr(m.v)}</span>`).join('')}</div>`:''}
+            ${p.extraFeeNote?`<div class="pe-fee-note">※ ${escapeAttr(p.extraFeeNote)}</div>`:''}
             ${pe.link?`<span class="go">상세 보기 →</span>`:''}
           </div>`;
         }).join('')}
@@ -4197,15 +4291,59 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
-  // 요금표 아래: 포함사항 / 불포함사항 / 참고 및 추가 안내사항
+  // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 — 활성화된 요금 항목들을 하나의 타임라인으로 모아 노출
+  const scheduledEntries = (p.priceEntries||[]).filter(pe=>pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length);
+  if (scheduledEntries.length){
+    html += `<div class="pd-slot"><div class="pd-section-title">일정 요약 타임라인</div>
+      <div class="pd-schedule">
+        ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
+        ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
+        ${scheduledEntries.map(pe=>`
+        <div class="pd-sch-group">
+          <div class="pd-sch-group-head">
+            <div class="t">${escapeAttr(pe.headline||'일정')}</div>
+            <div class="h">${pe.salePrice?`${fmtPrice(Number(pe.salePrice)||0)}${CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원'}/인`:''}</div>
+          </div>
+          <div class="pd-sch-days">
+            ${pe.schedule.days.map((d,di)=>`
+            <div class="pd-sch-day">
+              <div class="pd-sch-day-num">${di+1}</div>
+              <div class="pd-sch-day-body">
+                <span class="pd-sch-day-label">${escapeAttr(d.dayLabel||`${di+1}일차`)}</span>
+                ${d.route?`<span class="pd-sch-day-route">${escapeAttr(d.route)}</span>`:''}
+                ${d.options.filter(o=>o.flight||o.activity).map(o=>`
+                <div class="pd-sch-opt">
+                  ${o.tag?`<span class="tag">${escapeAttr(o.tag)}</span>`:''}
+                  ${o.flight?`항공: ${escapeAttr(o.flight)}<br>`:''}
+                  ${o.activity?escapeAttr(o.activity):''}
+                </div>`).join('')}
+                ${(d.meals.breakfast||d.meals.lunch||d.meals.dinner)?`<div class="pd-sch-meals">
+                  ${d.meals.breakfast?`<span>조: ${escapeAttr(d.meals.breakfast)}</span>`:''}
+                  ${d.meals.lunch?`<span>중: ${escapeAttr(d.meals.lunch)}</span>`:''}
+                  ${d.meals.dinner?`<span>석: ${escapeAttr(d.meals.dinner)}</span>`:''}
+                </div>`:''}
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // 요금표 아래: 포함사항 / 불포함사항 (체크리스트) / 공통 안내 / 주의사항
+  const bulletRows = (txt, icon) => txt.split('\n').map(s=>s.trim()).filter(Boolean)
+    .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${escapeAttr(line)}</span></div>`).join('');
   if (p.included){
-    html += `<div class="pd-slot"><div class="pd-section-title">포함사항</div><div class="pd-note-block">${escapeAttr(p.included)}</div></div>`;
+    html += `<div class="pd-slot"><div class="pd-section-title">포함사항</div><div class="pd-check-list included">${bulletRows(p.included,'✓')}</div></div>`;
   }
   if (p.notIncluded){
-    html += `<div class="pd-slot"><div class="pd-section-title">불포함사항</div><div class="pd-note-block">${escapeAttr(p.notIncluded)}</div></div>`;
+    html += `<div class="pd-slot"><div class="pd-section-title">불포함사항</div><div class="pd-check-list excluded">${bulletRows(p.notIncluded,'✕')}</div></div>`;
   }
   if (p.notes){
-    html += `<div class="pd-slot"><div class="pd-section-title">참고 및 추가 안내사항</div><div class="pd-note-block">${escapeAttr(p.notes)}</div></div>`;
+    html += `<div class="pd-slot"><div class="pd-section-title">공통 안내</div><div class="pd-note-block">${escapeAttr(p.notes)}</div></div>`;
+  }
+  if (p.precautions){
+    html += `<div class="pd-slot"><div class="pd-section-title">주의사항</div><div class="pd-precaution-box">${escapeAttr(p.precautions)}</div></div>`;
   }
 
   // Calendar note (informational)
@@ -4616,9 +4754,12 @@ function getPkgList(type){
   const manual = getPkgManualList(type).map(p=>({url:p.url, label:p.label||'', catId:null, idx:null}));
   const cats = CATEGORIES[type]||[];
   const fromProducts=[];
+  // [메모리/성능 안정화] 캐러셀 rAF 루프·리사이즈 이벤트 등에서 반복 호출되므로, 매번 getProducts()로
+  // 전체 상품을 ensureExtended() 복제하지 않고 productOverrides를 직접 스캔한다
   cats.forEach(cat=>{
-    getProducts(cat.id).forEach((p,idx)=>{
-      if (p.pkgPoster && p.pkgPoster.url){
+    const list = productOverrides[cat.id];
+    if (list) list.forEach((p,idx)=>{
+      if (p && p.pkgPoster && p.pkgPoster.url){
         fromProducts.push({url:p.pkgPoster.url, label:p.title||'', catId:cat.id, idx});
       }
     });
@@ -4821,10 +4962,15 @@ function pkgStopAuto(type){
   clearInterval(st.timer);
 }
 
-// 윈도우 리사이즈 시 카드 크기/이미지 높이 재계산
+// 윈도우 리사이즈 시 카드 크기/이미지 높이 재계산 (모바일 주소창 표시/숨김 등으로 resize가 연속
+// 발생해도 매번 재계산하지 않도록 디바운스)
+let pkgResizeTimer=null;
 window.addEventListener('resize', ()=>{
-  pkgMeasure('domestic');
-  pkgMeasure('overseas');
+  clearTimeout(pkgResizeTimer);
+  pkgResizeTimer=setTimeout(()=>{
+    pkgMeasure('domestic');
+    pkgMeasure('overseas');
+  }, 150);
 });
 
 function renderAdminPkg(){
@@ -5155,7 +5301,10 @@ function renderProductAdmin(catId){
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
         <div><label>기간 · Nights</label><input type="text" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
         <div><label>라운드 · Rounds</label><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
+        <div><label>숙박 · Stay</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
+        <div><label>식사 · Meals</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
         <div class="full"><label>태그 (선택)</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'tag',this.value)"></div>
+        <div class="full"><label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea></div>
       </div>
     </div>`).join('');
 }
@@ -5366,20 +5515,7 @@ function advBasicHTML(p){
     </div>
     <label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea>
 
-    <!-- [Phase 3 상품등록 개선] 포함/불포함/참고사항을 공통사항으로 묶어 가독성 개선 -->
-    <details class="adv-collapsible" open>
-      <summary>공통사항 — 포함 · 불포함 · 참고 및 추가 안내</summary>
-      <div class="adv-collapsible-body">
-        <label>포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('included',this.value)">${escapeAttr(p.included||'')}</textarea>
-        <label>불포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('notIncluded',this.value)">${escapeAttr(p.notIncluded||'')}</textarea>
-        <label>참고 및 추가 안내사항</label><textarea style="min-height:140px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value)">${escapeAttr(p.notes||'')}</textarea>
-      </div>
-    </details>
-
-    <!-- [Phase 3 상품등록 개선] 예약·결제·취소 규정 -->
-    <label>예약 · 결제 · 취소 규정</label>
-    <textarea style="min-height:120px" placeholder="예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ..." oninput="updateAdvField('bookingPolicy',this.value)">${escapeAttr(p.bookingPolicy||'')}</textarea>
-
+    <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
     <div class="grid-2">
       <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label>
         <div class="price-row">
@@ -5393,11 +5529,36 @@ function advBasicHTML(p){
       <div><label>카드 태그</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="BEST 등" oninput="updateAdvField('tag',this.value)"></div>
     </div>
 
+    <!-- [Phase 3 상품등록 개선] 포함/불포함/참고사항을 공통사항으로 묶어 가독성 개선 -->
+    <details class="adv-collapsible" open>
+      <summary>공통사항 — 포함 · 불포함 · 공통 안내 · 추가 요금 · 주의사항</summary>
+      <div class="adv-collapsible-body">
+        <label>포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('included',this.value)">${escapeAttr(p.included||'')}</textarea>
+        <label>불포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('notIncluded',this.value)">${escapeAttr(p.notIncluded||'')}</textarea>
+        <label>공통 안내</label><textarea style="min-height:140px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value)">${escapeAttr(p.notes||'')}</textarea>
+        <label>추가 요금 안내</label><textarea style="min-height:70px" placeholder="예: 1인 기준 · 2인 단독 출발 시 1인당 150,000원 추가 / 3인 단독 출발 시 1인당 100,000원 추가요금 발생" oninput="updateAdvField('extraFeeNote',this.value)">${escapeAttr(p.extraFeeNote||'')}</textarea>
+        <label>주의사항</label><textarea style="min-height:90px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updateAdvField('precautions',this.value)">${escapeAttr(p.precautions||'')}</textarea>
+      </div>
+    </details>
+
+    <!-- [Phase 3 상품등록 개선] 예약·결제·취소 규정 -->
+    <label>예약 · 결제 · 취소 규정</label>
+    <textarea style="min-height:120px" placeholder="예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ..." oninput="updateAdvField('bookingPolicy',this.value)">${escapeAttr(p.bookingPolicy||'')}</textarea>
+
+    <!-- [Phase 3 상품등록 개선 v2] 연결 링크·URL — 상품 정보 박스에 "상세보기→"로 노출 -->
+    <label>연결 링크 · URL</label>
+    <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
+
     <div class="section-divider">
       <span class="sd-title">요금표 항목 · 레이블 · 팝업</span>
       <span class="sd-info">활성 팝업: <b>${popupCount}</b>/${POPUP_MAX}</span>
     </div>
-    ${p.priceEntries.length ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount)).join('') 
+    <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구 (요금 항목별 일정 그룹을 아우르는 문구) -->
+    <label>일정 요약 타임라인 — 상단 개요 문구</label>
+    <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
+    <label>일정 요약 타임라인 — 안내 박스 (예: 시즌별 항공편 설명)</label>
+    <textarea style="min-height:70px" placeholder="예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다." oninput="updateAdvField('scheduleNote',this.value)">${escapeAttr(p.scheduleNote||'')}</textarea>
+    ${p.priceEntries.length ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount)).join('')
       : `<div style="color:rgba(247,245,240,.5);padding:20px;text-align:center;background:rgba(0,0,0,.15);border:1px dashed rgba(255,255,255,.15);border-radius:10px;margin:6px 0">등록된 요금 항목이 없습니다</div>`}
     <button class="add-product-btn" onclick="addPriceEntry()">+ 요금 항목 추가</button>
   `;
@@ -5468,6 +5629,12 @@ function priceEntryHTML(pe, i, popupCount){
       <summary>🏷 이 요금 항목의 레이블 (항공·공항·항공편·티오프 등)</summary>
       ${labelsHTML(pe, i)}
     </details>
+
+    <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->
+    <details class="pe-labels">
+      <summary>🗓 일정 요약 타임라인 (일자별 항공·일정)</summary>
+      ${scheduleHTML(pe, i)}
+    </details>
   </div>`;
 }
 
@@ -5503,6 +5670,85 @@ function labelsHTML(pe, peIdx){
       </div>
     </div>
   </div>`;
+}
+
+// ===== 요금 항목에 종속된 "일정 요약 타임라인" UI =====
+function scheduleHTML(pe, peIdx){
+  const S = pe.schedule;
+  return `
+  <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer">
+    <input type="checkbox" style="width:auto" ${S.enabled?'checked':''} onchange="updateScheduleField(${peIdx},'enabled',this.checked)">
+    <span>이 요금 항목의 일정 타임라인을 상세페이지 요금표에 노출</span>
+  </label>
+  ${S.days.map((d,di)=>scheduleDayHTML(peIdx, d, di)).join('')}
+  <button class="add-product-btn" onclick="addScheduleDay(${peIdx})">+ 일자 추가</button>`;
+}
+function scheduleDayHTML(peIdx, d, di){
+  return `
+  <div class="pe-block">
+    <div class="pe-head">
+      <span class="pe-idx">일자 ${di+1}</span>
+      <button class="pee-del" onclick="removeScheduleDay(${peIdx},${di})">삭제</button>
+    </div>
+    <div class="grid-2">
+      <div><label>일차 표기</label><input type="text" value="${escapeAttr(d.dayLabel)}" placeholder="예: 1일차 (토요일)" oninput="updateScheduleDay(${peIdx},${di},'dayLabel',this.value)"></div>
+      <div><label>구간</label><input type="text" value="${escapeAttr(d.route)}" placeholder="예: 인천 → 임기" oninput="updateScheduleDay(${peIdx},${di},'route',this.value)"></div>
+    </div>
+    ${d.options.map((o,oi)=>`
+    <div class="grid-2" style="margin-top:6px">
+      <div><label>옵션 태그 (선택, 시즌 A/B 등 구분)</label><input type="text" value="${escapeAttr(o.tag)}" placeholder="A" oninput="updateScheduleOption(${peIdx},${di},${oi},'tag',this.value)"></div>
+      <div><label>항공/이동 정보</label><input type="text" value="${escapeAttr(o.flight)}" placeholder="예: TW9617 인천 07:30 출발 → 임기 08:50 도착" oninput="updateScheduleOption(${peIdx},${di},${oi},'flight',this.value)"></div>
+      <div class="full"><label>일정 내용</label><input type="text" value="${escapeAttr(o.activity)}" placeholder="예: 현지 직원 미팅(미팅보드: 고객명) → 골프장 이동(15분) → 체크인 및 중식 후 라운드" oninput="updateScheduleOption(${peIdx},${di},${oi},'activity',this.value)">
+        ${d.options.length>1?`<button class="apc-btn-sm apc-delete" style="margin-top:4px" onclick="removeScheduleOption(${peIdx},${di},${oi})">이 옵션 삭제</button>`:''}
+      </div>
+    </div>`).join('')}
+    <button class="apc-btn-sm" style="margin-top:6px" onclick="addScheduleOption(${peIdx},${di})">+ 옵션(A/B) 추가</button>
+    <div class="grid-2" style="margin-top:8px">
+      <div><label>조식</label><input type="text" value="${escapeAttr(d.meals.breakfast)}" placeholder="호텔식" oninput="updateScheduleMeal(${peIdx},${di},'breakfast',this.value)"></div>
+      <div><label>중식</label><input type="text" value="${escapeAttr(d.meals.lunch)}" placeholder="불포함" oninput="updateScheduleMeal(${peIdx},${di},'lunch',this.value)"></div>
+      <div><label>석식</label><input type="text" value="${escapeAttr(d.meals.dinner)}" placeholder="현지식" oninput="updateScheduleMeal(${peIdx},${di},'dinner',this.value)"></div>
+    </div>
+  </div>`;
+}
+function updateScheduleField(peIdx, field, val){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule[field]=val;
+  saveAdvChange(); renderAdvBody();
+}
+function addScheduleDay(peIdx){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days.push(newScheduleDay());
+  saveAdvChange(); renderAdvBody();
+}
+function removeScheduleDay(peIdx, di){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days.splice(di,1);
+  saveAdvChange(); renderAdvBody();
+}
+function updateScheduleDay(peIdx, di, field, val){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days[di][field]=val;
+  saveAdvChange();
+}
+function addScheduleOption(peIdx, di){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days[di].options.push(newScheduleOption());
+  saveAdvChange(); renderAdvBody();
+}
+function removeScheduleOption(peIdx, di, oi){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days[di].options.splice(oi,1);
+  saveAdvChange(); renderAdvBody();
+}
+function updateScheduleOption(peIdx, di, oi, field, val){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days[di].options[oi][field]=val;
+  saveAdvChange();
+}
+function updateScheduleMeal(peIdx, di, field, val){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].schedule.days[di].meals[field]=val;
+  saveAdvChange();
 }
 
 // ===== 요금 항목 CRUD =====

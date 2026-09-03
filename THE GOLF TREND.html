@@ -1376,6 +1376,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-img{
   display:block;width:100%;height:var(--pkg-img-h,auto);object-fit:cover;
+  max-height:min(48vh,520px); /* [Phase 3] 자동 노출 이미지가 지나치게 커지지 않도록 상한 */
   opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease,height .35s ease;
 }
 .pkg-card:hover .pkg-img{ opacity:1; }
@@ -1548,6 +1549,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pkg-group-title{ font-size:1.1rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
+  .pkg-img{ max-height:min(34vh,320px); } /* [Phase 3] 모바일 화면에서 한 화면에 들어오도록 더 낮은 상한 */
 }
 
 
@@ -2881,8 +2883,12 @@ const DEFAULT_SPOTLIGHT_DOMESTIC = [{catId:'jeju',idx:0}, {catId:'gangwon',idx:0
 function getSpotlightList(region){
   const cats = CATEGORIES[region];
   const picks = [];
+  // [메모리/성능 안정화] 8초마다 반복 호출되므로(cycleSpot), 매번 getProducts()로 전체 상품을
+  // ensureExtended() 복제하지 않고 productOverrides를 직접 스캔한다 — 화면을 오래 켜둘수록
+  // 불필요한 객체 생성이 누적되어 GC 부하가 커지는 것을 방지
   cats.forEach(cat=>{
-    getProducts(cat.id).forEach((p,idx)=>{ if (p.editorsPick) picks.push({catId:cat.id, idx}); });
+    const list = productOverrides[cat.id];
+    if (list) list.forEach((p,idx)=>{ if (p && p.editorsPick) picks.push({catId:cat.id, idx}); });
   });
   if (picks.length) return picks;
   return region==='overseas' ? DEFAULT_SPOTLIGHT_OVERSEAS : DEFAULT_SPOTLIGHT_DOMESTIC;
@@ -3717,14 +3723,23 @@ function renderSpotlightSlot(slot, layer, entry){
   const p=products[idx]; if (!p) return;
   const cat=findCat(entry.catId);
   const sfx=slot+layer;
-  document.getElementById('spotVisual'+sfx).style.cssText=getCatBgStyle(cat);
-  document.getElementById('spotVisual'+sfx).innerHTML='<span class="badge">EDITOR\'S PICK</span>';
+  // [Phase 3] 등록한 "타이틀 이미지"가 있으면 지역 대표 이미지 대신 그 이미지를 노출 — 상품 카드와 동일한 규칙
+  const useMedia = p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url;
+  const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url; // 구버전 데이터 호환
+  const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : getCatBgStyle(cat);
+  const visualEl = document.getElementById('spotVisual'+sfx);
+  visualEl.style.cssText = visualStyle;
+  visualEl.innerHTML = (hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'') + '<span class="badge">EDITOR\'S PICK</span>';
   document.getElementById('spotTitle'+sfx).textContent=`${cat.ko} · ${p.title}`;
+  // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다
+  const firstPe = (p.priceEntries && p.priceEntries[0]) || null;
+  const airfare = firstPe && firstPe.labels && firstPe.labels.airfare;
   const meta=[
     p.nights?`🗓 ${p.nights}`:'',
     p.rounds?`⛳ ${p.rounds}`:'',
     p.stay?`🏨 ${p.stay}`:'',
-    p.meals?`🍽 ${p.meals}`:''
+    p.meals?`🍽 ${p.meals}`:'',
+    (airfare && airfare!=='none')?`✈️ ${AIRFARE_TXT[airfare]||airfare}`:''
   ].filter(Boolean);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   const displayPrice=getDisplayPrice(p);
@@ -3752,16 +3767,21 @@ function preloadImage(url){
 }
 // 보이지 않는 뒤 레이어에 다음 콘텐츠를 미리 채워 넣은 뒤, 두 레이어를 "동시에" 교차 페이드
 // (기존 레이어는 사라지면서 새 레이어가 나타남 — 완전히 사라졌다 나타나는 끊김이 없음)
+// entry(catId,idx)가 가리키는 상품의 실제 노출 이미지 — 등록된 타이틀 이미지가 있으면 그것, 없으면 지역 대표 이미지
+function spotlightVisualUrl(entry){
+  const products=getProducts(entry.catId);
+  const p=products[entry.idx<products.length?entry.idx:0];
+  if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
+  return getImage(entry.catId);
+}
 function cycleSpot(){
   const overseasList = getSpotlightList('overseas');
   const domesticList = getSpotlightList('domestic');
   const nextOverseasEntry=overseasList[(spotOverseasIdx+1)%overseasList.length];
   const nextDomesticEntry=domesticList[(spotDomesticIdx+1)%domesticList.length];
-  const nextOverseasCat=findCat(nextOverseasEntry.catId);
-  const nextDomesticCat=findCat(nextDomesticEntry.catId);
   Promise.all([
-    preloadImage(getImage(nextOverseasCat.id)),
-    preloadImage(getImage(nextDomesticCat.id)),
+    preloadImage(spotlightVisualUrl(nextOverseasEntry)),
+    preloadImage(spotlightVisualUrl(nextDomesticEntry)),
   ]).then(()=>{
     const overseasList2 = getSpotlightList('overseas');
     const domesticList2 = getSpotlightList('domestic');
@@ -4616,9 +4636,12 @@ function getPkgList(type){
   const manual = getPkgManualList(type).map(p=>({url:p.url, label:p.label||'', catId:null, idx:null}));
   const cats = CATEGORIES[type]||[];
   const fromProducts=[];
+  // [메모리/성능 안정화] 캐러셀 rAF 루프·리사이즈 이벤트 등에서 반복 호출되므로, 매번 getProducts()로
+  // 전체 상품을 ensureExtended() 복제하지 않고 productOverrides를 직접 스캔한다
   cats.forEach(cat=>{
-    getProducts(cat.id).forEach((p,idx)=>{
-      if (p.pkgPoster && p.pkgPoster.url){
+    const list = productOverrides[cat.id];
+    if (list) list.forEach((p,idx)=>{
+      if (p && p.pkgPoster && p.pkgPoster.url){
         fromProducts.push({url:p.pkgPoster.url, label:p.title||'', catId:cat.id, idx});
       }
     });
@@ -4821,10 +4844,15 @@ function pkgStopAuto(type){
   clearInterval(st.timer);
 }
 
-// 윈도우 리사이즈 시 카드 크기/이미지 높이 재계산
+// 윈도우 리사이즈 시 카드 크기/이미지 높이 재계산 (모바일 주소창 표시/숨김 등으로 resize가 연속
+// 발생해도 매번 재계산하지 않도록 디바운스)
+let pkgResizeTimer=null;
 window.addEventListener('resize', ()=>{
-  pkgMeasure('domestic');
-  pkgMeasure('overseas');
+  clearTimeout(pkgResizeTimer);
+  pkgResizeTimer=setTimeout(()=>{
+    pkgMeasure('domestic');
+    pkgMeasure('overseas');
+  }, 150);
 });
 
 function renderAdminPkg(){
@@ -5155,7 +5183,10 @@ function renderProductAdmin(catId){
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
         <div><label>기간 · Nights</label><input type="text" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
         <div><label>라운드 · Rounds</label><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
+        <div><label>숙박 · Stay</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
+        <div><label>식사 · Meals</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
         <div class="full"><label>태그 (선택)</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'tag',this.value)"></div>
+        <div class="full"><label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea></div>
       </div>
     </div>`).join('');
 }

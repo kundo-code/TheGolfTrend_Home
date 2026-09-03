@@ -151,10 +151,13 @@ header{padding-top:var(--topbar-h,108px)}
 .spot-content{grid-area:1/1;display:flex;flex-direction:column;opacity:1;transition:opacity var(--spot-fade-ms,900ms) ease}
 .spot-content.spot-back{opacity:0;pointer-events:none}
 .spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
-.spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
-.spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
+/* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
+.spot-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.44rem;font-weight:500;color:#fff;margin-bottom:4px}
 .spot-meta{display:flex;gap:16px;font-size:.94rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
+/* [수정] EDITOR'S PICK 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
+.spot-tag-row{margin-bottom:8px;text-align:left}
+.spot-tag-row .badge{display:inline-block;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
 .spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:3.12rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:1.02rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
@@ -177,12 +180,14 @@ section.block{padding:100px 24px;position:relative}
 .sec-more{color:var(--gold-deep);font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
 .sec-more:hover{gap:10px;transition:gap .2s}
 
-/* REGION TABS + CATEGORY GRID */
-.region-tabs{display:flex;gap:8px;padding:6px;margin-bottom:36px;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:100px;width:fit-content;box-shadow:0 6px 20px rgba(10,23,48,.06)}
-.region-tabs button{padding:11px 26px;border-radius:100px;border:none;background:transparent;color:rgba(10,23,48,.6);font-weight:500;font-size:.92rem;cursor:pointer;transition:all .2s}
-.region-tabs button:hover{color:var(--pine-deep)}
-.region-tabs button.active{background:var(--gold);color:#fff;font-weight:600}
-.region-tabs button .count{display:inline-block;margin-left:6px;font-size:.72rem;padding:2px 8px;border-radius:100px;background:rgba(10,23,48,.1);color:inherit;font-weight:500}
+/* [수정] 국내/해외를 탭으로 전환하지 않고, 구분선·간격을 두고 항상 함께 노출 */
+/* 해외 그룹은 밝은 배경, 국내 그룹은 페이지 하단의 어두운 배경 위에 놓이므로 자체 배경(불투명 pill)을
+   가진 배지로 통일해 어느 위치에서도 가독성을 확보한다 */
+.dest-region-head{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.dest-region-tag{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:uppercase;background:rgba(10,23,48,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:7px 18px;border-radius:100px;border:1px solid rgba(221,179,103,.4)}
+.dest-region-count{color:var(--gold);font-weight:600;text-transform:none;letter-spacing:normal}
+.dest-region-divider{display:flex;align-items:center;gap:14px;margin:40px 0;color:var(--gold)}
+.dest-region-divider::before,.dest-region-divider::after{content:'';flex:1;height:1px;background:rgba(120,120,140,.25)}
 .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .cat-card{position:relative;aspect-ratio:3/2;border-radius:24px;overflow:hidden;cursor:pointer;border:1px solid var(--glass-border-soft);box-shadow:0 10px 32px rgba(0,0,0,.28);transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
 .cat-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 20px 50px rgba(0,0,0,.4)}
@@ -210,14 +215,17 @@ section.block{padding:100px 24px;position:relative}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .product{padding:18px;background:rgba(255,255,255,.75);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
 .product:hover{transform:translateY(-4px);border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.12)}
-.product-visual{aspect-ratio:16/10;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
+/* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
+.product-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
 .product-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.product-visual .tag-abs{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);color:#fff;font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.15);letter-spacing:.05em}
 .product-visual .save-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
 .product h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.1rem;color:var(--pine-deep);font-weight:500;margin-bottom:6px;line-height:1.3}
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:rgba(10,23,48,.65);white-space:pre-line;margin-bottom:12px}
+/* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
+.product-tag-row{margin-bottom:8px;text-align:left}
+.product-tag-row .tag-inline{display:inline-block;background:rgba(221,179,103,.14);color:var(--gold-deep);font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(221,179,103,.35);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.625rem;color:var(--pine-deep);font-weight:500}
 .product-foot .price .unit{font-size:.72rem;color:inherit}
@@ -233,13 +241,14 @@ section.block{padding:100px 24px;position:relative}
 .pd-close{position:sticky;top:20px;left:100%;margin-left:auto;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transform:translateX(-4px)}
 .pd-close:hover{background:rgba(255,255,255,.25)}
 .pd-slot{margin-bottom:16px;border-radius:20px;overflow:hidden;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+/* [수정] 제목을 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단 별도 박스로 분리 */
+.pd-top-title{padding:20px 20px 16px}
+.pd-top-title .cat{font-size:.72rem;letter-spacing:.18em;color:var(--gold);font-weight:600;text-transform:uppercase;margin-bottom:6px}
+.pd-top-title h2{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.5rem;color:#fff;font-weight:500;line-height:1.25}
 .pd-title-slot{padding:0;position:relative}
 .pd-title-media{aspect-ratio:16/10;position:relative;background:linear-gradient(160deg,#1C2F5C,#142544);overflow:hidden}
 .pd-title-media img,.pd-title-media video{width:100%;height:100%;object-fit:cover;display:block}
-.pd-title-media::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.9) 100%);pointer-events:none}
-.pd-title-body{position:absolute;left:0;right:0;bottom:0;padding:24px;z-index:2}
-.pd-title-body .cat{font-size:.72rem;letter-spacing:.18em;color:var(--gold);font-weight:600;text-transform:uppercase;margin-bottom:6px}
-.pd-title-body h2{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.6rem;color:#fff;font-weight:500;line-height:1.2}
+.pd-title-media::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55) 100%);pointer-events:none}
 .pd-info-table{padding:14px 20px 18px;display:flex;flex-direction:column;gap:9px}
 .pd-info-row{display:flex;gap:14px;font-size:.85rem;line-height:1.5}
 .pd-info-row .k{flex:0 0 84px;color:var(--gold);font-weight:600;font-size:.75rem;letter-spacing:.04em}
@@ -249,8 +258,6 @@ section.block{padding:100px 24px;position:relative}
 .pd-gallery-main{aspect-ratio:16/10;position:relative;overflow:hidden;background:#0A1730}
 .pd-gallery-main img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .5s}
 .pd-gallery-main img.active{opacity:1}
-.pd-gallery-main video{width:100%;height:100%;object-fit:contain;background:#000;position:absolute;inset:0;opacity:0;transition:opacity .5s}
-.pd-gallery-main video.active{opacity:1}
 .pd-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;transition:background .2s}
 .pd-gallery-nav:hover{background:rgba(0,0,0,.75)}
 .pd-gallery-nav.prev{left:12px}.pd-gallery-nav.next{right:12px}
@@ -261,8 +268,15 @@ section.block{padding:100px 24px;position:relative}
 .pd-thumb{width:70px;height:52px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;cursor:pointer;border:2px solid transparent;transition:border-color .2s;opacity:.7}
 .pd-thumb.active{border-color:var(--gold);opacity:1}
 .pd-thumb:hover{opacity:1}
-.pd-thumb.video-thumb{background-color:#0A1730;display:flex;align-items:center;justify-content:center}
-.pd-thumb-play{color:#fff;font-size:1rem}
+/* [수정] 동영상 갤러리 — 이미지 갤러리 위, 마우스 오버 시 자동 재생 */
+.pd-video-gallery{padding:14px 16px 6px}
+.pd-video-grid{display:flex;gap:10px;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+.pd-video-grid::-webkit-scrollbar{height:6px}
+.pd-video-grid::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:3px}
+.pd-video-item{position:relative;flex-shrink:0;width:200px;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#000;cursor:pointer}
+.pd-video-item video{width:100%;height:100%;object-fit:cover;display:block}
+.pd-video-item .play-ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;background:rgba(0,0,0,.28);pointer-events:none;transition:opacity .2s}
+.pd-video-item:hover .play-ic{opacity:0}
 .pd-section-title{padding:16px 20px 8px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--gold);font-weight:600;letter-spacing:.15em;text-transform:uppercase}
 .pd-price-entries{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
 .pd-price-entry{padding:16px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:14px;transition:all .2s;cursor:pointer;display:flex;flex-direction:column;gap:8px}
@@ -279,6 +293,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.75rem;color:var(--gold);font-weight:500;margin-left:2px}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(247,245,240,.4);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
+.pd-price-entry .min-people{font-size:.72rem;color:var(--gold);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px;margin-left:auto}
 .pd-price-entry .go{color:var(--gold);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:4px}
 /* 포함사항/불포함사항/공통 안내/참고사항/예약·결제·취소 규정 — 동일한 체크리스트 서식 */
 .pd-check-list{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
@@ -672,8 +687,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed rgba(255,255,255,.1)}
 .pe-idx{font-size:.85rem;font-weight:700;color:var(--gold);letter-spacing:.05em}
 .pe-head-right{display:flex;align-items:center;gap:10px}
-.popup-toggle{display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:100px;cursor:pointer;transition:all .2s;position:relative}
-.popup-toggle.locked{cursor:not-allowed;opacity:.5}
+/* .pe-head-right로 스코프를 좁혀 특이도(specificity)를 .adv-body label(클래스1+태그1)보다 높여야
+   display:flex 등 아래 선언이 실제로 적용된다 — 그렇지 않으면 label 태그 특이도에 밀려 display:block으로
+   되돌아가면서 토글 슬라이더가 찌그러져 "팝업 노출" 텍스트와 겹쳐 보이는 문제가 있었다 */
+.pe-head-right .popup-toggle{display:flex;align-items:center;gap:8px;padding:5px 10px;margin:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:100px;cursor:pointer;transition:all .2s;position:relative;text-transform:none;letter-spacing:normal}
+.pe-head-right .popup-toggle.locked{cursor:not-allowed;opacity:.5}
 .popup-toggle input{opacity:0;width:0;height:0;position:absolute}
 .popup-toggle .toggle-slider{position:relative;width:32px;height:18px;background:rgba(255,255,255,.15);border-radius:100px;transition:.2s}
 .popup-toggle .toggle-slider::before{content:'';position:absolute;height:12px;width:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
@@ -856,7 +874,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .foot-grid{grid-template-columns:1fr}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
-  .region-tabs{width:100%;overflow-x:auto}
   .apc-fields,.adv-body .grid-2{grid-template-columns:1fr}
   .pd-container{margin:16px auto;padding:0 12px 20px}
   .adv-editor{margin:16px 12px}
@@ -2010,8 +2027,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="spot-stack">
             <div class="spot-content" id="spotLayer0a">
               <div class="spot-visual" id="spotVisual0a"></div>
-              <h3 id="spotTitle0a">일본 · 카와나 후지 코스</h3>
+              <h3 id="spotTitle0a">카와나 후지 코스</h3>
               <div class="spot-meta" id="spotMeta0a"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice0a">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
                 <a id="spotLink0a">자세히 →</a>
@@ -2021,6 +2039,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="spot-visual" id="spotVisual0b"></div>
               <h3 id="spotTitle0b"></h3>
               <div class="spot-meta" id="spotMeta0b"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice0b"></span>
                 <a id="spotLink0b">자세히 →</a>
@@ -2033,8 +2052,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="spot-stack">
             <div class="spot-content" id="spotLayer1a">
               <div class="spot-visual" id="spotVisual1a"></div>
-              <h3 id="spotTitle1a">베트남 · 바나힐스 GC</h3>
+              <h3 id="spotTitle1a">바나힐스 GC</h3>
               <div class="spot-meta" id="spotMeta1a"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice1a">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
                 <a id="spotLink1a">자세히 →</a>
@@ -2044,6 +2064,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="spot-visual" id="spotVisual1b"></div>
               <h3 id="spotTitle1b"></h3>
               <div class="spot-meta" id="spotMeta1b"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice1b"></span>
                 <a id="spotLink1b">자세히 →</a>
@@ -2066,11 +2087,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         <p>가고 싶은 지역을 먼저 고르세요. 상품은 시즌·요일·티오프 타임에 따라 요금이 변동되며, 표시된 금액은 최저가 기준입니다.</p>
       </div>
     </div>
-    <div class="region-tabs" role="tablist">
-      <button class="active" data-region="domestic">국내 <span class="count">6</span></button>
-      <button data-region="overseas">해외 <span class="count">9</span></button>
+    <!-- [수정] 국내/해외 여행지를 탭 전환이 아닌, 해외 → 국내 순서로 구분선과 간격을 두고 항상 함께 노출 -->
+    <div class="dest-region-block">
+      <div class="dest-region-head"><span class="dest-region-tag">해외 <span class="dest-region-count" id="destCountOverseas"></span></span></div>
+      <div class="cat-grid" id="catGridOverseas"></div>
     </div>
-    <div class="cat-grid" id="catGrid"></div>
+    <div class="dest-region-divider"><span>✦</span></div>
+    <div class="dest-region-block">
+      <div class="dest-region-head"><span class="dest-region-tag">국내 <span class="dest-region-count" id="destCountDomestic"></span></span></div>
+      <div class="cat-grid" id="catGridDomestic"></div>
+    </div>
     <div class="category-view" id="categoryView" style="display:none">
       <div class="cv-head">
         <div class="left">
@@ -2742,6 +2768,7 @@ function newPriceEntry(){
     headline:'', link:'', layout:'card', emphasis:[],
     salePrice:0, saleCurrency:'KRW', saleFromLabel:true,
     originalPrice:0, originalCurrency:'KRW', originalFromLabel:false,
+    minPeople:'', // [수정] 요금 옆에 표기할 최소 출발 인원 (예: "2인")
     labels: newLabels(),
     popup:false,
     schedule: newSchedule() // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
@@ -2855,6 +2882,7 @@ function ensureExtended(p){
     if (pe.saleFromLabel===undefined) pe.saleFromLabel = true;
     if (pe.originalFromLabel===undefined) pe.originalFromLabel = false;
     if (pe.popup===undefined) pe.popup = false;
+    if (pe.minPeople===undefined) pe.minPeople = ''; // [수정] 최소 출발 인원
     if (!Array.isArray(pe.emphasis)) pe.emphasis = pe.emphasis ? [pe.emphasis] : []; // [Phase 3 상품등록 개선] 강조태그 복수 선택
     pe.labels = ensureLabels(pe.labels);
     pe.schedule = ensureSchedule(pe.schedule); // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
@@ -3703,7 +3731,7 @@ function usingComposite(cat){return false} // 통합 이미지 시스템 제거
 function findCat(id){return CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===id)}
 
 // STATE
-let activeRegion='domestic', activeCategoryId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
+let activeCategoryId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 let currentAdv=null; // {catId, idx}
@@ -3711,21 +3739,24 @@ let activeAdvTab='basic';
 let pdGalleryIdx=0, pdGalleryTimer=null;
 
 // RENDER — CATEGORY GRID
+// [수정] 국내/해외를 탭으로 전환하지 않고 두 그리드를 항상 함께(해외 → 국내 순) 노출
+function catCardHTML(c){
+  const count=getProducts(c.id).length;
+  const style=getCatBgStyle(c);
+  const koreaClass=usingComposite(c)?'bg-korea':'';
+  return `<article class="cat-card" onclick="selectCategory('${c.id}')">
+    <div class="bg ${koreaClass}" style="${style}" role="img" aria-label="${escapeAttr(catImgAlt(c))}"></div>
+    <div class="content">
+      <div class="top"><span class="tagline">${c.tagline}</span><span class="count-badge">${count}개 상품</span></div>
+      <div><div class="divider"><span>✦</span></div><div class="name-ko">${c.ko}</div><div class="name-en">${c.en}</div></div>
+    </div>
+  </article>`;
+}
 function renderCategoryGrid(){
-  const grid=document.getElementById('catGrid');
-  const items=CATEGORIES[activeRegion];
-  grid.innerHTML=items.map(c=>{
-    const count=getProducts(c.id).length;
-    const style=getCatBgStyle(c);
-    const koreaClass=usingComposite(c)?'bg-korea':'';
-    return `<article class="cat-card" onclick="selectCategory('${c.id}')">
-      <div class="bg ${koreaClass}" style="${style}" role="img" aria-label="${escapeAttr(catImgAlt(c))}"></div>
-      <div class="content">
-        <div class="top"><span class="tagline">${c.tagline}</span><span class="count-badge">${count}개 상품</span></div>
-        <div><div class="divider"><span>✦</span></div><div class="name-ko">${c.ko}</div><div class="name-en">${c.en}</div></div>
-      </div>
-    </article>`;
-  }).join('');
+  document.getElementById('catGridOverseas').innerHTML=CATEGORIES.overseas.map(catCardHTML).join('');
+  document.getElementById('catGridDomestic').innerHTML=CATEGORIES.domestic.map(catCardHTML).join('');
+  document.getElementById('destCountOverseas').textContent=`${CATEGORIES.overseas.length}개국`;
+  document.getElementById('destCountDomestic').textContent=`${CATEGORIES.domestic.length}개 권역`;
 }
 
 function selectCategory(id){
@@ -3766,7 +3797,6 @@ function productCardHTML(p, catId, idx){
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" style="${visualStyle}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}
-      ${p.tag?`<span class="tag-abs">${p.tag}</span>`:''}
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
     <h4>${p.title}</h4>
@@ -3777,6 +3807,7 @@ function productCardHTML(p, catId, idx){
       ${p.depAirport?`<span>✈️ ${p.depAirport}</span>`:''}
     </div>
     ${p.checkpoint?`<div class="product-divider"></div><div class="product-checkpoint">${p.checkpoint}</div>`:''}
+    ${p.tag?`<div class="product-tag-row"><span class="tag-inline">${p.tag}</span></div>`:''}
     <div class="product-foot">
       <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
       <span class="details">자세히 →</span>
@@ -3853,8 +3884,10 @@ function renderSpotlightSlot(slot, layer, entry){
   // hero 배경 슬라이드(cycleHero)와 동일하게 교체 전 명시적으로 정지한다
   pauseVideosIn(visualEl);
   visualEl.style.cssText = visualStyle;
-  visualEl.innerHTML = (hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'') + '<span class="badge">EDITOR\'S PICK</span>';
-  document.getElementById('spotTitle'+sfx).textContent=`${cat.ko} · ${p.title}`;
+  // [수정] EDITOR'S PICK 배지는 이미지를 가리지 않도록 spot-tag-row(요금 위)로 이동 — 여기선 이미지/영상만 채운다
+  visualEl.innerHTML = hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'';
+  // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
+  document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다
   const firstPe = (p.priceEntries && p.priceEntries[0]) || null;
   const airfare = firstPe && firstPe.labels && firstPe.labels.airfare;
@@ -4182,11 +4215,9 @@ function closeProductDetail(){
   const c=document.getElementById('pdContent');
   if (c){ pauseVideosIn(c); c.innerHTML=''; }
 }
-// 동영상 갤러리를 이미지 갤러리보다 앞에 배치한 통합 목록 (상품 상세 페이지 노출용)
+// [수정] 동영상은 별도의 "동영상 갤러리" 섹션(마우스 오버 재생)으로 분리되어, 여기서는 이미지만 다룬다
 function pdMediaList(p){
-  const vids=(p.videoGallery||[]).map(v=>({url:v.url,type:'video'}));
-  const imgs=(p.gallery||[]).map(g=>({url:g.url,type:'image'}));
-  return vids.concat(imgs);
+  return (p.gallery||[]).map(g=>({url:g.url,type:'image'}));
 }
 function startGalleryAutoSlide(p){
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
@@ -4209,11 +4240,11 @@ function pdGalleryGo(i){
   }
 }
 function updateGalleryDisplay(){
-  document.querySelectorAll('#pdContent .pd-gallery-main img, #pdContent .pd-gallery-main video').forEach((el,i)=>el.classList.toggle('active',i===pdGalleryIdx));
+  document.querySelectorAll('#pdContent .pd-gallery-main img').forEach((el,i)=>el.classList.toggle('active',i===pdGalleryIdx));
   document.querySelectorAll('#pdContent .pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===pdGalleryIdx));
   const counter=document.querySelector('#pdContent .pd-gallery-counter');
   if (counter){
-    const total=document.querySelectorAll('#pdContent .pd-gallery-main img, #pdContent .pd-gallery-main video').length;
+    const total=document.querySelectorAll('#pdContent .pd-gallery-main img').length;
     counter.textContent=`${pdGalleryIdx+1} / ${total}`;
   }
 }
@@ -4237,8 +4268,12 @@ function renderProductDetail(p,cat){
   // (전용 이미지가 있으면 아래 <img alt>가 대신 설명하므로 중복 라벨을 달지 않음)
   const titleBgAria = hasTitleMedia ? '' : ` role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}"`;
 
-  // Title slot
-  let html = `<div class="pd-slot pd-title-slot">
+  // [수정] 제목은 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단에 별도 박스로 분리
+  let html = `<div class="pd-slot pd-top-title">
+    <div class="cat">${cat.ko} · ${cat.en}</div>
+    <h2>${p.title}</h2>
+  </div>`;
+  html += `<div class="pd-slot pd-title-slot">
     <div class="pd-title-media" style="${titleBg}"${titleBgAria}>`;
   if (p.titleMedia && p.titleMedia.url){
     if (p.titleMedia.type==='video'){
@@ -4247,10 +4282,7 @@ function renderProductDetail(p,cat){
       html += `<img src="${escapeAttr(p.titleMedia.url)}" alt="${escapeAttr(productImgAlt(cat,p))}" loading="eager" decoding="async">`;
     }
   }
-  html += `<div class="pd-title-body">
-      <div class="cat">${cat.ko} · ${cat.en}</div>
-      <h2>${p.title}</h2>
-    </div></div></div>`;
+  html += `</div></div>`;
 
   // [Phase 3 상품등록 개선 v4] 상품 정보 — 제목/기간/숙박/식사 + 연결 링크(있으면 박스 하단 중앙에 "상세보기→" 버튼)
   // (타이틀 이미지 바로 아래의 기간·라운드 칩 박스는 제거 — 정보는 이 박스로 통합)
@@ -4266,7 +4298,38 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
-  // [Phase 3 상품등록 개선 v4] 요금표를 갤러리보다 먼저 노출
+  // [수정] 동영상 갤러리 — 이미지 갤러리보다 위에 노출, 마우스 오버 시 자동 재생
+  const pdVideos = p.videoGallery||[];
+  if (pdVideos.length){
+    html += `<div class="pd-slot pd-video-gallery">
+      <div class="pd-section-title">동영상 갤러리</div>
+      <div class="pd-video-grid">
+        ${pdVideos.map((v,i)=>`<div class="pd-video-item">
+          <video src="${escapeAttr(v.url)}" muted loop playsinline preload="metadata" aria-label="${escapeAttr(productImgAlt(cat,p))} - 영상 ${i+1}" onmouseenter="this.play().catch(()=>{})" onmouseleave="this.pause();this.currentTime=0"></video>
+          <span class="play-ic">▶</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // [수정] "갤러리" → "이미지 갤러리"로 명칭 변경, 동영상 분리로 이미지만 노출
+  const pdMedia = pdMediaList(p);
+  if (pdMedia.length){
+    html += `<div class="pd-slot pd-gallery">
+      <div class="pd-section-title">이미지 갤러리</div>
+      <div class="pd-gallery-main">
+        ${pdMedia.map((m,i)=>`<img src="${escapeAttr(m.url)}" class="${i===0?'active':''}" alt="${escapeAttr(productImgAlt(cat,p))} - 사진 ${i+1}" loading="${i===0?'eager':'lazy'}" decoding="async">`).join('')}
+        ${pdMedia.length>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryNext(-1)" aria-label="이전">‹</button>
+        <button class="pd-gallery-nav next" onclick="pdGalleryNext(1)" aria-label="다음">›</button>
+        <span class="pd-gallery-counter">1 / ${pdMedia.length}</span>`:''}
+      </div>
+      ${(!p.galleryConfig || p.galleryConfig.layout==='thumb') && pdMedia.length>1 ? `<div class="pd-thumbs">
+        ${pdMedia.map((m,i)=>`<div class="pd-thumb ${i===0?'active':''}" style="background-image:url('${escapeAttr(m.url)}')" onclick="pdGalleryGo(${i})"></div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  }
+
+  // [수정] 요금표를 갤러리 아래로 이동
   if (p.priceEntries && p.priceEntries.length){
     html += `<div class="pd-slot">
       <div class="pd-section-title">요금표</div>
@@ -4292,6 +4355,7 @@ function renderProductDetail(p,cat){
               ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:''}
               ${orig&&orig>sale?`<span class="price-original">${fmtPrice(orig)}${origSym}${origFrom}</span>`:''}
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
+              ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
             </div>
             ${pe.link?`<span class="go">상세 보기 →</span>`:''}
           </div>`;
@@ -4300,33 +4364,41 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
-  // [Phase 3 상품등록 개선 v4] 갤러리를 요금표 아래로 이동 (동영상 갤러리가 있으면 이미지보다 먼저 노출)
-  const pdMedia = pdMediaList(p);
-  if (pdMedia.length){
-    html += `<div class="pd-slot pd-gallery">
-      <div class="pd-section-title">갤러리</div>
-      <div class="pd-gallery-main">
-        ${pdMedia.map((m,i)=> m.type==='video'
-          ? `<video src="${escapeAttr(m.url)}" class="${i===0?'active':''}" controls muted playsinline preload="metadata"></video>`
-          : `<img src="${escapeAttr(m.url)}" class="${i===0?'active':''}" alt="${escapeAttr(productImgAlt(cat,p))} - 사진 ${i+1}" loading="${i===0?'eager':'lazy'}" decoding="async">`
-        ).join('')}
-        ${pdMedia.length>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryNext(-1)" aria-label="이전">‹</button>
-        <button class="pd-gallery-nav next" onclick="pdGalleryNext(1)" aria-label="다음">›</button>
-        <span class="pd-gallery-counter">1 / ${pdMedia.length}</span>`:''}
-      </div>
-      ${(!p.galleryConfig || p.galleryConfig.layout==='thumb') && pdMedia.length>1 ? `<div class="pd-thumbs">
-        ${pdMedia.map((m,i)=>`<div class="pd-thumb ${i===0?'active':''} ${m.type==='video'?'video-thumb':''}" style="background-image:url('${escapeAttr(m.type==='video'?'':m.url)}')" onclick="pdGalleryGo(${i})">${m.type==='video'?'<span class=\"pd-thumb-play\">▶</span>':''}</div>`).join('')}
-      </div>` : ''}
+  // [Phase 3 상품등록 개선 v3] 포함사항 / 불포함사항 / 공통 안내 / 추가 요금 안내 / 참고사항 / 예약·결제·취소 규정을
+  // 요금표 아래에 순서대로 노출 — 모두 동일한 리스트 서식으로 가독성을 맞춘다
+  const bulletRows = (txt, icon) => txt.split('\n').map(s=>s.trim()).filter(Boolean)
+    .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${escapeAttr(line)}</span></div>`).join('');
+  // [수정] 공통 안내를 포함사항 위로 이동
+  if (p.notes){
+    html += `<div class="pd-slot"><div class="pd-section-title">공통 안내</div><div class="pd-check-list plain">${bulletRows(p.notes,'•')}</div></div>`;
+  }
+  if (p.included){
+    html += `<div class="pd-slot"><div class="pd-section-title">포함사항</div><div class="pd-check-list included">${bulletRows(p.included,'✓')}</div></div>`;
+  }
+  if (p.notIncluded){
+    html += `<div class="pd-slot"><div class="pd-section-title">불포함사항</div><div class="pd-check-list excluded">${bulletRows(p.notIncluded,'✕')}</div></div>`;
+  }
+  // [수정] 참고사항을 불포함사항 아래로 이동
+  if (p.precautions){
+    html += `<div class="pd-slot"><div class="pd-section-title">참고사항</div><div class="pd-check-list plain">${bulletRows(p.precautions,'•')}</div></div>`;
+  }
+  // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
+  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount));
+  if (extraFees.length){
+    html += `<div class="pd-slot"><div class="pd-section-title">추가 요금 안내</div>
+      <div class="pd-fee-table">${extraFees.map((f,i)=> f.kind==='group'
+        ? `<div class="group-title${i>0?' spaced':''}">${escapeAttr(f.title)}</div>`
+        : `<div class="row"><span class="label">${escapeAttr(f.label||'')}</span><span class="amount">${escapeAttr(f.amount||'')}</span></div>`
+      ).join('')}</div>
     </div>`;
   }
 
-  // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 — 활성화된 요금 항목들을 하나의 타임라인으로 모아 노출
+  // [수정] 일정 요약 타임라인을 예약·결제·취소 규정 바로 위로 이동
   const scheduledEntries = (p.priceEntries||[]).filter(pe=>pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length);
   if (scheduledEntries.length){
     html += `<div class="pd-slot"><div class="pd-section-title">일정 요약 타임라인</div>
       <div class="pd-schedule">
         ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
-        ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
         ${scheduledEntries.map(pe=>`
         <div class="pd-sch-group">
           <div class="pd-sch-group-head">
@@ -4355,36 +4427,11 @@ function renderProductDetail(p,cat){
             </div>`).join('')}
           </div>
         </div>`).join('')}
+        ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
       </div>
     </div>`;
   }
 
-  // [Phase 3 상품등록 개선 v3] 포함사항 / 불포함사항 / 공통 안내 / 추가 요금 안내 / 참고사항 / 예약·결제·취소 규정을
-  // 요금표 아래에 순서대로 노출 — 모두 동일한 리스트 서식으로 가독성을 맞춘다
-  const bulletRows = (txt, icon) => txt.split('\n').map(s=>s.trim()).filter(Boolean)
-    .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${escapeAttr(line)}</span></div>`).join('');
-  if (p.included){
-    html += `<div class="pd-slot"><div class="pd-section-title">포함사항</div><div class="pd-check-list included">${bulletRows(p.included,'✓')}</div></div>`;
-  }
-  if (p.notIncluded){
-    html += `<div class="pd-slot"><div class="pd-section-title">불포함사항</div><div class="pd-check-list excluded">${bulletRows(p.notIncluded,'✕')}</div></div>`;
-  }
-  if (p.notes){
-    html += `<div class="pd-slot"><div class="pd-section-title">공통 안내</div><div class="pd-check-list plain">${bulletRows(p.notes,'•')}</div></div>`;
-  }
-  // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
-  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount));
-  if (extraFees.length){
-    html += `<div class="pd-slot"><div class="pd-section-title">추가 요금 안내</div>
-      <div class="pd-fee-table">${extraFees.map((f,i)=> f.kind==='group'
-        ? `<div class="group-title${i>0?' spaced':''}">${escapeAttr(f.title)}</div>`
-        : `<div class="row"><span class="label">${escapeAttr(f.label||'')}</span><span class="amount">${escapeAttr(f.amount||'')}</span></div>`
-      ).join('')}</div>
-    </div>`;
-  }
-  if (p.precautions){
-    html += `<div class="pd-slot"><div class="pd-section-title">참고사항</div><div class="pd-check-list plain">${bulletRows(p.precautions,'•')}</div></div>`;
-  }
   if (p.bookingPolicy){
     html += `<div class="pd-slot"><div class="pd-section-title">예약 · 결제 · 취소 규정</div><div class="pd-check-list plain">${bulletRows(p.bookingPolicy,'•')}</div></div>`;
   }
@@ -5552,7 +5599,7 @@ function advBasicHTML(p){
         <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
         ${tm&&tm.url?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
       </div>
-      <span class="file-hint">권장 1200×750px 이상 (16:10 비율) · 10MB 이하</span>
+      <span class="file-hint">권장(원본) 1080×810px (4:3 비율) · 10MB 이하</span>
     </div>
 
     <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
@@ -5731,6 +5778,7 @@ function priceEntryHTML(pe, i, popupCount){
           </label>
         </div>
       </div>
+      <div><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="예: 2" oninput="updatePriceEntry(${i},'minPeople',this.value)"></div>
       <div class="full"><label>정가 (할인 전)</label>
         <div class="price-row">
           <input type="number" value="${pe.originalPrice||''}" placeholder="1200000" oninput="updatePriceEntry(${i},'originalPrice',this.value,'number')">
@@ -6258,14 +6306,6 @@ function renderAll(){
 }
 
 // INIT
-document.querySelectorAll('.region-tabs button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.region-tabs button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    activeRegion=btn.dataset.region;
-    renderCategoryGrid();
-  });
-});
 applySeasonTheme(getSeasonTheme(), false);
 
 // ══ 여행 스타일 드롭다운 다중선택 ════════════════════════════════

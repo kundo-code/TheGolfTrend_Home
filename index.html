@@ -1397,8 +1397,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   /* transform 전환은 연속 자동 스크롤과의 충돌을 피하기 위해 JS(pkgNudgeTo)에서 필요할 때만 인라인으로 적용 */
 }
 .pkg-card{
+  /* [Phase 3] 폭은 JS(pkgMeasure)가 이미지 원본 비율에 맞춰 매번 계산해 인라인으로 지정 —
+     아래 flex/height는 JS 실행 전(초기 로드 순간)의 기본값일 뿐 */
   flex:0 0 calc((100% - 16px * 2) / 3);
-  max-width:min(85vw,420px); /* [Phase 3] 등록된 포스터 수가 적을 때 카드 폭이 화면을 거의 다 채워버리지 않도록 상한 */
+  max-width:min(85vw,420px); /* 안전장치: 극단적으로 가로로 긴 이미지가 레이아웃을 깨지 않도록 상한 */
   position:relative;cursor:pointer;
   border-radius:12px;overflow:hidden;
   background:#0A1730;
@@ -1413,9 +1415,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-color:rgba(221,179,103,.3);
 }
 .pkg-img{
-  display:block;width:100%;height:var(--pkg-img-h,auto);object-fit:cover;
-  max-height:min(48vh,520px); /* [Phase 3] 자동 노출 이미지가 지나치게 커지지 않도록 상한 */
-  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease,height .35s ease;
+  /* [Phase 3] 높이 기준으로 이미지 전체가 보이도록 — 폭은 카드(JS가 원본 비율로 계산)에 맞춰 채우고,
+     object-fit:contain으로 어떤 경우에도 잘리지 않게(카드가 안전상한에 걸려도 레터박스로 처리) */
+  display:block;width:100%;height:100%;object-fit:contain;
+  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease;
 }
 .pkg-card:hover .pkg-img{ opacity:1; }
 .pkg-card.pkg-dim:hover{ opacity:1; }
@@ -1587,7 +1590,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pkg-group-title{ font-size:1.1rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
-  .pkg-img{ max-height:min(30vh,260px); } /* [Phase 3] 모바일 화면에서 한 화면에 들어오도록 더 낮은 상한 */
   .pkg-card{ max-width:72vw; } /* [Phase 3] 모바일에서 카드 폭도 화면을 거의 채우지 않고 옆 카드가 살짝 보이도록 제한 */
 }
 
@@ -4743,8 +4745,8 @@ function savePkgPosters(){ try{localStorage.setItem(PKG_KEY,JSON.stringify(pkgPo
 
 // 슬라이드 상태 — 연속(마퀴) 스크롤 방식: posPx가 매 프레임 조금씩 증가하며 트랙 전체가 왼쪽으로 흐름
 const pkgState = {
-  domestic: {idx:0, timer:null, posPx:0, rafId:null, lastTs:null, cardW:0, slideW:0, listLen:0, resumeTimeout:null},
-  overseas:  {idx:0, timer:null, posPx:0, rafId:null, lastTs:null, cardW:0, slideW:0, listLen:0, resumeTimeout:null},
+  domestic: {idx:0, timer:null, posPx:0, rafId:null, lastTs:null, widths:[], offsets:[], singleSetWidth:0, listLen:0, resumeTimeout:null, lastActiveIdx:null},
+  overseas:  {idx:0, timer:null, posPx:0, rafId:null, lastTs:null, widths:[], offsets:[], singleSetWidth:0, listLen:0, resumeTimeout:null, lastActiveIdx:null},
 };
 // ── 조정 가능한 옵션값 ──────────────────────────────────────────
 const PKG_SCROLL_SPEED = 40;    // 자동 슬라이드 속도(px/초) — 값이 클수록 더 빠르게 왼쪽으로 흐름 (기본값 40)
@@ -4823,9 +4825,11 @@ function renderPkgAll(){
   renderPkgGroup('overseas');
 }
 
-// px 기반 카드 폭/이미지 높이 계산 — 화면 폭에 맞춰 더 많은 카드를 노출
-const PKG_TARGET_CARD_W = 220; // 카드 1장당 대략적인 목표 폭(px) — 화면이 넓을수록 더 많은 카드가 노출됨
-const PKG_CARD_WIDTH_SCALE = 1.2; // [Phase 3] 요청: 패키지 요금표 이미지를 가로만 120%로 확대 (세로는 원본 유지)
+// [Phase 3] 높이를 기준으로 이미지 전체가 보이도록 하고, 폭은 각 이미지 원본 비율에 맞춰 가변적으로 계산
+function pkgTargetHeight(){
+  const isMobile = window.innerWidth <= 640;
+  return isMobile ? Math.min(window.innerHeight*0.30, 260) : Math.min(window.innerHeight*0.48, 480);
+}
 function pkgMeasure(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
@@ -4834,46 +4838,37 @@ function pkgMeasure(type){
   if(!list.length) return;
 
   const gap = 16;
-  const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
-  // [Phase 3] 카드 폭 통일: 원래는 이 타입(국내/해외) 자신의 포스터 개수(list.length)로만 visibleCount를
-  // 제한해서, 국내·해외 등록 개수가 다르면 카드 폭 자체가 서로 달라졌다. 두 그룹 중 더 많은 쪽의 개수를
-  // 기준으로 삼아 국내/해외 카드 폭이 항상 같아지도록 한다.
-  const sharedListLen = Math.max(getPkgList('domestic').length, getPkgList('overseas').length, 1);
-  const visibleCount = Math.max(1, Math.min(sharedListLen, Math.floor((wrapW+gap)/(PKG_TARGET_CARD_W+gap))));
-  // [Phase 3] 화면에 맞춘 기본 카드 폭(baseCardW)은 세로 높이 계산의 기준으로 그대로 두고,
-  // 실제 카드/이미지 폭(cardW)에만 PKG_CARD_WIDTH_SCALE(120%)을 곱한다 — object-fit:cover라
-  // 이미지가 찌그러지지 않고 가로로 더 넓게 잘려서 채워진다.
-  const baseCardW = (wrapW - gap*(visibleCount-1)) / visibleCount;
-  const cardW  = baseCardW * PKG_CARD_WIDTH_SCALE;
-  const slideW = cardW + gap;
+  // [Phase 3] 국내/해외 모두 같은 화면 기준 목표 높이를 쓰므로 별도 동기화 없이도 카드 높이가 자연히 통일됨
+  const targetH = pkgTargetHeight();
 
-  const st = pkgState[type];
-  const oldSlideW = st.slideW || slideW;
-  if(oldSlideW>0 && oldSlideW!==slideW){
-    st.posPx = st.posPx / oldSlideW * slideW; // 리사이즈 시 위치 비율 유지(점프 최소화)
-  }
-  st.cardW = cardW; st.slideW = slideW; st.listLen = list.length;
-
-  track.querySelectorAll('.pkg-card').forEach(card=>{ card.style.flex = `0 0 ${cardW}px`; });
-
-  // [Phase 3] 이미지 높이 통일: 국내·해외 각각 따로 계산하면 두 섹션의 카드 높이가 서로 달라질 수 있어,
-  // 국내+해외 포스터를 함께 모아 하나의 균일 높이를 계산하고 두 트랙에 동일하게 적용한다.
-  const allUrls = [].concat(getPkgList('domestic').map(p=>p.url), getPkgList('overseas').map(p=>p.url)).filter(Boolean);
-  const missing = allUrls.filter(u=>!pkgImgDims[u]);
+  const missing = list.map(p=>p.url).filter(u=>u && !pkgImgDims[u]);
   if(missing.length){
     Promise.all(missing.map(pkgLoadImgDims)).then(()=>pkgMeasure(type));
   }
-  const heights = allUrls.map(u=>{
-    const d = pkgImgDims[u];
-    return d ? baseCardW * (d.h/d.w) : null; // 세로는 확대하지 않으므로 baseCardW 기준으로 계산
-  }).filter(h=>h!=null && isFinite(h) && h>0);
-  if(heights.length){
-    const uniformH = (Math.min(...heights) + Math.max(...heights)) / 2;
-    ['domestic','overseas'].forEach(t=>{
-      const tr = document.getElementById('pkgTrack_'+t);
-      if (tr) tr.style.setProperty('--pkg-img-h', uniformH+'px');
-    });
+  const DEFAULT_RATIO = 3/4; // 원본 비율을 아직 모를 때(로딩 전)의 기본 세로형 비율
+  const widths = list.map(p=>{
+    const d = p.url ? pkgImgDims[p.url] : null;
+    const ratio = (d && d.w>0 && d.h>0) ? (d.w/d.h) : DEFAULT_RATIO;
+    return Math.max(60, targetH*ratio);
+  });
+
+  // 카드 i(한 벌 기준)의 좌측 시작 offset — 뒤이어 2벌째(무한 루프용 복제분)는 singleSetWidth만큼 더함
+  const offsets=[]; let acc=0;
+  widths.forEach(w=>{ offsets.push(acc); acc += w+gap; });
+  const singleSetWidth = acc;
+
+  const st = pkgState[type];
+  const oldWidth = st.singleSetWidth || singleSetWidth;
+  if (oldWidth>0 && oldWidth!==singleSetWidth){
+    st.posPx = st.posPx / oldWidth * singleSetWidth; // 리사이즈 시 위치 비율 유지(점프 최소화)
   }
+  st.widths=widths; st.offsets=offsets; st.singleSetWidth=singleSetWidth; st.listLen=list.length;
+
+  track.querySelectorAll('.pkg-card').forEach((card,i)=>{
+    const w = widths[i % list.length];
+    card.style.flex = `0 0 ${w}px`;
+    card.style.height = targetH+'px';
+  });
 
   pkgPositionFrame(type);
   pkgUpdateActiveCard(type);
@@ -4886,16 +4881,23 @@ function pkgPositionFrame(type){
 }
 
 // 트랙 중앙에 가장 가까운 카드를 "활성"으로, 나머지는 반투명 처리
+// 카드 폭이 이미지마다 달라졌으므로(가변 폭) 균일 슬라이드 폭 나눗셈 대신, 각 카드 중심과의 거리를 비교해 가장 가까운 카드를 찾는다
 function pkgUpdateActiveCard(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
   const st = pkgState[type];
-  if(!track || !wrap || !st.slideW || !st.listLen) return;
+  if(!track || !wrap || !st.listLen || !st.widths.length) return;
   const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
   const targetContentX = st.posPx + wrapW/2;
   const totalCards = st.listLen*2;
-  let nearestIdx = Math.round((targetContentX - st.cardW/2) / st.slideW);
-  nearestIdx = ((nearestIdx % totalCards)+totalCards) % totalCards;
+  let nearestIdx = 0, nearestDist = Infinity;
+  for (let i=0;i<totalCards;i++){
+    const li = i % st.listLen;
+    const base = st.offsets[li] + (i>=st.listLen ? st.singleSetWidth : 0);
+    const center = base + st.widths[li]/2;
+    const dist = Math.abs(center - targetContentX);
+    if (dist < nearestDist){ nearestDist = dist; nearestIdx = i; }
+  }
   // 활성 카드가 실제로 바뀔 때만 DOM을 건드림 — 이 함수는 rAF 루프에서 매 프레임(초당 60회) 호출되므로,
   // 매번 querySelectorAll을 새로 실행하면 페이지를 오래 켜둘수록 불필요한 GC 부하가 계속 누적됨
   if (nearestIdx === st.lastActiveIdx) return;
@@ -4911,26 +4913,24 @@ function pkgUpdateActiveCard(type){
   }
 }
 
-// 이전/다음 버튼: 한 칸만큼 부드럽게 이동한 뒤 연속 스크롤 재개
+// 이전/다음 버튼: 현재 활성 카드 기준 한 칸 옆 카드로 부드럽게 이동한 뒤 연속 스크롤 재개
 function pkgScroll(type, dir){
   const st = pkgState[type];
-  if(!st.slideW || !st.listLen) return;
-  pkgStopAuto(type);
-  const singleSetWidth = st.listLen * st.slideW;
-  let target = st.posPx + dir*st.slideW;
-  target = ((target % singleSetWidth)+singleSetWidth) % singleSetWidth;
-  pkgNudgeTo(type, target);
+  if(!st.listLen) return;
+  const curIdx = (st.lastActiveIdx!=null ? st.lastActiveIdx : 0) % st.listLen;
+  const nextIdx = ((curIdx + dir) % st.listLen + st.listLen) % st.listLen;
+  pkgGoTo(type, nextIdx);
 }
 // 도트 클릭: 해당 포스터가 중앙에 오도록 부드럽게 이동한 뒤 연속 스크롤 재개
 function pkgGoTo(type, idx){
   const st = pkgState[type];
   const wrap = document.getElementById('pkgTrack_'+type)?.parentElement;
-  if(!st.slideW || !st.listLen || !wrap) return;
+  if(!st.listLen || !st.widths.length || !wrap) return;
   pkgStopAuto(type);
-  const singleSetWidth = st.listLen * st.slideW;
   const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
-  let target = idx*st.slideW + st.cardW/2 - wrapW/2;
-  target = ((target % singleSetWidth)+singleSetWidth) % singleSetWidth;
+  const center = st.offsets[idx] + st.widths[idx]/2;
+  let target = center - wrapW/2;
+  target = ((target % st.singleSetWidth)+st.singleSetWidth) % st.singleSetWidth;
   pkgNudgeTo(type, target);
 }
 function pkgNudgeTo(type, targetPosPx){
@@ -4959,7 +4959,7 @@ function pkgStartAuto(type){
     if(st.lastTs==null) st.lastTs = ts;
     const dt = Math.min((ts - st.lastTs)/1000, 0.1);
     st.lastTs = ts;
-    const singleSetWidth = st.listLen * st.slideW;
+    const singleSetWidth = st.singleSetWidth;
     if(singleSetWidth>0){
       st.posPx += PKG_SCROLL_SPEED * dt;
       if(st.posPx >= singleSetWidth) st.posPx -= singleSetWidth;

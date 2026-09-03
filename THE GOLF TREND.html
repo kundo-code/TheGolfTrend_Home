@@ -3391,6 +3391,7 @@ function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;
   const b=getAboutBanner();
   if (aboutBannerVideoObjectUrl){ URL.revokeObjectURL(aboutBannerVideoObjectUrl); aboutBannerVideoObjectUrl=null; }
+  pauseVideosIn(c);
   if(!b){c.innerHTML='';c.style.display='none';return;}
   c.style.display='block';
   if (b.type==='video'){
@@ -3510,6 +3511,7 @@ function renderHeadline(){
   const c = document.getElementById('headlineMedia');
   if (!c) return;
   if (headlineVideoObjectUrl){ URL.revokeObjectURL(headlineVideoObjectUrl); headlineVideoObjectUrl=null; }
+  pauseVideosIn(c);
   if (h.type === 'video'){
     headlineVideoObjectUrl = dataURLToObjectURL(h.url);
     c.innerHTML = `<video src="${escapeAttr(headlineVideoObjectUrl)}" autoplay muted loop playsinline class="headline-img"></video>`;
@@ -3681,6 +3683,13 @@ function setLinkUrl(key,url){linkOverrides[key]=url;saveLinks();renderLinks();re
 
 function fmtPrice(n){return Number(n||0).toLocaleString('ko-KR')}
 function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+// [메모리/성능 안정화] innerHTML 교체로 autoplay 동영상이 화면에서 사라질 때, 명시적으로 정지/해제하지
+// 않으면 백그라운드에서 계속 디코딩되며 화면을 오래 켜둘수록 메모리가 누적되어 "백지 현상"으로 이어질
+// 수 있다. 동영상을 포함할 수 있는 영역을 다시 그리기 직전에 항상 호출한다.
+function pauseVideosIn(container){
+  if (!container) return;
+  container.querySelectorAll('video').forEach(v=>{ try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){} });
+}
 
 // STYLE HELPERS
 function getCatBgStyle(cat){
@@ -3781,6 +3790,7 @@ function quietRefreshCategory(){
   const cat=findCat(activeCategoryId);
   document.getElementById('cvTagline').textContent=cat.tagline+` · 총 ${products.length}개 상품`;
   const grid=document.getElementById('productGrid');
+  pauseVideosIn(grid); // 새로 그리기 전에 기존 상품 카드의 자동재생 동영상 정지
   if (products.length===0){
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>이 지역의 상품은 곧 업데이트됩니다.</p></div>`;
   } else {
@@ -3838,6 +3848,10 @@ function renderSpotlightSlot(slot, layer, entry){
   const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url; // 구버전 데이터 호환
   const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : getCatBgStyle(cat);
   const visualEl = document.getElementById('spotVisual'+sfx);
+  // [메모리/성능 안정화] 8초마다(cycleSpot) innerHTML을 새로 채우는데, 이전에 삽입된 동영상을 정지시키지
+  // 않고 그냥 교체하면 화면에서 사라진 뒤에도 계속 디코딩되며 장시간 사용 시 메모리가 누적될 수 있다 —
+  // hero 배경 슬라이드(cycleHero)와 동일하게 교체 전 명시적으로 정지한다
+  pauseVideosIn(visualEl);
   visualEl.style.cssText = visualStyle;
   visualEl.innerHTML = (hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'') + '<span class="badge">EDITOR\'S PICK</span>';
   document.getElementById('spotTitle'+sfx).textContent=`${cat.ko} · ${p.title}`;
@@ -4162,6 +4176,11 @@ function closeProductDetail(){
   document.body.style.overflow='';
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
   currentPd=null;
+  // [메모리/성능 안정화] 상세보기를 닫아도 타이틀·갤러리 동영상이 화면 밖에서 계속 재생/디코딩되며
+  // 화면을 오래 켜둘수록 메모리가 누적되던 백지 현상의 원인이 될 수 있어, 닫을 때 확실히 정지하고
+  // 내용을 비워 리소스를 해제한다
+  const c=document.getElementById('pdContent');
+  if (c){ pauseVideosIn(c); c.innerHTML=''; }
 }
 // 동영상 갤러리를 이미지 갤러리보다 앞에 배치한 통합 목록 (상품 상세 페이지 노출용)
 function pdMediaList(p){

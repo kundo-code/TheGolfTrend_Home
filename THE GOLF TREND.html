@@ -660,10 +660,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-block{background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;margin:6px 0 10px}
 /* [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액 분리 입력 리스트 */
 .ef-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
-.ef-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+.ef-row{display:grid;grid-template-columns:18px 1fr 1fr auto;gap:8px;align-items:center}
 .ef-row input{min-width:0}
-.ef-row.ef-group{grid-template-columns:1fr auto;margin-top:6px}
+.ef-row.ef-group{grid-template-columns:18px 1fr auto;margin-top:6px}
 .ef-row.ef-group input{font-weight:700;color:var(--gold);border-color:rgba(221,179,103,.35)}
+/* [Phase 3 상품등록 개선 v5] 드래그 앤 드롭 순서 변경 */
+.ef-drag-handle{font-size:1.1rem;color:rgba(247,245,240,.45);cursor:grab;user-select:none;line-height:1;text-align:center}
+.ef-drag-handle:active{ cursor:grabbing; }
+.ef-row.dragging{opacity:.4;transform:scale(.98)}
+.ef-row.drag-over{box-shadow:0 0 0 2px var(--gold);border-radius:8px}
 .pe-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed rgba(255,255,255,.1)}
 .pe-idx{font-size:.85rem;font-weight:700;color:var(--gold);letter-spacing:.05em}
 .pe-head-right{display:flex;align-items:center;gap:10px}
@@ -5593,14 +5598,19 @@ function advBasicHTML(p){
 // [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액을 분리 입력하는 표 형식 리스트
 function extraFeesHTML(p){
   const fees = p.extraFees||[];
+  const dragAttrs = i => `draggable="true" data-idx="${i}"
+      ondragstart="efDragStart(event,${i})" ondragover="efDragOver(event)"
+      ondragleave="efDragLeave(event)" ondrop="efDrop(event,${i})" ondragend="efDragEnd(event)"`;
   return `
   <div class="ef-list">
     ${fees.map((f,i)=> f.kind==='group' ? `
-    <div class="ef-row ef-group">
+    <div class="ef-row ef-group" ${dragAttrs(i)}>
+      <div class="ef-drag-handle" title="드래그하여 순서 변경">⠿</div>
       <input type="text" value="${escapeAttr(f.title||'')}" placeholder="그룹 제목 (예: 인원별 추가 요금)" oninput="updateExtraFee(${i},'title',this.value)">
       <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
     </div>` : `
-    <div class="ef-row">
+    <div class="ef-row" ${dragAttrs(i)}>
+      <div class="ef-drag-handle" title="드래그하여 순서 변경">⠿</div>
       <input type="text" value="${escapeAttr(f.label||'')}" placeholder="예: 2인 단독 출발 시" oninput="updateExtraFee(${i},'label',this.value)">
       <input type="text" value="${escapeAttr(f.amount||'')}" placeholder="예: 1인당 150,000원 추가" oninput="updateExtraFee(${i},'amount',this.value)">
       <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
@@ -5624,6 +5634,28 @@ function addExtraFeeGroup(){
 function removeExtraFee(i){
   const p=getAdvProduct(); if (!p) return;
   p.extraFees.splice(i,1);
+  saveAdvChange(); renderAdvBody();
+}
+// [Phase 3 상품등록 개선 v5] 추가 요금 안내 항목 드래그 앤 드롭 순서 변경 (그룹 제목·항목 모두 대상)
+let efDragIdx = null;
+function efDragStart(e, idx){
+  efDragIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.classList.add('dragging');
+}
+function efDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
+function efDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function efDragEnd(e){
+  document.querySelectorAll('.ef-row').forEach(r=>{ r.classList.remove('dragging'); r.classList.remove('drag-over'); });
+  efDragIdx = null;
+}
+function efDrop(e, targetIdx){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (efDragIdx === null || efDragIdx === targetIdx) return;
+  const p = getAdvProduct(); if (!p) return;
+  const item = p.extraFees.splice(efDragIdx, 1)[0];
+  p.extraFees.splice(targetIdx, 0, item);
   saveAdvChange(); renderAdvBody();
 }
 function updateExtraFee(i,field,val){
@@ -5699,7 +5731,7 @@ function priceEntryHTML(pe, i, popupCount){
     </details>
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->
-    <details class="pe-labels">
+    <details class="pe-labels" id="schDetails${i}">
       <summary>🗓 일정 요약 타임라인 (일자별 항공·일정)</summary>
       ${scheduleHTML(pe, i)}
     </details>
@@ -5778,20 +5810,26 @@ function scheduleDayHTML(peIdx, d, di){
     </div>
   </div>`;
 }
+// [Phase 3 상품등록 개선 v5] renderAdvBody()가 전체를 다시 그리면서 <details>가 기본 닫힘 상태로
+// 초기화되어, 일자를 이어서 추가할 때마다 패널이 닫혀버리던 문제를 막기 위해 다시 열어준다
+function reopenScheduleDetails(peIdx){
+  const el = document.getElementById('schDetails'+peIdx);
+  if (el){ el.open = true; el.scrollIntoView({block:'nearest'}); }
+}
 function updateScheduleField(peIdx, field, val){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries[peIdx].schedule[field]=val;
-  saveAdvChange(); renderAdvBody();
+  saveAdvChange(); renderAdvBody(); reopenScheduleDetails(peIdx);
 }
 function addScheduleDay(peIdx){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries[peIdx].schedule.days.push(newScheduleDay());
-  saveAdvChange(); renderAdvBody();
+  saveAdvChange(); renderAdvBody(); reopenScheduleDetails(peIdx);
 }
 function removeScheduleDay(peIdx, di){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries[peIdx].schedule.days.splice(di,1);
-  saveAdvChange(); renderAdvBody();
+  saveAdvChange(); renderAdvBody(); reopenScheduleDetails(peIdx);
 }
 function updateScheduleDay(peIdx, di, field, val){
   const p=getAdvProduct(); if (!p) return;
@@ -5801,12 +5839,12 @@ function updateScheduleDay(peIdx, di, field, val){
 function addScheduleOption(peIdx, di){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries[peIdx].schedule.days[di].options.push(newScheduleOption());
-  saveAdvChange(); renderAdvBody();
+  saveAdvChange(); renderAdvBody(); reopenScheduleDetails(peIdx);
 }
 function removeScheduleOption(peIdx, di, oi){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries[peIdx].schedule.days[di].options.splice(oi,1);
-  saveAdvChange(); renderAdvBody();
+  saveAdvChange(); renderAdvBody(); reopenScheduleDetails(peIdx);
 }
 function updateScheduleOption(peIdx, di, oi, field, val){
   const p=getAdvProduct(); if (!p) return;

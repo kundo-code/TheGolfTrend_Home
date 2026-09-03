@@ -1394,6 +1394,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-card{
   flex:0 0 calc((100% - 16px * 2) / 3);
+  max-width:min(85vw,420px); /* [Phase 3] 등록된 포스터 수가 적을 때 카드 폭이 화면을 거의 다 채워버리지 않도록 상한 */
   position:relative;cursor:pointer;
   border-radius:12px;overflow:hidden;
   background:#0A1730;
@@ -1582,7 +1583,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pkg-group-title{ font-size:1.1rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
-  .pkg-img{ max-height:min(34vh,320px); } /* [Phase 3] 모바일 화면에서 한 화면에 들어오도록 더 낮은 상한 */
+  .pkg-img{ max-height:min(30vh,260px); } /* [Phase 3] 모바일 화면에서 한 화면에 들어오도록 더 낮은 상한 */
+  .pkg-card{ max-width:72vw; } /* [Phase 3] 모바일에서 카드 폭도 화면을 거의 채우지 않고 옆 카드가 살짝 보이도록 제한 */
 }
 
 

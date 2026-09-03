@@ -151,10 +151,13 @@ header{padding-top:var(--topbar-h,108px)}
 .spot-content{grid-area:1/1;display:flex;flex-direction:column;opacity:1;transition:opacity var(--spot-fade-ms,900ms) ease}
 .spot-content.spot-back{opacity:0;pointer-events:none}
 .spot-region-tag{display:inline-block;width:fit-content;font-size:.68rem;font-weight:700;letter-spacing:.1em;color:var(--gold);background:rgba(221,179,103,.14);border:1px solid rgba(221,179,103,.35);border-radius:100px;padding:3px 10px;margin-bottom:8px}
-.spot-visual{flex:1;min-height:120px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
-.spot-visual .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
+/* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
+.spot-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.15)}
 .spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.44rem;font-weight:500;color:#fff;margin-bottom:4px}
 .spot-meta{display:flex;gap:16px;font-size:.94rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
+/* [수정] EDITOR'S PICK 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
+.spot-tag-row{margin-bottom:8px;text-align:left}
+.spot-tag-row .badge{display:inline-block;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
 .spot-cta .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:3.12rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .spot-cta .price small{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:1.02rem;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:500;margin-left:2px}
@@ -177,12 +180,14 @@ section.block{padding:100px 24px;position:relative}
 .sec-more{color:var(--gold-deep);font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
 .sec-more:hover{gap:10px;transition:gap .2s}
 
-/* REGION TABS + CATEGORY GRID */
-.region-tabs{display:flex;gap:8px;padding:6px;margin-bottom:36px;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:100px;width:fit-content;box-shadow:0 6px 20px rgba(10,23,48,.06)}
-.region-tabs button{padding:11px 26px;border-radius:100px;border:none;background:transparent;color:rgba(10,23,48,.6);font-weight:500;font-size:.92rem;cursor:pointer;transition:all .2s}
-.region-tabs button:hover{color:var(--pine-deep)}
-.region-tabs button.active{background:var(--gold);color:#fff;font-weight:600}
-.region-tabs button .count{display:inline-block;margin-left:6px;font-size:.72rem;padding:2px 8px;border-radius:100px;background:rgba(10,23,48,.1);color:inherit;font-weight:500}
+/* [수정] 국내/해외를 탭으로 전환하지 않고, 구분선·간격을 두고 항상 함께 노출 */
+/* 해외 그룹은 밝은 배경, 국내 그룹은 페이지 하단의 어두운 배경 위에 놓이므로 자체 배경(불투명 pill)을
+   가진 배지로 통일해 어느 위치에서도 가독성을 확보한다 */
+.dest-region-head{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.dest-region-tag{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:uppercase;background:rgba(10,23,48,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:7px 18px;border-radius:100px;border:1px solid rgba(221,179,103,.4)}
+.dest-region-count{color:var(--gold);font-weight:600;text-transform:none;letter-spacing:normal}
+.dest-region-divider{display:flex;align-items:center;gap:14px;margin:40px 0;color:var(--gold)}
+.dest-region-divider::before,.dest-region-divider::after{content:'';flex:1;height:1px;background:rgba(120,120,140,.25)}
 .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .cat-card{position:relative;aspect-ratio:3/2;border-radius:24px;overflow:hidden;cursor:pointer;border:1px solid var(--glass-border-soft);box-shadow:0 10px 32px rgba(0,0,0,.28);transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
 .cat-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 20px 50px rgba(0,0,0,.4)}
@@ -210,14 +215,17 @@ section.block{padding:100px 24px;position:relative}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .product{padding:18px;background:rgba(255,255,255,.75);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
 .product:hover{transform:translateY(-4px);border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.12)}
-.product-visual{aspect-ratio:16/10;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
+/* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
+.product-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
 .product-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.product-visual .tag-abs{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);color:#fff;font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.15);letter-spacing:.05em}
 .product-visual .save-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
 .product h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.1rem;color:var(--pine-deep);font-weight:500;margin-bottom:6px;line-height:1.3}
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:rgba(10,23,48,.65);white-space:pre-line;margin-bottom:12px}
+/* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
+.product-tag-row{margin-bottom:8px;text-align:left}
+.product-tag-row .tag-inline{display:inline-block;background:rgba(221,179,103,.14);color:var(--gold-deep);font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(221,179,103,.35);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.625rem;color:var(--pine-deep);font-weight:500}
 .product-foot .price .unit{font-size:.72rem;color:inherit}
@@ -866,7 +874,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .foot-grid{grid-template-columns:1fr}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
-  .region-tabs{width:100%;overflow-x:auto}
   .apc-fields,.adv-body .grid-2{grid-template-columns:1fr}
   .pd-container{margin:16px auto;padding:0 12px 20px}
   .adv-editor{margin:16px 12px}
@@ -2022,6 +2029,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="spot-visual" id="spotVisual0a"></div>
               <h3 id="spotTitle0a">카와나 후지 코스</h3>
               <div class="spot-meta" id="spotMeta0a"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice0a">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
                 <a id="spotLink0a">자세히 →</a>
@@ -2031,6 +2039,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="spot-visual" id="spotVisual0b"></div>
               <h3 id="spotTitle0b"></h3>
               <div class="spot-meta" id="spotMeta0b"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice0b"></span>
                 <a id="spotLink0b">자세히 →</a>
@@ -2045,6 +2054,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="spot-visual" id="spotVisual1a"></div>
               <h3 id="spotTitle1a">바나힐스 GC</h3>
               <div class="spot-meta" id="spotMeta1a"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice1a">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
                 <a id="spotLink1a">자세히 →</a>
@@ -2054,6 +2064,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
               <div class="spot-visual" id="spotVisual1b"></div>
               <h3 id="spotTitle1b"></h3>
               <div class="spot-meta" id="spotMeta1b"></div>
+              <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice1b"></span>
                 <a id="spotLink1b">자세히 →</a>
@@ -2076,11 +2087,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         <p>가고 싶은 지역을 먼저 고르세요. 상품은 시즌·요일·티오프 타임에 따라 요금이 변동되며, 표시된 금액은 최저가 기준입니다.</p>
       </div>
     </div>
-    <div class="region-tabs" role="tablist">
-      <button class="active" data-region="domestic">국내 <span class="count">6</span></button>
-      <button data-region="overseas">해외 <span class="count">9</span></button>
+    <!-- [수정] 국내/해외 여행지를 탭 전환이 아닌, 해외 → 국내 순서로 구분선과 간격을 두고 항상 함께 노출 -->
+    <div class="dest-region-block">
+      <div class="dest-region-head"><span class="dest-region-tag">해외 <span class="dest-region-count" id="destCountOverseas"></span></span></div>
+      <div class="cat-grid" id="catGridOverseas"></div>
     </div>
-    <div class="cat-grid" id="catGrid"></div>
+    <div class="dest-region-divider"><span>✦</span></div>
+    <div class="dest-region-block">
+      <div class="dest-region-head"><span class="dest-region-tag">국내 <span class="dest-region-count" id="destCountDomestic"></span></span></div>
+      <div class="cat-grid" id="catGridDomestic"></div>
+    </div>
     <div class="category-view" id="categoryView" style="display:none">
       <div class="cv-head">
         <div class="left">
@@ -3715,7 +3731,7 @@ function usingComposite(cat){return false} // 통합 이미지 시스템 제거
 function findCat(id){return CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===id)}
 
 // STATE
-let activeRegion='domestic', activeCategoryId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
+let activeCategoryId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 let currentAdv=null; // {catId, idx}
@@ -3723,21 +3739,24 @@ let activeAdvTab='basic';
 let pdGalleryIdx=0, pdGalleryTimer=null;
 
 // RENDER — CATEGORY GRID
+// [수정] 국내/해외를 탭으로 전환하지 않고 두 그리드를 항상 함께(해외 → 국내 순) 노출
+function catCardHTML(c){
+  const count=getProducts(c.id).length;
+  const style=getCatBgStyle(c);
+  const koreaClass=usingComposite(c)?'bg-korea':'';
+  return `<article class="cat-card" onclick="selectCategory('${c.id}')">
+    <div class="bg ${koreaClass}" style="${style}" role="img" aria-label="${escapeAttr(catImgAlt(c))}"></div>
+    <div class="content">
+      <div class="top"><span class="tagline">${c.tagline}</span><span class="count-badge">${count}개 상품</span></div>
+      <div><div class="divider"><span>✦</span></div><div class="name-ko">${c.ko}</div><div class="name-en">${c.en}</div></div>
+    </div>
+  </article>`;
+}
 function renderCategoryGrid(){
-  const grid=document.getElementById('catGrid');
-  const items=CATEGORIES[activeRegion];
-  grid.innerHTML=items.map(c=>{
-    const count=getProducts(c.id).length;
-    const style=getCatBgStyle(c);
-    const koreaClass=usingComposite(c)?'bg-korea':'';
-    return `<article class="cat-card" onclick="selectCategory('${c.id}')">
-      <div class="bg ${koreaClass}" style="${style}" role="img" aria-label="${escapeAttr(catImgAlt(c))}"></div>
-      <div class="content">
-        <div class="top"><span class="tagline">${c.tagline}</span><span class="count-badge">${count}개 상품</span></div>
-        <div><div class="divider"><span>✦</span></div><div class="name-ko">${c.ko}</div><div class="name-en">${c.en}</div></div>
-      </div>
-    </article>`;
-  }).join('');
+  document.getElementById('catGridOverseas').innerHTML=CATEGORIES.overseas.map(catCardHTML).join('');
+  document.getElementById('catGridDomestic').innerHTML=CATEGORIES.domestic.map(catCardHTML).join('');
+  document.getElementById('destCountOverseas').textContent=`${CATEGORIES.overseas.length}개국`;
+  document.getElementById('destCountDomestic').textContent=`${CATEGORIES.domestic.length}개 권역`;
 }
 
 function selectCategory(id){
@@ -3778,7 +3797,6 @@ function productCardHTML(p, catId, idx){
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" style="${visualStyle}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}
-      ${p.tag?`<span class="tag-abs">${p.tag}</span>`:''}
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
     <h4>${p.title}</h4>
@@ -3789,6 +3807,7 @@ function productCardHTML(p, catId, idx){
       ${p.depAirport?`<span>✈️ ${p.depAirport}</span>`:''}
     </div>
     ${p.checkpoint?`<div class="product-divider"></div><div class="product-checkpoint">${p.checkpoint}</div>`:''}
+    ${p.tag?`<div class="product-tag-row"><span class="tag-inline">${p.tag}</span></div>`:''}
     <div class="product-foot">
       <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
       <span class="details">자세히 →</span>
@@ -3865,7 +3884,8 @@ function renderSpotlightSlot(slot, layer, entry){
   // hero 배경 슬라이드(cycleHero)와 동일하게 교체 전 명시적으로 정지한다
   pauseVideosIn(visualEl);
   visualEl.style.cssText = visualStyle;
-  visualEl.innerHTML = (hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'') + '<span class="badge">EDITOR\'S PICK</span>';
+  // [수정] EDITOR'S PICK 배지는 이미지를 가리지 않도록 spot-tag-row(요금 위)로 이동 — 여기선 이미지/영상만 채운다
+  visualEl.innerHTML = hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:'';
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다
@@ -4379,7 +4399,6 @@ function renderProductDetail(p,cat){
     html += `<div class="pd-slot"><div class="pd-section-title">일정 요약 타임라인</div>
       <div class="pd-schedule">
         ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
-        ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
         ${scheduledEntries.map(pe=>`
         <div class="pd-sch-group">
           <div class="pd-sch-group-head">
@@ -4408,6 +4427,7 @@ function renderProductDetail(p,cat){
             </div>`).join('')}
           </div>
         </div>`).join('')}
+        ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
       </div>
     </div>`;
   }
@@ -5579,7 +5599,7 @@ function advBasicHTML(p){
         <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
         ${tm&&tm.url?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
       </div>
-      <span class="file-hint">권장 1200×750px 이상 (16:10 비율) · 10MB 이하</span>
+      <span class="file-hint">권장(원본) 1080×810px (4:3 비율) · 10MB 이하</span>
     </div>
 
     <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
@@ -6286,14 +6306,6 @@ function renderAll(){
 }
 
 // INIT
-document.querySelectorAll('.region-tabs button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.region-tabs button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    activeRegion=btn.dataset.region;
-    renderCategoryGrid();
-  });
-});
 applySeasonTheme(getSeasonTheme(), false);
 
 // ══ 여행 스타일 드롭다운 다중선택 ════════════════════════════════

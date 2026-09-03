@@ -253,6 +253,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-gallery-main{aspect-ratio:16/10;position:relative;overflow:hidden;background:#0A1730}
 .pd-gallery-main img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:0;transition:opacity .5s}
 .pd-gallery-main img.active{opacity:1}
+.pd-gallery-main video{width:100%;height:100%;object-fit:contain;background:#000;position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.pd-gallery-main video.active{opacity:1}
 .pd-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;transition:background .2s}
 .pd-gallery-nav:hover{background:rgba(0,0,0,.75)}
 .pd-gallery-nav.prev{left:12px}.pd-gallery-nav.next{right:12px}
@@ -263,11 +265,14 @@ section.block{padding:100px 24px;position:relative}
 .pd-thumb{width:70px;height:52px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;cursor:pointer;border:2px solid transparent;transition:border-color .2s;opacity:.7}
 .pd-thumb.active{border-color:var(--gold);opacity:1}
 .pd-thumb:hover{opacity:1}
+.pd-thumb.video-thumb{background-color:#0A1730;display:flex;align-items:center;justify-content:center}
+.pd-thumb-play{color:#fff;font-size:1rem}
 .pd-section-title{padding:16px 20px 8px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--gold);font-weight:600;letter-spacing:.15em;text-transform:uppercase}
 .pd-price-entries{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
 .pd-price-entry{padding:16px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:14px;transition:all .2s;cursor:pointer;display:flex;flex-direction:column;gap:8px}
 .pd-price-entry:hover{border-color:var(--gold);background:rgba(0,0,0,.3)}
 .pd-price-entry.layout-hero{padding:20px}
+.pd-price-entry .emph-group{display:flex;flex-wrap:wrap;gap:6px} /* [Phase 3 상품등록 개선] 강조태그 복수 선택 */
 .pd-price-entry .emph{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;letter-spacing:.08em;padding:4px 10px;border-radius:100px;width:fit-content;text-transform:uppercase}
 .pd-price-entry .emph.normal{background:rgba(255,255,255,.1);color:rgba(247,245,240,.8)}
 .pd-price-entry .emph.value{background:rgba(221,179,103,.2);color:#DDB367;border:1px solid rgba(221,179,103,.3)}
@@ -562,6 +567,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .media-btn.danger:hover{background:rgba(255,100,100,.15);color:#fff}
 .gallery-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:8px}
 .gallery-thumb{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.12)}
+.gallery-thumb.video-thumb video{width:100%;height:100%;object-fit:cover;display:block} /* [Phase 3 상품등록 개선] 동영상 갤러리 */
 .gallery-thumb .g-actions{position:absolute;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;gap:4px}
 .gallery-thumb:hover .g-actions{display:flex}
 .gallery-thumb .g-btn{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--ink);border:none;cursor:pointer;font-size:.72rem;display:grid;place-items:center;font-weight:700}
@@ -646,6 +652,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* 섹션 디바이더 */
 .section-divider{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 10px;padding:8px 12px;background:rgba(221,179,103,.08);border-left:3px solid var(--gold);border-radius:6px}
 .sd-title{font-size:.88rem;font-weight:700;color:var(--gold);letter-spacing:.03em}
+/* [Phase 3 상품등록 개선] 관리자 패널 복수 선택 칩(다중 선택 항목 공용) */
+.adv-chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.adv-chip{padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.2);color:rgba(247,245,240,.75);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.adv-chip:hover{border-color:rgba(221,179,103,.5)}
+.adv-chip.active{background:var(--gold);border-color:var(--gold);color:var(--pine-deep)}
+.adv-collapsible{border:1px solid rgba(255,255,255,.12);border-radius:10px;margin:10px 0;overflow:hidden}
+.adv-collapsible summary{padding:12px 14px;cursor:pointer;font-size:.82rem;font-weight:700;color:rgba(247,245,240,.85);background:rgba(255,255,255,.03);list-style:none}
+.adv-collapsible summary::-webkit-details-marker{display:none}
+.adv-collapsible summary::before{content:'▸ ';color:var(--gold)}
+.adv-collapsible[open] summary::before{content:'▾ '}
+.adv-collapsible-body{padding:4px 14px 14px}
 .sd-info{font-size:.75rem;color:rgba(247,245,240,.65)}
 
 /* 갤러리 D&D + 빈 슬롯 */
@@ -1407,6 +1424,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-lightbox.open{ display:flex; }
 .plb-img-wrap{
+  position:relative;
   max-width:90vw;max-height:90vh;
   display:flex;align-items:center;justify-content:center;
 }
@@ -1440,6 +1458,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:rgba(0,0,0,.4);padding:6px 16px;border-radius:100px;
   pointer-events:none;z-index:3100;
 }
+.plb-detail-link{
+  position:absolute;right:18px;bottom:18px;
+  display:none;align-items:center;gap:6px;
+  padding:10px 18px;border-radius:100px;
+  background:var(--gold);color:var(--pine-deep);
+  font-size:.9rem;font-weight:700;letter-spacing:.02em;
+  text-decoration:none;cursor:pointer;
+  box-shadow:0 10px 24px rgba(0,0,0,.35);
+  transition:transform .2s,background .2s;z-index:3100;
+}
+.plb-detail-link.show{ display:inline-flex; }
+.plb-detail-link:hover{ background:#fff;transform:translateY(-2px); }
 
 /* ── 관리자 포스터 영역 ─────────────────────────────────────── */
 .apkg-group-title{
@@ -2213,6 +2243,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <button class="plb-prev" onclick="pkgLbMove(-1);event.stopPropagation()">‹</button>
     <div class="plb-img-wrap">
       <img class="plb-img" id="plbImg" src="" alt="">
+      <a class="plb-detail-link" id="plbDetailLink" href="#" onclick="event.stopPropagation()">자세히 →</a>
     </div>
     <button class="plb-next" onclick="pkgLbMove(1);event.stopPropagation()">›</button>
     <div class="plb-counter" id="plbCounter"></div>
@@ -2563,7 +2594,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     </div>
     <div class="adv-tabs">
       <button class="active" data-atab="basic" onclick="switchAdvTab('basic')">기본 · 요금표</button>
-      <button data-atab="media" onclick="switchAdvTab('media')">미디어</button>
+      <button data-atab="media" onclick="switchAdvTab('media')">갤러리/요금포스터</button>
       <button data-atab="contact" onclick="switchAdvTab('contact')">연락처·캘린더</button>
     </div>
     <div class="adv-body" id="advBody"></div>
@@ -2636,15 +2667,14 @@ const POPUP_MAX = 3;
 
 function newLabels(){
   return {
-    airfare:'none', airPattern:'none', departureAirport:'none',
-    stayDuration:'none', departureDay:'none',
-    teeOffTimes:{day1:'',day2:'',day3:'',day4:''},
-    roundsCount:'', mealsCount:''
+    airfare:'none', airPattern:[], departureAirport:[], arrAirport:'', flightNo:'',
+    stayDuration:'none', departureDay:[],
+    teeOffTimes:{day1:'',day2:'',day3:'',day4:''}
   };
 }
 function newPriceEntry(){
   return {
-    headline:'', link:'', layout:'card', emphasis:'일반',
+    headline:'', link:'', layout:'card', emphasis:[],
     salePrice:0, saleCurrency:'KRW', saleFromLabel:true,
     originalPrice:0, originalCurrency:'KRW', originalFromLabel:false,
     labels: newLabels(),
@@ -2654,6 +2684,7 @@ function newPriceEntry(){
 function newExtendedFields(){
   return {
     titleMedia:null, gallery:[], galleryConfig:{layout:'slide',autoSlide:true},
+    videoGallery:[], pkgPoster:null, editorsPick:false, bookingPolicy:'', // [Phase 3 상품등록 개선]
     priceEntries:[],
     contact:{phone:'',kakaoChannel:'',kakaoFriend:''},
     calendarMode:'none'
@@ -2667,18 +2698,45 @@ function ensureLabels(L){
     L.teeOffTimes = {day1:legacy, day2:'', day3:'', day4:''};
     delete L.teeOffTime;
   }
-  ['airfare','airPattern','departureAirport','stayDuration','departureDay'].forEach(k=>{ if(!L[k]) L[k]='none'; });
-  if (L.roundsCount===undefined) L.roundsCount='';
-  if (L.mealsCount===undefined) L.mealsCount='';
+  if (!L.airfare) L.airfare='none';
+  if (!L.stayDuration) L.stayDuration='none';
+  // [Phase 3 상품등록 개선] 항공 패턴 · 출발 공항 · 출발 요일은 복수 선택 가능하도록 배열로 전환.
+  // 기존에 단일 문자열로 저장된 값은 배열로 이관(마이그레이션)한다.
+  ['airPattern','departureAirport','departureDay'].forEach(k=>{
+    if (!Array.isArray(L[k])){
+      const legacy = L[k];
+      L[k] = (legacy && legacy!=='none') ? [legacy] : [];
+    }
+  });
+  if (L.arrAirport===undefined) L.arrAirport='';
+  if (L.flightNo===undefined) L.flightNo='';
+  delete L.roundsCount; delete L.mealsCount; // [Phase 3 상품등록 개선] 제거된 필드
   return L;
 }
 function ensureExtended(p){
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
+  if (!p.videoGallery) p.videoGallery=[]; // [Phase 3 상품등록 개선]
+  if (p.pkgPoster===undefined) p.pkgPoster=null; // [Phase 3 상품등록 개선]
+  if (p.editorsPick===undefined) p.editorsPick=false; // [Phase 3 상품등록 개선]
+  if (p.bookingPolicy===undefined) p.bookingPolicy=''; // [Phase 3 상품등록 개선]
   if (!p.galleryConfig) p.galleryConfig={layout:'slide',autoSlide:true};
   if (!p.priceEntries) p.priceEntries=[];
   if (!p.calendarMode) p.calendarMode='none';
   if (p.titleMedia===undefined) p.titleMedia=null;
+  // [Phase 3 상품등록 개선] 상품 레벨 출발/도착 공항·항공편은 요금표 항목별로 통합 이관됨.
+  // 기존에 입력된 값이 있으면, 아직 비어있는 요금표 항목에 초기값으로 복사한 뒤 상품 레벨 필드는 제거.
+  if (p.depAirport || p.arrAirport || p.airline){
+    (p.priceEntries||[]).forEach(pe=>{
+      const L = pe.labels || (pe.labels = newLabels());
+      if (p.depAirport && (!L.departureAirport || !L.departureAirport.length)) L.departureAirport=[p.depAirport];
+      if (p.arrAirport && !L.arrAirport) L.arrAirport = p.arrAirport;
+      if (p.airline && p.airline.length && !L.flightNo){
+        L.flightNo = Array.isArray(p.airline) ? airlineNamesFromCodes(p.airline) : String(p.airline);
+      }
+    });
+    delete p.depAirport; delete p.arrAirport; delete p.airline;
+  }
   // 각 priceEntry에 새 필드 백필
   p.priceEntries.forEach(pe=>{
     if (!pe.saleCurrency) pe.saleCurrency='KRW';
@@ -2686,6 +2744,7 @@ function ensureExtended(p){
     if (pe.saleFromLabel===undefined) pe.saleFromLabel = true;
     if (pe.originalFromLabel===undefined) pe.originalFromLabel = false;
     if (pe.popup===undefined) pe.popup = false;
+    if (!Array.isArray(pe.emphasis)) pe.emphasis = pe.emphasis ? [pe.emphasis] : []; // [Phase 3 상품등록 개선] 강조태그 복수 선택
     pe.labels = ensureLabels(pe.labels);
   });
   // Legacy p.labels 는 무시 (요금표 단위로 이관)
@@ -2814,8 +2873,20 @@ const BLOG = [];
 
 // Editor's Pick: 상단(해외)/하단(국내)에 각각 노출할 실제 상품 (catId, idx) 큐레이션.
 // 자세히 → 클릭 시 해당 실제 상품의 상세 정보(openProductDetail)로 이동.
-const SPOTLIGHT_OVERSEAS = [{catId:'japan',idx:0}, {catId:'vietnam',idx:0}, {catId:'thailand',idx:0}];
-const SPOTLIGHT_DOMESTIC = [{catId:'jeju',idx:0}, {catId:'gangwon',idx:0}];
+// [Phase 3 상품등록 개선] 관리자 패널 상품 고급편집에서 "EDITOR'S PICK 등록"을 체크한 상품들로
+// 국내/해외 각각의 목록을 실시간으로 구성한다. 아직 아무 상품도 선택되지 않은 경우에만
+// 아래 기본 큐레이션(DEFAULT_SPOTLIGHT_*)으로 대체해 히어로가 비어 보이지 않게 한다.
+const DEFAULT_SPOTLIGHT_OVERSEAS = [{catId:'japan',idx:0}, {catId:'vietnam',idx:0}, {catId:'thailand',idx:0}];
+const DEFAULT_SPOTLIGHT_DOMESTIC = [{catId:'jeju',idx:0}, {catId:'gangwon',idx:0}];
+function getSpotlightList(region){
+  const cats = CATEGORIES[region];
+  const picks = [];
+  cats.forEach(cat=>{
+    getProducts(cat.id).forEach((p,idx)=>{ if (p.editorsPick) picks.push({catId:cat.id, idx}); });
+  });
+  if (picks.length) return picks;
+  return region==='overseas' ? DEFAULT_SPOTLIGHT_OVERSEAS : DEFAULT_SPOTLIGHT_DOMESTIC;
+}
 
 
 // 국내 6권역 · 해외 9개국 이미지를 base64로 인라인 임베드 (파일 폴더 없이 완전 작동)
@@ -3661,8 +3732,10 @@ function renderSpotlightSlot(slot, layer, entry){
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
 }
 function renderSpotlight(){
-  renderSpotlightSlot(0, spotFront[0], SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length]);
-  renderSpotlightSlot(1, spotFront[1], SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length]);
+  const overseasList = getSpotlightList('overseas');
+  const domesticList = getSpotlightList('domestic');
+  renderSpotlightSlot(0, spotFront[0], overseasList[spotOverseasIdx%overseasList.length]);
+  renderSpotlightSlot(1, spotFront[1], domesticList[spotDomesticIdx%domesticList.length]);
 }
 // ── 조정 가능한 옵션값 ──────────────────────────────────────────
 const SPOT_FADE_MS = 900; // Editor's Pick 콘텐츠 교차 페이드(crossfade) 전환 시간(ms) — 값이 클수록 더 천천히 전환 (기본값 900)
@@ -3680,19 +3753,23 @@ function preloadImage(url){
 // 보이지 않는 뒤 레이어에 다음 콘텐츠를 미리 채워 넣은 뒤, 두 레이어를 "동시에" 교차 페이드
 // (기존 레이어는 사라지면서 새 레이어가 나타남 — 완전히 사라졌다 나타나는 끊김이 없음)
 function cycleSpot(){
-  const nextOverseasEntry=SPOTLIGHT_OVERSEAS[(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length];
-  const nextDomesticEntry=SPOTLIGHT_DOMESTIC[(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length];
+  const overseasList = getSpotlightList('overseas');
+  const domesticList = getSpotlightList('domestic');
+  const nextOverseasEntry=overseasList[(spotOverseasIdx+1)%overseasList.length];
+  const nextDomesticEntry=domesticList[(spotDomesticIdx+1)%domesticList.length];
   const nextOverseasCat=findCat(nextOverseasEntry.catId);
   const nextDomesticCat=findCat(nextDomesticEntry.catId);
   Promise.all([
     preloadImage(getImage(nextOverseasCat.id)),
     preloadImage(getImage(nextDomesticCat.id)),
   ]).then(()=>{
-    spotOverseasIdx=(spotOverseasIdx+1)%SPOTLIGHT_OVERSEAS.length;
-    spotDomesticIdx=(spotDomesticIdx+1)%SPOTLIGHT_DOMESTIC.length;
+    const overseasList2 = getSpotlightList('overseas');
+    const domesticList2 = getSpotlightList('domestic');
+    spotOverseasIdx=(spotOverseasIdx+1)%overseasList2.length;
+    spotDomesticIdx=(spotDomesticIdx+1)%domesticList2.length;
     const entries={
-      0: SPOTLIGHT_OVERSEAS[spotOverseasIdx%SPOTLIGHT_OVERSEAS.length],
-      1: SPOTLIGHT_DOMESTIC[spotDomesticIdx%SPOTLIGHT_DOMESTIC.length],
+      0: overseasList2[spotOverseasIdx%overseasList2.length],
+      1: domesticList2[spotDomesticIdx%domesticList2.length],
     };
     [0,1].forEach(slot=>{
       const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
@@ -3956,16 +4033,22 @@ function closeProductDetail(){
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
   currentPd=null;
 }
+// 동영상 갤러리를 이미지 갤러리보다 앞에 배치한 통합 목록 (상품 상세 페이지 노출용)
+function pdMediaList(p){
+  const vids=(p.videoGallery||[]).map(v=>({url:v.url,type:'video'}));
+  const imgs=(p.gallery||[]).map(g=>({url:g.url,type:'image'}));
+  return vids.concat(imgs);
+}
 function startGalleryAutoSlide(p){
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
-  if (p.galleryConfig && p.galleryConfig.autoSlide && p.gallery && p.gallery.length>1){
+  if (p.galleryConfig && p.galleryConfig.autoSlide && pdMediaList(p).length>1){
     pdGalleryTimer=setInterval(()=>pdGalleryNext(1),4000);
   }
 }
 function pdGalleryNext(dir){
   if (!currentPd) return;
-  const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p||!p.gallery) return;
-  const n=p.gallery.length; if (n<=1) return;
+  const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
+  const n=pdMediaList(p).length; if (n<=1) return;
   pdGalleryIdx=(pdGalleryIdx+dir+n)%n;
   updateGalleryDisplay();
 }
@@ -3977,11 +4060,11 @@ function pdGalleryGo(i){
   }
 }
 function updateGalleryDisplay(){
-  document.querySelectorAll('#pdContent .pd-gallery-main img').forEach((img,i)=>img.classList.toggle('active',i===pdGalleryIdx));
+  document.querySelectorAll('#pdContent .pd-gallery-main img, #pdContent .pd-gallery-main video').forEach((el,i)=>el.classList.toggle('active',i===pdGalleryIdx));
   document.querySelectorAll('#pdContent .pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===pdGalleryIdx));
   const counter=document.querySelector('#pdContent .pd-gallery-counter');
   if (counter){
-    const total=document.querySelectorAll('#pdContent .pd-gallery-main img').length;
+    const total=document.querySelectorAll('#pdContent .pd-gallery-main img, #pdContent .pd-gallery-main video').length;
     counter.textContent=`${pdGalleryIdx+1} / ${total}`;
   }
 }
@@ -4046,18 +4129,22 @@ function renderProductDetail(p,cat){
     }</div></div>`;
   }
 
-  // Gallery
-  if (p.gallery && p.gallery.length){
+  // Gallery (동영상 갤러리가 있으면 이미지보다 먼저 노출)
+  const pdMedia = pdMediaList(p);
+  if (pdMedia.length){
     html += `<div class="pd-slot pd-gallery">
       <div class="pd-section-title">갤러리</div>
       <div class="pd-gallery-main">
-        ${p.gallery.map((g,i)=>`<img src="${escapeAttr(g.url)}" class="${i===0?'active':''}" alt="${escapeAttr(productImgAlt(cat,p))} - 사진 ${i+1}" loading="${i===0?'eager':'lazy'}" decoding="async">`).join('')}
-        ${p.gallery.length>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryGo(${p.gallery.length===0?0:'('+pdGalleryIdx+'-1+'+p.gallery.length+')%'+p.gallery.length});pdGalleryNext(-1)" aria-label="이전">‹</button>
+        ${pdMedia.map((m,i)=> m.type==='video'
+          ? `<video src="${escapeAttr(m.url)}" class="${i===0?'active':''}" controls muted playsinline preload="metadata"></video>`
+          : `<img src="${escapeAttr(m.url)}" class="${i===0?'active':''}" alt="${escapeAttr(productImgAlt(cat,p))} - 사진 ${i+1}" loading="${i===0?'eager':'lazy'}" decoding="async">`
+        ).join('')}
+        ${pdMedia.length>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryNext(-1)" aria-label="이전">‹</button>
         <button class="pd-gallery-nav next" onclick="pdGalleryNext(1)" aria-label="다음">›</button>
-        <span class="pd-gallery-counter">1 / ${p.gallery.length}</span>`:''}
+        <span class="pd-gallery-counter">1 / ${pdMedia.length}</span>`:''}
       </div>
-      ${(!p.galleryConfig || p.galleryConfig.layout==='thumb') && p.gallery.length>1 ? `<div class="pd-thumbs">
-        ${p.gallery.map((g,i)=>`<div class="pd-thumb ${i===0?'active':''}" style="background-image:url('${escapeAttr(g.url)}')" onclick="pdGalleryGo(${i})"></div>`).join('')}
+      ${(!p.galleryConfig || p.galleryConfig.layout==='thumb') && pdMedia.length>1 ? `<div class="pd-thumbs">
+        ${pdMedia.map((m,i)=>`<div class="pd-thumb ${i===0?'active':''} ${m.type==='video'?'video-thumb':''}" style="background-image:url('${escapeAttr(m.type==='video'?'':m.url)}')" onclick="pdGalleryGo(${i})">${m.type==='video'?'<span class=\"pd-thumb-play\">▶</span>':''}</div>`).join('')}
       </div>` : ''}
     </div>`;
   }
@@ -4084,8 +4171,9 @@ function renderProductDetail(p,cat){
       <div class="pd-section-title">요금표</div>
       <div class="pd-price-entries">
         ${p.priceEntries.map(pe=>{
-          const emphCls=(pe.emphasis||'').startsWith('특가')?'special':(pe.emphasis==='실속'?'value':'normal');
-          const emphTxt = pe.emphasis || '일반';
+          // [Phase 3 상품등록 개선] 강조태그 복수 선택 지원 — 배열의 각 값을 개별 배지로 표시
+          const emphArr = Array.isArray(pe.emphasis) ? pe.emphasis : (pe.emphasis ? [pe.emphasis] : []);
+          const emphCls = t => t.startsWith('특가') ? 'special' : (t==='실속' ? 'value' : 'normal');
           const sale=Number(pe.salePrice)||0, orig=Number(pe.originalPrice)||0;
           const saleSym = CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원';
           const origSym = CURRENCY_SYMBOL[pe.originalCurrency||'KRW']||'원';
@@ -4095,7 +4183,7 @@ function renderProductDetail(p,cat){
           const discount = (sale && orig && orig>sale && sameCurrency) ? Math.round((1-sale/orig)*100) : 0;
           const clickAttr = pe.link ? `onclick="window.open('${escapeAttr(pe.link)}','_blank','noopener')"` : '';
           return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
-            ${pe.emphasis?`<span class="emph ${emphCls}">${emphTxt}</span>`:''}
+            ${emphArr.length?`<span class="emph-group">${emphArr.map(t=>`<span class="emph ${emphCls(t)}">${escapeAttr(t)}</span>`).join('')}</span>`:''}
             ${pe.headline?`<div class="headline">${pe.headline}</div>`:''}
             <div class="prices">
               ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:''}
@@ -4520,7 +4608,23 @@ function pkgLoadImgDims(url){
   });
 }
 
-function getPkgList(type){ return pkgPosters[type]||[]; }
+// 관리자가 직접 업로드한 포스터만 (관리자 패널의 순서변경·삭제·레이블 편집은 이 배열 인덱스 기준)
+function getPkgManualList(type){ return pkgPosters[type]||[]; }
+// 홈 화면 캐러셀/라이트박스용 — 관리자 업로드 포스터 + 상품별 "요금 포스터"를 합친 목록
+// (상품별 항목은 catId/idx를 가지고 있어 라이트박스에서 "자세히→"로 해당 상품 상세로 이동 가능)
+function getPkgList(type){
+  const manual = getPkgManualList(type).map(p=>({url:p.url, label:p.label||'', catId:null, idx:null}));
+  const cats = CATEGORIES[type]||[];
+  const fromProducts=[];
+  cats.forEach(cat=>{
+    getProducts(cat.id).forEach((p,idx)=>{
+      if (p.pkgPoster && p.pkgPoster.url){
+        fromProducts.push({url:p.pkgPoster.url, label:p.title||'', catId:cat.id, idx});
+      }
+    });
+  });
+  return manual.concat(fromProducts);
+}
 
 // ── 포스터 렌더 (두 그룹 공통) ──────────────────────────────────
 // 목록을 2벌 이어붙여(A B C A B C) 끊김 없이 순환하는 연속 스크롤을 구현
@@ -4726,7 +4830,7 @@ window.addEventListener('resize', ()=>{
 function renderAdminPkg(){
   const c = document.getElementById('adminPkg'); if(!c) return;
   ['domestic','overseas'].forEach(type=>{
-    const list = getPkgList(type);
+    const list = getPkgManualList(type);
     const el = document.getElementById('adminPkgGroup_'+type); if(!el) return;
     el.innerHTML = list.map((p,i)=>`
       <div class="apkg-item" draggable="true" data-type="${type}" data-idx="${i}"
@@ -4782,7 +4886,7 @@ function toggleApkgPreview(type){
 }
 function renderApkgPreview(type){
   const box = document.getElementById('apkgPreview_'+type); if (!box) return;
-  const list = getPkgList(type);
+  const list = getPkgManualList(type);
   if (!list.length){
     box.innerHTML = `<div class="apkg-preview-empty">등록된 포스터가 없습니다. 아래에서 이미지를 추가하면 여기서 실제 슬라이드처럼 미리 볼 수 있습니다.</div>`;
     apkgPreviewStopAuto(type);
@@ -4807,11 +4911,11 @@ function apkgPreviewGoTo(type, idx){
 }
 function apkgPreviewStartAuto(type){
   apkgPreviewStopAuto(type);
-  const list = getPkgList(type);
+  const list = getPkgManualList(type);
   if (list.length <= 1) return;
   apkgPreviewState[type].timer = setInterval(()=>{
     const st = apkgPreviewState[type];
-    st.idx = (st.idx + 1) % getPkgList(type).length;
+    st.idx = (st.idx + 1) % getPkgManualList(type).length;
     renderApkgPreview(type);
   }, 3500);
 }
@@ -4849,7 +4953,7 @@ async function handlePkgUpload(type, inputEl){
   const files=Array.from(inputEl.files||[]);
   if(!files.length){ inputEl.value=''; return; }
   const limit=50;
-  const remain=limit - getPkgList(type).length;
+  const remain=limit - getPkgManualList(type).length;
   if(remain<=0){ alert('최대 '+limit+'장까지 등록 가능합니다.'); inputEl.value=''; return; }
   const toAdd=files.slice(0,remain);
   if(files.length>remain) alert(`잔여 슬롯 ${remain}장만 추가됩니다 (선택된 ${files.length}장 중).`);
@@ -4914,10 +5018,21 @@ function openPkgLightbox(type, idx){
 }
 function plbRender(){
   const list=getPkgList(lbType);
+  const item=list[lbIdx];
   const img=document.getElementById('plbImg');
   const ctr=document.getElementById('plbCounter');
-  if(img) img.src=list[lbIdx]?.url||'';
+  if(img) img.src=item?.url||'';
   if(ctr) ctr.textContent=`${lbIdx+1} / ${list.length}`;
+  const dl=document.getElementById('plbDetailLink');
+  if(dl){
+    if(item && item.catId){
+      dl.classList.add('show');
+      dl.onclick=(e)=>{ e.stopPropagation(); closePkgLightbox(); openProductDetail(item.catId, item.idx); };
+    } else {
+      dl.classList.remove('show');
+      dl.onclick=(e)=>{ e.stopPropagation(); };
+    }
+  }
 }
 function pkgLbMove(dir){
   const list=getPkgList(lbType);
@@ -5223,32 +5338,49 @@ const CHECKPOINT_GUIDE = `⛳️ 그린피 + 카트비 포함
 
 function advBasicHTML(p){
   const popupCount = countActivePopups();
-  const isDomestic = !!(currentAdv && CATEGORIES.domestic.some(c=>c.id===currentAdv.catId));
-  const dis = isDomestic ? 'disabled' : '';
-  const depAirportOpts = DEPARTURE_AIRPORTS.map(a=>`<option value="${a}" ${p.depAirport===a?'selected':''}>${a}</option>`).join('');
-  const selectedAirlines = Array.isArray(p.airline) ? p.airline : (p.airline ? [p.airline] : []);
-  // 국가별 옵션값은 "국가ID::IATA코드"로 고유화 (동일 항공사가 여러 국가에 취항하는 경우 대비)
-  const airlineOpts = CATEGORIES.overseas.map(c=>{
-    const opts=(AIRLINES_BY_COUNTRY[c.id]||[]).map(([code,name])=>{
-      const val=`${c.id}::${code}`;
-      return `<option value="${val}" ${selectedAirlines.includes(val)?'selected':''}>${name} (${code})</option>`;
-    }).join('');
-    return `<optgroup label="${c.ko}">${opts}</optgroup>`;
-  }).join('');
+  const tm = p.titleMedia;
   return `
+    <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
+    <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px;cursor:pointer">
+      <input type="checkbox" style="width:auto" ${p.editorsPick?'checked':''} onchange="updateAdvField('editorsPick',this.checked)">
+      <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
+    </label>
+
+    <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 미디어 탭에서 이동, 이미지 전용으로 명칭 변경 -->
+    <label>타이틀 이미지</label>
+    <div class="media-slot">
+      ${tm&&tm.url?(tm.type==='video'?`<video src="${escapeAttr(tm.url)}" class="media-preview" controls muted></video>`:`<img src="${escapeAttr(tm.url)}" class="media-preview">`):`<div style="color:rgba(247,245,240,.5);padding:20px 0">타이틀 이미지를 업로드하세요</div>`}
+      <div class="media-controls">
+        <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
+        ${tm&&tm.url?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
+      </div>
+      <span class="file-hint">권장 1200×750px 이상 (16:10 비율) · 10MB 이하</span>
+    </div>
+
     <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
     <div class="grid-2">
       <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
       <div><label>라운드</label><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
       <div><label>숙박</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
       <div><label>식사</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-      <div><label>출발공항${isDomestic?' (해외 상품 전용)':''}</label><select ${dis} onchange="updateAdvField('depAirport',this.value)"><option value="">선택 안함</option>${depAirportOpts}</select></div>
-      <div><label>도착공항${isDomestic?' (해외 상품 전용)':''}</label><input type="text" ${dis} value="${escapeAttr(p.arrAirport||'')}" placeholder="예: 시즈오카" oninput="updateAdvField('arrAirport',this.value)"></div>
-      <div class="full"><label>항공편${isDomestic?' (해외 상품 전용, Ctrl/⌘+클릭으로 복수 선택)':' (Ctrl/⌘+클릭으로 복수 선택)'}</label><select ${dis} multiple size="6" onchange="updateAdvField('airline',Array.from(this.selectedOptions).map(o=>o.value))">${airlineOpts}</select></div>
-      <div class="full"><label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea></div>
-      <div class="full"><label>포함사항</label><textarea style="min-height:140px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('included',this.value)">${escapeAttr(p.included||'')}</textarea></div>
-      <div class="full"><label>불포함사항</label><textarea style="min-height:140px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('notIncluded',this.value)">${escapeAttr(p.notIncluded||'')}</textarea></div>
-      <div class="full"><label>참고 및 추가 안내사항</label><textarea style="min-height:180px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value)">${escapeAttr(p.notes||'')}</textarea></div>
+    </div>
+    <label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea>
+
+    <!-- [Phase 3 상품등록 개선] 포함/불포함/참고사항을 공통사항으로 묶어 가독성 개선 -->
+    <details class="adv-collapsible" open>
+      <summary>공통사항 — 포함 · 불포함 · 참고 및 추가 안내</summary>
+      <div class="adv-collapsible-body">
+        <label>포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('included',this.value)">${escapeAttr(p.included||'')}</textarea>
+        <label>불포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('notIncluded',this.value)">${escapeAttr(p.notIncluded||'')}</textarea>
+        <label>참고 및 추가 안내사항</label><textarea style="min-height:140px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value)">${escapeAttr(p.notes||'')}</textarea>
+      </div>
+    </details>
+
+    <!-- [Phase 3 상품등록 개선] 예약·결제·취소 규정 -->
+    <label>예약 · 결제 · 취소 규정</label>
+    <textarea style="min-height:120px" placeholder="예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ..." oninput="updateAdvField('bookingPolicy',this.value)">${escapeAttr(p.bookingPolicy||'')}</textarea>
+
+    <div class="grid-2">
       <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label>
         <div class="price-row">
           <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
@@ -5272,11 +5404,19 @@ function advBasicHTML(p){
 }
 
 // 개별 요금표 항목 HTML (레이블 종속)
+// [Phase 3 상품등록 개선] 복수 선택 칩 공용 렌더러
+function chipMultiHTML(opts, selectedArr, buildOnclick){
+  return `<div class="adv-chip-group">${opts.map(([val,label])=>{
+    const active = Array.isArray(selectedArr) && selectedArr.includes(val);
+    return `<button type="button" class="adv-chip ${active?'active':''}" onclick="${buildOnclick(val)}">${label}</button>`;
+  }).join('')}</div>`;
+}
 function priceEntryHTML(pe, i, popupCount){
   const emphOpts = ['일반','실속','특가 (기간한정)','특가 (하계)','특가 (동계)','특가 (긴급)'];
   const layoutOpts = [['card','카드형'],['hero','대형']];
   const currencySelect = (field, val) => `<select onchange="updatePriceEntry(${i},'${field}',this.value)" class="curr-sel">${CURRENCIES.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
   const popupLocked = !pe.popup && popupCount >= POPUP_MAX;
+  const emphasisArr = Array.isArray(pe.emphasis) ? pe.emphasis : (pe.emphasis?[pe.emphasis]:[]);
   return `
   <div class="pe-block">
     <div class="pe-head">
@@ -5298,10 +5438,8 @@ function priceEntryHTML(pe, i, popupCount){
           ${layoutOpts.map(o=>`<option value="${o[0]}" ${pe.layout===o[0]?'selected':''}>${o[1]}</option>`).join('')}
         </select>
       </div>
-      <div><label>강조 태그</label>
-        <select onchange="updatePriceEntry(${i},'emphasis',this.value)">
-          ${emphOpts.map(o=>`<option value="${o}" ${pe.emphasis===o?'selected':''}>${o}</option>`).join('')}
-        </select>
+      <div class="full"><label>강조 태그 (복수 선택 가능)</label>
+        ${chipMultiHTML(emphOpts.map(o=>[o,o]), emphasisArr, val=>`toggleEmphasisMulti(${i},'${val}')`)}
       </div>
       <div class="full"><label>판매가 (실결제)</label>
         <div class="price-row">
@@ -5327,7 +5465,7 @@ function priceEntryHTML(pe, i, popupCount){
 
     <!-- 이 요금표 항목에 종속된 레이블 -->
     <details class="pe-labels" open>
-      <summary>🏷 이 요금 항목의 레이블 (항공·공항·티오프·라운딩 등)</summary>
+      <summary>🏷 이 요금 항목의 레이블 (항공·공항·항공편·티오프 등)</summary>
       ${labelsHTML(pe, i)}
     </details>
   </div>`;
@@ -5335,22 +5473,26 @@ function priceEntryHTML(pe, i, popupCount){
 
 // ===== 레이블 옵션 상수 =====
 const AIRFARE_OPTS=[['none','없음(표시 안 함)'],['included','포함'],['excluded','불포함']];
-const PATTERN_OPTS=[['none','없음'],['조조','조조'],['조석','조석'],['석석','석석']];
-const AIRPORT_OPTS=[['none','없음'],['인천1','인천1'],['인천2','인천2'],['김해','김해'],['양양','양양'],['무안','무안'],['대구','대구'],['청주','청주'],['제주','제주']];
+const PATTERN_OPTS=[['조조','조조'],['조석','조석'],['석석','석석']];
+const AIRPORT_OPTS=[['인천1','인천1'],['인천2','인천2'],['김해','김해'],['양양','양양'],['무안','무안'],['대구','대구'],['청주','청주'],['제주','제주']];
 const STAY_OPTS=[['none','없음'],['1박','1박'],['2박','2박'],['3박','3박'],['4박','4박'],['5박','5박'],['6박','6박'],['장박','장박']];
-const DAY_OPTS=[['none','없음'],['월','월'],['화','화'],['수','수'],['목','목'],['금','금'],['토','토'],['일','일'],['월~수','월~수'],['월~목','월~목'],['금~토','금~토'],['매일출발','매일출발']];
+const DAY_OPTS=[['월','월'],['화','화'],['수','수'],['목','목'],['금','금'],['토','토'],['일','일'],['월~수','월~수'],['월~목','월~목'],['금~토','금~토'],['매일출발','매일출발']];
 
 // ===== 요금 항목에 종속된 레이블 UI =====
+// [Phase 3 상품등록 개선] 출발/도착 공항·항공편은 여기(요금표 항목)에서만 입력하도록 통합.
+// 항공 패턴 · 출발 공항 · 출발 요일은 복수 선택 가능(칩 토글). 라운딩/식사 횟수 필드는 제거.
 function labelsHTML(pe, peIdx){
   const L = pe.labels;
   const sel=(opts,val,field)=>`<select onchange="updatePriceEntryLabel(${peIdx},'${field}',this.value)">${opts.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
   return `
   <div class="grid-2 pe-labels-body">
     <div><label>항공 포함 여부</label>${sel(AIRFARE_OPTS,L.airfare,'airfare')}</div>
-    <div><label>항공 패턴</label>${sel(PATTERN_OPTS,L.airPattern,'airPattern')}</div>
-    <div><label>출발 공항</label>${sel(AIRPORT_OPTS,L.departureAirport,'departureAirport')}</div>
+    <div class="full"><label>항공 패턴 (복수 선택 가능)</label>${chipMultiHTML(PATTERN_OPTS,L.airPattern,val=>`toggleLabelMulti(${peIdx},'airPattern','${val}')`)}</div>
+    <div class="full"><label>출발 공항 (복수 선택 가능)</label>${chipMultiHTML(AIRPORT_OPTS,L.departureAirport,val=>`toggleLabelMulti(${peIdx},'departureAirport','${val}')`)}</div>
+    <div><label>도착 공항</label><input type="text" value="${escapeAttr(L.arrAirport||'')}" placeholder="예: 시즈오카" oninput="updatePriceEntryLabel(${peIdx},'arrAirport',this.value)"></div>
+    <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="예: NH862 / JAL 편명 자유 입력" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)"></div>
     <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}</div>
-    <div class="full"><label>출발 요일</label>${sel(DAY_OPTS,L.departureDay,'departureDay')}</div>
+    <div class="full"><label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}</div>
     <div class="full">
       <label>Tee Off Time · 1일차 ~ 4일차 (미사용 시 공란)</label>
       <div class="tee-grid">
@@ -5360,8 +5502,6 @@ function labelsHTML(pe, peIdx){
         <div><span class="tee-day">4일차</span><input type="text" value="${escapeAttr(L.teeOffTimes.day4||'')}" placeholder="" oninput="updatePriceEntryTee(${peIdx},'day4',this.value)"></div>
       </div>
     </div>
-    <div><label>18홀 라운딩 횟수</label><input type="number" min="0" value="${L.roundsCount||''}" placeholder="2" oninput="updatePriceEntryLabel(${peIdx},'roundsCount',this.value,'number')"></div>
-    <div><label>식사 횟수</label><input type="number" min="0" value="${L.mealsCount||''}" placeholder="3" oninput="updatePriceEntryLabel(${peIdx},'mealsCount',this.value,'number')"></div>
   </div>`;
 }
 
@@ -5378,6 +5518,23 @@ function updatePriceEntryLabel(peIdx, field, val, type){
   if (type==='number') val=parseInt(val)||0;
   p.priceEntries[peIdx].labels[field]=val;
   saveAdvChange();
+}
+// [Phase 3 상품등록 개선] 복수 선택 칩 토글 (요금 항목 레이블: 항공 패턴 · 출발 공항 · 출발 요일)
+function toggleLabelMulti(peIdx, field, value){
+  const p=getAdvProduct(); if (!p) return;
+  const L = p.priceEntries[peIdx].labels;
+  const arr = Array.isArray(L[field]) ? L[field] : (L[field]=[]);
+  const i = arr.indexOf(value);
+  if (i>=0) arr.splice(i,1); else arr.push(value);
+  saveAdvChange(); renderAdvBody();
+}
+// [Phase 3 상품등록 개선] 복수 선택 칩 토글 (요금 항목 강조 태그)
+function toggleEmphasisMulti(i, value){
+  const p=getAdvProduct(); if (!p) return;
+  const arr = Array.isArray(p.priceEntries[i].emphasis) ? p.priceEntries[i].emphasis : (p.priceEntries[i].emphasis=[]);
+  const idx = arr.indexOf(value);
+  if (idx>=0) arr.splice(idx,1); else arr.push(value);
+  saveAdvChange(); renderAdvBody();
 }
 function updatePriceEntryTee(peIdx, day, val){
   const p=getAdvProduct(); if (!p) return;
@@ -5407,17 +5564,35 @@ function removePriceEntry(i){
 
 // ===== 미디어 탭 (타이틀 이미지/동영상 + 갤러리) =====
 function advMediaHTML(p){
-  const tm=p.titleMedia;
+  const isDomestic = !!(currentAdv && CATEGORIES.domestic.some(c=>c.id===currentAdv.catId));
+  const videoGallery = p.videoGallery||[];
   return `
-    <label>타이틀 이미지 또는 동영상</label>
+    <!-- [Phase 3 상품등록 개선] 타이틀 이미지는 "기본·요금표" 탭 최상단으로 이동. 이 자리는 동영상 갤러리로 교체 -->
+    <label>동영상 갤러리 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(${videoGallery.length}/5 · 갤러리 이미지보다 위에 노출)</span></label>
     <div class="media-slot">
-      ${tm?(tm.type==='video'?`<video src="${escapeAttr(tm.url)}" class="media-preview" controls muted></video>`:`<img src="${escapeAttr(tm.url)}" class="media-preview">`):`<div style="color:rgba(247,245,240,.5);padding:20px 0">타이틀 이미지 또는 동영상을 업로드하세요</div>`}
-      <div class="media-controls">
-        <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
-        <label class="media-btn">동영상 업로드<input type="file" accept="video/*" onchange="handleTitleMediaUpload(this,'video')"></label>
-        ${tm?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
+      <div class="media-controls" style="margin-bottom:10px">
+        <label class="media-btn ${videoGallery.length >= 5 ? 'disabled':''}">🎬 동영상 추가 (다중 선택)<input type="file" accept="video/*" multiple onchange="handleVideoGalleryUpload(this)" ${videoGallery.length >= 5 ? 'disabled':''}></label>
+        <span style="font-size:.72rem;color:rgba(247,245,240,.5);margin-left:8px">최대 5개 · 동영상 1개당 50MB 이하</span>
       </div>
-      <span class="file-hint">권장 1200×750px 이상 (16:10 비율) · 이미지 10MB / 동영상 50MB 이하</span>
+      ${videoGallery.length ? `<div class="gallery-list">
+        ${videoGallery.map((v,i)=>`
+        <div class="gallery-thumb video-thumb" data-idx="${i}">
+          <video src="${escapeAttr(v.url)}" muted></video>
+          <span class="g-order">${i+1}</span>
+          <div class="g-actions"><button class="g-btn del" onclick="removeVideoGallery(${i})" title="삭제">×</button></div>
+        </div>`).join('')}
+      </div>` : `<div style="color:rgba(247,245,240,.5);padding:10px 0;font-size:.82rem">등록된 동영상이 없습니다</div>`}
+    </div>
+
+    <!-- [Phase 3 상품등록 개선] 요금 포스터 — 업로드 시 국내/해외 패키지 요금표 섹션에 자동 노출 -->
+    <label>요금 포스터 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(${isDomestic?'국내':'해외'} 골프 패키지 요금표에 자동 노출)</span></label>
+    <div class="media-slot">
+      ${p.pkgPoster&&p.pkgPoster.url?`<img src="${escapeAttr(p.pkgPoster.url)}" class="media-preview">`:`<div style="color:rgba(247,245,240,.5);padding:20px 0">요금 포스터를 업로드하면 홈페이지 ${isDomestic?'국내':'해외'} 골프 패키지 요금표 섹션에 자동으로 노출됩니다</div>`}
+      <div class="media-controls">
+        <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handlePkgPosterUpload(this)"></label>
+        ${p.pkgPoster&&p.pkgPoster.url?`<button class="media-btn danger" onclick="removePkgPoster()">제거</button>`:''}
+      </div>
+      <span class="file-hint">세로형 포스터 이미지 권장 · 10MB 이하 · 클릭 시 원본 크기로 보기 + 상품 상세로 이동 가능</span>
     </div>
 
     <label>갤러리 이미지 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(${p.gallery.length}/20 · 드래그하여 순서 변경)</span></label>
@@ -5495,6 +5670,42 @@ async function handleGalleryUpload(inputEl){
 function removeGallery(i){
   const p=getAdvProduct(); if (!p) return;
   p.gallery.splice(i,1); saveAdvChange(); renderAdvBody();
+}
+// [Phase 3 상품등록 개선] 동영상 갤러리 업로드 · 삭제
+async function handleVideoGalleryUpload(inputEl){
+  const files=Array.from(inputEl.files||[]); if (!files.length) return;
+  const p=getAdvProduct(); if (!p) return;
+  if (!p.videoGallery) p.videoGallery=[];
+  const remaining = 5 - p.videoGallery.length;
+  if (remaining <= 0){ alert('동영상 갤러리는 최대 5개까지만 등록 가능합니다.'); inputEl.value=''; return; }
+  const toAdd = files.slice(0, remaining);
+  if (files.length > remaining){ alert(`잔여 슬롯 ${remaining}개만 추가됩니다 (선택된 ${files.length}개 중).`); }
+  for (const file of toAdd){
+    if (file.size>50*1024*1024){alert(`${file.name} 는 50MB를 초과합니다.`);continue}
+    try{const url=await uploadToStorage(file, 'products');p.videoGallery.push({url})}catch(e){alert(`${file.name} 업로드 실패: `+(e.message||e))}
+  }
+  saveAdvChange();renderAdvBody();
+  inputEl.value='';
+}
+function removeVideoGallery(i){
+  const p=getAdvProduct(); if (!p) return;
+  p.videoGallery.splice(i,1); saveAdvChange(); renderAdvBody();
+}
+// [Phase 3 상품등록 개선] 요금 포스터 업로드 · 삭제 — 국내/해외 골프 패키지 요금표 섹션에 자동 노출
+async function handlePkgPosterUpload(inputEl){
+  const file=inputEl.files[0]; if (!file) return;
+  if (file.size>10*1024*1024){alert('이미지 크기는 10MB 이하로 업로드해주세요.');return}
+  try{
+    const url=await uploadToStorage(file, 'products');
+    const p=getAdvProduct(); if (!p) return;
+    p.pkgPoster={url};
+    saveAdvChange();renderAdvBody();
+  }catch(e){alert('업로드 실패: '+(e.message||e))}
+  inputEl.value='';
+}
+function removePkgPoster(){
+  const p=getAdvProduct(); if (!p) return;
+  p.pkgPoster=null; saveAdvChange();renderAdvBody();
 }
 function moveGallery(i,dir){
   const p=getAdvProduct(); if (!p) return;
@@ -5799,7 +6010,7 @@ function computeAiRecommendations(criteria){
       if (criteria.duration==='any') score += 10;
       else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
       else score += 5;
-      const haystack = [p.tag||'', p.title||''].concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(pe.emphasis||''))).join(' ');
+      const haystack = [p.tag||'', p.title||''].concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
       criteria.styles.forEach(styleVal=>{
         const kws = STYLE_KEYWORDS[styleVal]||[];
         if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }
@@ -5967,14 +6178,16 @@ function showEntryPopups(){
     const sale=Number(pe.salePrice)||0;
     const saleSym = CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원';
     const saleFrom = pe.saleFromLabel!==false ? ' ~부터' : '';
-    const emphCls=(pe.emphasis||'').startsWith('특가')?'special':(pe.emphasis==='실속'?'value':'normal');
+    // [Phase 3 상품등록 개선] 강조태그 복수 선택 — 팝업 카드는 공간이 좁아 첫 번째 태그만 표시
+    const emphFirst = (Array.isArray(pe.emphasis) ? pe.emphasis[0] : pe.emphasis) || '';
+    const emphCls = emphFirst.startsWith('특가') ? 'special' : (emphFirst==='실속' ? 'value' : 'normal');
     const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
       ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
       : getCatBgStyle(cat);
     return `<div class="popup-card" style="animation-delay:${i*0.15}s">
       <button class="popup-close" onclick="closeSinglePopup(this)" aria-label="닫기">×</button>
       <div class="popup-visual" style="${bgStyle}">
-        ${pe.emphasis?`<span class="popup-emph ${emphCls}">${pe.emphasis}</span>`:''}
+        ${emphFirst?`<span class="popup-emph ${emphCls}">${escapeAttr(emphFirst)}</span>`:''}
       </div>
       <div class="popup-body">
         <div class="popup-cat">${cat.ko} · ${cat.en}</div>

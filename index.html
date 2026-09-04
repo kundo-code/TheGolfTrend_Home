@@ -206,15 +206,19 @@ section.block{padding:100px 24px;position:relative}
 .cat-card .name-en{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:500;color:var(--gold);font-size:.95rem;letter-spacing:.25em;margin-top:6px;text-transform:uppercase}
 
 /* CATEGORY VIEW + PRODUCT GRID */
-/* [수정] 국가/지역 카드를 클릭하면 그 카드 바로 아래(같은 cat-grid 안, 전체 폭)에 상품 목록이 펼쳐지도록
-   grid-column:1/-1로 카드 그리드의 새 행 전체를 차지시킨다 — 더 이상 그리드 하단의 공용 패널이 아니다 */
-.category-view{grid-column:1/-1;padding:40px;background:rgba(255,255,255,.72);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08)}
-.cv-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(10,23,48,.10);margin-bottom:32px}
+/* [수정] 카드 바로 아래가 아닌, 해외/국내 카드 그룹 하단에 상품 목록 패널이 펼쳐진다 */
+.category-view{margin-top:32px;padding:40px;background:rgba(255,255,255,.72);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08)}
+.cv-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(10,23,48,.10);margin-bottom:20px}
 .cv-head .left h3{font-size:2rem;color:var(--pine-deep);font-weight:400}
 .cv-head .left h3 em{font-style:italic;color:var(--gold-deep);margin-right:4px}
 .cv-head .left p{color:rgba(10,23,48,.6);margin-top:6px;font-size:.95rem}
 .cv-close{color:var(--gold-deep);font-size:.88rem;font-weight:600;cursor:pointer;padding:8px 16px;border-radius:100px;background:rgba(10,23,48,.05);border:1px solid rgba(10,23,48,.10);transition:all .2s}
 .cv-close:hover{background:rgba(10,23,48,.10)}
+/* [수정] 펼쳐진 상품 목록 안에서 같은 지역의 다른 국가/지역으로 바로 이동할 수 있는 네비게이션 바 */
+.cv-nav{display:flex;gap:8px;overflow-x:auto;flex-wrap:wrap;padding-bottom:24px;margin-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10);scrollbar-width:thin}
+.cv-nav-item{flex-shrink:0;padding:8px 18px;border-radius:100px;border:1px solid rgba(10,23,48,.12);background:rgba(10,23,48,.03);color:rgba(10,23,48,.65);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+.cv-nav-item:hover{background:rgba(10,23,48,.08);color:var(--pine-deep)}
+.cv-nav-item.active{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .product{padding:18px;background:rgba(255,255,255,.75);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
 .product:hover{transform:translateY(-4px);border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.12)}
@@ -2070,11 +2074,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <div class="dest-region-block">
       <div class="dest-region-head"><span class="dest-region-tag">해외 <span class="dest-region-count" id="destCountOverseas"></span></span></div>
       <div class="cat-grid" id="catGridOverseas"></div>
+      <!-- [수정] 카드 바로 아래가 아닌, 해외 카드 그룹 하단에 상품 목록 패널이 펼쳐진다 -->
+      <div id="catPanelHostOverseas"></div>
     </div>
     <div class="dest-region-divider"><span>✦</span></div>
     <div class="dest-region-block">
       <div class="dest-region-head"><span class="dest-region-tag">국내 <span class="dest-region-count" id="destCountDomestic"></span></span></div>
       <div class="cat-grid" id="catGridDomestic"></div>
+      <div id="catPanelHostDomestic"></div>
     </div>
   </div>
 </section>
@@ -3687,7 +3694,7 @@ function usingComposite(cat){return false} // 통합 이미지 시스템 제거
 function findCat(id){return CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===id)}
 
 // STATE
-// [수정] 국가/지역 카드를 클릭하면 그 카드 바로 아래에 상품 목록이 펼쳐지도록, 지역(해외/국내)마다
+// [수정] 국가/지역 카드를 클릭하면 그 카드 그룹(해외/국내) 하단에 상품 목록이 펼쳐지도록, 지역마다
 // 독립적으로 "열려있는 카드"를 추적한다 — 해외에서 하나, 국내에서 하나, 동시에 열려있을 수 있다
 let selectedOverseasId=null, selectedDomesticId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 let activeAdminTab='images', activeProductCat='gangwon';
@@ -3710,27 +3717,40 @@ function catCardHTML(c, isOpen){
     </div>
   </article>`;
 }
-// [수정] 선택된 카드 바로 뒤(같은 cat-grid 안, grid-column:1/-1로 전체 폭)에 삽입되는 상품 목록 패널
-function categoryPanelHTML(cat){
-  return `<div class="category-view" id="categoryPanel-${cat.id}">
+// [수정] 패널 안에서 같은 지역의 다른 국가/지역으로 바로 이동할 수 있는 네비게이션 바
+function regionNavHTML(regionKey, selectedId){
+  return CATEGORIES[regionKey].map(c=>
+    `<button type="button" class="cv-nav-item ${c.id===selectedId?'active':''}" onclick="selectCategory('${c.id}',{scroll:false})">${c.ko}</button>`
+  ).join('');
+}
+// [수정] 카드 그룹(해외/국내) 하단에 삽입되는 상품 목록 패널 — 지역별로 하나만 존재하며, 선택된 국가/지역이
+// 바뀌면 내용만 갱신된다. 패널 안의 네비게이션 바로 같은 지역의 다른 국가/지역으로도 바로 이동 가능
+function categoryPanelHTML(regionKey){
+  const selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
+  if (!selectedId) return '';
+  const cat=findCat(selectedId);
+  const panelId=regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic';
+  const gridId=regionKey==='overseas'?'productGridOverseas':'productGridDomestic';
+  const tagId=regionKey==='overseas'?'cvTaglineOverseas':'cvTaglineDomestic';
+  return `<div class="category-view" id="${panelId}">
     <div class="cv-head">
       <div class="left">
         <h3><em>${cat.ko}</em><span style="color:rgba(10,23,48,.5);font-size:.75em;letter-spacing:.15em;margin-left:8px">${cat.en}</span></h3>
-        <p id="cvTagline-${cat.id}"></p>
+        <p id="${tagId}"></p>
       </div>
-      <a class="cv-close" onclick="event.stopPropagation();closeCategory('${cat.id}')">닫기 ✕</a>
+      <a class="cv-close" onclick="closeCategory('${regionKey}')">닫기 ✕</a>
     </div>
-    <div class="product-grid" id="productGrid-${cat.id}"></div>
+    <div class="cv-nav">${regionNavHTML(regionKey, selectedId)}</div>
+    <div class="product-grid" id="${gridId}"></div>
   </div>`;
 }
 function renderRegionGrid(regionKey){
   const gridEl=document.getElementById(regionKey==='overseas'?'catGridOverseas':'catGridDomestic');
   const selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
-  gridEl.innerHTML=CATEGORIES[regionKey].map(c=>{
-    const isOpen=c.id===selectedId;
-    return catCardHTML(c, isOpen) + (isOpen?categoryPanelHTML(c):'');
-  }).join('');
-  if (selectedId) refreshCategoryProducts(selectedId);
+  gridEl.innerHTML=CATEGORIES[regionKey].map(c=>catCardHTML(c, c.id===selectedId)).join('');
+  const panelHost=document.getElementById(regionKey==='overseas'?'catPanelHostOverseas':'catPanelHostDomestic');
+  panelHost.innerHTML=categoryPanelHTML(regionKey);
+  if (selectedId) refreshCategoryProducts(regionKey);
 }
 function renderCategoryGrid(){
   renderRegionGrid('overseas');
@@ -3740,26 +3760,28 @@ function renderCategoryGrid(){
 }
 
 // [수정] 지역(해외/국내) 안에서만 아코디언처럼 여닫힌다 — 다른 지역에서 이미 열려있는 카드는 그대로
-// 유지되므로, 해외 국가를 선택한 뒤 국내 지역을 선택해도 두 상품 목록이 모두 열려있는 상태를 유지한다
-function selectCategory(id){
+// 유지되므로, 해외 국가를 선택한 뒤 국내 지역을 선택해도 두 상품 목록이 모두 열려있는 상태를 유지한다.
+// opts.scroll이 false면(패널 안 네비게이션 바에서 호출된 경우) 패널 위치가 바뀌지 않으므로 스크롤하지 않는다
+function selectCategory(id, opts){
+  opts=opts||{};
   const cat=findCat(id); if (!cat) return;
   const isOverseas=CATEGORIES.overseas.some(c=>c.id===id);
+  const regionKey=isOverseas?'overseas':'domestic';
   const current=isOverseas?selectedOverseasId:selectedDomesticId;
   const next=current===id?null:id; // 이미 열려있는 카드를 다시 클릭하면 닫는다
   if (isOverseas) selectedOverseasId=next; else selectedDomesticId=next;
-  renderRegionGrid(isOverseas?'overseas':'domestic');
-  if (next){
+  renderRegionGrid(regionKey);
+  if (next && opts.scroll!==false){
     setTimeout(()=>{
-      const panel=document.getElementById('categoryPanel-'+id);
+      const panel=document.getElementById(regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic');
       if (panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
     },100);
   }
 }
 
-function closeCategory(id){
-  const isOverseas=CATEGORIES.overseas.some(c=>c.id===id);
-  if (isOverseas) selectedOverseasId=null; else selectedDomesticId=null;
-  renderRegionGrid(isOverseas?'overseas':'domestic');
+function closeCategory(regionKey){
+  if (regionKey==='overseas') selectedOverseasId=null; else selectedDomesticId=null;
+  renderRegionGrid(regionKey);
 }
 
 // 상품 카드/스팟라이트 공통: 원(KRW) 판매가만 반영, 없으면 카드 표시 최저가(from) 폴백
@@ -3805,18 +3827,21 @@ function productCardHTML(p, catId, idx){
 
 // [수정] 특정 카테고리(id)의 상품 목록만 갱신 — 해외/국내 각각 독립적으로 열려있는 패널을 지원하기 위해
 // 더 이상 하나의 공용 패널이 아닌, 열려있는 카드 id로 대상을 지정한다. 패널이 열려있지 않으면 아무 것도 하지 않는다
-function refreshCategoryProducts(id){
-  const grid=document.getElementById('productGrid-'+id);
+// [수정] 패널이 지역(overseas/domestic)마다 하나씩 고정 id를 가지므로, 갱신 대상도 지역으로 지정한다
+function refreshCategoryProducts(regionKey){
+  const selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
+  if (!selectedId) return;
+  const grid=document.getElementById(regionKey==='overseas'?'productGridOverseas':'productGridDomestic');
   if (!grid) return;
-  const products=getProducts(id);
-  const cat=findCat(id);
-  const tagEl=document.getElementById('cvTagline-'+id);
+  const products=getProducts(selectedId);
+  const cat=findCat(selectedId);
+  const tagEl=document.getElementById(regionKey==='overseas'?'cvTaglineOverseas':'cvTaglineDomestic');
   if (tagEl) tagEl.textContent=cat.tagline+` · 총 ${products.length}개 상품`;
   pauseVideosIn(grid); // 새로 그리기 전에 기존 상품 카드의 자동재생 동영상 정지
   if (products.length===0){
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>이 지역의 상품은 곧 업데이트됩니다.</p></div>`;
   } else {
-    grid.innerHTML=products.map((p,i)=>productCardHTML(p,id,i)).join('');
+    grid.innerHTML=products.map((p,i)=>productCardHTML(p,selectedId,i)).join('');
   }
 }
 

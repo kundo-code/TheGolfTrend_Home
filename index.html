@@ -2060,6 +2060,55 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
 </section>
 
+<!-- AI RECOMMEND -->
+<section class="block ai-recommend-section" id="aiRecommend">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="left">
+        <span class="tag">AI Concierge</span>
+        <h2>AI 골프 여행 <em>추천</em></h2>
+        <p>몇 가지 질문에 답하면, 전체 상품 중 지금 조건에 가장 잘 맞는 여행을 AI가 즉시 골라드립니다.</p>
+      </div>
+    </div>
+    <div class="ai-quiz" id="aiQuiz">
+      <div class="ai-q-group">
+        <div class="ai-q-label">① 여행 권역</div>
+        <div class="ai-chip-group" data-field="region">
+          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
+          <button type="button" class="ai-chip" data-value="domestic">국내</button>
+          <button type="button" class="ai-chip" data-value="overseas">해외</button>
+        </div>
+      </div>
+      <div class="ai-q-group">
+        <div class="ai-q-label">② 예산대 <em>(1인 기준)</em></div>
+        <div class="ai-chip-group" data-field="budget">
+          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
+          <button type="button" class="ai-chip" data-value="60">~60만원</button>
+          <button type="button" class="ai-chip" data-value="100">~100만원</button>
+          <button type="button" class="ai-chip" data-value="150">~150만원</button>
+          <button type="button" class="ai-chip" data-value="200">~200만원</button>
+          <button type="button" class="ai-chip" data-value="9999">200만원+</button>
+        </div>
+      </div>
+      <div class="ai-q-group">
+        <div class="ai-q-label">③ 일정</div>
+        <div class="ai-chip-group" data-field="duration">
+          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
+          <button type="button" class="ai-chip" data-value="short">1~2박</button>
+          <button type="button" class="ai-chip" data-value="mid">3~4박</button>
+          <button type="button" class="ai-chip" data-value="long">5박+</button>
+        </div>
+      </div>
+      <div class="ai-q-group full">
+        <div class="ai-q-label">④ 선호 스타일 <em>(복수 선택 가능)</em></div>
+        <div class="ai-chip-group" id="aiStyleChips" data-field="style"></div>
+      </div>
+      <button type="button" class="ai-submit-btn" onclick="runAiRecommend()">✨ AI 추천 받기</button>
+    </div>
+    <div class="ai-results" id="aiResults"></div>
+  </div>
+</section>
+
 <!-- DESTINATIONS -->
 <section class="block" id="destinations">
   <div class="wrap">
@@ -2083,6 +2132,81 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="cat-grid" id="catGridDomestic"></div>
       <div id="catPanelHostDomestic"></div>
     </div>
+  </div>
+</section>
+
+<!-- PACKAGE POSTER SECTION -->
+<section class="pkg-poster-section" id="packagePosters">
+  <div class="pkg-wrap">
+
+    <!-- 국내 -->
+    <div class="pkg-group" id="pgDomestic">
+      <div class="pkg-group-header">
+        <div class="pkg-group-title-area">
+          <span class="pkg-tag">Domestic</span>
+          <h3 class="pkg-group-title">국내 골프 패키지 요금표</h3>
+        </div>
+        <div class="pkg-nav">
+          <button class="pkg-nav-btn" onclick="pkgScroll('domestic',-1)" aria-label="이전">‹</button>
+          <button class="pkg-nav-btn" onclick="pkgScroll('domestic',1)" aria-label="다음">›</button>
+        </div>
+      </div>
+      <div class="pkg-track-wrap">
+        <div class="pkg-track" id="pkgTrack_domestic"></div>
+      </div>
+      <div class="pkg-dots" id="pkgDots_domestic"></div>
+    </div>
+
+    <!-- 해외 -->
+    <div class="pkg-group" id="pgOverseas">
+      <div class="pkg-group-header">
+        <div class="pkg-group-title-area">
+          <span class="pkg-tag">Overseas</span>
+          <h3 class="pkg-group-title">해외 골프 패키지 요금표</h3>
+        </div>
+        <div class="pkg-nav">
+          <button class="pkg-nav-btn" onclick="pkgScroll('overseas',-1)" aria-label="이전">‹</button>
+          <button class="pkg-nav-btn" onclick="pkgScroll('overseas',1)" aria-label="다음">›</button>
+        </div>
+      </div>
+      <div class="pkg-track-wrap">
+        <div class="pkg-track" id="pkgTrack_overseas"></div>
+      </div>
+      <div class="pkg-dots" id="pkgDots_overseas"></div>
+    </div>
+
+  </div>
+
+
+</section>
+
+<!-- [Phase 3] 라이트박스 오버레이 — position:fixed가 pkg-poster-section의 backdrop-filter(블러) 조상 안에 갇혀
+     전체 화면 최상단에 뜨지 못하던 문제를 막기 위해 섹션 밖(body 최상위)으로 이동 -->
+<div class="pkg-lightbox" id="pkgLightbox" onclick="closePkgLightbox()">
+  <div class="plb-top-actions">
+    <a class="plb-detail-link" id="plbDetailLink" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation()">자세히 →</a>
+    <button class="plb-close" onclick="closePkgLightbox()">×</button>
+  </div>
+  <button class="plb-prev" onclick="pkgLbMove(-1);event.stopPropagation()">‹</button>
+  <div class="plb-img-wrap">
+    <img class="plb-img" id="plbImg" src="" alt="">
+  </div>
+  <button class="plb-next" onclick="pkgLbMove(1);event.stopPropagation()">›</button>
+  <div class="plb-counter" id="plbCounter"></div>
+</div>
+
+<!-- BLOG -->
+<section class="block" id="blog">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="left">
+        <span class="tag">Travel Stories</span>
+        <h2>여행 <em>이야기</em></h2>
+        <p>다녀온 사람만 아는 꿀팁, 시즌별 라운드 후기, 골프 여행 가이드까지.</p>
+      </div>
+      <a class="sec-more">전체 아티클 →</a>
+    </div>
+    <div class="blog-grid" id="blogGrid"></div>
   </div>
 </section>
 
@@ -2244,136 +2368,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
 </section>
 
-<!-- PACKAGE POSTER SECTION -->
-<section class="pkg-poster-section" id="packagePosters">
-  <div class="pkg-wrap">
-
-    <!-- 국내 -->
-    <div class="pkg-group" id="pgDomestic">
-      <div class="pkg-group-header">
-        <div class="pkg-group-title-area">
-          <span class="pkg-tag">Domestic</span>
-          <h3 class="pkg-group-title">국내 골프 패키지 요금표</h3>
-        </div>
-        <div class="pkg-nav">
-          <button class="pkg-nav-btn" onclick="pkgScroll('domestic',-1)" aria-label="이전">‹</button>
-          <button class="pkg-nav-btn" onclick="pkgScroll('domestic',1)" aria-label="다음">›</button>
-        </div>
-      </div>
-      <div class="pkg-track-wrap">
-        <div class="pkg-track" id="pkgTrack_domestic"></div>
-      </div>
-      <div class="pkg-dots" id="pkgDots_domestic"></div>
-    </div>
-
-    <!-- 해외 -->
-    <div class="pkg-group" id="pgOverseas">
-      <div class="pkg-group-header">
-        <div class="pkg-group-title-area">
-          <span class="pkg-tag">Overseas</span>
-          <h3 class="pkg-group-title">해외 골프 패키지 요금표</h3>
-        </div>
-        <div class="pkg-nav">
-          <button class="pkg-nav-btn" onclick="pkgScroll('overseas',-1)" aria-label="이전">‹</button>
-          <button class="pkg-nav-btn" onclick="pkgScroll('overseas',1)" aria-label="다음">›</button>
-        </div>
-      </div>
-      <div class="pkg-track-wrap">
-        <div class="pkg-track" id="pkgTrack_overseas"></div>
-      </div>
-      <div class="pkg-dots" id="pkgDots_overseas"></div>
-    </div>
-
-  </div>
-
-
-</section>
-
-<!-- [Phase 3] 라이트박스 오버레이 — position:fixed가 pkg-poster-section의 backdrop-filter(블러) 조상 안에 갇혀
-     전체 화면 최상단에 뜨지 못하던 문제를 막기 위해 섹션 밖(body 최상위)으로 이동 -->
-<div class="pkg-lightbox" id="pkgLightbox" onclick="closePkgLightbox()">
-  <div class="plb-top-actions">
-    <a class="plb-detail-link" id="plbDetailLink" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation()">자세히 →</a>
-    <button class="plb-close" onclick="closePkgLightbox()">×</button>
-  </div>
-  <button class="plb-prev" onclick="pkgLbMove(-1);event.stopPropagation()">‹</button>
-  <div class="plb-img-wrap">
-    <img class="plb-img" id="plbImg" src="" alt="">
-  </div>
-  <button class="plb-next" onclick="pkgLbMove(1);event.stopPropagation()">›</button>
-  <div class="plb-counter" id="plbCounter"></div>
-</div>
-
 <!-- SNS/BLOG/BAND LINKS -->
 <section class="link-hub" id="links">
   <div class="link-hub-inner">
     <h2>더 많은 여행 이야기가 <em>이곳에</em></h2>
     <p class="lead">네이버 밴드, 블로그, SNS 채널에서 실시간 프로모션과 코스 후기를 만나보세요.</p>
     <div class="link-groups" id="linkGroups"></div>
-  </div>
-</section>
-
-<!-- BLOG -->
-<section class="block" id="blog">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="left">
-        <span class="tag">Travel Stories</span>
-        <h2>여행 <em>이야기</em></h2>
-        <p>다녀온 사람만 아는 꿀팁, 시즌별 라운드 후기, 골프 여행 가이드까지.</p>
-      </div>
-      <a class="sec-more">전체 아티클 →</a>
-    </div>
-    <div class="blog-grid" id="blogGrid"></div>
-  </div>
-</section>
-
-<!-- AI RECOMMEND -->
-<section class="block ai-recommend-section" id="aiRecommend">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="left">
-        <span class="tag">AI Concierge</span>
-        <h2>AI 골프 여행 <em>추천</em></h2>
-        <p>몇 가지 질문에 답하면, 전체 상품 중 지금 조건에 가장 잘 맞는 여행을 AI가 즉시 골라드립니다.</p>
-      </div>
-    </div>
-    <div class="ai-quiz" id="aiQuiz">
-      <div class="ai-q-group">
-        <div class="ai-q-label">① 여행 권역</div>
-        <div class="ai-chip-group" data-field="region">
-          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
-          <button type="button" class="ai-chip" data-value="domestic">국내</button>
-          <button type="button" class="ai-chip" data-value="overseas">해외</button>
-        </div>
-      </div>
-      <div class="ai-q-group">
-        <div class="ai-q-label">② 예산대 <em>(1인 기준)</em></div>
-        <div class="ai-chip-group" data-field="budget">
-          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
-          <button type="button" class="ai-chip" data-value="60">~60만원</button>
-          <button type="button" class="ai-chip" data-value="100">~100만원</button>
-          <button type="button" class="ai-chip" data-value="150">~150만원</button>
-          <button type="button" class="ai-chip" data-value="200">~200만원</button>
-          <button type="button" class="ai-chip" data-value="9999">200만원+</button>
-        </div>
-      </div>
-      <div class="ai-q-group">
-        <div class="ai-q-label">③ 일정</div>
-        <div class="ai-chip-group" data-field="duration">
-          <button type="button" class="ai-chip active" data-value="any">상관없음</button>
-          <button type="button" class="ai-chip" data-value="short">1~2박</button>
-          <button type="button" class="ai-chip" data-value="mid">3~4박</button>
-          <button type="button" class="ai-chip" data-value="long">5박+</button>
-        </div>
-      </div>
-      <div class="ai-q-group full">
-        <div class="ai-q-label">④ 선호 스타일 <em>(복수 선택 가능)</em></div>
-        <div class="ai-chip-group" id="aiStyleChips" data-field="style"></div>
-      </div>
-      <button type="button" class="ai-submit-btn" onclick="runAiRecommend()">✨ AI 추천 받기</button>
-    </div>
-    <div class="ai-results" id="aiResults"></div>
   </div>
 </section>
 

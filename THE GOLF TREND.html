@@ -234,7 +234,7 @@ section.block{padding:100px 24px;position:relative}
 .cv-nav-item:hover{background:rgba(10,23,48,.08);color:var(--pine-deep)}
 .cv-nav-item.active{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-/* [수정] 글래스모피즘 통일 — 다른 카드(.post/.partner-col)와 동일하게 반투명+블러 적용 */
+/* [수정] 글래스모피즘 통일 — 다른 카드(.post)와 동일하게 반투명+블러 적용 */
 .product{padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
 .product:hover{transform:translateY(-4px);border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.12)}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
@@ -823,18 +823,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .hero-vision p{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.15rem;color:#fff;font-weight:400;line-height:1.4}
 .hero-vision p em{color:var(--gold);font-style:italic}
 .hero-vision .hv-attr{display:block;margin-top:10px;font-size:.68rem;color:rgba(247,245,240,.55);letter-spacing:.15em;text-transform:uppercase}
-.partners-block h3{text-align:center;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(1.4rem,2.4vw,2rem);color:var(--pine-deep);font-weight:400;margin-bottom:8px;letter-spacing:-0.01em}
-.partners-block .p-sub{text-align:center;font-size:.88rem;color:rgba(10,23,48,.55);margin-bottom:32px}
-.partners-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:960px;margin:0 auto}
-.partner-col{padding:32px 28px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;box-shadow:0 4px 16px rgba(10,23,48,.05)}
-.partner-col:hover{border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.1)}
-.pc-flag{font-size:2rem;margin-bottom:8px}
-.pc-country{font-size:.72rem;color:var(--gold-deep);letter-spacing:.2em;font-weight:700;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(10,23,48,.10)}
-.partner-col ul{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:20px}
-.partner-col ul li{color:rgba(10,23,48,.8);font-size:.94rem;padding-left:18px;position:relative}
-.partner-col ul li::before{content:'⛳';position:absolute;left:0;font-size:.75rem;opacity:.6;top:4px}
-.partner-col ul li strong{color:var(--pine-deep);font-weight:600;font-family:'Bebas Neue','Noto Sans KR',sans-serif}
-.pc-note{font-size:.82rem;color:rgba(10,23,48,.55);line-height:1.6;padding-top:16px;border-top:1px solid rgba(10,23,48,.10);font-style:italic}
 
 /* FOOTER COMPANY */
 .foot-company{max-width:1280px;margin:0 auto;padding:20px 0 8px;display:flex;flex-direction:column;gap:6px}
@@ -859,7 +847,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
   .link-hub-inner{padding:32px}
   .core-values{grid-template-columns:repeat(2,1fr)}
-  .partners-grid{grid-template-columns:1fr}
 }
 @media(max-width:780px){
   header{top:12px;width:calc(100% - 24px)}
@@ -2359,34 +2346,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     </div>
 
     </div><!-- /about-white-panel -->
-
-    <div class="partners-block">
-      <h3>주요 제휴 골프장</h3>
-      <p class="p-sub">일본·동남아 명문 코스와의 직접 제휴로, 프리미엄 골프 패키지와 회원권을 운영합니다.</p>
-      <div class="partners-grid">
-        <div class="partner-col">
-          <div class="pc-flag">🇯🇵</div>
-          <div class="pc-country">일본 JAPAN</div>
-          <ul>
-            <li><strong>후쿠시마</strong> · 스파후쿠로다 C.C.</li>
-            <li><strong>나고야</strong> · 코코파 리조트</li>
-            <li><strong>시즈오카</strong> · 누마즈 · 고텐바 · 이즈반도 일대</li>
-          </ul>
-          <p class="pc-note">온천과 함께 힐링하는 프리미엄 골프 패키지 · 미식·문화·자연의 완벽한 조합 · 최고급 골프 리조트 회원권 판매</p>
-        </div>
-        <div class="partner-col">
-          <div class="pc-flag">🇲🇾</div>
-          <div class="pc-country">말레이시아 MALAYSIA</div>
-          <ul>
-            <li><strong>임피안</strong> C.C.</li>
-            <li><strong>마인즈</strong> C.C.</li>
-            <li><strong>숭가이룽</strong> C.C.</li>
-            <li><strong>스타필드</strong> C.C.</li>
-          </ul>
-          <p class="pc-note">쿠알라룸푸르 접근성이 좋은 명문 라인업 · 골프 투어와 국제학교 스쿨링을 결합한 통합 상품 운영</p>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 

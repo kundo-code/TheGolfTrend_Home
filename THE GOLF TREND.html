@@ -216,7 +216,7 @@ section.block{padding:100px 24px;position:relative}
 .cat-card .count-badge{background:rgba(221,179,103,.9);backdrop-filter:blur(8px);color:#fff;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:100px;letter-spacing:.05em;white-space:nowrap}
 .cat-card .divider{display:flex;align-items:center;gap:10px;margin-bottom:8px;color:var(--gold)}
 .cat-card .divider::before,.cat-card .divider::after{content:'';height:1px;background:var(--gold);flex:1;max-width:60px;opacity:.7}
-.cat-card .name-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,3.6vw,3rem);color:#fff;line-height:1;letter-spacing:.02em;text-shadow:0 4px 20px rgba(0,0,0,.4)}
+.cat-card .name-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,3.6vw,3rem);color:#fff;line-height:1.05;letter-spacing:.02em;text-shadow:0 4px 20px rgba(0,0,0,.4);word-break:keep-all}
 .cat-card .name-en{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:500;color:var(--gold);font-size:.95rem;letter-spacing:.25em;margin-top:6px;text-transform:uppercase}
 
 /* CATEGORY VIEW + PRODUCT GRID */
@@ -2403,7 +2403,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
                 <select id="bookDest" name="destination">
                   <option>선택해 주세요</option>
                   <optgroup label="국내"><option>강원권</option><option>충청권 (충북·충남·대전·세종)</option><option>호남권 (전북·전남·광주)</option><option>영남권 (경북·대구·경남·부산·울산)</option><option>수도권</option><option>제주</option></optgroup>
-                  <optgroup label="해외"><option>일본</option><option>중국</option><option>몽골</option><option>베트남</option><option>태국</option><option>필리핀</option><option>말레이시아</option><option>인도네시아</option><option>미국령-괌</option></optgroup>
+                  <optgroup label="해외"><option>일본</option><option>중국</option><option>몽골</option><option>베트남</option><option>태국</option><option>필리핀</option><option>말레이시아</option><option>인도네시아</option><option>미국령-괌/사이판</option></optgroup>
                 </select>
               </div>
               <div class="field"><label>출발일 · Departure</label><input type="date" name="departureDate"></div>
@@ -2701,7 +2701,7 @@ const CATEGORIES = {
     {id:'philippines',ko:'필리핀',en:'PHILIPPINES',tagline:'에메랄드빛 바다와 함께하는 골프'},
     {id:'malaysia',ko:'말레이시아',en:'MALAYSIA',tagline:'쿠알라룸푸르, 도심 속 럭셔리 골프'},
     {id:'indonesia',ko:'인도네시아',en:'INDONESIA',tagline:'발리의 신비로운 자연 속 골프 여행'},
-    {id:'guam',ko:'미국령-괌',en:'GUAM',tagline:'가까운 열대 낙원, 오션뷰 골프'}
+    {id:'guam',ko:'미국령-괌/사이판',en:'GUAM',tagline:'가까운 열대 낙원, 오션뷰 골프'}
   ]
 };
 
@@ -6486,7 +6486,7 @@ const DEST_LABELS = {
   gangwon:'강원권', chungcheong:'충청권 (충북·충남·대전·세종)', honam:'호남권 (전북·전남·광주)',
   yeongnam:'영남권 (경북·대구·경남·부산·울산)', capital:'수도권', jeju:'제주',
   japan:'일본', china:'중국', mongolia:'몽골', vietnam:'베트남', thailand:'태국',
-  philippines:'필리핀', malaysia:'말레이시아', indonesia:'인도네시아', guam:'미국령-괌'
+  philippines:'필리핀', malaysia:'말레이시아', indonesia:'인도네시아', guam:'미국령-괌/사이판'
 };
 function aiBudgetScore(price, pref){
   if (pref==='any') return 12;

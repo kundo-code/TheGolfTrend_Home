@@ -170,6 +170,15 @@ header{padding-top:var(--topbar-h,108px)}
 
 /* SECTIONS */
 section.block{padding:100px 24px;position:relative}
+/* [수정] 섹션별 가독성을 위해 "여행지"부터 화이트+패턴 배경과 AI 추천과 동일한(배경 없음) 톤을
+   섹션마다 번갈아 적용 — 화이트+패턴 톤에 쓰는 공용 유틸리티 클래스 */
+.sec-bg-pattern{
+  background-color:rgba(255,255,255,.92);
+  background-image:radial-gradient(rgba(10,23,48,.06) 1px,transparent 1px);
+  background-size:24px 24px;
+  border-top:1px solid rgba(221,179,103,.15);
+  border-bottom:1px solid rgba(221,179,103,.15);
+}
 .wrap{max-width:1280px;margin:0 auto}
 .sec-head{margin-bottom:44px;display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
 .sec-head .left{max-width:640px}
@@ -790,7 +799,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .hero-slogan-sub{display:block;font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:clamp(.85rem,1.4vw,1.15rem);letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.5);margin-top:6px}
 
 /* ABOUT SECTION */
-.about-section{background:linear-gradient(180deg,transparent 0%,rgba(10,23,48,.03) 100%)}
+/* [수정] 순차 배경 배치에서 "AI 추천"과 동일한 톤 — 별도 배경 없이 앰비언트가 그대로 비침 */
 .about-hero{text-align:center;max-width:820px;margin:0 auto 60px}
 .about-hero h2{font-size:clamp(2.2rem,4.5vw,3.6rem);color:#fff;font-weight:300;margin:14px 0 20px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;letter-spacing:-0.01em;line-height:1.15}
 .about-hero h2 em{font-style:italic;color:var(--gold)}
@@ -1352,9 +1361,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ══════════════════════════════════════════════════════════════
    PACKAGE POSTER SECTION
 ══════════════════════════════════════════════════════════════ */
+/* [수정] 순차 배경 배치에서 화이트+패턴 톤 — 기존 화이트 배경에 패턴을 추가 */
 .pkg-poster-section{
   padding:80px 0;
-  background:rgba(255,255,255,.92);
+  background-color:rgba(255,255,255,.92);
+  background-image:radial-gradient(rgba(10,23,48,.06) 1px,transparent 1px);
+  background-size:24px 24px;
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border-top:1px solid rgba(221,179,103,.2);
   border-bottom:1px solid rgba(221,179,103,.2);
@@ -1686,8 +1698,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-logo-img:hover{filter:drop-shadow(0 4px 16px rgba(221,179,103,.55))}
 .foot-brand .logo{font-size:.95rem;letter-spacing:.05em;opacity:.9}
 
-/* ── 티타임 상담 섹션 화이트 패널 ────────────────────────────── */
-.booking-section{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+/* ── 티타임 상담 섹션: 실제 폼 카드(.booking-wrap)가 자체 화이트 배경을 가지므로,
+   섹션 자체는 [수정] 순차 배경 배치에서 "AI 추천"과 동일하게 별도 배경 없이 둔다 ── */
 .booking-section .sec-head h2{color:#0A1730}
 .booking-section .sec-head h2 em{color:var(--pine)}
 .booking-section .sec-head p{color:rgba(0,0,0,.7)}
@@ -2110,7 +2122,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 </section>
 
 <!-- DESTINATIONS -->
-<section class="block" id="destinations">
+<section class="block sec-bg-pattern" id="destinations">
   <div class="wrap">
     <div class="sec-head">
       <div class="left">
@@ -2132,6 +2144,21 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="cat-grid" id="catGridDomestic"></div>
       <div id="catPanelHostDomestic"></div>
     </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="block" id="blog">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="left">
+        <span class="tag">Travel Stories</span>
+        <h2>여행 <em>이야기</em></h2>
+        <p>다녀온 사람만 아는 꿀팁, 시즌별 라운드 후기, 골프 여행 가이드까지.</p>
+      </div>
+      <a class="sec-more">전체 아티클 →</a>
+    </div>
+    <div class="blog-grid" id="blogGrid"></div>
   </div>
 </section>
 
@@ -2194,21 +2221,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <button class="plb-next" onclick="pkgLbMove(1);event.stopPropagation()">›</button>
   <div class="plb-counter" id="plbCounter"></div>
 </div>
-
-<!-- BLOG -->
-<section class="block" id="blog">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="left">
-        <span class="tag">Travel Stories</span>
-        <h2>여행 <em>이야기</em></h2>
-        <p>다녀온 사람만 아는 꿀팁, 시즌별 라운드 후기, 골프 여행 가이드까지.</p>
-      </div>
-      <a class="sec-more">전체 아티클 →</a>
-    </div>
-    <div class="blog-grid" id="blogGrid"></div>
-  </div>
-</section>
 
 <!-- ABOUT / COMPANY -->
 <section class="block about-section" id="about">
@@ -2369,7 +2381,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 </section>
 
 <!-- SNS/BLOG/BAND LINKS -->
-<section class="link-hub" id="links">
+<section class="link-hub sec-bg-pattern" id="links">
   <div class="link-hub-inner">
     <h2>더 많은 여행 이야기가 <em>이곳에</em></h2>
     <p class="lead">네이버 밴드, 블로그, SNS 채널에서 실시간 프로모션과 코스 후기를 만나보세요.</p>

@@ -4200,7 +4200,7 @@ function renderEntryExitGroup(){
   const active = entryExitList.filter(it=>it.name && it.url);
   if (!active.length) return '';
   return `<div class="link-group ee-group">
-    <h4>출·입국신고안내</h4>
+    <h4>출·입국 신고 가이드</h4>
     ${active.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
       ${entryExitIconEl(it)}<span class="lname">${escapeAttr(it.name)}</span><span class="larr">→</span></a>`).join('')}
   </div>`;

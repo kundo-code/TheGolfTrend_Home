@@ -611,6 +611,23 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .link-admin-item .content input::placeholder{color:rgba(247,245,240,.35)}
 .link-admin-item .content input:focus{outline:none;border-color:var(--gold);background:rgba(0,0,0,.25)}
 
+/* 출입국신고서 작성 안내 (관리자) */
+.ee-admin-item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;background:rgba(255,255,255,.04);border:1px solid var(--glass-border-soft);border-radius:10px;margin-bottom:8px}
+.ee-admin-icon-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ee-admin-icon-preview{width:40px;height:40px;object-fit:contain;border-radius:9px;background:rgba(255,255,255,.08)}
+.ee-admin-icon-empty{width:40px;height:40px;display:grid;place-items:center;font-size:1.2rem;border-radius:9px;background:rgba(255,255,255,.08)}
+.file-btn.small{padding:4px 8px;font-size:.68rem}
+.ee-admin-fields{min-width:0;display:flex;flex-direction:column;gap:6px}
+.ee-admin-fields input[type=text],.ee-admin-fields input[type=url]{width:100%;padding:8px 10px;background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:#fff;font-size:.8rem;font-family:'Pretendard','Noto Sans KR',sans-serif}
+.ee-admin-fields input::placeholder{color:rgba(247,245,240,.35)}
+.ee-admin-fields input:focus{outline:none;border-color:var(--gold);background:rgba(0,0,0,.25)}
+.ee-visa-check{display:flex;align-items:center;gap:6px;font-size:.78rem;color:rgba(247,245,240,.75);cursor:pointer}
+.ee-visa-check input{width:auto!important}
+
+/* 출입국신고서 작성 안내 (연계채널 화면) */
+.ee-icon-fallback{background:linear-gradient(135deg,#4A6FE5,#2FA9E5)}
+.ee-visa-badge{background:linear-gradient(135deg,#E5654A,#CA3F3F)!important}
+
 /* ADVANCED PRODUCT EDITOR */
 .adv-editor-overlay{position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
 .adv-editor-overlay.show{display:block;opacity:1}
@@ -2596,6 +2613,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="admin-section"><h4>네이버 밴드</h4><div id="adminBand"></div></div>
       <div class="admin-section"><h4>블로그</h4><div id="adminBlogLinks"></div></div>
       <div class="admin-section"><h4>SNS</h4><div id="adminSNS"></div></div>
+      <div class="admin-section"><h4>출입국신고서 작성 안내 <span class="file-hint" style="display:inline;margin:0">국가별 이름·아이콘·URL 등록 · 비자 필요 국가는 체크박스로 표시</span></h4><div id="adminEntryExit"></div></div>
     </div>
     <div id="tabLeads" style="display:none">
       <div class="admin-info-box"><b>💡</b> AI 추천에서 시작된 문의는 <b>✨ AI 추천</b> 표시와 함께 추천 상품명이 함께 표시됩니다. 상태를 바꾸면 즉시 저장됩니다.</div>
@@ -3075,7 +3093,7 @@ function collectSiteState(){
     legalOverrides, legalContentOverrides, cvImageOverrides, strImageOverrides,
     pkgPosters, blogOverride, logoOverride, taglineOverride,
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
-    headlineOverride, aboutBannerOverride, heroBgList,
+    headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
   };
 }
 function applySiteState(state){
@@ -3096,6 +3114,7 @@ function applySiteState(state){
   if (state.headlineOverride !== undefined) headlineOverride = state.headlineOverride;
   if (state.aboutBannerOverride !== undefined) aboutBannerOverride = state.aboutBannerOverride;
   if (state.heroBgList) heroBgList = state.heroBgList;
+  if (state.entryExitList) entryExitList = state.entryExitList;
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
@@ -3115,13 +3134,14 @@ function applySiteState(state){
   if (state.headlineOverride !== undefined) idbSet(HEADLINE_KEY, headlineOverride).catch(()=>{});
   if (state.aboutBannerOverride !== undefined) idbSet(ABOUT_BANNER_KEY, aboutBannerOverride).catch(()=>{});
   if (state.heroBgList) idbSet(HERO_BG_KEY, heroBgList).catch(()=>{});
+  if (state.entryExitList) idbSet(ENTRY_EXIT_KEY, entryExitList).catch(()=>{});
 }
 let _siteStateSyncTimer=null;
-// headlineOverride/aboutBannerOverride/heroBgList는 IndexedDB에서 비동기로 읽어온다.
+// headlineOverride/aboutBannerOverride/heroBgList/entryExitList는 IndexedDB에서 비동기로 읽어온다.
 // 그 로딩이 끝나기 전에 push가 일어나면 collectSiteState()가 아직 비어있는(초기값) 필드를
 // 원격 Supabase에 그대로 덮어써서, 이미 동기화되어 있던 다른 기기의 데이터를 지워버릴 수 있다.
-// 그래서 이 3개의 초기 로딩이 모두 끝난 뒤에만 push가 나가도록 게이트를 둔다.
-let _siteStateLocalPending = 3;
+// 그래서 이 4개의 초기 로딩이 모두 끝난 뒤에만 push가 나가도록 게이트를 둔다.
+let _siteStateLocalPending = 4;
 function _markSiteStateLocalLoaded(){ _siteStateLocalPending=Math.max(0,_siteStateLocalPending-1); }
 function queueSiteStateSync(){
   clearTimeout(_siteStateSyncTimer);
@@ -3285,10 +3305,21 @@ idbGet(HERO_BG_KEY).then(v=>{
   }
 }).catch(()=>{}).finally(_markSiteStateLocalLoaded);
 
+// 출입국신고서 작성 안내: 국가별 {id, name, iconUrl, visaRequired, url} 목록 (연계채널 섹션에 노출)
+const ENTRY_EXIT_KEY = 'kundo_entry_exit_v1';
+let entryExitList = [];
+idbGet(ENTRY_EXIT_KEY).then(v=>{
+  if(v){
+    entryExitList = Array.isArray(v) ? v : [];
+    renderLinks(); renderAdminLinks();
+  }
+}).catch(()=>{}).finally(_markSiteStateLocalLoaded);
+
 function getLogo(){return logoOverride||DEFAULT_LOGO;}
 function getTagline(){return taglineOverride||DEFAULT_TAGLINE;}
 function getAboutBanner(){return aboutBannerOverride||null;}
 function getHeroBgList(){return heroBgList;}
+function getEntryExitList(){return entryExitList;}
 
 function setLogo(url){logoOverride=url;try{localStorage.setItem(LOGO_KEY,url)}catch(e){alert('저장 공간 부족')}renderTopBar();renderAdminIdentity();queueSiteStateSync();}
 function setTagline(txt){taglineOverride=txt;try{localStorage.setItem(TAGLINE_KEY,txt)}catch(e){}renderTopBar();renderAdminIdentity();queueSiteStateSync();}
@@ -3342,6 +3373,37 @@ async function removeHeroBg(idx){
   heroBgList.splice(idx,1);
   try{ await idbSet(HERO_BG_KEY, heroBgList); }catch(e){ alert('저장 공간 부족'); }
   renderHeroBg();renderAdminIdentity();queueSiteStateSync();
+}
+async function addEntryExitCountry(){
+  const id = 'ee_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  entryExitList.push({id, name:'', iconUrl:'', visaRequired:false, url:''});
+  try{ await idbSet(ENTRY_EXIT_KEY, entryExitList); }catch(e){ alert('저장 공간 부족'); }
+  renderAdminEntryExit();renderLinks();queueSiteStateSync();
+}
+async function removeEntryExitCountry(id){
+  if(!confirm('이 국가 항목을 삭제하시겠습니까?'))return;
+  entryExitList = entryExitList.filter(x=>x.id!==id);
+  try{ await idbSet(ENTRY_EXIT_KEY, entryExitList); }catch(e){ alert('저장 공간 부족'); }
+  renderAdminEntryExit();renderLinks();queueSiteStateSync();
+}
+function setEntryExitField(id, field, value){
+  const item = entryExitList.find(x=>x.id===id); if(!item) return;
+  item[field]=value;
+  idbSet(ENTRY_EXIT_KEY, entryExitList).catch(()=>{});
+  renderLinks();queueSiteStateSync();
+}
+async function handleEntryExitIconUpload(id, inputEl){
+  const file=inputEl.files[0]; if(!file) return;
+  const limit = 3*1024*1024;
+  if(file.size>limit){ alert('아이콘 이미지 크기는 3MB 이하로 업로드해주세요.'); inputEl.value=''; return; }
+  try{
+    const url = await uploadToStorage(file, 'entry-exit');
+    const item = entryExitList.find(x=>x.id===id);
+    if(item) item.iconUrl=url;
+    try{ await idbSet(ENTRY_EXIT_KEY, entryExitList); }catch(e){ alert('저장 공간 부족'); }
+    renderAdminEntryExit();renderLinks();queueSiteStateSync();
+  }catch(e){ alert('업로드 실패: '+(e.message||e)); }
+  inputEl.value='';
 }
 function renderTopBar(){
   const logo=document.getElementById('topBarLogo');
@@ -4129,6 +4191,20 @@ function linkIconEl(it){
   }
   return `<span class="lico ${it.cls||''}">${it.ico||''}</span>`;
 }
+function entryExitIconEl(it){
+  const badge = it.visaRequired ? `<span class="region-tag ee-visa-badge">비자필요</span>` : '';
+  if (it.iconUrl) return `<span class="lico lico-img"><img src="${escapeAttr(it.iconUrl)}" alt=""/>${badge}</span>`;
+  return `<span class="lico ee-icon-fallback">🛂${badge}</span>`;
+}
+function renderEntryExitGroup(){
+  const active = entryExitList.filter(it=>it.name && it.url);
+  if (!active.length) return '';
+  return `<div class="link-group ee-group">
+    <h4>출·입국신고안내</h4>
+    ${active.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
+      ${entryExitIconEl(it)}<span class="lname">${escapeAttr(it.name)}</span><span class="larr">→</span></a>`).join('')}
+  </div>`;
+}
 
 // LINKS (main section)
 function renderLinks(){
@@ -4153,7 +4229,7 @@ function renderLinks(){
     ${b2cActive ? `<a class="band-cta" href="${escapeAttr(getLinkUrl('band_b2c'))}" target="_blank" rel="noopener"><span class="bc-badge">B2C</span><span class="bc-label">고객 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
     ${b2bActive ? `<a class="band-cta b2b" href="${escapeAttr(getLinkUrl('band_b2b'))}" target="_blank" rel="noopener"><span class="bc-badge">B2B</span><span class="bc-label">파트너 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
   </div>` : '';
-  c.innerHTML = ctaHTML + groupHTML;
+  c.innerHTML = ctaHTML + groupHTML + renderEntryExitGroup();
   if (!c.innerHTML.trim()){
     c.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:rgba(247,245,240,.5)">
       아직 등록된 연계 채널이 없습니다. 관리자 패널 → 브랜드 링크에서 URL을 등록해주세요.</div>`;
@@ -5440,8 +5516,8 @@ function resetCategoryProducts(){
 }
 function resetAllOverrides(){
   if (!confirm('모든 이미지·헤드라인·상품·링크 변경사항을 초기화하시겠습니까?')) return;
-  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];
-  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
+  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];
+  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 
@@ -5450,6 +5526,27 @@ function renderAdminLinks(){
   document.getElementById('adminBand').innerHTML = renderLinkAdminGroup(LINK_DEFS.band.items);
   document.getElementById('adminBlogLinks').innerHTML = renderLinkAdminGroup(LINK_DEFS.blog.items);
   document.getElementById('adminSNS').innerHTML = renderLinkAdminGroup(LINK_DEFS.sns.items);
+  renderAdminEntryExit();
+}
+function renderAdminEntryExit(){
+  const c = document.getElementById('adminEntryExit');
+  if (!c) return;
+  c.innerHTML = `
+    ${entryExitList.length ? entryExitList.map(item=>`
+      <div class="ee-admin-item">
+        <div class="ee-admin-icon-wrap">
+          ${item.iconUrl?`<img src="${escapeAttr(item.iconUrl)}" class="ee-admin-icon-preview" alt="">`:`<span class="ee-admin-icon-empty">🛂</span>`}
+          <label class="file-btn small">아이콘<input type="file" accept="image/*" onchange="handleEntryExitIconUpload('${item.id}',this)"></label>
+        </div>
+        <div class="ee-admin-fields">
+          <input type="text" placeholder="국가명 (예: 태국)" value="${escapeAttr(item.name)}" oninput="setEntryExitField('${item.id}','name',this.value)">
+          <input type="url" placeholder="연결 URL (출입국신고서 작성 페이지)" value="${escapeAttr(item.url)}" oninput="setEntryExitField('${item.id}','url',this.value)">
+          <label class="ee-visa-check"><input type="checkbox" ${item.visaRequired?'checked':''} onchange="setEntryExitField('${item.id}','visaRequired',this.checked)"> 비자가 필요한 국가</label>
+        </div>
+        <button class="file-btn danger" onclick="removeEntryExitCountry('${item.id}')">삭제</button>
+      </div>`).join('') : '<div class="ai-no-banner">등록된 국가가 없습니다.</div>'}
+    <button class="file-btn" style="margin-top:6px" onclick="addEntryExitCountry()">+ 국가 추가</button>
+  `;
 }
 function renderLinkAdminGroup(items){
   return items.map(it=>{

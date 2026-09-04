@@ -191,6 +191,7 @@ section.block{padding:100px 24px;position:relative}
 .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .cat-card{position:relative;aspect-ratio:3/2;border-radius:24px;overflow:hidden;cursor:pointer;border:1px solid var(--glass-border-soft);box-shadow:0 10px 32px rgba(0,0,0,.28);transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
 .cat-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.cat-card.open{outline:3px solid var(--gold);outline-offset:-3px}
 .cat-card .bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
 .cat-card:hover .bg{transform:scale(1.06)}
 .cat-card .bg-korea{background-size:300% 200%}
@@ -205,7 +206,9 @@ section.block{padding:100px 24px;position:relative}
 .cat-card .name-en{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:500;color:var(--gold);font-size:.95rem;letter-spacing:.25em;margin-top:6px;text-transform:uppercase}
 
 /* CATEGORY VIEW + PRODUCT GRID */
-.category-view{padding:56px;background:rgba(255,255,255,.72);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08);margin-top:56px}
+/* [수정] 국가/지역 카드를 클릭하면 그 카드 바로 아래(같은 cat-grid 안, 전체 폭)에 상품 목록이 펼쳐지도록
+   grid-column:1/-1로 카드 그리드의 새 행 전체를 차지시킨다 — 더 이상 그리드 하단의 공용 패널이 아니다 */
+.category-view{grid-column:1/-1;padding:40px;background:rgba(255,255,255,.72);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08)}
 .cv-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(10,23,48,.10);margin-bottom:32px}
 .cv-head .left h3{font-size:2rem;color:var(--pine-deep);font-weight:400}
 .cv-head .left h3 em{font-style:italic;color:var(--gold-deep);margin-right:4px}
@@ -2073,16 +2076,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="dest-region-head"><span class="dest-region-tag">국내 <span class="dest-region-count" id="destCountDomestic"></span></span></div>
       <div class="cat-grid" id="catGridDomestic"></div>
     </div>
-    <div class="category-view" id="categoryView" style="display:none">
-      <div class="cv-head">
-        <div class="left">
-          <h3 id="cvTitle"><em id="cvTitleKo"></em><span id="cvTitleEn"></span></h3>
-          <p id="cvTagline"></p>
-        </div>
-        <a class="cv-close" onclick="closeCategory()">전체 여행지로 돌아가기 ↑</a>
-      </div>
-      <div class="product-grid" id="productGrid"></div>
-    </div>
   </div>
 </section>
 
@@ -3694,7 +3687,9 @@ function usingComposite(cat){return false} // 통합 이미지 시스템 제거
 function findCat(id){return CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===id)}
 
 // STATE
-let activeCategoryId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
+// [수정] 국가/지역 카드를 클릭하면 그 카드 바로 아래에 상품 목록이 펼쳐지도록, 지역(해외/국내)마다
+// 독립적으로 "열려있는 카드"를 추적한다 — 해외에서 하나, 국내에서 하나, 동시에 열려있을 수 있다
+let selectedOverseasId=null, selectedDomesticId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 let currentAdv=null; // {catId, idx}
@@ -3703,11 +3698,11 @@ let pdGalleryIdx=0, pdGalleryTimer=null;
 
 // RENDER — CATEGORY GRID
 // [수정] 국내/해외를 탭으로 전환하지 않고 두 그리드를 항상 함께(해외 → 국내 순) 노출
-function catCardHTML(c){
+function catCardHTML(c, isOpen){
   const count=getProducts(c.id).length;
   const style=getCatBgStyle(c);
   const koreaClass=usingComposite(c)?'bg-korea':'';
-  return `<article class="cat-card" onclick="selectCategory('${c.id}')">
+  return `<article class="cat-card ${isOpen?'open':''}" onclick="selectCategory('${c.id}')">
     <div class="bg ${koreaClass}" style="${style}" role="img" aria-label="${escapeAttr(catImgAlt(c))}"></div>
     <div class="content">
       <div class="top"><span class="tagline">${c.tagline}</span><span class="count-badge">${count}개 상품</span></div>
@@ -3715,27 +3710,57 @@ function catCardHTML(c){
     </div>
   </article>`;
 }
+// [수정] 선택된 카드 바로 뒤(같은 cat-grid 안, grid-column:1/-1로 전체 폭)에 삽입되는 상품 목록 패널
+function categoryPanelHTML(cat){
+  return `<div class="category-view" id="categoryPanel-${cat.id}">
+    <div class="cv-head">
+      <div class="left">
+        <h3><em>${cat.ko}</em><span style="color:rgba(10,23,48,.5);font-size:.75em;letter-spacing:.15em;margin-left:8px">${cat.en}</span></h3>
+        <p id="cvTagline-${cat.id}"></p>
+      </div>
+      <a class="cv-close" onclick="event.stopPropagation();closeCategory('${cat.id}')">닫기 ✕</a>
+    </div>
+    <div class="product-grid" id="productGrid-${cat.id}"></div>
+  </div>`;
+}
+function renderRegionGrid(regionKey){
+  const gridEl=document.getElementById(regionKey==='overseas'?'catGridOverseas':'catGridDomestic');
+  const selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
+  gridEl.innerHTML=CATEGORIES[regionKey].map(c=>{
+    const isOpen=c.id===selectedId;
+    return catCardHTML(c, isOpen) + (isOpen?categoryPanelHTML(c):'');
+  }).join('');
+  if (selectedId) refreshCategoryProducts(selectedId);
+}
 function renderCategoryGrid(){
-  document.getElementById('catGridOverseas').innerHTML=CATEGORIES.overseas.map(catCardHTML).join('');
-  document.getElementById('catGridDomestic').innerHTML=CATEGORIES.domestic.map(catCardHTML).join('');
+  renderRegionGrid('overseas');
+  renderRegionGrid('domestic');
   document.getElementById('destCountOverseas').textContent=`${CATEGORIES.overseas.length}개국`;
   document.getElementById('destCountDomestic').textContent=`${CATEGORIES.domestic.length}개 권역`;
 }
 
+// [수정] 지역(해외/국내) 안에서만 아코디언처럼 여닫힌다 — 다른 지역에서 이미 열려있는 카드는 그대로
+// 유지되므로, 해외 국가를 선택한 뒤 국내 지역을 선택해도 두 상품 목록이 모두 열려있는 상태를 유지한다
 function selectCategory(id){
-  activeCategoryId=id;
   const cat=findCat(id); if (!cat) return;
-  const products=getProducts(id);
-  document.getElementById('cvTitleKo').textContent=cat.ko;
-  document.getElementById('cvTitleEn').innerHTML=` <span style="color:rgba(247,245,240,.5);font-size:.75em;letter-spacing:.15em;margin-left:8px">${cat.en}</span>`;
-  document.getElementById('cvTagline').textContent=cat.tagline+` · 총 ${products.length}개 상품`;
-  quietRefreshCategory();
-  const view=document.getElementById('categoryView');
-  view.style.display='block';
-  setTimeout(()=>view.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  const isOverseas=CATEGORIES.overseas.some(c=>c.id===id);
+  const current=isOverseas?selectedOverseasId:selectedDomesticId;
+  const next=current===id?null:id; // 이미 열려있는 카드를 다시 클릭하면 닫는다
+  if (isOverseas) selectedOverseasId=next; else selectedDomesticId=next;
+  renderRegionGrid(isOverseas?'overseas':'domestic');
+  if (next){
+    setTimeout(()=>{
+      const panel=document.getElementById('categoryPanel-'+id);
+      if (panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
+  }
 }
 
-function closeCategory(){document.getElementById('categoryView').style.display='none';document.getElementById('destinations').scrollIntoView({behavior:'smooth',block:'start'})}
+function closeCategory(id){
+  const isOverseas=CATEGORIES.overseas.some(c=>c.id===id);
+  if (isOverseas) selectedOverseasId=null; else selectedDomesticId=null;
+  renderRegionGrid(isOverseas?'overseas':'domestic');
+}
 
 // 상품 카드/스팟라이트 공통: 원(KRW) 판매가만 반영, 없으면 카드 표시 최저가(from) 폴백
 function getDisplayPrice(p){
@@ -3778,17 +3803,20 @@ function productCardHTML(p, catId, idx){
   </article>`;
 }
 
-function quietRefreshCategory(){
-  if (!activeCategoryId) return;
-  const products=getProducts(activeCategoryId);
-  const cat=findCat(activeCategoryId);
-  document.getElementById('cvTagline').textContent=cat.tagline+` · 총 ${products.length}개 상품`;
-  const grid=document.getElementById('productGrid');
+// [수정] 특정 카테고리(id)의 상품 목록만 갱신 — 해외/국내 각각 독립적으로 열려있는 패널을 지원하기 위해
+// 더 이상 하나의 공용 패널이 아닌, 열려있는 카드 id로 대상을 지정한다. 패널이 열려있지 않으면 아무 것도 하지 않는다
+function refreshCategoryProducts(id){
+  const grid=document.getElementById('productGrid-'+id);
+  if (!grid) return;
+  const products=getProducts(id);
+  const cat=findCat(id);
+  const tagEl=document.getElementById('cvTagline-'+id);
+  if (tagEl) tagEl.textContent=cat.tagline+` · 총 ${products.length}개 상품`;
   pauseVideosIn(grid); // 새로 그리기 전에 기존 상품 카드의 자동재생 동영상 정지
   if (products.length===0){
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>이 지역의 상품은 곧 업데이트됩니다.</p></div>`;
   } else {
-    grid.innerHTML=products.map((p,i)=>productCardHTML(p,activeCategoryId,i)).join('');
+    grid.innerHTML=products.map((p,i)=>productCardHTML(p,id,i)).join('');
   }
 }
 
@@ -5376,7 +5404,6 @@ function updateProduct(idx,field,value){
   productOverrides[activeProductCat][idx][field]=value;
   saveProducts();
   renderCategoryGrid();
-  if (activeCategoryId===activeProductCat) quietRefreshCategory();
   updateProductCountLabel();
 }
 function updateProductCountLabel(){
@@ -5391,7 +5418,6 @@ function deleteProduct(idx){
   }
   productOverrides[activeProductCat].splice(idx,1);
   saveProducts();renderProductAdmin();renderCategoryGrid();
-  if (activeCategoryId===activeProductCat) quietRefreshCategory();
 }
 function addProduct(){
   if (productOverrides[activeProductCat]===undefined){
@@ -5399,14 +5425,12 @@ function addProduct(){
   }
   productOverrides[activeProductCat].push(Object.assign({title:'새 상품',from:990000,nights:'2박 3일',rounds:'2R',tag:''},newExtendedFields()));
   saveProducts();renderProductAdmin();renderCategoryGrid();
-  if (activeCategoryId===activeProductCat) quietRefreshCategory();
   setTimeout(()=>{const b=document.querySelector('.admin-body');b.scrollTop=b.scrollHeight},50);
 }
 function resetCategoryProducts(){
   if (!confirm('이 카테고리의 상품을 초기값으로 복원하시겠습니까?')) return;
   delete productOverrides[activeProductCat];
   saveProducts();renderProductAdmin();renderCategoryGrid();
-  if (activeCategoryId===activeProductCat) quietRefreshCategory();
 }
 function resetAllOverrides(){
   if (!confirm('모든 이미지·헤드라인·상품·링크 변경사항을 초기화하시겠습니까?')) return;
@@ -5460,7 +5484,6 @@ function closeAdvEditor(){
   currentAdv=null;
   renderProductAdmin();
   renderCategoryGrid();
-  if (activeCategoryId===activeProductCat) quietRefreshCategory();
 }
 function switchAdvTab(tab){
   activeAdvTab=tab;
@@ -6264,8 +6287,8 @@ function renderAdminSeasonTheme(){
 }
 
 function renderAll(){
+  // renderCategoryGrid()가 두 지역을 모두 다시 그리며, 열려있는 카드의 상품 목록도 함께 갱신한다
   renderTopBar();renderHeadline();renderAboutBanner();renderFooterLegal();renderCvImages();renderStrImages();renderPkgAll();renderCategoryGrid();renderHeroBg();renderSpotlight();renderBlog();renderLinks();renderFootSocials();
-  if (activeCategoryId) quietRefreshCategory();
 }
 
 // INIT

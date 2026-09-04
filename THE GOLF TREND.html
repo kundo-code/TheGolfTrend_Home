@@ -71,6 +71,9 @@ img{max-width:100%;display:block}
 .orb-3{width:280px;height:280px;background:#DDB367;bottom:10%;right:8%;animation:float 30s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-30px) scale(1.06)}}
 .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.18;background-image:radial-gradient(circle at 1px 1px,rgba(10,23,48,.05) 1px,transparent 1px);background-size:24px 24px}
+/* [수정] 시즌 스티커가 화이트+패턴 섹션 배경 위로 노출되도록, .ambient(z-index:-2)와 분리된 레이어에 배치 —
+   sticky 내비(200)·관리자 패널(210) 등 실제 UI보다는 낮게 유지 */
+.ambient-particles-layer{position:fixed;inset:0;z-index:2;overflow:hidden;pointer-events:none}
 
 /* 시즌 테마 장식 파티클 */
 .ambient-particle{position:absolute;font-size:2.6rem;opacity:.32;pointer-events:none;line-height:1;filter:blur(.2px);animation:seasonFloat 24s ease-in-out infinite}
@@ -171,11 +174,13 @@ header{padding-top:var(--topbar-h,108px)}
 /* SECTIONS */
 section.block{padding:100px 24px;position:relative}
 /* [수정] 섹션별 가독성을 위해 "여행지"부터 화이트+패턴 배경과 AI 추천과 동일한(배경 없음) 톤을
-   섹션마다 번갈아 적용 — 화이트+패턴 톤에 쓰는 공용 유틸리티 클래스 */
+   섹션마다 번갈아 적용 — 화이트+패턴 톤에 쓰는 공용 유틸리티 클래스.
+   패턴은 기본 배경(.ambient .wave-layer)과 같은 곡선 라인을 #faf4e9 색상으로 재사용한다 */
 .sec-bg-pattern{
   background-color:rgba(255,255,255,.92);
-  background-image:radial-gradient(rgba(10,23,48,.06) 1px,transparent 1px);
-  background-size:24px 24px;
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23faf4e9%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-size:900px 562px;
+  background-repeat:repeat;
   border-top:1px solid rgba(221,179,103,.15);
   border-bottom:1px solid rgba(221,179,103,.15);
 }
@@ -229,7 +234,8 @@ section.block{padding:100px 24px;position:relative}
 .cv-nav-item:hover{background:rgba(10,23,48,.08);color:var(--pine-deep)}
 .cv-nav-item.active{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.product{padding:18px;background:rgba(255,255,255,.75);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
+/* [수정] 글래스모피즘 통일 — 다른 카드(.post/.partner-col)와 동일하게 반투명+블러 적용 */
+.product{padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
 .product:hover{transform:translateY(-4px);border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.12)}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
 .product-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
@@ -407,7 +413,7 @@ section.block{padding:100px 24px;position:relative}
 .link-item.disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
 
 /* BOOKING */
-.booking-wrap{padding:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:32px;box-shadow:var(--glass-shadow)}
+.booking-wrap{padding:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border:1px solid var(--glass-border);border-radius:32px;box-shadow:var(--glass-shadow)}
 .pass{display:grid;grid-template-columns:1fr 240px;gap:0;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid var(--glass-border-soft)}
 .pass-main{padding:36px 40px}
 .pass-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:18px;margin-bottom:24px;border-bottom:1px dashed rgba(255,255,255,.25)}
@@ -1219,7 +1225,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 ══════════════════════════════════════════════════════════════ */
 .about-white-panel{
   background:rgba(255,255,255,.92);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
   border-radius:28px;
   padding:60px 56px;
   margin:0 0 40px;
@@ -1361,13 +1367,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ══════════════════════════════════════════════════════════════
    PACKAGE POSTER SECTION
 ══════════════════════════════════════════════════════════════ */
-/* [수정] 순차 배경 배치에서 화이트+패턴 톤 — 기존 화이트 배경에 패턴을 추가 */
+/* [수정] 순차 배경 배치에서 화이트+패턴 톤 — 기본 배경과 같은 곡선 라인 패턴(#faf4e9)을 재사용, 유리질감 강화(saturate) */
 .pkg-poster-section{
   padding:80px 0;
   background-color:rgba(255,255,255,.92);
-  background-image:radial-gradient(rgba(10,23,48,.06) 1px,transparent 1px);
-  background-size:24px 24px;
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23faf4e9%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-size:900px 562px;
+  background-repeat:repeat;
+  backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
   border-top:1px solid rgba(221,179,103,.2);
   border-bottom:1px solid rgba(221,179,103,.2);
 }
@@ -1750,7 +1757,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ── AI 추천 (Phase 3) ──────────────────────────────────────────── */
 .ai-recommend-section .wrap{max-width:1280px}
-.ai-quiz{padding:40px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:28px;box-shadow:var(--glass-shadow);display:grid;gap:24px}
+.ai-quiz{padding:40px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border:1px solid var(--glass-border);border-radius:28px;box-shadow:var(--glass-shadow);display:grid;gap:24px}
 .ai-q-group.full{grid-column:1/-1}
 .ai-q-label{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-bottom:10px}
 .ai-q-label em{font-style:normal;font-weight:500;color:rgba(10,23,48,.5);font-size:.8rem}
@@ -1764,7 +1771,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ai-results{margin-top:32px;display:grid;gap:20px}
 .ai-results-head{font-size:.95rem;font-weight:700;color:var(--pine-deep)}
 .ai-empty{padding:32px;text-align:center;color:rgba(10,23,48,.55);background:rgba(255,255,255,.7);border-radius:16px}
-.ai-result-card{display:grid;grid-template-columns:200px 1fr;gap:0;background:rgba(255,255,255,.92);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--glass-shadow)}
+.ai-result-card{display:grid;grid-template-columns:200px 1fr;gap:0;background:rgba(255,255,255,.92);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--glass-shadow)}
 .ai-result-img{background-size:cover;background-position:center;min-height:160px}
 .ai-result-body{padding:22px 26px}
 .ai-result-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -1894,6 +1901,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
 </div>
 <div class="grain" aria-hidden="true"></div>
+<!-- [수정] 시즌 테마 스티커(파티클)는 .ambient(z-index:-2)의 자식으로 있으면 그 스태킹 컨텍스트에 갇혀
+     화이트+패턴 섹션 배경 뒤에 가려진다 — 별도 레이어로 분리해 섹션 배경 위로 노출되도록 한다 -->
+<div class="ambient-particles-layer" id="ambientParticlesLayer" aria-hidden="true"></div>
 
 <!-- [Phase 3 Semantic HTML] 로고·헤드라인 배너·내비게이션을 <header>로 묶음 (class/id·JS 동작은 변경 없음) -->
 <header>
@@ -6281,11 +6291,15 @@ function applySeasonTheme(key, persist){
   // 히어로 배경 위에 계절 파티클을 더 촘촘하고 확실하게 노출 — 방문자가 스크롤 없이 바로 확인 가능
   const heroPcontainer=document.getElementById('heroSeasonParticles');
   if (heroPcontainer) heroPcontainer.innerHTML=buildHeroParticleHTML(theme, key);
+  // [수정] 화이트+패턴 섹션 배경 위로 노출되어야 하므로 .ambient가 아닌 별도 레이어(#ambientParticlesLayer)에 둔다
   let pcontainer=document.getElementById('seasonParticles');
-  if (!pcontainer && ambientEl){
-    pcontainer=document.createElement('div');
-    pcontainer.id='seasonParticles';
-    ambientEl.appendChild(pcontainer);
+  if (!pcontainer){
+    const particlesLayer=document.getElementById('ambientParticlesLayer');
+    if (particlesLayer){
+      pcontainer=document.createElement('div');
+      pcontainer.id='seasonParticles';
+      particlesLayer.appendChild(pcontainer);
+    }
   }
   if (pcontainer) pcontainer.innerHTML=particleHTML;
   if (persist!==false){

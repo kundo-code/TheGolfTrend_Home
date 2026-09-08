@@ -240,13 +240,20 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
 .product-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
 .product-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.product-visual .save-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
-.product h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.1rem;color:var(--pine-deep);font-weight:500;margin-bottom:6px;line-height:1.3}
+.product-visual::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.78) 100%);pointer-events:none}
+.product-visual .save-btn{position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
+.product-visual .product-region-pill{position:absolute;top:10px;left:10px;z-index:2;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#fff;font-size:.68rem;font-weight:600;padding:5px 11px;border-radius:100px;letter-spacing:.02em}
+.product-visual-title{position:absolute;left:14px;right:14px;bottom:12px;z-index:2}
+.product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;line-height:1.2;text-shadow:0 2px 10px rgba(0,0,0,.5);margin:0}
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px}
+.product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
+.product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
+.product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:rgba(10,23,48,.65);white-space:pre-line;margin-bottom:12px}
-/* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
-.product-tag-row{margin-bottom:8px;text-align:left}
+/* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
+.product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
 .product-tag-row .tag-inline{display:inline-block;background:rgba(221,179,103,.14);color:var(--gold-deep);font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(221,179,103,.35);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.625rem;color:var(--pine-deep);font-weight:500}
@@ -1482,12 +1489,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:var(--gold);transform:scale(1.3);
 }
 
-/* 빈 상태 */
-.pkg-empty{
-  padding:48px 0;text-align:center;
-  color:rgba(0,0,0,.4);font-size:.9rem;
-  border:1px dashed rgba(0,0,0,.15);border-radius:12px;
-}
+/* 빈 슬롯("상품 준비중") — 포스터 개수가 PKG_MIN_SLOTS보다 적을 때 캐러셀을 채우는 플레이스홀더 카드.
+   .pkg-card 배경(다크 네이비 기본 / .pkg-poster-section 안에서는 밝은 크림색)을 그대로 물려받으므로,
+   텍스트는 다크·라이트 배경 어디서나 무난한 중간 톤으로 지정 */
+.pkg-card-empty{border-style:dashed;box-shadow:none;cursor:default}
+.pkg-card-empty:hover{transform:none;box-shadow:none}
+.pkg-empty-slot{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:rgba(120,120,120,.7)}
+.pkg-empty-icon{font-size:2.2rem;opacity:.55}
+.pkg-empty-text{font-size:.85rem;font-weight:600;letter-spacing:.03em}
 
 /* ── 라이트박스 ────────────────────────────────────────────── */
 .pkg-lightbox{
@@ -2851,6 +2860,16 @@ function ensureExtended(p){
   });
   // Legacy p.labels 는 무시 (요금표 단위로 이관)
   delete p.labels;
+  // [수정] 체크포인트를 카드 노출 위치별로 1·2로 분리 (기존 단일 checkpoint는 체크포인트1로 이관)
+  if (p.checkpoint1===undefined) p.checkpoint1 = p.checkpoint!==undefined ? p.checkpoint : '';
+  if (p.checkpoint2===undefined) p.checkpoint2 = '';
+  delete p.checkpoint;
+  // [수정] 카드 태그를 1~4개로 확장 (기존 단일 tag는 카드태그1로 이관)
+  if (p.cardTag1===undefined) p.cardTag1 = p.tag!==undefined ? p.tag : '';
+  if (p.cardTag2===undefined) p.cardTag2 = '';
+  if (p.cardTag3===undefined) p.cardTag3 = '';
+  if (p.cardTag4===undefined) p.cardTag4 = '';
+  delete p.tag;
   return p;
 }
 // 전역 활성 팝업 카운트
@@ -3839,6 +3858,17 @@ function getDisplayPrice(p){
   }
   return displayPrice;
 }
+// getDisplayPrice와 동일한 기준(최저 원화 판매가)으로 선택된 요금 항목 자체를 반환 — 카드에 노출할 최소 인원 등
+// 요금 항목 종속 필드를 가져올 때 사용
+function getDisplayPriceEntry(p){
+  if (p.priceEntries && p.priceEntries.length){
+    const krwSales = p.priceEntries.filter(e=>e.salePrice && (e.saleCurrency||'KRW')==='KRW');
+    if (krwSales.length){
+      return krwSales.reduce((min,e)=> Number(e.salePrice)<Number(min.salePrice) ? e : min);
+    }
+  }
+  return null;
+}
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
   const bgStyle=getCatBgStyle(cat);
@@ -3847,20 +3877,29 @@ function productCardHTML(p, catId, idx){
   const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : bgStyle;
   const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
   const displayPrice = getDisplayPrice(p);
+  const displayPe = getDisplayPriceEntry(p);
+  const minPeople = displayPe && displayPe.minPeople;
+  const cardTags = [p.cardTag1, p.cardTag2, p.cardTag3, p.cardTag4].filter(t=>t && t.trim());
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" style="${visualStyle}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}
+      <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
+      <div class="product-visual-title"><h4>${p.title}</h4></div>
     </div>
-    <h4>${p.title}</h4>
     <div class="meta">
-      <span>🗓 ${p.nights||'-'}</span><span>⛳ ${p.rounds||'-'}</span>
+      <span>⛳ ${p.rounds||'-'}</span>
       ${p.stay?`<span>🏨 ${p.stay}</span>`:''}
       ${p.meals?`<span>🍽 ${p.meals}</span>`:''}
       ${p.depAirport?`<span>✈️ ${p.depAirport}</span>`:''}
     </div>
-    ${p.checkpoint?`<div class="product-divider"></div><div class="product-checkpoint">${p.checkpoint}</div>`:''}
-    ${p.tag?`<div class="product-tag-row"><span class="tag-inline">${p.tag}</span></div>`:''}
+    ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div>`:''}
+    ${(p.nights || minPeople)?`<div class="product-period-row">
+      ${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}
+      ${minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(minPeople)}인 이상</span>`:''}
+    </div>`:''}
+    ${p.checkpoint2?`<div class="product-divider"></div><div class="product-checkpoint">${escapeAttr(p.checkpoint2)}</div>`:''}
+    ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
     <div class="product-foot">
       <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
       <span class="details">자세히 →</span>
@@ -4932,21 +4971,28 @@ function getPkgList(type){
 
 // ── 포스터 렌더 (두 그룹 공통) ──────────────────────────────────
 // 목록을 2벌 이어붙여(A B C A B C) 끊김 없이 순환하는 연속 스크롤을 구현
-function renderPkgGroup(type){
+const PKG_MIN_SLOTS = 3; // 등록된 포스터가 이보다 적으면 "상품 준비중" 빈 슬롯으로 채워 캐러셀이 휑해 보이지 않게 함
+// getPkgList()에 "상품 준비중" 빈 슬롯(url:null)을 채워 넣은 화면 표시용 목록 — 캐러셀 렌더링/치수 계산/
+// 자동 스크롤이 모두 이 목록 기준으로 동작해야 실제 등록 개수가 적어도 빈 슬롯까지 포함해 정상적으로 그려진다.
+// (라이트박스는 실제 등록된 포스터만 다뤄야 하므로 원본 getPkgList()를 그대로 사용)
+function getPkgDisplayList(type){
   const list = getPkgList(type);
+  return list.length < PKG_MIN_SLOTS
+    ? list.concat(Array.from({length: PKG_MIN_SLOTS - list.length}, ()=>({url:null, label:'', catId:null, idx:null})))
+    : list;
+}
+function renderPkgGroup(type){
+  const list = getPkgDisplayList(type);
   const track = document.getElementById('pkgTrack_'+type);
   const dots  = document.getElementById('pkgDots_'+type);
   if(!track) return;
 
   pkgStopAuto(type);
 
-  if(!list.length){
-    track.innerHTML = '<div class="pkg-empty">등록된 포스터가 없습니다. 관리자 패널 → 이미지 탭에서 추가하세요.</div>';
-    if(dots) dots.innerHTML='';
-    return;
-  }
-
-  const cardHTML = (p,origIdx)=>`
+  const cardHTML = (p,origIdx)=> !p.url ? `
+    <div class="pkg-card pkg-card-empty">
+      <div class="pkg-empty-slot"><span class="pkg-empty-icon">⛳</span><span class="pkg-empty-text">상품 준비중</span></div>
+    </div>` : `
     <div class="pkg-card" data-idx="${origIdx}" onclick="openPkgLightbox('${type}',${origIdx})">
       <img src="${escapeAttr(p.url)}" alt="${escapeAttr(p.label || (type==='domestic'?'국내 골프 패키지 요금표':'해외 골프 패키지 요금표'))}" class="pkg-img" loading="lazy" decoding="async">
       ${p.label?`<div class="pkg-label">${escapeAttr(p.label)}</div>`:''}
@@ -4979,7 +5025,7 @@ function pkgMeasure(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
   if(!track || !wrap) return;
-  const list = getPkgList(type);
+  const list = getPkgDisplayList(type);
   if(!list.length) return;
 
   const gap = 16;
@@ -5097,7 +5143,7 @@ function pkgNudgeTo(type, targetPosPx){
 function pkgStartAuto(type){
   pkgStopAuto(type);
   const st = pkgState[type];
-  const list = getPkgList(type);
+  const list = getPkgDisplayList(type);
   if(!list.length) return;
   st.lastTs = null;
   function step(ts){
@@ -5462,6 +5508,7 @@ function renderProductAdmin(catId){
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
         <div class="apc-actions">
           <button class="apc-btn-sm apc-edit-btn" onclick="openAdvEditor('${activeProductCat}',${i})">고급 편집</button>
+          <button class="apc-btn-sm" onclick="duplicateProduct(${i})">복제</button>
           <button class="apc-btn-sm apc-delete" onclick="deleteProduct(${i})">삭제</button>
         </div>
       </div>
@@ -5472,8 +5519,8 @@ function renderProductAdmin(catId){
         <div><label>라운드 · Rounds</label><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
         <div><label>숙박 · Stay</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
         <div><label>식사 · Meals</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
-        <div class="full"><label>태그 (선택)</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'tag',this.value)"></div>
-        <div class="full"><label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea></div>
+        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4, 체크포인트1은 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
+        <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
     </div>`).join('');
 }
@@ -5501,11 +5548,23 @@ function deleteProduct(idx){
   productOverrides[activeProductCat].splice(idx,1);
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
+// 기존 상품의 모든 필드(요금표·갤러리·동영상·요금 포스터 포함)를 그대로 복제해 바로 아래에 추가 —
+// 유사한 상품을 새로 등록할 때 처음부터 다시 입력하지 않고, 복제 후 일부만 고쳐 쓸 수 있도록 함
+function duplicateProduct(idx){
+  if (productOverrides[activeProductCat]===undefined){
+    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+  }
+  const clone = JSON.parse(JSON.stringify(productOverrides[activeProductCat][idx]));
+  clone.title = (clone.title||'') + ' (복제)';
+  clone.editorsPick = false; // 복제본이 원본과 함께 EDITOR'S PICK에 중복 노출되지 않도록 기본값으로 되돌림
+  productOverrides[activeProductCat].splice(idx+1, 0, clone);
+  saveProducts();renderProductAdmin();renderCategoryGrid();
+}
 function addProduct(){
   if (productOverrides[activeProductCat]===undefined){
     productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
   }
-  productOverrides[activeProductCat].push(Object.assign({title:'새 상품',from:990000,nights:'2박 3일',rounds:'2R',tag:''},newExtendedFields()));
+  productOverrides[activeProductCat].push(Object.assign({title:'새 상품',from:990000,nights:'2박 3일',rounds:'2R'},newExtendedFields()));
   saveProducts();renderProductAdmin();renderCategoryGrid();
   setTimeout(()=>{const b=document.querySelector('.admin-body');b.scrollTop=b.scrollHeight},50);
 }
@@ -5669,6 +5728,8 @@ const NOTES_GUIDE = `✳️ 참고사항
 const CHECKPOINT_GUIDE = `⛳️ 그린피 + 카트비 포함
 🏨 4성급 호텔 2인실 기준
 ✈️ 인천 출발 직항`;
+const CHECKPOINT1_GUIDE = `💰 2인 단독 출발 시 150,000원 추가
+💰 3인 단독 출발 시 1인당 100,000원 추가`;
 
 function advBasicHTML(p){
   const popupCount = countActivePopups();
@@ -5693,25 +5754,31 @@ function advBasicHTML(p){
 
     <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
     <div class="grid-2">
-      <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
+      <div><label>기간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드에 최소 인원과 함께 노출 · 최소 인원은 요금표 항목에서 입력)</span></label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
       <div><label>라운드</label><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
       <div><label>숙박</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
       <div><label>식사</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
     </div>
-    <label>체크포인트 (상품 카드에 노출)</label><textarea style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint',this.value)">${escapeAttr(p.checkpoint||'')}</textarea>
+    <label>체크포인트1 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
+    <textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
+    <label>체크포인트2 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 아래에 노출)</span></label>
+    <textarea style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
 
     <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
+    <label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label>
+    <div class="price-row">
+      <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
+      <label class="from-toggle" title="'~부터' 표시 여부">
+        <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
+        <span>~부터</span>
+      </label>
+    </div>
+    <label>카드 태그 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 요금 위쪽에 노출, 최대 4개)</span></label>
     <div class="grid-2">
-      <div><label>카드 표시 최저가 (원, 요금표 판매가 미입력시 사용)</label>
-        <div class="price-row">
-          <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
-          <label class="from-toggle" title="'~부터' 표시 여부">
-            <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
-            <span>~부터</span>
-          </label>
-        </div>
-      </div>
-      <div><label>카드 태그</label><input type="text" value="${escapeAttr(p.tag||'')}" placeholder="BEST 등" oninput="updateAdvField('tag',this.value)"></div>
+      <div><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="카드태그1 · 예: BEST" oninput="updateAdvField('cardTag1',this.value)"></div>
+      <div><input type="text" value="${escapeAttr(p.cardTag2||'')}" placeholder="카드태그2" oninput="updateAdvField('cardTag2',this.value)"></div>
+      <div><input type="text" value="${escapeAttr(p.cardTag3||'')}" placeholder="카드태그3" oninput="updateAdvField('cardTag3',this.value)"></div>
+      <div><input type="text" value="${escapeAttr(p.cardTag4||'')}" placeholder="카드태그4" oninput="updateAdvField('cardTag4',this.value)"></div>
     </div>
 
     <!-- [Phase 3 상품등록 개선] 포함/불포함/참고사항을 공통사항으로 묶어 가독성 개선 -->
@@ -5753,19 +5820,21 @@ function advBasicHTML(p){
 // [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액을 분리 입력하는 표 형식 리스트
 function extraFeesHTML(p){
   const fees = p.extraFees||[];
-  const dragAttrs = i => `draggable="true" data-idx="${i}"
-      ondragstart="efDragStart(event,${i})" ondragover="efDragOver(event)"
-      ondragleave="efDragLeave(event)" ondrop="efDrop(event,${i})" ondragend="efDragEnd(event)"`;
+  // [수정] draggable은 손잡이(⠿)에만 지정 — 행 전체에 지정하면 입력 필드 안의 텍스트를
+  // 마우스로 드래그(선택)할 때도 행 이동으로 오인식되던 문제가 있었음. 드롭 대상 판정은
+  // 여전히 행 전체(ondragover/ondrop)가 맡는다.
+  const rowDropAttrs = i => `data-idx="${i}" ondragover="efDragOver(event)" ondragleave="efDragLeave(event)" ondrop="efDrop(event,${i})"`;
+  const handleAttrs = i => `draggable="true" ondragstart="efDragStart(event,${i})" ondragend="efDragEnd(event)"`;
   return `
   <div class="ef-list">
     ${fees.map((f,i)=> f.kind==='group' ? `
-    <div class="ef-row ef-group" ${dragAttrs(i)}>
-      <div class="ef-drag-handle" title="드래그하여 순서 변경">⠿</div>
+    <div class="ef-row ef-group" ${rowDropAttrs(i)}>
+      <div class="ef-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</div>
       <input type="text" value="${escapeAttr(f.title||'')}" placeholder="그룹 제목 (예: 인원별 추가 요금)" oninput="updateExtraFee(${i},'title',this.value)">
       <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
     </div>` : `
-    <div class="ef-row" ${dragAttrs(i)}>
-      <div class="ef-drag-handle" title="드래그하여 순서 변경">⠿</div>
+    <div class="ef-row" ${rowDropAttrs(i)}>
+      <div class="ef-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</div>
       <input type="text" value="${escapeAttr(f.label||'')}" placeholder="예: 2인 단독 출발 시" oninput="updateExtraFee(${i},'label',this.value)">
       <input type="text" value="${escapeAttr(f.amount||'')}" placeholder="예: 1인당 150,000원 추가" oninput="updateExtraFee(${i},'amount',this.value)">
       <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
@@ -5796,7 +5865,8 @@ let efDragIdx = null;
 function efDragStart(e, idx){
   efDragIdx = idx;
   e.dataTransfer.effectAllowed = 'move';
-  e.currentTarget.classList.add('dragging');
+  const row = e.currentTarget.closest('.ef-row');
+  if (row) row.classList.add('dragging');
 }
 function efDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
 function efDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
@@ -6514,7 +6584,7 @@ function computeAiRecommendations(criteria){
       if (criteria.duration==='any') score += 10;
       else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
       else score += 5;
-      const haystack = [p.tag||'', p.title||''].concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
+      const haystack = [p.cardTag1||'', p.cardTag2||'', p.cardTag3||'', p.cardTag4||'', p.title||''].concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
       criteria.styles.forEach(styleVal=>{
         const kws = STYLE_KEYWORDS[styleVal]||[];
         if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }
@@ -6542,7 +6612,7 @@ function renderAiResults(results){
     return `<div class="ai-result-card">
       <div class="ai-result-img" style="background-image:url('${img}')"></div>
       <div class="ai-result-body">
-        <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${r.p.tag?`<span class="ai-result-tag">${escapeAttr(r.p.tag)}</span>`:''}</div>
+        <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${r.p.cardTag1?`<span class="ai-result-tag">${escapeAttr(r.p.cardTag1)}</span>`:''}</div>
         <h4>${r.p.title}</h4>
         <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${fmtPrice(r.p.from)}원~</div>
         <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>

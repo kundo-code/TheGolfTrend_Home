@@ -6584,9 +6584,16 @@ function renderAdminSeasonTheme(){
     }).join('');
 }
 
+// 렌더 함수 하나가 (손상된 localStorage/Supabase 데이터 등으로) 예외를 던져도
+// renderAll의 나머지 섹션까지 통째로 멈추지 않도록 각 호출을 개별적으로 격리한다.
+// 이 격리가 없으면 목록상 앞쪽 렌더 함수 하나가 실패했을 때 뒤쪽 함수들(스팟라이트/블로그/링크/푸터 등)이
+// 전혀 실행되지 않아 페이지 일부가 "백지"로 남는 문제가 생긴다.
+function safeRender(fn){
+  try{ fn(); }catch(e){ console.error('[renderAll] '+(fn.name||'render')+' 실패:', e); }
+}
 function renderAll(){
   // renderCategoryGrid()가 두 지역을 모두 다시 그리며, 열려있는 카드의 상품 목록도 함께 갱신한다
-  renderTopBar();renderHeadline();renderAboutBanner();renderFooterLegal();renderCvImages();renderStrImages();renderPkgAll();renderCategoryGrid();renderHeroBg();renderSpotlight();renderBlog();renderLinks();renderFootSocials();
+  [renderTopBar, renderHeadline, renderAboutBanner, renderFooterLegal, renderCvImages, renderStrImages, renderPkgAll, renderCategoryGrid, renderHeroBg, renderSpotlight, renderBlog, renderLinks, renderFootSocials].forEach(safeRender);
 }
 
 // INIT
@@ -6853,9 +6860,12 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-renderAll();
-setInterval(cycleHero,6000);
-setInterval(cycleSpot,8000);
+// renderAll()이나 아래 초기화 호출 중 하나가 예외를 던지면(스크립트 전체가 하나의 <script> 블록이라)
+// 이후에 나오는 setInterval/pullSiteState/팝업/라이트박스 초기화 코드가 전혀 실행되지 않고
+// 조용히 멈춰버릴 수 있다. 각 초기화 단계를 개별적으로 격리해 하나가 실패해도 나머지는 계속 진행되게 한다.
+safeRender(renderAll);
+try{ setInterval(cycleHero,6000); }catch(e){ console.error('[init] cycleHero interval 실패:', e); }
+try{ setInterval(cycleSpot,8000); }catch(e){ console.error('[init] cycleSpot interval 실패:', e); }
 
 // 로컬(localStorage/IndexedDB) 데이터로 먼저 빠르게 그린 뒤, Supabase에 저장된 공유 상태를
 // 백그라운드에서 가져와 있으면(다른 기기/브라우저에서 저장한 최신 내용) 다시 렌더링해 동기화.

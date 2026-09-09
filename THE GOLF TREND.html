@@ -3771,6 +3771,20 @@ function observeProductVideos(container){
   const observer = getProductVideoObserver();
   container.querySelectorAll('.product-visual video').forEach(v=>observer.observe(v));
 }
+// [메모리/성능 안정화] 상품 상세보기(모달)를 열면 그 아래 카드 그리드는 화면에서 완전히 가려지는데도
+// IntersectionObserver 상으로는 여전히 "화면 안"으로 인식돼 계속 디코딩된다. 여기에 모달 자체의
+// 타이틀 동영상까지 더해지면 동시 재생 동영상 수가 순간적으로 늘어나 백지 현상이 재발할 수 있어,
+// 모달이 열려있는 동안은 배경 그리드의 동영상을 전부 일시정지한다.
+function pauseGridVideosForModal(){
+  document.querySelectorAll('#productGridOverseas .product-visual video, #productGridDomestic .product-visual video').forEach(v=>{
+    getProductVideoObserver().unobserve(v);
+    v.pause();
+  });
+}
+function resumeGridVideosAfterModal(){
+  observeProductVideos(document.getElementById('productGridOverseas'));
+  observeProductVideos(document.getElementById('productGridDomestic'));
+}
 
 // STYLE HELPERS
 function getCatBgStyle(cat){
@@ -4329,6 +4343,7 @@ function openProductDetail(catId, idx){
   const products=getProducts(catId);
   const p=products[idx]; if (!p) return;
   const cat=findCat(catId);
+  pauseGridVideosForModal(); // 모달에 가려지는 배경 카드 동영상은 정지해 동시 디코딩 부담을 줄임
   renderProductDetail(p,cat);
   document.getElementById('pdOverlay').classList.add('show');
   document.body.style.overflow='hidden';
@@ -4344,6 +4359,7 @@ function closeProductDetail(){
   // 내용을 비워 리소스를 해제한다
   const c=document.getElementById('pdContent');
   if (c){ pauseVideosIn(c); c.innerHTML=''; }
+  resumeGridVideosAfterModal(); // 다시 화면에 보이는 배경 카드 동영상만 재생 재개
 }
 // [수정] 동영상은 별도의 "동영상 갤러리" 섹션(마우스 오버 재생)으로 분리되어, 여기서는 이미지만 다룬다
 function pdMediaList(p){
@@ -4407,7 +4423,7 @@ function renderProductDetail(p,cat){
     <div class="pd-title-media" style="${titleBg}"${titleBgAria}>`;
   if (p.titleMedia && p.titleMedia.url){
     if (p.titleMedia.type==='video'){
-      html += `<video src="${escapeAttr(p.titleMedia.url)}" autoplay muted loop playsinline></video>`;
+      html += `<video src="${escapeAttr(p.titleMedia.url)}" muted loop playsinline></video>`;
     } else {
       html += `<img src="${escapeAttr(p.titleMedia.url)}" alt="${escapeAttr(productImgAlt(cat,p))}" loading="eager" decoding="async">`;
     }
@@ -4593,6 +4609,9 @@ function renderProductDetail(p,cat){
   </div></div>`;
 
   c.innerHTML=html;
+  // 타이틀 동영상은 이 모달이 열려있는 동안에만 재생 (백지 현상 방지 — autoplay 속성 대신 명시적으로 재생)
+  const pdTitleVideo = c.querySelector('.pd-title-media video');
+  if (pdTitleVideo) pdTitleVideo.play().catch(()=>{});
   // Sync gallery display
   setTimeout(updateGalleryDisplay,50);
 }

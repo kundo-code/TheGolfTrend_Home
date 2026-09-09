@@ -111,7 +111,7 @@ header{padding-top:var(--topbar-h,108px)}
 .menu-btn{display:none;background:transparent;border:none;color:var(--pine-deep);font-size:1.4rem;cursor:pointer}
 
 /* HERO */
-.hero{min-height:auto;padding:60px 24px 100px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.hero{min-height:100vh;min-height:100dvh;padding:60px 24px 100px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
 .hero-bg .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease-in-out;filter:blur(2px) saturate(1.1);transform:scale(1.05)}
 .hero-bg .slide.active{opacity:1}
@@ -3456,7 +3456,10 @@ function renderAboutBanner(){
   c.style.display='block';
   if (b.type==='video'){
     aboutBannerVideoObjectUrl = dataURLToObjectURL(b.url);
-    c.innerHTML = `<video src="${escapeAttr(aboutBannerVideoObjectUrl)}" autoplay muted loop playsinline class="about-banner-img"></video>`;
+    c.innerHTML = `<video src="${escapeAttr(aboutBannerVideoObjectUrl)}" muted loop playsinline class="about-banner-img"></video>`;
+    // [메모리/성능 안정화] 페이지 하단 배너는 화면 밖으로 스크롤되어도 autoplay면 계속 디코딩된다 —
+    // 상품 카드와 동일하게 화면에 보일 때만 재생하도록 관찰 대상에 등록
+    getProductVideoObserver().observe(c.querySelector('video'));
   } else {
     c.innerHTML = `<img src="${escapeAttr(b.url)}" class="about-banner-img" alt="(주)더골프트렌드 회사소개 배너" loading="lazy" decoding="async">`;
   }
@@ -3574,7 +3577,10 @@ function renderHeadline(){
   pauseVideosIn(c);
   if (h.type === 'video'){
     headlineVideoObjectUrl = dataURLToObjectURL(h.url);
-    c.innerHTML = `<video src="${escapeAttr(headlineVideoObjectUrl)}" autoplay muted loop playsinline class="headline-img"></video>`;
+    c.innerHTML = `<video src="${escapeAttr(headlineVideoObjectUrl)}" muted loop playsinline class="headline-img"></video>`;
+    // [메모리/성능 안정화] 상단 헤드라인 배너는 페이지 최상단에 있어 스크롤을 조금만 내려도 화면 밖으로
+    // 벗어나는데, autoplay면 방문 내내 계속 디코딩된다 — 화면에 보일 때만 재생하도록 관찰 대상에 등록
+    getProductVideoObserver().observe(c.querySelector('video'));
   } else {
     c.innerHTML = `<img src="${escapeAttr(h.url)}" alt="THE GOLF TREND — 국내/해외 골프전문 여행사" class="headline-img">`;
   }
@@ -3753,6 +3759,8 @@ function pauseVideosIn(container){
 // [메모리/성능 안정화] 상품 카드 타이틀 동영상은 한 번에 여러 개(카테고리 하나에 등록된 상품 수만큼)
 // 노출될 수 있어, 전부 autoplay로 동시 디코딩하면 "백지 현상"의 재발 원인이 된다. 실제로 화면에
 // 보이는 카드의 동영상만 재생하고, 화면 밖으로 벗어나면 즉시 일시정지해 디코딩 부담을 줄인다.
+// (상품 카드 전용이 아니라, 페이지에 있는 autoplay 동영상 전체 — 헤드라인 배너·회사소개 배너 등 —
+// 에 공통으로 재사용하는 관찰자다. 화면 밖으로 나가면 항상 자동으로 정지된다.)
 let _productVideoObserver = null;
 function getProductVideoObserver(){
   if (!_productVideoObserver){
@@ -4087,6 +4095,10 @@ function cycleSpot(){
         frontEl.classList.add('spot-back');
         backEl.classList.remove('spot-back');
       });
+      // [메모리/성능 안정화] 교차 페이드로 뒤로 밀려난 이전 카드의 동영상은 바로 정지하지 않으면
+      // 화면에서 보이지 않는 상태로도 다음 전환(8초 뒤)까지 계속 재생/디코딩된다 — 페이드가 끝나는
+      // 즉시 정지시켜 불필요한 디코딩이 쌓이지 않도록 한다
+      setTimeout(()=>{ const v=frontEl.querySelector('video'); if (v) v.pause(); }, SPOT_FADE_MS);
       spotFront[slot]=backLayer;
     });
   });

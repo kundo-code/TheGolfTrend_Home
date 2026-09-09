@@ -346,12 +346,12 @@ section.block{padding:100px 24px;position:relative}
 .pd-thumb{width:70px;height:52px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;cursor:pointer;border:2px solid transparent;transition:border-color .2s;opacity:.7}
 .pd-thumb.active{border-color:var(--gold);opacity:1}
 .pd-thumb:hover{opacity:1}
-/* [수정] 동영상 갤러리 — 이미지 갤러리 위, 마우스 오버 시 자동 재생 */
+/* [수정] 동영상 갤러리 — 이미지 갤러리 위, 마우스 오버 시 자동 재생.
+   [수정] 작은 가로 스크롤 썸네일(고정 200px) 대신, 이미지 갤러리와 비슷한 비중으로 각 영상이
+   카드 영역을 꽉 채우도록 반응형 그리드로 변경 — 영상이 1개면 카드 전체 너비를 그대로 채운다 */
 .pd-video-gallery{padding:14px 16px 6px}
-.pd-video-grid{display:flex;gap:10px;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
-.pd-video-grid::-webkit-scrollbar{height:6px}
-.pd-video-grid::-webkit-scrollbar-thumb{background:rgba(10,23,48,.15);border-radius:3px}
-.pd-video-item{position:relative;flex-shrink:0;width:200px;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#000;cursor:pointer}
+.pd-video-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.pd-video-item{position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#000;cursor:pointer}
 .pd-video-item video{width:100%;height:100%;object-fit:cover;display:block}
 .pd-video-item .play-ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;background:rgba(0,0,0,.28);pointer-events:none;transition:opacity .2s}
 .pd-video-item:hover .play-ic{opacity:0}
@@ -380,8 +380,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-more summary::-webkit-details-marker{display:none}
 .pd-pe-more summary::after{content:'→';transition:transform .2s}
 .pd-pe-more[open] summary::after{transform:rotate(90deg)}
-.pd-pe-more-body{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.14);display:flex;flex-direction:column;gap:12px}
-.pd-pe-more-sub .t{font-size:.72rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:6px}
+.pd-pe-more-body{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.14);display:flex;flex-direction:column;gap:20px}
+/* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
+.pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:10px}
 .pd-pe-more-sub .pd-check-list{padding:0}
 .pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:10px}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "여행 정보" 섹션에서 공용 */
@@ -405,17 +406,18 @@ section.block{padding:100px 24px;position:relative}
 .pd-fee-table .amount{color:var(--gold-deep);font-weight:600;text-align:right;flex-shrink:0}
 .pd-fee-table .group-title{padding:10px 0 4px;font-size:.82rem;font-weight:700;color:var(--gold-deep)}
 .pd-fee-table .group-title.spaced{margin-top:10px} /* 그룹 사이 한 줄 간격 */
-/* 상품 정보 박스 내 상세보기 링크 */
-/* [Phase 3 상품등록 개선 v4] 상품 정보 박스 하단 중앙의 "상세보기→" 버튼 */
-.pd-info-link-wrap{display:flex;justify-content:center;padding:4px 20px 18px}
-.pd-info-link{
+/* [수정] 요금표 하단 우측의 브랜드 링크 버튼 — 상품기본정보에서 이동, 도메인으로 브랜드를 인식해
+   아이콘·명칭을 자동 적용(예: 네이버블로그/유튜브 등), 목록에 없으면 "홈페이지에서 보기"로 폴백 */
+.pd-price-link-wrap{display:flex;justify-content:flex-end;padding:6px 16px 16px}
+.pd-brand-link{
   display:inline-flex;align-items:center;gap:6px;
-  padding:11px 26px;border-radius:100px;
+  padding:11px 22px;border-radius:100px;
   background:var(--gold);color:var(--pine-deep);
-  font-size:.88rem;font-weight:700;letter-spacing:.02em;
+  font-size:.85rem;font-weight:700;letter-spacing:.02em;
   transition:transform .2s,background .2s;
 }
-.pd-info-link:hover{ background:var(--gold-deep);color:#fff;transform:translateY(-1px); }
+.pd-brand-link .ic{font-size:1rem;line-height:1}
+.pd-brand-link:hover{ background:var(--gold-deep);color:#fff;transform:translateY(-1px); }
 /* 일정 요약 타임라인 */
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
@@ -4546,6 +4548,11 @@ function pdGalleryGo(i){
     startGalleryAutoSlide(p);
   }
 }
+// [수정] 요금 항목 박스를 어디를 클릭하든 그 항목의 "상세보기"가 펼쳐지도록 함
+function togglePeMore(cardEl){
+  const d = cardEl.querySelector('.pd-pe-more');
+  if (d) d.open = !d.open;
+}
 function updateGalleryDisplay(){
   document.querySelectorAll('#pdContent .pd-gallery-main img').forEach((el,i)=>el.classList.toggle('active',i===pdGalleryIdx));
   document.querySelectorAll('#pdContent .pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===pdGalleryIdx));
@@ -4610,6 +4617,21 @@ function airlineNamesFromCodes(codes){
     return entry ? `${entry[1]} (${entry[0]})` : code;
   }).join(', ');
 }
+// [수정] 상품 정보의 "연결 링크"(p.linkUrl)를 도메인으로 브랜드 인식해 아이콘·명칭을 자동 적용.
+// 목록에 없는 도메인은 일반 웹사이트로 폴백.
+const LINK_BRANDS = [
+  { test: /blog\.naver\.com/, icon:'📝', label:'네이버블로그에서 보기' },
+  { test: /(youtube\.com|youtu\.be)/, icon:'▶️', label:'유튜브에서 보기' },
+  { test: /instagram\.com/, icon:'📷', label:'인스타그램에서 보기' },
+  { test: /facebook\.com/, icon:'📘', label:'페이스북에서 보기' },
+  { test: /band\.us/, icon:'💬', label:'밴드에서 보기' },
+  { test: /(pf\.kakao\.com|kakao\.com)/, icon:'💛', label:'카카오채널에서 보기' },
+  { test: /blog\./, icon:'📝', label:'블로그에서 보기' },
+];
+function detectLinkBrand(url){
+  for (const b of LINK_BRANDS) if (b.test.test(url)) return b;
+  return { icon:'🔗', label:'홈페이지에서 보기' };
+}
 
 function renderProductDetail(p,cat){
   const c=document.getElementById('pdContent');
@@ -4634,20 +4656,6 @@ function renderProductDetail(p,cat){
     }
   }
   html += `</div></div>`;
-
-  // [Phase 3 상품등록 개선 v4] 상품 정보 — 제목/기간/숙박/식사 + 연결 링크(있으면 박스 하단 중앙에 "상세보기→" 버튼)
-  // (타이틀 이미지 바로 아래의 기간·라운드 칩 박스는 제거 — 정보는 이 박스로 통합)
-  const infoRows=[];
-  if (p.title) infoRows.push(['제목', p.title]);
-  if (p.nights) infoRows.push(['기간', p.nights]);
-  if (p.stay) infoRows.push(['숙박', p.stay]);
-  if (p.meals) infoRows.push(['식사', p.meals]);
-  if (infoRows.length || p.linkUrl){
-    html += `<div class="pd-slot"><div class="pd-section-title">📋 상품 정보</div>
-      ${infoRows.length?`<div class="pd-info-table">${infoRows.map(([k,v])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>`:''}
-      ${p.linkUrl?`<div class="pd-info-link-wrap"><a class="pd-info-link" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">상세보기 →</a></div>`:''}
-    </div>`;
-  }
 
   // [수정] 동영상 갤러리 — 이미지 갤러리보다 위에 노출, 마우스 오버 시 자동 재생
   const pdVideos = p.videoGallery||[];
@@ -4680,6 +4688,19 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
+  // [수정] "상품 정보" → "상품기본정보"로 명칭 변경, 이미지 갤러리 아래로 이동.
+  // 연결 링크(p.linkUrl)는 여기서 빼서 요금표 하단 우측(브랜드 인식 버튼)으로 이동
+  const infoRows=[];
+  if (p.title) infoRows.push(['제목', p.title]);
+  if (p.nights) infoRows.push(['기간', p.nights]);
+  if (p.stay) infoRows.push(['숙박', p.stay]);
+  if (p.meals) infoRows.push(['식사', p.meals]);
+  if (infoRows.length){
+    html += `<div class="pd-slot"><div class="pd-section-title">📋 상품기본정보</div>
+      <div class="pd-info-table">${infoRows.map(([k,v])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>
+    </div>`;
+  }
+
   // [Phase 3 상품등록 개선 v3] 포함사항 / 불포함사항 / 공통 안내 / 추가 요금 안내 / 참고사항 / 예약·결제·취소 규정을
   // 요금표 아래에 순서대로 노출 — 모두 동일한 리스트 서식으로 가독성을 맞춘다.
   // [수정] 요금표 항목별 "자세히 →" 토글에서도 재사용하기 위해 요금표 렌더링보다 먼저 선언한다
@@ -4688,10 +4709,11 @@ function renderProductDetail(p,cat){
 
   // [수정] 요금표를 갤러리 아래로 이동
   if (p.priceEntries && p.priceEntries.length){
+    const linkBrand = p.linkUrl ? detectLinkBrand(p.linkUrl) : null;
     html += `<div class="pd-slot">
       <div class="pd-section-title">💳 요금표</div>
       <div class="pd-price-entries">
-        ${p.priceEntries.map(pe=>{
+        ${p.priceEntries.map((pe,idx)=>{
           // [Phase 3 상품등록 개선] 강조태그 복수 선택 지원 — 배열의 각 값을 개별 배지로 표시
           const emphArr = Array.isArray(pe.emphasis) ? pe.emphasis : (pe.emphasis ? [pe.emphasis] : []);
           const emphCls = t => t.startsWith('특가') ? 'special' : (t==='실속' ? 'value' : 'normal');
@@ -4702,12 +4724,8 @@ function renderProductDetail(p,cat){
           const origFrom = pe.originalFromLabel ? ' ~부터' : '';
           const sameCurrency = (pe.saleCurrency||'KRW')===(pe.originalCurrency||'KRW');
           const discount = (sale && orig && orig>sale && sameCurrency) ? Math.round((1-sale/orig)*100) : 0;
-          // [수정] 카드 전체 클릭 시 외부 링크로 이동하는 동작은 링크 버튼이 노출 상태(linkVisible)일 때만 유지.
-          // 아래 "상세보기 →" 토글은 <details>로 분리해 클릭이 상위로 전파되지 않도록 한다
-          // (막지 않으면 펼치는 즉시 외부 링크로 이동해버림)
           const linkVisible = pe.link && pe.linkVisible!==false;
-          const clickAttr = linkVisible ? `onclick="window.open('${escapeAttr(pe.link)}','_blank','noopener')"` : '';
-          // [Phase 3 상품등록 개선 v3→v6] "상세보기 →" 클릭 시 이 요금 항목의 레이블·일정과
+          // [Phase 3 상품등록 개선 v3→v6] "상세보기" 클릭 시 이 요금 항목의 레이블·일정과
           // 이 요금 항목의 포함/불포함/참고사항을 함께 펼쳐서 보여준다(항목별 개별 입력)
           const labelRows = labelRowsHTML(pe.labels);
           const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
@@ -4721,6 +4739,10 @@ function renderProductDetail(p,cat){
             hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days)}</div></div>`:'',
             peNotesHTML
           ].join('');
+          // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 변경 — 외부 링크(🔗)로 바로
+          // 이동하던 카드 전체 클릭 동작은 제거하고, 외부 링크는 별도 버튼으로만 이동하게 분리한다.
+          // 첫 번째 항목(idx===0)은 기본으로 펼쳐서 노출한다.
+          const clickAttr = moreBody ? `onclick="togglePeMore(this)"` : '';
           // [Phase 3 상품등록 개선 v3] 항목별 요금표에는 포함사항 관련 정보만 노출 — 출발요일·항공패턴·추가요금안내는
           // 요금표에서 분리해 공통 안내 아래로 이동 (renderProductDetail 하단 참고)
           return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
@@ -4734,11 +4756,12 @@ function renderProductDetail(p,cat){
             </div>
             <div class="pd-pe-actions">
               ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 상세보기 →</a>`:''}
-              ${moreBody?`<details class="pd-pe-more" onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
+              ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
             </div>
           </div>`;
         }).join('')}
       </div>
+      ${linkBrand?`<div class="pd-price-link-wrap"><a class="pd-brand-link" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener"><span class="ic">${linkBrand.icon}</span>${linkBrand.label}</a></div>`:''}
     </div>`;
   }
 
@@ -4748,16 +4771,6 @@ function renderProductDetail(p,cat){
   }
   // [수정] 포함사항 · 불포함사항 · 참고사항은 더 이상 상품 공통으로 항상 노출하지 않는다 — 요금 항목별로
   // 개별 입력하며, 요금표의 각 항목 "상세보기 →"를 클릭했을 때만 노출된다 (위 pd-price-entries 참고)
-  // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
-  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount));
-  if (extraFees.length){
-    html += `<div class="pd-slot"><div class="pd-section-title">💰 추가 요금 안내</div>
-      <div class="pd-fee-table">${extraFees.map((f,i)=> f.kind==='group'
-        ? `<div class="group-title${i>0?' spaced':''}">${escapeAttr(f.title)}</div>`
-        : `<div class="row"><span class="label">${escapeAttr(f.label||'')}</span><span class="amount">${escapeAttr(f.amount||'')}</span></div>`
-      ).join('')}</div>
-    </div>`;
-  }
 
   // [수정] 요금 항목과 무관하게 상시 입력 가능한 공통 레이블 — 값이 있으면 상품 정보 성격으로 노출
   const commonLabelRows = labelRowsHTML(p.labels);
@@ -4788,6 +4801,18 @@ function renderProductDetail(p,cat){
         </div>`).join('')}
         ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
       </div>
+    </div>`;
+  }
+
+  // [수정] 추가 요금 안내를 일정 요약 타임라인 하단으로 이동
+  // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
+  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount));
+  if (extraFees.length){
+    html += `<div class="pd-slot"><div class="pd-section-title">💰 추가 요금 안내</div>
+      <div class="pd-fee-table">${extraFees.map((f,i)=> f.kind==='group'
+        ? `<div class="group-title${i>0?' spaced':''}">${escapeAttr(f.title)}</div>`
+        : `<div class="row"><span class="label">${escapeAttr(f.label||'')}</span><span class="amount">${escapeAttr(f.amount||'')}</span></div>`
+      ).join('')}</div>
     </div>`;
   }
 

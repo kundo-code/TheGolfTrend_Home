@@ -245,7 +245,7 @@ section.block{padding:100px 24px;position:relative}
 .product-visual .product-region-pill{position:absolute;top:10px;left:10px;z-index:2;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#fff;font-size:.68rem;font-weight:600;padding:5px 11px;border-radius:100px;letter-spacing:.02em}
 .product-visual-title{position:absolute;left:14px;right:14px;bottom:12px;z-index:2}
 .product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:#fff;line-height:1.2;text-shadow:0 2px 10px rgba(0,0,0,.5);margin:0}
-.product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;row-gap:10px;column-gap:22px}
+.product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:10px;column-gap:22px}
 .product .meta span{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .product .meta span:nth-child(odd):not(:last-child){padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
 .product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
@@ -2876,6 +2876,7 @@ function ensureExtended(p){
   // [수정] 상품 카드에 노출할 항공 포함 여부·최소 인원 — 여러 요금 항목에 종속시키지 않고 상품 단위로 단순화
   if (p.airfareIncluded===undefined) p.airfareIncluded = '';
   if (p.minPeople===undefined) p.minPeople = '';
+  if (p.nightsCount===undefined) p.nightsCount = ''; // [수정] 박수 — 카드에서 기간 옆에 노출
   return p;
 }
 // 전역 활성 팝업 카운트
@@ -3747,7 +3748,28 @@ function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replac
 // 수 있다. 동영상을 포함할 수 있는 영역을 다시 그리기 직전에 항상 호출한다.
 function pauseVideosIn(container){
   if (!container) return;
-  container.querySelectorAll('video').forEach(v=>{ try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){} });
+  container.querySelectorAll('video').forEach(v=>{ try{ getProductVideoObserver().unobserve(v); v.pause(); v.removeAttribute('src'); v.load(); }catch(e){} });
+}
+// [메모리/성능 안정화] 상품 카드 타이틀 동영상은 한 번에 여러 개(카테고리 하나에 등록된 상품 수만큼)
+// 노출될 수 있어, 전부 autoplay로 동시 디코딩하면 "백지 현상"의 재발 원인이 된다. 실제로 화면에
+// 보이는 카드의 동영상만 재생하고, 화면 밖으로 벗어나면 즉시 일시정지해 디코딩 부담을 줄인다.
+let _productVideoObserver = null;
+function getProductVideoObserver(){
+  if (!_productVideoObserver){
+    _productVideoObserver = new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        const v = entry.target;
+        if (entry.isIntersecting) v.play().catch(()=>{});
+        else v.pause();
+      });
+    }, {rootMargin:'150px'});
+  }
+  return _productVideoObserver;
+}
+function observeProductVideos(container){
+  if (!container) return;
+  const observer = getProductVideoObserver();
+  container.querySelectorAll('.product-visual video').forEach(v=>observer.observe(v));
 }
 
 // STYLE HELPERS
@@ -3876,7 +3898,7 @@ function productCardHTML(p, catId, idx){
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" style="${visualStyle}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
-      ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}
+      ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop preload="metadata" aria-hidden="true"></video>`:''}
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
       <div class="product-visual-title"><h4>${p.title}</h4></div>
@@ -3888,8 +3910,9 @@ function productCardHTML(p, catId, idx){
       ${airfareText?`<span>✈️ ${airfareText}</span>`:''}
     </div>
     ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
-    ${(p.nights || p.minPeople)?`<div class="product-period-row">
+    ${(p.nights || p.nightsCount || p.minPeople)?`<div class="product-period-row">
       ${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}
+      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
       ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
     </div>`:''}
     ${p.checkpoint2?`<div class="product-divider"></div><div class="product-checkpoint">${escapeAttr(p.checkpoint2)}</div>`:''}
@@ -3918,6 +3941,7 @@ function refreshCategoryProducts(regionKey){
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>이 지역의 상품은 곧 업데이트됩니다.</p></div>`;
   } else {
     grid.innerHTML=products.map((p,i)=>productCardHTML(p,selectedId,i)).join('');
+    observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
   }
 }
 
@@ -5510,6 +5534,7 @@ function renderProductAdmin(catId){
         <div class="full"><label>제목 · Title</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateProduct(${i},'title',this.value)"></div>
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
         <div><label>기간 · Nights</label><input type="text" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
+        <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateProduct(${i},'nightsCount',this.value)"></div>
         <div><label>라운드 · Rounds</label><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
         <div><label>숙박 · Stay</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
         <div><label>식사 · Meals</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
@@ -5749,6 +5774,7 @@ function advBasicHTML(p){
     <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
     <div class="grid-2">
       <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
+      <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
       <div><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
       <div><label>라운드</label><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
       <div><label>항공 포함 여부</label>

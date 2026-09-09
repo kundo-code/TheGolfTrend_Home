@@ -629,10 +629,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .product-cat-select{width:100%;padding:11px 14px;background:var(--nm-white);border:none;border-radius:var(--nm-r-md);color:var(--nm-text);font-size:.92rem;font-family:'Pretendard','Noto Sans KR',sans-serif;margin-bottom:14px;cursor:pointer;box-shadow:var(--nm-shadow-inset)}
 .product-cat-select option{background:var(--nm-white);color:var(--nm-text)}
 .product-cat-select:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
-.admin-product-card{background:var(--nm-surface);border:none;border-radius:var(--nm-r-card);padding:14px;margin-bottom:10px;box-shadow:var(--nm-shadow-raised-sm)}
-.apc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(10,23,48,.12)}
-.apc-head .idx{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;font-weight:600;letter-spacing:.1em}
-.apc-actions{display:flex;gap:6px}
+.admin-product-card{background:var(--nm-surface);border:none;border-radius:var(--nm-r-card);padding:0;margin-bottom:10px;box-shadow:var(--nm-shadow-raised-sm)}
+/* [수정] 상품 카드를 <details>로 전환 — summary(.apc-head)에 넘버링 옆 제목 미리보기 + 접기 화살표를 둔다 */
+.admin-product-card > summary.apc-head{list-style:none;padding:14px}
+.admin-product-card > summary.apc-head::-webkit-details-marker{display:none}
+.admin-product-card .apc-fields{padding:0 14px 14px}
+.apc-head{display:flex;gap:10px;align-items:center;margin-bottom:0;padding-bottom:8px;border-bottom:1px dashed rgba(10,23,48,.12);cursor:pointer}
+.apc-head .idx{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;font-weight:600;letter-spacing:.1em;flex-shrink:0}
+.apc-title-preview{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--nm-text);font-size:.85rem;font-weight:500}
+.apc-chevron{flex-shrink:0;font-size:.75rem;color:var(--nm-text-soft);transition:transform .2s}
+.admin-product-card:not([open]) .apc-chevron{transform:rotate(-90deg)}
+.apc-actions{display:flex;gap:6px;flex-shrink:0}
 .apc-btn-sm{padding:6px 12px;border-radius:var(--nm-r-pill);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;border:none}
 .apc-edit-btn{background:var(--nm-surface);color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-raised-sm)}
 .apc-edit-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
@@ -803,6 +810,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    자세히보기(details) 안에 중첩되는 일정 pe-block(scheduleDayHTML)은 이 클래스를 쓰지 않으므로 영향 없음 */
 .pe-item{margin:0 0 20px;border-left:4px solid var(--nm-blue-deep)}
 .pe-item.pe-item-b{background:var(--nm-surface-light);border-left-color:var(--nm-cyan)}
+/* [수정] 요금 항목 카드를 <details>로 전환 — 접고 펼 수 있게 하고, 순서를 드래그로 바꿀 수 있게 한다.
+   details 래퍼 자체의 패딩은 제거하고 summary(.pe-head)·본문(.pe-body)에 각각 패딩을 준다 */
+.pe-item{padding:0}
+.pe-item > summary.pe-head{padding:14px 16px;margin-bottom:0;list-style:none;cursor:pointer}
+.pe-item > summary.pe-head::-webkit-details-marker{display:none}
+.pe-item .pe-body{padding:4px 16px 16px}
+.pe-item.dragging{opacity:.4;transform:scale(.98)}
+.pe-item.drag-over{box-shadow:0 0 0 2px var(--nm-blue),0 8px 20px rgba(10,23,48,.12)}
+.pe-drag-handle{font-size:1.1rem;color:var(--nm-text-soft);cursor:grab;user-select:none;line-height:1;flex-shrink:0}
+.pe-drag-handle:active{cursor:grabbing}
+.pe-title-preview{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--nm-text-soft);font-size:.85rem}
+.pe-chevron{flex-shrink:0;font-size:.75rem;color:var(--nm-text-soft);transition:transform .2s}
+.pe-item:not([open]) .pe-chevron{transform:rotate(-90deg)}
+.link-visible-row{display:flex;gap:10px;align-items:center}
+.link-visible-row input[type=url]{flex:1;min-width:0}
+.link-visible-row .from-toggle{white-space:nowrap}
 /* [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액 분리 입력 리스트 */
 .ef-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 .ef-row{display:grid;grid-template-columns:18px 1fr 1fr auto;gap:8px;align-items:center}
@@ -814,7 +837,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ef-drag-handle:active{ cursor:grabbing; }
 .ef-row.dragging{opacity:.4;transform:scale(.98)}
 .ef-row.drag-over{box-shadow:0 0 0 2px var(--nm-blue);border-radius:8px}
-.pe-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.12)}
+.pe-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.12)}
 .pe-idx{font-size:1rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.05em}
 .pe-head-right{display:flex;align-items:center;gap:10px}
 /* .pe-head-right로 스코프를 좁혀 특이도(specificity)를 .adv-body label(클래스1+태그1)보다 높여야
@@ -2843,10 +2866,12 @@ function newLabels(){
 }
 function newPriceEntry(){
   return {
-    headline:'', link:'', layout:'card', emphasis:[],
+    headline:'', link:'', linkVisible:true, layout:'card', emphasis:[],
     salePrice:0, saleCurrency:'KRW', saleFromLabel:true,
     originalPrice:0, originalCurrency:'KRW', originalFromLabel:false,
     minPeople:'', // [수정] 요금 옆에 표기할 최소 출발 인원 (예: "2인")
+    // [수정] 포함사항/불포함사항/참고사항은 상품 공통이 아니라 요금 항목별로 개별 입력
+    included:'', notIncluded:'', precautions:'',
     labels: newLabels(),
     popup:false,
     schedule: newSchedule() // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
@@ -2935,7 +2960,6 @@ function ensureExtended(p){
     if (f.kind==='group'){ if (f.title===undefined) f.title=''; }
     else { if (f.label===undefined) f.label=''; if (f.amount===undefined) f.amount=''; }
   });
-  if (p.precautions===undefined) p.precautions='';
   if (p.linkUrl===undefined) p.linkUrl='';
   if (p.scheduleOverview===undefined) p.scheduleOverview='';
   if (p.scheduleNote===undefined) p.scheduleNote='';
@@ -2965,12 +2989,27 @@ function ensureExtended(p){
     if (!pe.originalCurrency) pe.originalCurrency='KRW';
     if (pe.saleFromLabel===undefined) pe.saleFromLabel = true;
     if (pe.originalFromLabel===undefined) pe.originalFromLabel = false;
+    if (pe.linkVisible===undefined) pe.linkVisible = true; // [수정] 연결 링크 버튼 노출 여부(선택 옵션)
     if (pe.popup===undefined) pe.popup = false;
     if (pe.minPeople===undefined) pe.minPeople = ''; // [수정] 최소 출발 인원
+    if (pe.included===undefined) pe.included = ''; // [수정] 포함사항 — 요금 항목별 개별 입력으로 이관
+    if (pe.notIncluded===undefined) pe.notIncluded = '';
+    if (pe.precautions===undefined) pe.precautions = '';
     if (!Array.isArray(pe.emphasis)) pe.emphasis = pe.emphasis ? [pe.emphasis] : []; // [Phase 3 상품등록 개선] 강조태그 복수 선택
     pe.labels = ensureLabels(pe.labels);
     pe.schedule = ensureSchedule(pe.schedule); // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
   });
+  // [수정] 포함사항/불포함사항/참고사항은 상품 공통이 아니라 요금 항목별로 개별 입력하도록 이관.
+  // 기존에 상품 레벨에 입력된 값이 있으면, 아직 값이 없는 각 요금 항목에 초기값으로 복사한 뒤
+  // 상품 레벨 필드는 제거한다(레거시 depAirport/arrAirport/airline 이관과 동일한 방식).
+  if (p.included || p.notIncluded || p.precautions){
+    p.priceEntries.forEach(pe=>{
+      if (p.included && !pe.included) pe.included = p.included;
+      if (p.notIncluded && !pe.notIncluded) pe.notIncluded = p.notIncluded;
+      if (p.precautions && !pe.precautions) pe.precautions = p.precautions;
+    });
+  }
+  delete p.included; delete p.notIncluded; delete p.precautions;
   // [수정] 체크포인트를 카드 노출 위치별로 1·2로 분리 (기존 단일 checkpoint는 체크포인트1로 이관)
   if (p.checkpoint1===undefined) p.checkpoint1 = p.checkpoint!==undefined ? p.checkpoint : '';
   if (p.checkpoint2===undefined) p.checkpoint2 = '';
@@ -4663,22 +4702,24 @@ function renderProductDetail(p,cat){
           const origFrom = pe.originalFromLabel ? ' ~부터' : '';
           const sameCurrency = (pe.saleCurrency||'KRW')===(pe.originalCurrency||'KRW');
           const discount = (sale && orig && orig>sale && sameCurrency) ? Math.round((1-sale/orig)*100) : 0;
-          // [수정] 카드 전체 클릭 시 외부 링크로 이동하는 동작은 유지하되, 아래 "자세히 →" 토글은
-          // <details>로 분리해 클릭이 상위로 전파되지 않도록 한다(막지 않으면 펼치는 즉시 외부 링크로 이동해버림)
-          const clickAttr = pe.link ? `onclick="window.open('${escapeAttr(pe.link)}','_blank','noopener')"` : '';
-          // [Phase 3 상품등록 개선 v3→v5] "자세히 →" 클릭 시 이 요금 항목의 레이블·일정과
-          // 상품 공통 포함/불포함/참고사항을 함께 펼쳐서 보여준다
+          // [수정] 카드 전체 클릭 시 외부 링크로 이동하는 동작은 링크 버튼이 노출 상태(linkVisible)일 때만 유지.
+          // 아래 "상세보기 →" 토글은 <details>로 분리해 클릭이 상위로 전파되지 않도록 한다
+          // (막지 않으면 펼치는 즉시 외부 링크로 이동해버림)
+          const linkVisible = pe.link && pe.linkVisible!==false;
+          const clickAttr = linkVisible ? `onclick="window.open('${escapeAttr(pe.link)}','_blank','noopener')"` : '';
+          // [Phase 3 상품등록 개선 v3→v6] "상세보기 →" 클릭 시 이 요금 항목의 레이블·일정과
+          // 이 요금 항목의 포함/불포함/참고사항을 함께 펼쳐서 보여준다(항목별 개별 입력)
           const labelRows = labelRowsHTML(pe.labels);
           const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
-          const sharedNotesHTML = [
-            p.included?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${bulletRows(p.included,'✓')}</div></div>`:'',
-            p.notIncluded?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${bulletRows(p.notIncluded,'✕')}</div></div>`:'',
-            p.precautions?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${bulletRows(p.precautions,'•')}</div></div>`:''
+          const peNotesHTML = [
+            pe.included?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${bulletRows(pe.included,'✓')}</div></div>`:'',
+            pe.notIncluded?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${bulletRows(pe.notIncluded,'✕')}</div></div>`:'',
+            pe.precautions?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${bulletRows(pe.precautions,'•')}</div></div>`:''
           ].join('');
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ 이 요금 항목의 레이블</div>${labelRows}</div>`:'',
             hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days)}</div></div>`:'',
-            sharedNotesHTML
+            peNotesHTML
           ].join('');
           // [Phase 3 상품등록 개선 v3] 항목별 요금표에는 포함사항 관련 정보만 노출 — 출발요일·항공패턴·추가요금안내는
           // 요금표에서 분리해 공통 안내 아래로 이동 (renderProductDetail 하단 참고)
@@ -4692,8 +4733,8 @@ function renderProductDetail(p,cat){
               ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
             </div>
             <div class="pd-pe-actions">
-              ${pe.link?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">상세 보기 →</a>`:''}
-              ${moreBody?`<details class="pd-pe-more" onclick="event.stopPropagation()"><summary>자세히 →</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
+              ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 상세보기 →</a>`:''}
+              ${moreBody?`<details class="pd-pe-more" onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
             </div>
           </div>`;
         }).join('')}
@@ -4701,20 +4742,12 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
-  // [수정] 공통 안내를 포함사항 위로 이동
+  // [수정] 공통 안내
   if (p.notes){
     html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${bulletRows(p.notes,'•')}</div></div>`;
   }
-  if (p.included){
-    html += `<div class="pd-slot"><div class="pd-section-title">💰 포함사항</div><div class="pd-check-list included">${bulletRows(p.included,'✓')}</div></div>`;
-  }
-  if (p.notIncluded){
-    html += `<div class="pd-slot"><div class="pd-section-title">❌ 불포함사항</div><div class="pd-check-list excluded">${bulletRows(p.notIncluded,'✕')}</div></div>`;
-  }
-  // [수정] 참고사항을 불포함사항 아래로 이동
-  if (p.precautions){
-    html += `<div class="pd-slot"><div class="pd-section-title">🌟 참고사항</div><div class="pd-check-list plain">${bulletRows(p.precautions,'•')}</div></div>`;
-  }
+  // [수정] 포함사항 · 불포함사항 · 참고사항은 더 이상 상품 공통으로 항상 노출하지 않는다 — 요금 항목별로
+  // 개별 입력하며, 요금표의 각 항목 "상세보기 →"를 클릭했을 때만 노출된다 (위 pd-price-entries 참고)
   // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
   const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount));
   if (extraFees.length){
@@ -5719,16 +5752,19 @@ function renderProductAdmin(catId){
     list.innerHTML=`<div class="empty-state" style="padding:30px 0"><div class="big">📦</div><p>등록된 상품이 없습니다.</p></div>`;
     return;
   }
+  // [수정] 상품 카드를 <details>로 전환 — 넘버링 옆에 제목을 함께 보여주고, 접어서 목록을 훑어볼 수 있게 한다
   list.innerHTML=products.map((p,i)=>`
-    <div class="admin-product-card">
-      <div class="apc-head">
+    <details class="admin-product-card" open>
+      <summary class="apc-head">
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
-        <div class="apc-actions">
+        <span class="apc-title-preview">${p.title?escapeAttr(p.title):'(제목 없음)'}</span>
+        <span class="apc-chevron">▾</span>
+        <div class="apc-actions" onclick="event.stopPropagation()">
           <button class="apc-btn-sm apc-edit-btn" onclick="openAdvEditor('${activeProductCat}',${i})">고급 편집</button>
           <button class="apc-btn-sm" onclick="duplicateProduct(${i})">복제</button>
           <button class="apc-btn-sm apc-delete" onclick="deleteProduct(${i})">삭제</button>
         </div>
-      </div>
+      </summary>
       <div class="apc-fields">
         <div class="full"><label>제목 · Title</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateProduct(${i},'title',this.value)"></div>
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
@@ -5740,7 +5776,7 @@ function renderProductAdmin(catId){
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4, 체크포인트1은 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
         <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
-    </div>`).join('');
+    </details>`).join('');
 }
 
 function updateProduct(idx,field,value){
@@ -6006,16 +6042,15 @@ function advBasicHTML(p){
       <div><input type="text" value="${escapeAttr(p.cardTag4||'')}" placeholder="카드태그4" oninput="updateAdvField('cardTag4',this.value)"></div>
     </div>
 
-    <!-- [Phase 3 상품등록 개선] 포함/불포함/참고사항을 공통사항으로 묶어 가독성 개선 -->
+    <!-- [수정] 포함사항 · 불포함사항 · 참고사항은 상품 공통이 아니라 요금 항목(항목1/2...)별로
+         개별 입력하도록 이관 — 아래 각 요금 항목 카드에서 입력한다. 여기(공통사항)에는 모든 요금
+         항목에 공통으로 적용되는 공통 안내·추가 요금 안내만 남긴다 -->
     <details class="adv-collapsible" open>
-      <summary>공통사항 — 포함 · 불포함 · 공통 안내 · 추가 요금 · 주의사항</summary>
+      <summary>공통사항 — 공통 안내 · 추가 요금</summary>
       <div class="adv-collapsible-body">
-        <label>💰 포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('included',this.value)">${escapeAttr(p.included||'')}</textarea>
-        <label>불포함사항</label><textarea style="min-height:120px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('notIncluded',this.value)">${escapeAttr(p.notIncluded||'')}</textarea>
         <label>✳️ 공통 안내</label><textarea style="min-height:140px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value)">${escapeAttr(p.notes||'')}</textarea>
         <label>💰 추가 요금 안내 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(항목 · 금액을 나눠 입력 — 자세히 화면에서 표 형식으로 노출)</span></label>
         ${extraFeesHTML(p)}
-        <label>🌟 참고사항</label><textarea style="min-height:90px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updateAdvField('precautions',this.value)">${escapeAttr(p.precautions||'')}</textarea>
       </div>
     </details>
 
@@ -6121,6 +6156,29 @@ function efDrop(e, targetIdx){
   p.extraFees.splice(targetIdx, 0, item);
   saveAdvChange(); renderAdvBody();
 }
+// [수정] 요금 항목(항목1/2...) 드래그 앤 드롭 순서 변경 — 추가요금안내와 동일한 방식
+let peDragIdx = null;
+function peDragStart(e, idx){
+  peDragIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  const row = e.currentTarget.closest('.pe-item');
+  if (row) row.classList.add('dragging');
+}
+function peDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
+function peDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function peDragEnd(e){
+  document.querySelectorAll('.pe-item').forEach(r=>{ r.classList.remove('dragging'); r.classList.remove('drag-over'); });
+  peDragIdx = null;
+}
+function peDrop(e, targetIdx){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (peDragIdx === null || peDragIdx === targetIdx) return;
+  const p = getAdvProduct(); if (!p) return;
+  const item = p.priceEntries.splice(peDragIdx, 1)[0];
+  p.priceEntries.splice(targetIdx, 0, item);
+  saveAdvChange(); renderAdvBody();
+}
 function updateExtraFee(i,field,val){
   const p=getAdvProduct(); if (!p) return;
   p.extraFees[i][field]=val;
@@ -6141,11 +6199,17 @@ function priceEntryHTML(pe, i, popupCount){
   const currencySelect = (field, val) => `<select onchange="updatePriceEntry(${i},'${field}',this.value)" class="curr-sel">${CURRENCIES.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
   const popupLocked = !pe.popup && popupCount >= POPUP_MAX;
   const emphasisArr = Array.isArray(pe.emphasis) ? pe.emphasis : (pe.emphasis?[pe.emphasis]:[]);
+  // [수정] 항목 간 드래그로 순서 변경 — 손잡이(⠿)에만 draggable 지정(추가요금안내와 동일한 방식)
+  const dropAttrs = `data-idx="${i}" ondragover="peDragOver(event)" ondragleave="peDragLeave(event)" ondrop="peDrop(event,${i})"`;
+  const handleAttrs = `draggable="true" ondragstart="peDragStart(event,${i})" ondragend="peDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
   return `
-  <div class="pe-block pe-item ${i%2?'pe-item-b':''}">
-    <div class="pe-head">
+  <details class="pe-block pe-item ${i%2?'pe-item-b':''}" open ${dropAttrs}>
+    <summary class="pe-head">
+      <span class="pe-drag-handle" title="드래그하여 순서 변경" ${handleAttrs}>⠿</span>
       <span class="pe-idx">— 항목 ${String(i+1).padStart(2,'0')}</span>
-      <div class="pe-head-right">
+      <span class="pe-title-preview">${pe.headline?escapeAttr(pe.headline):'(제목 없음)'}</span>
+      <span class="pe-chevron">▾</span>
+      <div class="pe-head-right" onclick="event.stopPropagation()">
         <label class="popup-toggle ${popupLocked?'locked':''}" title="${popupLocked?`최대 ${POPUP_MAX}개까지 동시 팝업 노출 가능`:'홈 진입 시 팝업으로 노출'}">
           <input type="checkbox" ${pe.popup?'checked':''} ${popupLocked?'disabled':''} onchange="togglePopup(${i},this.checked)">
           <span class="toggle-slider"></span>
@@ -6153,10 +6217,20 @@ function priceEntryHTML(pe, i, popupCount){
         </label>
         <button class="pee-del" onclick="removePriceEntry(${i})">삭제</button>
       </div>
-    </div>
+    </summary>
+    <div class="pe-body">
     <div class="grid-2">
       <div class="full"><label>대표 문구 · Headline</label><input type="text" value="${escapeAttr(pe.headline||'')}" placeholder="예: 2박3일 골프 패키지" oninput="updatePriceEntry(${i},'headline',this.value)"></div>
-      <div class="full"><label>연결 링크 · URL</label><input type="url" value="${escapeAttr(pe.link||'')}" placeholder="https://..." oninput="updatePriceEntry(${i},'link',this.value)"></div>
+      <div class="full">
+        <label>연결 링크 · URL</label>
+        <div class="link-visible-row">
+          <input type="url" value="${escapeAttr(pe.link||'')}" placeholder="https://..." oninput="updatePriceEntry(${i},'link',this.value)">
+          <label class="from-toggle" title="상세페이지 요금표에 이 링크로 이동하는 '바로가기 →' 버튼을 노출할지 선택">
+            <input type="checkbox" ${pe.linkVisible!==false?'checked':''} onchange="updatePriceEntry(${i},'linkVisible',this.checked,'bool')">
+            <span>버튼 노출</span>
+          </label>
+        </div>
+      </div>
       <div><label>레이아웃</label>
         <select onchange="updatePriceEntry(${i},'layout',this.value)">
           ${layoutOpts.map(o=>`<option value="${o[0]}" ${pe.layout===o[0]?'selected':''}>${o[1]}</option>`).join('')}
@@ -6188,6 +6262,16 @@ function priceEntryHTML(pe, i, popupCount){
       </div>
     </div>
 
+    <!-- [수정] 포함사항/불포함사항/참고사항 — 요금 항목별 개별 입력 (상세페이지 요금표 "상세보기→"에서 노출) -->
+    <details class="pe-labels" open>
+      <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항</summary>
+      <div class="pe-labels-body">
+        <label>💰 포함사항</label><textarea style="min-height:100px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'included',this.value)">${escapeAttr(pe.included||'')}</textarea>
+        <label>불포함사항</label><textarea style="min-height:100px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value)">${escapeAttr(pe.notIncluded||'')}</textarea>
+        <label>🌟 참고사항</label><textarea style="min-height:80px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updatePriceEntry(${i},'precautions',this.value)">${escapeAttr(pe.precautions||'')}</textarea>
+      </div>
+    </details>
+
     <!-- 이 요금표 항목에 종속된 레이블 -->
     <details class="pe-labels" open>
       <summary>🏷 이 요금 항목의 레이블 (항공·공항·항공편·티오프 등)</summary>
@@ -6199,7 +6283,8 @@ function priceEntryHTML(pe, i, popupCount){
       <summary>🗓 일정 요약 타임라인 (일자별 항공·일정)</summary>
       ${scheduleHTML(pe, i)}
     </details>
-  </div>`;
+    </div>
+  </details>`;
 }
 
 // ===== 레이블 옵션 상수 =====

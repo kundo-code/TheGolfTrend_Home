@@ -4189,14 +4189,21 @@ function renderBlog(){
       </div>
     </article>`;
   }).join('');
-  // 백그라운드에서 OG 태그 자동 로드 (제목/이미지 없는 항목만)
+  // 백그라운드에서 OG 태그 자동 로드 (제목/이미지 없는 항목만, 이번 세션에서 아직 시도하지 않은 것만)
+  // 주의: 프록시(allorigins.win)가 og:title/og:image를 완전히 못 채워주는 경우
+  // (네이버 블로그가 프록시를 차단/에러 응답하는 등) 재시도 제한이 없으면 renderBlog()→
+  // fetchBlogMeta()→renderBlog()가 서로를 무한히 재호출해 같은 URL에 수천 번 요청을 쏟아붓고
+  // 브라우저 네트워크 리소스를 고갈시켜(ERR_INSUFFICIENT_RESOURCES) 페이지 전체가 먹통이 될 수 있다.
+  // _blogMetaAttempted로 한 세션당 URL별 자동 시도를 1회로 제한해 이를 막는다.
   list.forEach((b,i) => {
-    if (b.url && (!b.title || !b.image)) fetchBlogMeta(b.url, i);
+    if (b.url && (!b.title || !b.image) && !_blogMetaAttempted.has(b.url)) fetchBlogMeta(b.url, i);
   });
 }
+const _blogMetaAttempted = new Set();
 
 // OG 태그를 CORS 프록시(allorigins.win)로 가져와 자동 채움
 async function fetchBlogMeta(url, idx){
+  _blogMetaAttempted.add(url);
   try {
     const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
     const res = await fetch(proxy);
@@ -4221,6 +4228,7 @@ function setBlogUrl(idx, url){
   const list = getBlogList();
   list[idx].url = url;
   list[idx].title = ''; list[idx].title1 = ''; list[idx].title2 = ''; list[idx].image = ''; list[idx].description = '';
+  _blogMetaAttempted.delete(url); // 새/변경된 URL은 자동 로드가 다시 한 번 시도되도록 허용
   saveBlogList(list); renderBlog(); renderAdminBlog();
 }
 function setBlogTag(idx, tag){
@@ -4245,6 +4253,7 @@ function refreshBlogMeta(idx){
   if (!b || !b.url){ alert('먼저 URL을 입력하세요'); return; }
   list[idx].title=''; list[idx].image=''; list[idx].description='';
   saveBlogList(list);
+  _blogMetaAttempted.delete(b.url); // 관리자가 수동으로 새로고침하면 이전 시도 여부와 무관하게 다시 시도
   fetchBlogMeta(b.url, idx);
 }
 function renderAdminBlog(){
@@ -6584,9 +6593,16 @@ function renderAdminSeasonTheme(){
     }).join('');
 }
 
+// 렌더 함수 하나가 (손상된 localStorage/Supabase 데이터 등으로) 예외를 던져도
+// renderAll의 나머지 섹션까지 통째로 멈추지 않도록 각 호출을 개별적으로 격리한다.
+// 이 격리가 없으면 목록상 앞쪽 렌더 함수 하나가 실패했을 때 뒤쪽 함수들(스팟라이트/블로그/링크/푸터 등)이
+// 전혀 실행되지 않아 페이지 일부가 "백지"로 남는 문제가 생긴다.
+function safeRender(fn){
+  try{ fn(); }catch(e){ console.error('[renderAll] '+(fn.name||'render')+' 실패:', e); }
+}
 function renderAll(){
   // renderCategoryGrid()가 두 지역을 모두 다시 그리며, 열려있는 카드의 상품 목록도 함께 갱신한다
-  renderTopBar();renderHeadline();renderAboutBanner();renderFooterLegal();renderCvImages();renderStrImages();renderPkgAll();renderCategoryGrid();renderHeroBg();renderSpotlight();renderBlog();renderLinks();renderFootSocials();
+  [renderTopBar, renderHeadline, renderAboutBanner, renderFooterLegal, renderCvImages, renderStrImages, renderPkgAll, renderCategoryGrid, renderHeroBg, renderSpotlight, renderBlog, renderLinks, renderFootSocials].forEach(safeRender);
 }
 
 // INIT
@@ -6853,9 +6869,12 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-renderAll();
-setInterval(cycleHero,6000);
-setInterval(cycleSpot,8000);
+// renderAll()이나 아래 초기화 호출 중 하나가 예외를 던지면(스크립트 전체가 하나의 <script> 블록이라)
+// 이후에 나오는 setInterval/pullSiteState/팝업/라이트박스 초기화 코드가 전혀 실행되지 않고
+// 조용히 멈춰버릴 수 있다. 각 초기화 단계를 개별적으로 격리해 하나가 실패해도 나머지는 계속 진행되게 한다.
+safeRender(renderAll);
+try{ setInterval(cycleHero,6000); }catch(e){ console.error('[init] cycleHero interval 실패:', e); }
+try{ setInterval(cycleSpot,8000); }catch(e){ console.error('[init] cycleSpot interval 실패:', e); }
 
 // 로컬(localStorage/IndexedDB) 데이터로 먼저 빠르게 그린 뒤, Supabase에 저장된 공유 상태를
 // 백그라운드에서 가져와 있으면(다른 기기/브라우저에서 저장한 최신 내용) 다시 렌더링해 동기화.

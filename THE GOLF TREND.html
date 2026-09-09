@@ -49,6 +49,13 @@
   --glass-shadow:0 10px 32px rgba(0,0,0,0.22),inset 0 1px 0 rgba(255,255,255,0.28);
   --glass-blur:blur(14px) saturate(1.5);--glass-blur-strong:blur(18px) saturate(1.5);
 
+  /* [버튼 입체감] 전체 버튼 공용 — 외부 그림자(elevate)로 떠 보이게 하고, 상단 하이라이트(shine)로
+     유리/광택 반사 느낌을 준다. 배경에 --btn-highlight 그라데이션을 원래 색과 함께 겹쳐 쓰면 된다. */
+  --btn-elevate:0 10px 26px rgba(3,13,38,.32);
+  --btn-elevate-hover:0 16px 36px rgba(3,13,38,.4);
+  --btn-shine:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -3px 6px rgba(0,0,0,.18);
+  --btn-highlight:linear-gradient(180deg,rgba(255,255,255,.32) 0%,rgba(255,255,255,0) 55%);
+
   /* [관리자 패널 Soft Neumorphism] 실버·화이트 표면 + 일렉트릭 블루 포인트.
      사용자 화면 톤(다크 네이비+골드)은 그대로 두고, 관리자 패널(.admin-panel 이하)에서만 사용한다. */
   --nm-bg:#E8EDF3;--nm-surface:#E8EDF3;--nm-surface-light:#F4F7FB;--nm-white:#FFFFFF;
@@ -167,10 +174,10 @@ header{padding-top:var(--topbar-h,108px)}
 .hero .lead{font-size:1.05rem;color:rgba(247,245,240,.92);max-width:520px;margin-bottom:36px}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:36px}
 .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 30px;border-radius:100px;font-weight:600;font-size:.95rem;border:1px solid transparent;cursor:pointer;transition:all .25s;font-family:'Pretendard','Noto Sans KR',sans-serif}
-.btn-primary{background:var(--cream);color:var(--pine);border-color:rgba(255,255,255,.4)}
-.btn-primary:hover{background:var(--gold);color:#fff;transform:translateY(-2px);box-shadow:0 10px 30px rgba(221,179,103,.35)}
-.btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
-.btn-ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.btn-primary{background:var(--btn-highlight),var(--cream);color:var(--pine);border-color:rgba(255,255,255,.4);box-shadow:var(--btn-elevate),var(--btn-shine)}
+.btn-primary:hover{background:var(--btn-highlight),var(--gold);color:#fff;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
+.btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4);box-shadow:0 6px 18px rgba(3,13,38,.2)}
+.btn-ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px);box-shadow:0 10px 26px rgba(3,13,38,.28)}
 .hero-side{display:flex;flex-direction:column}
 .spotlight-header{margin-bottom:14px}
 .spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
@@ -262,8 +269,8 @@ section.block{padding:100px 24px;position:relative}
 .cv-nav-item.active{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 /* [수정] 글래스모피즘 통일 — 다른 카드(.post)와 동일하게 반투명+블러 적용 */
-.product{padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(10,23,48,.05)}
-.product:hover{transform:translateY(-4px);border-color:var(--gold);background:#fff;box-shadow:0 14px 32px rgba(10,23,48,.12)}
+.product{padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(10,23,48,.16),0 2px 6px rgba(10,23,48,.08)}
+.product:hover{transform:translateY(-6px);border-color:var(--gold);background:#fff;box-shadow:0 26px 54px rgba(10,23,48,.26),0 8px 18px rgba(10,23,48,.16)}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출 */
 .product-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;background-size:cover;background-position:center;border:1px solid rgba(10,23,48,.08)}
 .product-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -1007,14 +1014,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   color:rgba(247,245,240,.8);font-size:.88rem;font-weight:500;
   letter-spacing:.02em;transition:all .2s;white-space:nowrap;
 }
-.nav ul li a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav ul li a:hover{color:var(--pine-deep);background:var(--gold)}
 .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .nav .cta{
-  padding:8px 18px;background:var(--gold);color:var(--pine-deep);
+  padding:8px 18px;background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
   border-radius:100px;font-size:.82rem;font-weight:700;letter-spacing:.04em;
-  transition:all .2s;white-space:nowrap;
+  transition:all .2s;white-space:nowrap;box-shadow:var(--btn-elevate),var(--btn-shine);
 }
-.nav .cta:hover{background:#CA8E3F;transform:translateY(-1px)}
+.nav .cta:hover{background:var(--btn-highlight),#CA8E3F;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .nav .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
 @media(max-width:780px){
   .nav ul{display:none;position:absolute;top:54px;left:0;right:0;
@@ -1200,24 +1207,26 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ── 상담 신청 버튼 균등 레이아웃 (동일 레벨·동일 크기) ──────── */
 .submit-row{display:flex;gap:10px;flex-wrap:nowrap}
 .submit-btn{
-  flex:1;background:var(--gold);color:#fff;border:none;
+  flex:1;background:var(--btn-highlight),var(--gold);color:#fff;border:none;
   border-radius:12px;padding:14px 16px;font-size:.95rem;font-weight:700;
   cursor:pointer;transition:all .25s;border:1px solid rgba(221,179,103,.5);
-  white-space:nowrap;
+  white-space:nowrap;box-shadow:var(--btn-elevate),var(--btn-shine);
 }
-.submit-btn:hover{background:var(--gold-deep);transform:translateY(-1px);box-shadow:0 8px 24px rgba(10,23,48,.2)}
+.submit-btn:hover{background:var(--btn-highlight),var(--gold-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .call-btn{
   flex:1;padding:14px 16px;background:transparent;border:1px solid var(--gold);
   color:var(--gold);border-radius:12px;font-size:.95rem;font-weight:700;
   cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;
+  box-shadow:0 6px 18px rgba(3,13,38,.14);
 }
-.call-btn:hover{background:var(--gold);color:var(--pine-deep);transform:translateY(-1px);box-shadow:0 10px 30px rgba(221,179,103,.35)}
+.call-btn:hover{background:var(--btn-highlight),var(--gold);color:var(--pine-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .kakao-btn{
-  flex:1;padding:14px 16px;background:#FEE500;border:1px solid #FEE500;
+  flex:1;padding:14px 16px;background:var(--btn-highlight),#FEE500;border:1px solid #FEE500;
   color:#391B1B;border-radius:12px;font-size:.95rem;font-weight:700;
   cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;
+  box-shadow:0 10px 26px rgba(180,150,0,.28),var(--btn-shine);
 }
-.kakao-btn:hover{background:#FDD800;border-color:#FDD800;transform:translateY(-1px);box-shadow:0 10px 30px rgba(254,229,0,.4)}
+.kakao-btn:hover{background:var(--btn-highlight),#FDD800;border-color:#FDD800;transform:translateY(-2px);box-shadow:0 16px 36px rgba(180,150,0,.36),var(--btn-shine)}
 @media(max-width:500px){.submit-row{flex-direction:column}}
 
 /* ── 법적고지 관리자 패널 ──────────────────────────────────────── */
@@ -1332,11 +1341,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border:1px solid rgba(10,23,48,.1);
   transition:all .3s;
 }
+/* [수정] 마우스 오버 시 카드가 움직이거나 그림자가 생기던 효과 제거 요청 — 호버 상태를 기본 상태와
+   동일하게 고정해 아무 변화도 일어나지 않도록 함 */
 .about-white-panel .cv-card:hover{
-  background:rgba(10,23,48,.08);
-  border-color:rgba(10,23,48,.2);
-  transform:translateY(-4px);
-  box-shadow:0 12px 32px rgba(10,23,48,.12);
+  background:rgba(10,23,48,.04);
+  border-color:rgba(10,23,48,.1);
+  transform:none;
+  box-shadow:none;
 }
 
 /* str-card 이미지 슬롯 */
@@ -1364,10 +1375,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:rgba(10,23,48,.04);
   border:1px solid rgba(10,23,48,.1);
 }
+/* [수정] 마우스 오버 시 카드가 움직이거나 그림자가 생기던 효과 제거 요청 — 호버 상태를 기본 상태와
+   동일하게 고정해 아무 변화도 일어나지 않도록 함 */
 .about-white-panel .str-card:hover{
-  background:rgba(10,23,48,.08);
-  border-color:rgba(10,23,48,.2);
-  box-shadow:0 12px 32px rgba(10,23,48,.12);
+  background:rgba(10,23,48,.04);
+  border-color:rgba(10,23,48,.1);
+  transform:none;
+  box-shadow:none;
 }
 .about-white-panel .str-title{ color:var(--pine)!important; }
 
@@ -1806,12 +1820,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ai-q-label{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-bottom:10px}
 .ai-q-label em{font-style:normal;font-weight:500;color:rgba(10,23,48,.5);font-size:.8rem}
 .ai-chip-group{display:flex;flex-wrap:wrap;gap:8px}
-.ai-chip{padding:9px 16px;border-radius:100px;border:1px solid rgba(10,23,48,.18);background:#fff;color:var(--pine);font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s}
-.ai-chip:hover{border-color:var(--gold)}
-.ai-chip.active{background:var(--pine);border-color:var(--pine);color:#fff}
-#aiStyleChips .ai-chip.active{background:var(--gold-deep);border-color:var(--gold-deep)}
-.ai-submit-btn{justify-self:start;padding:15px 32px;background:var(--gold);border:1px solid rgba(221,179,103,.5);color:#fff;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s}
-.ai-submit-btn:hover{background:var(--gold-deep);transform:translateY(-1px)}
+.ai-chip{padding:9px 16px;border-radius:100px;border:1px solid rgba(10,23,48,.18);background:var(--btn-highlight),#fff;color:var(--pine);font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(10,23,48,.1)}
+.ai-chip:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:0 8px 18px rgba(10,23,48,.16)}
+.ai-chip.active{background:var(--btn-highlight),var(--pine);border-color:var(--pine);color:#fff;box-shadow:var(--btn-elevate),var(--btn-shine)}
+#aiStyleChips .ai-chip.active{background:var(--btn-highlight),var(--gold-deep);border-color:var(--gold-deep)}
+.ai-submit-btn{justify-self:start;padding:15px 32px;background:var(--btn-highlight),var(--gold);border:1px solid rgba(221,179,103,.5);color:#fff;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
+.ai-submit-btn:hover{background:var(--btn-highlight),var(--gold-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .ai-results{margin-top:32px;display:grid;gap:20px}
 .ai-results-head{font-size:.95rem;font-weight:700;color:var(--pine-deep)}
 .ai-empty{padding:32px;text-align:center;color:rgba(10,23,48,.55);background:rgba(255,255,255,.7);border-radius:16px}

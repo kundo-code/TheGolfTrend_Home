@@ -61,7 +61,7 @@
   /* [관리자 패널 Soft Neumorphism] 실버·화이트 표면 + 일렉트릭 블루 포인트.
      사용자 화면 톤(다크 네이비+골드)은 그대로 두고, 관리자 패널(.admin-panel 이하)에서만 사용한다. */
   --nm-bg:#E8EDF3;--nm-surface:#E8EDF3;--nm-surface-light:#F4F7FB;--nm-white:#FFFFFF;
-  --nm-text:#202B3A;--nm-text-soft:#667385;
+  --nm-text:#202B3A;--nm-text-soft:#667385;--nm-placeholder:#A7AFBC;
   --nm-blue:var(--gold);--nm-blue-deep:var(--gold-deep);--nm-cyan:#38C8F4;
   --nm-border:rgba(255,255,255,0.65);--nm-danger:#E0455B;
   --nm-shadow-raised:8px 8px 18px rgba(163,177,198,.35),-8px -8px 18px rgba(255,255,255,.9);
@@ -70,6 +70,9 @@
   --nm-shadow-hover:10px 10px 24px rgba(150,165,188,.38),-10px -10px 24px rgba(255,255,255,.95);
   --nm-shadow-blue:0 4px 16px rgba(221,179,103,.22);
   --nm-r-sm:12px;--nm-r-md:16px;--nm-r-card:22px;--nm-r-lg:28px;--nm-r-pill:999px;
+  /* 관리자 패널 버튼 hover/선택 공용 — "완료" 버튼과 동일한 골드 그라디언트 + 눌린 느낌(inset) 그림자 */
+  --nm-gold-grad:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);
+  --nm-shadow-gold-press:inset 3px 3px 8px rgba(0,0,0,.28),inset -1px -1px 2px rgba(255,255,255,.15);
 }
 
 /* ═══════════════ 관리자 패널 NEUMORPHISM 공용 컴포넌트 ═══════════════ */
@@ -551,13 +554,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-head h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-text);font-size:1.25rem;font-weight:500}
 .admin-head p{font-size:.78rem;color:var(--nm-text-soft);margin-top:2px}
 .admin-close{background:var(--nm-surface);border:none;color:var(--nm-text-soft);width:32px;height:32px;border-radius:50%;font-size:1.3rem;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm)}
-.admin-close:hover{color:var(--nm-text)}
+.admin-close:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
 .admin-logout{background:var(--nm-surface);border:none;color:var(--nm-text-soft);font-size:.76rem;font-weight:600;padding:8px 14px;border-radius:var(--nm-r-pill);cursor:pointer;margin-right:12px;box-shadow:var(--nm-shadow-raised-sm)}
-.admin-logout:hover{color:var(--nm-text);box-shadow:var(--nm-shadow-hover)}
+.admin-logout:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
 .admin-login{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:32px 24px;overflow-y:auto}
 .admin-login .al-desc{font-size:.86rem;color:var(--nm-text-soft);line-height:1.5;margin-bottom:4px}
 .admin-login input{padding:12px 14px;background:var(--nm-white);border:none;border-radius:var(--nm-r-md);color:var(--nm-text);font-size:.9rem;font-family:'Pretendard','Noto Sans KR',sans-serif;box-shadow:var(--nm-shadow-inset)}
 .admin-login input:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
+/* 관리자 패널·고급편집 입력필드 가이드(placeholder) 텍스트 — 본문 텍스트보다 2톤 연하게 */
+.admin-panel input::placeholder,.admin-panel textarea::placeholder,
+.adv-editor-overlay input::placeholder,.adv-editor-overlay textarea::placeholder{color:var(--nm-placeholder)}
 .admin-login .al-submit{padding:12px;background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);border:none;border-radius:var(--nm-r-md);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:var(--nm-shadow-blue)}
 .admin-login .al-submit:hover{box-shadow:0 6px 20px rgba(221,179,103,.35)}
 .admin-login .al-submit:disabled{opacity:.6;cursor:not-allowed}
@@ -565,8 +571,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 #adminAuthedArea{display:flex;flex-direction:column;flex:1;min-height:0}
 .admin-tabs{display:flex;padding:8px 12px;gap:4px;background:var(--nm-surface-light);border-bottom:1px solid var(--nm-border);overflow-x:auto;flex-shrink:0;min-height:48px}
 .admin-tabs button{padding:9px 16px;background:transparent;border:none;border-radius:var(--nm-r-pill);color:var(--nm-text-soft);font-size:.86rem;font-weight:600;cursor:pointer;position:relative;transition:all .2s;white-space:nowrap}
-.admin-tabs button:hover{color:var(--nm-text);background:var(--nm-surface)}
-.admin-tabs button.active{color:var(--nm-blue-deep);background:var(--nm-surface);box-shadow:var(--nm-shadow-inset)}
+.admin-tabs button:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
+.admin-tabs button.active{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-gold-press)}
+.admin-tabs button.active:hover{box-shadow:var(--nm-shadow-gold-press)}
 .admin-body{flex:1;min-height:0;overflow-y:scroll;overflow-x:hidden;padding:20px 24px;background:var(--nm-bg);scrollbar-width:thin;scrollbar-color:rgba(221,179,103,.35) rgba(163,177,198,.15)}
 .admin-body::-webkit-scrollbar{width:9px}
 .admin-body::-webkit-scrollbar-track{background:rgba(163,177,198,.15)}
@@ -598,8 +605,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ast-ico-img{width:1.2em;height:1.2em;object-fit:contain;display:block}
 .season-theme-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);color:var(--nm-text-soft);font-size:.82rem;font-family:inherit;cursor:pointer;transition:all .2s;text-align:left;box-shadow:var(--nm-shadow-raised-sm)}
 .season-theme-btn .ico{font-size:1.2rem}
-.season-theme-btn:hover{box-shadow:var(--nm-shadow-hover);color:var(--nm-text)}
-.season-theme-btn.active{box-shadow:var(--nm-shadow-inset);color:var(--nm-blue-deep);font-weight:600}
+.season-theme-btn:hover{background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue);color:#fff}
+.season-theme-btn.active{background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-gold-press);color:#fff;font-weight:600}
+.season-theme-btn.active:hover{box-shadow:var(--nm-shadow-gold-press)}
 .admin-info-box b{color:var(--nm-blue-deep)}
 .product-cat-select{width:100%;padding:11px 14px;background:var(--nm-white);border:none;border-radius:var(--nm-r-md);color:var(--nm-text);font-size:.92rem;font-family:'Pretendard','Noto Sans KR',sans-serif;margin-bottom:14px;cursor:pointer;box-shadow:var(--nm-shadow-inset)}
 .product-cat-select option{background:var(--nm-white);color:var(--nm-text)}
@@ -610,7 +618,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-actions{display:flex;gap:6px}
 .apc-btn-sm{padding:6px 12px;border-radius:var(--nm-r-pill);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;border:none}
 .apc-edit-btn{background:var(--nm-surface);color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-raised-sm)}
-.apc-edit-btn:hover{box-shadow:var(--nm-shadow-hover)}
+.apc-edit-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .apc-delete{background:var(--nm-surface);color:var(--nm-danger);box-shadow:var(--nm-shadow-raised-sm)}
 .apc-delete:hover{box-shadow:var(--nm-shadow-hover)}
 .apc-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -620,17 +628,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-fields input:focus,.apc-fields select:focus,.apc-fields textarea:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .apc-fields select option{background:var(--nm-white);color:var(--nm-text)}
 .add-product-btn{width:100%;min-height:44px;padding:12px;background:var(--nm-surface);border:none;color:var(--nm-blue-deep);border-radius:var(--nm-r-md);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:6px;box-shadow:var(--nm-shadow-inset)}
-.add-product-btn:hover{color:var(--nm-blue)}
+.add-product-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press)}
 .reset-cat-btn{padding:8px 14px;background:var(--nm-surface);border:none;color:var(--nm-text-soft);border-radius:var(--nm-r-pill);font-size:.75rem;cursor:pointer;transition:all .2s;box-shadow:var(--nm-shadow-raised-sm)}
-.reset-cat-btn:hover{box-shadow:var(--nm-shadow-hover);color:var(--nm-text)}
+.reset-cat-btn:hover{background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue);color:#fff}
 .product-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
 .product-toolbar .info{font-size:.78rem;color:var(--nm-text-soft)}
 .admin-foot{padding:14px 24px;background:var(--nm-surface-light);border-top:1px solid var(--nm-border);display:flex;gap:10px;flex-shrink:0}
 .admin-foot button{flex:1;min-height:44px;padding:11px;border-radius:var(--nm-r-pill);font-size:.88rem;font-weight:600;cursor:pointer;border:none}
 .reset-btn{background:var(--nm-surface);color:var(--nm-text-soft);box-shadow:var(--nm-shadow-raised-sm)}
-.reset-btn:hover{box-shadow:var(--nm-shadow-hover);color:var(--nm-text)}
+.reset-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .apply-btn{background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .apply-btn:hover{box-shadow:0 6px 20px rgba(221,179,103,.35)}
+.apply-btn:active{box-shadow:var(--nm-shadow-gold-press)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
 .overlay.show{opacity:1;pointer-events:auto}
 
@@ -664,7 +673,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .link-admin-item .content{min-width:0}
 .link-admin-item .content .name{font-size:.85rem;color:var(--nm-text);font-weight:500;margin-bottom:4px}
 .link-admin-item .content input{width:100%;padding:8px 10px;background:var(--nm-white);border:none;border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.8rem;font-family:'Pretendard','Noto Sans KR',sans-serif;box-shadow:var(--nm-shadow-inset)}
-.link-admin-item .content input::placeholder{color:var(--nm-text-soft)}
+.link-admin-item .content input::placeholder{color:var(--nm-placeholder)}
 .link-admin-item .content input:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 
 /* 출입국신고서 작성 안내 (관리자) */
@@ -675,7 +684,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .file-btn.small{padding:5px 10px;font-size:.68rem;min-height:auto}
 .ee-admin-fields{min-width:0;display:flex;flex-direction:column;gap:6px}
 .ee-admin-fields input[type=text],.ee-admin-fields input[type=url]{width:100%;padding:8px 10px;background:var(--nm-white);border:none;border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.8rem;font-family:'Pretendard','Noto Sans KR',sans-serif;box-shadow:var(--nm-shadow-inset)}
-.ee-admin-fields input::placeholder{color:var(--nm-text-soft)}
+.ee-admin-fields input::placeholder{color:var(--nm-placeholder)}
 .ee-admin-fields input:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .ee-visa-check{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--nm-text-soft);cursor:pointer}
 .ee-visa-check input{width:auto!important}
@@ -693,15 +702,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .adv-head h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-text);font-size:1.15rem;font-weight:500}
 .adv-head p{font-size:.78rem;color:var(--nm-text-soft);margin-top:2px}
 .adv-close{background:var(--nm-surface);border:none;color:var(--nm-text-soft);width:32px;height:32px;border-radius:50%;font-size:1.3rem;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm)}
-.adv-close:hover{color:var(--nm-text)}
+.adv-close:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
 .adv-tabs{display:flex;background:var(--nm-surface-light);border-bottom:1px solid var(--nm-border);padding:8px 14px;gap:4px;overflow-x:auto}
 .adv-tabs button{padding:9px 14px;background:transparent;border:none;border-radius:var(--nm-r-pill);color:var(--nm-text-soft);font-size:.84rem;font-weight:600;cursor:pointer;position:relative;transition:all .2s;white-space:nowrap;font-family:inherit}
-.adv-tabs button:hover{color:var(--nm-text);background:var(--nm-surface)}
-.adv-tabs button.active{color:var(--nm-blue-deep);background:var(--nm-surface);box-shadow:var(--nm-shadow-inset)}
+.adv-tabs button:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
+.adv-tabs button.active{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-gold-press)}
+.adv-tabs button.active:hover{box-shadow:var(--nm-shadow-gold-press)}
 .adv-body{padding:22px 26px;max-height:60vh;overflow-y:auto;background:var(--nm-surface)}
-.adv-body .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.adv-body .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
 .adv-body .full{grid-column:1/-1}
-.adv-body label{display:block;font-size:.66rem;font-weight:600;letter-spacing:.13em;color:var(--nm-text-soft);text-transform:uppercase;margin-bottom:4px;margin-top:10px}
+/* [관리자 패널 가독성 개선] 항목(라벨) 제목 폰트 확대 + 항목간 상단 여백 확대 */
+.adv-body label{display:block;font-size:.74rem;font-weight:700;letter-spacing:.12em;color:var(--nm-text-soft);text-transform:uppercase;margin-bottom:6px;margin-top:18px}
 .adv-body label:first-child{margin-top:0}
 .adv-body input,.adv-body select,.adv-body textarea{width:100%;padding:9px 11px;background:var(--nm-white);border:none;border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.88rem;font-family:'Pretendard','Noto Sans KR',sans-serif;box-shadow:var(--nm-shadow-inset)}
 .adv-body input:focus,.adv-body select:focus,.adv-body textarea:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
@@ -733,9 +744,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .adv-foot{padding:16px 26px;border-top:1px solid var(--nm-border);display:flex;justify-content:flex-end;gap:10px;background:var(--nm-surface-light)}
 .adv-foot button{min-height:44px;padding:10px 24px;border-radius:var(--nm-r-pill);font-size:.88rem;font-weight:600;cursor:pointer;border:none;font-family:inherit}
 .adv-foot .cancel{background:var(--nm-surface);color:var(--nm-text-soft);box-shadow:var(--nm-shadow-raised-sm)}
-.adv-foot .cancel:hover{box-shadow:var(--nm-shadow-hover);color:var(--nm-text)}
+.adv-foot .cancel:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .adv-foot .save{background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .adv-foot .save:hover{box-shadow:0 6px 20px rgba(221,179,103,.35)}
+.adv-foot .save:active{box-shadow:var(--nm-shadow-gold-press)}
 
 /* ===== POPUP STAGE (홈 진입 팝업) ===== */
 .popup-stage{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;gap:16px;padding:40px 20px;flex-wrap:wrap;overflow:auto}
@@ -769,6 +781,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ===== 요금 항목(pe-block) UI ===== */
 .pe-block{background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);padding:14px 16px;margin:6px 0 10px;box-shadow:var(--nm-shadow-raised-sm)}
+/* [관리자 패널 가독성 개선] 요금표 "항목 01/02..." 카드 — 항목간 간격을 넓히고 좌측 강조선 색을
+   홀/짝으로 번갈아(골드↔사이언) 주어 인접한 항목끼리 한눈에 구분되게 한다.
+   자세히보기(details) 안에 중첩되는 일정 pe-block(scheduleDayHTML)은 이 클래스를 쓰지 않으므로 영향 없음 */
+.pe-item{margin:0 0 20px;border-left:4px solid var(--nm-blue-deep)}
+.pe-item.pe-item-b{background:var(--nm-surface-light);border-left-color:var(--nm-cyan)}
 /* [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액 분리 입력 리스트 */
 .ef-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 .ef-row{display:grid;grid-template-columns:18px 1fr 1fr auto;gap:8px;align-items:center}
@@ -780,8 +797,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ef-drag-handle:active{ cursor:grabbing; }
 .ef-row.dragging{opacity:.4;transform:scale(.98)}
 .ef-row.drag-over{box-shadow:0 0 0 2px var(--nm-blue);border-radius:8px}
-.pe-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.12)}
-.pe-idx{font-size:.85rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.05em}
+.pe-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.12)}
+.pe-idx{font-size:1rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.05em}
 .pe-head-right{display:flex;align-items:center;gap:10px}
 /* .pe-head-right로 스코프를 좁혀 특이도(specificity)를 .adv-body label(클래스1+태그1)보다 높여야
    display:flex 등 아래 선언이 실제로 적용된다 — 그렇지 않으면 label 태그 특이도에 밀려 display:block으로
@@ -804,7 +821,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .from-toggle input{accent-color:var(--nm-blue);cursor:pointer;width:14px;height:14px}
 .from-toggle input:checked ~ span{color:var(--nm-blue-deep);font-weight:700}
 /* 종속 레이블 */
-.pe-labels{margin-top:12px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);padding:10px 14px;box-shadow:var(--nm-shadow-inset)}
+/* [관리자 패널 가독성 개선] "자세히 보기"(details)로 펼쳐야 보이는 영역은 화면에 항상 노출되는
+   .pe-block/.pe-item보다 한 톤 밝은 배경(--nm-surface-light)으로 구분 — 같은 실버·화이트 뉴모피즘
+   분위기는 유지하면서 "펼침 영역"임을 시각적으로 알 수 있게 한다 */
+.pe-labels{margin-top:16px;background:var(--nm-surface-light);border:none;border-radius:var(--nm-r-md);padding:12px 16px;box-shadow:var(--nm-shadow-inset)}
+.pe-labels .pe-block{background:var(--nm-white)}
 .pe-labels summary{cursor:pointer;font-size:.82rem;font-weight:600;color:var(--nm-text);padding:4px 0;user-select:none;list-style:none}
 .pe-labels summary::-webkit-details-marker{display:none}
 .pe-labels summary::before{content:'▸ ';color:var(--nm-blue);transition:transform .2s;display:inline-block;margin-right:4px}
@@ -815,15 +836,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .tee-day{font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.03em}
 .tee-grid input{padding:6px 8px;font-size:.8rem;background:var(--nm-white);border:none;border-radius:5px;color:var(--nm-text);box-shadow:var(--nm-shadow-inset)}
 /* 섹션 디바이더 */
-.section-divider{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 10px;padding:8px 12px;background:var(--nm-surface);border-left:3px solid var(--nm-blue);border-radius:6px;box-shadow:var(--nm-shadow-raised-sm)}
-.sd-title{font-size:.88rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.03em}
+.section-divider{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 14px;padding:9px 12px;background:var(--nm-surface);border-left:3px solid var(--nm-blue);border-radius:6px;box-shadow:var(--nm-shadow-raised-sm)}
+.sd-title{font-size:.96rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.03em}
 /* [Phase 3 상품등록 개선] 관리자 패널 복수 선택 칩(다중 선택 항목 공용) */
 .adv-chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 .adv-chip{padding:7px 14px;border-radius:var(--nm-r-pill);border:none;background:var(--nm-surface);color:var(--nm-text-soft);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;box-shadow:var(--nm-shadow-raised-sm)}
-.adv-chip:hover{box-shadow:var(--nm-shadow-hover)}
-.adv-chip.active{background:var(--nm-surface);color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-inset)}
-.adv-collapsible{border:none;border-radius:var(--nm-r-md);margin:10px 0;overflow:hidden;background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm)}
-.adv-collapsible summary{padding:12px 14px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--nm-text);list-style:none}
+.adv-chip:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
+.adv-chip.active{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press)}
+.adv-chip.active:hover{box-shadow:var(--nm-shadow-gold-press)}
+.adv-collapsible{border:none;border-radius:var(--nm-r-md);margin:16px 0;overflow:hidden;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-raised-sm)}
+.adv-collapsible summary{padding:12px 14px;cursor:pointer;font-size:.86rem;font-weight:700;color:var(--nm-text);list-style:none}
 .adv-collapsible summary::-webkit-details-marker{display:none}
 .adv-collapsible summary::before{content:'▸ ';color:var(--nm-blue)}
 .adv-collapsible[open] summary::before{content:'▾ '}
@@ -1124,7 +1146,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-radius:var(--nm-r-sm);font-size:.72rem;color:var(--nm-text-soft);cursor:pointer;
   transition:all .2s;font-family:inherit;box-shadow:var(--nm-shadow-raised-sm);
 }
-.abc-img-btn:hover{box-shadow:var(--nm-shadow-hover);color:var(--nm-text)}
+.abc-img-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .abc-img-btn input[type=file]{display:none}
 .abc-img-btn.danger{background:var(--nm-surface);color:var(--nm-danger)}
 .abc-img-btn.danger:hover{box-shadow:var(--nm-shadow-hover)}
@@ -1145,7 +1167,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-radius:var(--nm-r-pill);color:var(--nm-blue-deep);cursor:pointer;font-size:.85rem;transition:all .2s;
   flex-shrink:0;box-shadow:var(--nm-shadow-raised-sm);
 }
-.abc-btn-sm:hover{box-shadow:var(--nm-shadow-hover)}
+.abc-btn-sm:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .abc-select{
   padding:9px 11px;background:var(--nm-white);border:none;
   border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.82rem;width:100%;box-shadow:var(--nm-shadow-inset);
@@ -1634,8 +1656,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border:none;border-radius:100px;
   color:var(--nm-text-soft);cursor:pointer;white-space:nowrap;transition:all .2s;box-shadow:var(--nm-shadow-raised-sm);
 }
-.apkg-preview-btn:hover{ box-shadow:var(--nm-shadow-hover); }
-.apkg-preview-btn.active{ color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-inset); }
+.apkg-preview-btn:hover{ background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue); }
+.apkg-preview-btn.active{ background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press); }
+.apkg-preview-btn.active:hover{ box-shadow:var(--nm-shadow-gold-press); }
 .apkg-group-body{ overflow:hidden;max-height:20000px;transition:max-height .3s ease,opacity .2s ease;opacity:1; }
 .admin-pkg-group.collapsed .apkg-group-body{ max-height:0!important;opacity:0; }
 .admin-pkg-group.collapsed .apkg-chevron{ transform:rotate(-90deg); }
@@ -1823,7 +1846,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-radius:100px;color:var(--nm-blue-deep);text-decoration:none;margin-left:4px;
   transition:all .2s;box-shadow:var(--nm-shadow-raised-sm);
 }
-.lai-test:hover{box-shadow:var(--nm-shadow-hover)}
+.lai-test:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .lai-label{
   font-size:.88rem;font-weight:600;color:var(--nm-text);
   display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:6px;
@@ -1875,7 +1898,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .leads-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.86rem;color:var(--nm-text-soft)}
 .leads-toolbar div{display:flex;gap:8px}
 .leads-refresh-btn,.leads-export-btn{min-height:36px;padding:8px 16px;border-radius:var(--nm-r-pill);border:none;background:var(--nm-surface);color:var(--nm-text-soft);font-size:.8rem;cursor:pointer;transition:all .2s;box-shadow:var(--nm-shadow-raised-sm)}
-.leads-refresh-btn:hover,.leads-export-btn:hover{box-shadow:var(--nm-shadow-hover);color:var(--nm-blue-deep)}
+.leads-refresh-btn:hover,.leads-export-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .leads-empty{padding:28px 10px;text-align:center;color:var(--nm-text-soft);font-size:.88rem}
 .lead-row{padding:14px 16px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);margin-bottom:10px;box-shadow:var(--nm-shadow-raised-sm)}
 .lead-row-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -6034,7 +6057,7 @@ function priceEntryHTML(pe, i, popupCount){
   const popupLocked = !pe.popup && popupCount >= POPUP_MAX;
   const emphasisArr = Array.isArray(pe.emphasis) ? pe.emphasis : (pe.emphasis?[pe.emphasis]:[]);
   return `
-  <div class="pe-block">
+  <div class="pe-block pe-item ${i%2?'pe-item-b':''}">
     <div class="pe-head">
       <span class="pe-idx">— 항목 ${String(i+1).padStart(2,'0')}</span>
       <div class="pe-head-right">

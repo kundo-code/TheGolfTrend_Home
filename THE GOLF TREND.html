@@ -789,13 +789,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .adv-body select option{background:var(--nm-white);color:var(--nm-text)}
 .adv-body textarea{resize:vertical;min-height:70px}
 .media-slot{padding:16px;background:var(--nm-surface);border:2px dashed rgba(221,179,103,.25);border-radius:var(--nm-r-md);text-align:center;margin-top:6px}
-.media-preview{max-width:100%;max-height:180px;border-radius:8px;margin-bottom:10px;object-fit:cover}
+/* [수정] 전역 img{display:block} 리셋 때문에 .media-slot의 text-align:center가 이미지에는 적용되지
+   않아 가운데 정렬이 안 되던 문제 — margin:auto로 블록 박스를 직접 가운데 정렬한다 */
+.media-preview{display:block;max-width:100%;max-height:180px;border-radius:8px;margin:0 auto 10px;object-fit:cover}
 .media-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.media-btn{min-height:36px;padding:8px 16px;background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);color:#fff;border:none;border-radius:var(--nm-r-pill);font-size:.78rem;font-weight:600;cursor:pointer;box-shadow:var(--nm-shadow-blue)}
-.media-btn:hover{box-shadow:0 6px 18px rgba(221,179,103,.32)}
+/* [수정] "이미지 업로드" 버튼을 "제거" 버튼(.media-btn.danger)과 같은 UI(플랫한 배경 + 그림자)로
+   통일 — 다만 고유 색상(블루/골드 톤)은 그대로 유지. ".media-btn.media-btn"처럼 클래스를 중복
+   지정해 특이도를 높인 것은, 이 버튼이 <label>이라 ".adv-body label{...}" 같은 더 넓은 범위의
+   폼 레이블 기본 스타일(색상·글자간격·대문자 변환·여백 등)에 밀려 깨지지 않도록 하기 위함
+   (.media-btn.danger는 클래스 2개라 원래도 이겼지만, 기본 .media-btn은 클래스 1개라 지고 있었음) */
+.media-btn.media-btn{min-height:36px;padding:8px 16px;margin:0;background:var(--nm-surface);color:var(--nm-blue-deep);border:none;border-radius:var(--nm-r-pill);font-size:.78rem;font-weight:600;text-transform:none;letter-spacing:normal;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);transition:all .2s}
+.media-btn.media-btn:hover{box-shadow:var(--nm-shadow-hover)}
 .media-btn input{display:none}
-.media-btn.danger{background:var(--nm-surface);color:var(--nm-danger);box-shadow:var(--nm-shadow-raised-sm)}
-.media-btn.danger:hover{box-shadow:var(--nm-shadow-hover)}
+.media-btn.danger.danger{background:var(--nm-surface);color:var(--nm-danger);box-shadow:var(--nm-shadow-raised-sm)}
+.media-btn.danger.danger:hover{box-shadow:var(--nm-shadow-hover)}
 .gallery-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:8px}
 .gallery-thumb{position:relative;aspect-ratio:1;border-radius:var(--nm-r-sm);overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--nm-shadow-raised-sm)}
 .gallery-thumb.video-thumb video{width:100%;height:100%;object-fit:cover;display:block} /* [Phase 3 상품등록 개선] 동영상 갤러리 */
@@ -850,11 +857,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ===== EDITOR'S PICK 팝업 (슬라이드 캐러셀) ===== */
 .ep-popup-box{width:320px;max-width:92vw;background:linear-gradient(180deg,var(--pine),var(--pine-deep));border:1px solid var(--glass-border-soft);border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);position:relative;animation:popupIn .4s cubic-bezier(.22,1,.36,1) both}
-.ep-popup-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 14px;background:rgba(0,0,0,.35)}
-.ep-popup-mute{background:transparent;border:1px solid rgba(255,255,255,.28);color:rgba(247,245,240,.85);font-size:.7rem;padding:6px 12px;border-radius:100px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.ep-popup-mute:hover{background:rgba(255,255,255,.12);color:#fff}
-.ep-popup-close{width:28px;height:28px;flex:0 0 auto;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.1rem;line-height:1;cursor:pointer;transition:all .2s}
-.ep-popup-close:hover{background:var(--gold);border-color:var(--gold);transform:rotate(90deg)}
 .ep-popup-viewport{overflow:hidden}
 .ep-popup-track{display:flex;transition:transform .45s cubic-bezier(.22,1,.36,1)}
 .ep-popup-slide{flex:0 0 100%;min-width:0}
@@ -872,7 +874,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [관리자 패널 가독성 개선] 요금표 "항목 01/02..." 카드 — 항목간 간격을 넓히고 좌측 강조선 색을
    홀/짝으로 번갈아(골드↔사이언) 주어 인접한 항목끼리 한눈에 구분되게 한다.
    자세히보기(details) 안에 중첩되는 일정 pe-block(scheduleDayHTML)은 이 클래스를 쓰지 않으므로 영향 없음 */
-.pe-item{margin:0 0 20px;border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
+.pe-item{margin:0 0 10px;border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
 .pe-item.pe-item-b{background:var(--nm-surface-light)}
 /* [수정] 요금 항목 카드를 <details>로 전환 — 접고 펼 수 있게 하고, 순서를 드래그로 바꿀 수 있게 한다.
    details 래퍼 자체의 패딩은 제거하고 summary(.pe-head)·본문(.pe-body)에 각각 패딩을 준다 */
@@ -6147,6 +6149,22 @@ async function handleImageUpload(key,inputEl){
   inputEl.value='';
 }
 
+// [수정] <details>/<summary> 헤더 안에 버튼·토글 영역을 두되, 그 영역 클릭은 펼침/접힘을 일으키지
+// 않도록 하는 공용 헬퍼. event.preventDefault()는 <summary>의 네이티브 펼침 동작뿐 아니라 같은
+// 클릭 이벤트에 묶인 체크박스 자신의 기본 동작(체크 반전)까지 함께 취소시켜버린다 — 그래서 팝업
+// 노출 토글이 "눌러도 반응 없음" 상태가 되었던 것. 체크박스(.popup-toggle) 클릭일 때는 대신 이
+// 함수가 직접 checked를 뒤집고 change 이벤트를 수동으로 발생시켜, 기존 onchange 핸들러(토글 로직)는
+// 그대로 정상 동작하면서 펼침만 막는다.
+function blockSummaryToggle(e){
+  e.preventDefault();
+  e.stopPropagation();
+  const toggle = e.target.closest('label.popup-toggle');
+  if (!toggle) return;
+  const cb = toggle.querySelector('input[type=checkbox]');
+  if (!cb || cb.disabled) return;
+  cb.checked = !cb.checked;
+  cb.dispatchEvent(new Event('change', {bubbles:true}));
+}
 // PRODUCTS ADMIN
 function renderProductCatSelect(){
   const sel=document.getElementById('productCatSelect');
@@ -6172,12 +6190,13 @@ function renderProductAdmin(catId){
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
         <span class="apc-title-preview">${p.title?escapeAttr(p.title):'(제목 없음)'}</span>
         <span class="apc-chevron">▾</span>
-        <!-- [수정] stopPropagation()만으로는 <summary>의 기본 펼침/접힘 동작을 막지 못해 preventDefault()도 함께 호출 -->
-        <div class="apc-actions" onclick="event.preventDefault();event.stopPropagation()">
-          <!-- [수정] "항목별 요금표 팝업"과 같은 방식의 팝업 노출 토글을 상품 리스트에서도 바로 설정 가능하도록 추가 —
-               고급편집의 EDITOR'S PICK "팝업 노출"과 동일한 값(p.editorsPickPopup)을 제어한다 -->
-          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
-            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="toggleProductPopup(${i},this.checked)">
+        <!-- [수정] preventDefault()로 <summary> 펼침만 막고, 체크박스 클릭은 blockSummaryToggle()이 직접 대신 처리 -->
+        <div class="apc-actions" onclick="blockSummaryToggle(event)">
+          <!-- [수정] "항목별 요금표 팝업"과 같은 방식의 팝업 노출 토글을 상품 리스트에서도 바로 설정 가능하도록 추가.
+               이 토글을 켜면 EDITOR'S PICK 등록·팝업 노출이 함께 켜지고, 끄면 EDITOR'S PICK 팝업 노출과
+               이 상품의 모든 요금 항목 팝업 노출까지 함께 꺼지므로(toggleProductPopup 참고) 더 이상 잠글 필요가 없다 -->
+          <label class="popup-toggle" title="홈 진입 시 이 상품 카드를 팝업으로 노출 (EDITOR'S PICK 등록·팝업 노출을 함께 설정)">
+            <input type="checkbox" ${p.editorsPickPopup?'checked':''} onchange="toggleProductPopup(${i},this.checked)">
             <span class="toggle-slider"></span>
             <span class="pt-lbl">팝업노출</span>
           </label>
@@ -6210,15 +6229,24 @@ function updateProduct(idx,field,value){
   renderCategoryGrid();
   updateProductCountLabel();
 }
-// [수정] 상품 리스트에서 고급편집을 열지 않고도 EDITOR'S PICK 팝업 노출 여부를 바로 켜고 끌 수 있게 함
+// [수정] 상품 리스트에서 고급편집을 열지 않고도 EDITOR'S PICK 팝업 노출 여부를 바로 켜고 끌 수 있게 함.
+// 켤 때는 EDITOR'S PICK 등록 자체도 함께 켜지고(팝업 노출은 EDITOR'S PICK이어야 의미가 있으므로),
+// 끌 때는 EDITOR'S PICK 팝업 노출뿐 아니라 이 상품에 걸려 있는 "항목별 요금표 팝업"(각 요금 항목의
+// pe.popup)까지 모두 함께 꺼서, 리스트의 이 토글 하나로 해당 상품의 모든 팝업 노출을 확실히 끌 수 있게 한다
 function toggleProductPopup(idx, checked){
   if (productOverrides[activeProductCat]===undefined){
     productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
   }
   const p = productOverrides[activeProductCat][idx];
-  if (!p.editorsPick) return; // EDITOR'S PICK 미등록 상품은 잠금 상태이므로 변경하지 않음
-  p.editorsPickPopup = checked;
+  if (checked){
+    p.editorsPick = true;
+    p.editorsPickPopup = true;
+  } else {
+    p.editorsPickPopup = false;
+    (p.priceEntries||[]).forEach(pe=>{ pe.popup = false; });
+  }
   saveProducts();
+  renderProductAdmin(); // EDITOR'S PICK 체크박스 표시 등 카드 상태가 바뀌므로 다시 그린다
 }
 function updateProductCountLabel(){
   const products=getProducts(activeProductCat);
@@ -6529,7 +6557,14 @@ function advBasicHTML(p){
          요금 항목을 이후에 추가해도 이 공통 값은 그대로 유지되며, 상세페이지에는 요금 항목별 정보와 함께 노출된다 -->
     <details class="pe-labels" ${isDomestic?'':'open'}>
       <summary>🏷 공통 레이블 (항공·공항·항공편·티오프 등 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
-      ${labelsHTML(p, -1)}
+      ${labelsHTML(p, -1, false)}
+    </details>
+    <!-- [수정] "출발 요일"을 공통 레이블에서 완전히 분리해 별도 섹션으로 — 공통 레이블·공통 일정
+         요약 타임라인과 같은 레벨(형제 <details>)로 두되 그 사이에 배치. 노출 조건(요금 항목과
+         무관하게 상품 상세에 항상 노출)은 이전과 동일하게 유지 -->
+    <details class="pe-labels" ${isDomestic?'':'open'}>
+      <summary>📅 공통 출발 요일 (요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <div class="pe-labels-body">${departureDayFieldHTML(p.labels, -1)}</div>
     </details>
     <details class="pe-labels" id="schDetails-1">
       <summary>🗓 공통 일정 요약 타임라인 (요금 항목과 무관하게 상품 상세에 노출)</summary>
@@ -6669,15 +6704,14 @@ function priceEntryHTML(pe, i, popupCount){
       <span class="pe-idx">— 항목 ${String(i+1).padStart(2,'0')}</span>
       <span class="pe-title-preview">${pe.headline?escapeAttr(pe.headline):'(제목 없음)'}</span>
       <span class="pe-chevron">▾</span>
-      <!-- [수정] stopPropagation()만으로는 <summary>의 기본 펼침/접힘 동작(네이티브 활성화 동작)을
-           막지 못한다 — preventDefault()를 함께 호출해야 이 영역 클릭 시 펼쳐지지 않는다 -->
-      <div class="pe-head-right" onclick="event.preventDefault();event.stopPropagation()">
+      <!-- [수정] preventDefault()로 <summary> 펼침만 막고, 체크박스 클릭은 blockSummaryToggle()이 직접 대신 처리 -->
+      <div class="pe-head-right" onclick="blockSummaryToggle(event)">
         <label class="popup-toggle ${popupLocked?'locked':''}" title="${popupLocked?`최대 ${POPUP_MAX}개까지 동시 팝업 노출 가능`:'홈 진입 시 팝업으로 노출'}">
           <input type="checkbox" ${pe.popup?'checked':''} ${popupLocked?'disabled':''} onchange="togglePopup(${i},this.checked)">
           <span class="toggle-slider"></span>
           <span class="pt-lbl">팝업 노출</span>
         </label>
-        <button class="apc-btn-sm" onclick="duplicatePriceEntry(${i})">복제</button>
+        <button class="apc-btn-sm apc-dup" onclick="duplicatePriceEntry(${i})">복제</button>
         <button class="pee-del" onclick="removePriceEntry(${i})">삭제</button>
       </div>
     </summary>
@@ -6797,11 +6831,16 @@ const DAY_OPTS=[['월','월'],['화','화'],['수','수'],['목','목'],['금','
 // ===== 요금 항목에 종속된 레이블 UI =====
 // [Phase 3 상품등록 개선] 출발/도착 공항·항공편은 여기(요금표 항목)에서만 입력하도록 통합.
 // 항공 패턴 · 출발 공항 · 출발 요일은 복수 선택 가능(칩 토글). 라운딩/식사 횟수 필드는 제거.
-function labelsHTML(pe, peIdx){
+// [수정] "출발 요일"은 항공정보와 성격이 달라 별도 입력 블록으로 분리 — 공통 레이블에서는 이 블록을
+// 아예 별도의 "공통 출발 요일" 섹션으로 빼내 쓰고(advBasicHTML 참고), 요금 항목별 항공정보에서는
+// 그대로 labelsHTML() 안에 포함해 하단에 노출한다. 노출 조건(값이 있을 때만 표시)은 이전과 동일
+function departureDayFieldHTML(L, peIdx){
+  return `<label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}`;
+}
+function labelsHTML(pe, peIdx, showDepartureDay){
+  if (showDepartureDay===undefined) showDepartureDay=true;
   const L = pe.labels;
   const sel=(opts,val,field)=>`<select onchange="updatePriceEntryLabel(${peIdx},'${field}',this.value)">${opts.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
-  // [수정] "출발 요일"은 나머지 항공정보 필드와 성격이 달라(요일 자체는 항공과 무관) 그리드에서
-  // 분리해 하단에 별도 블록으로 배치 — 노출 조건(값이 있을 때만 상세페이지에 표시)은 이전과 동일
   return `
   <div class="grid-2 pe-labels-body">
     <div><label>항공 포함 여부</label>${sel(AIRFARE_OPTS,L.airfare,'airfare')}</div>
@@ -6811,9 +6850,7 @@ function labelsHTML(pe, peIdx){
     <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="예: NH862 / JAL 편명 자유 입력" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)"></div>
     <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}</div>
   </div>
-  <div class="pe-labels-departure-day">
-    <label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}
-  </div>`;
+  ${showDepartureDay?`<div class="pe-labels-departure-day">${departureDayFieldHTML(L, peIdx)}</div>`:''}`;
 }
 
 // ===== 요금 항목에 종속된 "일정 요약 타임라인" UI =====
@@ -7690,9 +7727,8 @@ function closePopupStage(){
 setTimeout(()=>{ if (!showEntryPopups()) showEditorsPickPopup(); }, 800);
 
 // ══ EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업(캐러셀)으로 노출 ══
-// 항목별 요금표 팝업(#popupStage)과 별개의 독립 기능. "오늘 하루 보지 않기"는 날짜 기준으로 다음 날까지
-// 재노출을 막고(localStorage), "X" 닫기는 이번 세션에서만 닫는다(popupShown과 별도의 세션 플래그)
-const EP_POPUP_MUTE_KEY = 'kundo_ep_popup_mute_date_v1';
+// 항목별 요금표 팝업(#popupStage)과 별개의 독립 기능. [수정] "오늘 하루 보지 않기"·"X" 닫기 기능은
+// 제거하고, 웹페이지를 열 때마다(세션·날짜와 무관하게) 항상 노출되도록 변경
 let epPopupItems = [];
 let epPopupIdx = 0;
 let epPopupTimer = null;
@@ -7706,20 +7742,10 @@ function getEditorsPickPopupItems(){
   }
   return items;
 }
-function epPopupMutedToday(){
-  try{ return localStorage.getItem(EP_POPUP_MUTE_KEY) === new Date().toDateString(); }catch(e){ return false; }
-}
-function epPopupMuteToday(){
-  try{ localStorage.setItem(EP_POPUP_MUTE_KEY, new Date().toDateString()); }catch(e){}
-  closeEpPopup();
-}
 function showEditorsPickPopup(){
-  if (sessionStorage.getItem('epPopupShown')) return false;
-  if (epPopupMutedToday()) return false;
   epPopupItems = getEditorsPickPopupItems();
   if (!epPopupItems.length) return false;
   epPopupIdx = 0;
-  sessionStorage.setItem('epPopupShown','1');
   renderEpPopup();
   const stage = document.getElementById('epPopupStage');
   stage.classList.add('show');
@@ -7756,10 +7782,6 @@ function renderEpPopup(){
   const n = epPopupItems.length;
   stage.innerHTML = `
     <div class="ep-popup-box" onclick="event.stopPropagation()">
-      <div class="ep-popup-top">
-        <button class="ep-popup-mute" onclick="epPopupMuteToday()">오늘 하루 보지 않기</button>
-        <button class="ep-popup-close" onclick="closeEpPopup()" aria-label="닫기">×</button>
-      </div>
       <div class="ep-popup-viewport">
         <div class="ep-popup-track" id="epPopupTrack" style="transform:translateX(-${epPopupIdx*100}%)">
           ${epPopupItems.map(epSlideCardHTML).join('')}

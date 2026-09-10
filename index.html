@@ -411,15 +411,20 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-item .dt{font-size:.86rem;font-weight:600;color:#DC2626}
 .pd-holiday-price-item .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:#DC2626}
 .pd-holiday-price-item .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:#DC2626;font-weight:500;margin-left:1px}
-.pd-price-entry .go{color:var(--gold-deep);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:4px}
-/* [수정] 요금 항목별 "자세히 →" 토글 — 이 항목의 레이블·일정 및 공통 포함/불포함/참고사항을 펼쳐서 보여준다 */
-.pd-pe-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.pd-price-entry .go{color:var(--gold-deep);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px}
+/* [수정] 요금 항목별 "자세히 →" 토글 — 이 항목의 레이블·일정 및 공통 포함/불포함/참고사항을 펼쳐서 보여준다.
+   링크 버튼(.pd-pe-links)은 "상세보기" 토글 아래에 별도 배치한다 */
+.pd-pe-actions{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:4px}
 .pd-pe-more{margin-top:2px}
 .pd-pe-more summary{color:var(--gold-deep);font-size:.82rem;font-weight:600;cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px}
 .pd-pe-more summary::-webkit-details-marker{display:none}
 .pd-pe-more summary::after{content:'→';transition:transform .2s}
 .pd-pe-more[open] summary::after{transform:rotate(90deg)}
 .pd-pe-more-body{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.14);display:flex;flex-direction:column;gap:20px}
+/* [수정] 항목별 "연결 링크·URL" 버튼 — 옅은 회색(.pd-price-entry) 카드와 구분되도록 흰색 박스에 담아
+   "상세보기" 토글 하단에 배치한다 */
+.pd-pe-links{display:flex;flex-wrap:wrap;align-items:center;gap:14px;width:100%;padding:12px 16px;background:#fff;border:1px solid rgba(10,23,48,.08);border-radius:12px;box-shadow:0 2px 8px rgba(10,23,48,.05)}
+.pd-pe-links .go{margin-top:0}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
 .pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:10px}
 .pd-pe-more-sub .pd-check-list{padding:0}
@@ -5063,11 +5068,14 @@ function renderProductDetail(p,cat){
             ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             ${holidayPriceRow}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
-                 값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저(좌측), 공통 링크가 그 다음 -->
+                 값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저(좌측), 공통 링크가 그 다음.
+                 옅은 회색 카드와 구분되도록 흰색 박스(.pd-pe-links)에 담아 "상세보기" 토글 아래에 배치 -->
             <div class="pd-pe-actions">
-              ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 상세보기 →</a>`:''}
-              ${linkBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${linkBrand.icon} ${linkBrand.label}</a>`:''}
               ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
+              ${(linkVisible||linkBrand)?`<div class="pd-pe-links" onclick="event.stopPropagation()">
+                ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener">🔗 상세보기 →</a>`:''}
+                ${linkBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">${linkBrand.icon} ${linkBrand.label}</a>`:''}
+              </div>`:''}
             </div>
           </div>`;
         }).join('')}
@@ -6432,11 +6440,16 @@ function renderAdvBody(){
   // <details>는 다시 그려지면 기본(닫힘) 상태로 초기화된다 — 편집 중이던 요금 항목이 매번 다시
   // 접혀버리지 않도록, 렌더링 전 열려 있던 항목의 인덱스를 기억해뒀다가 렌더링 후 복원한다
   const openPeIdx = Array.from(body.querySelectorAll('.pe-block.pe-item[open]')).map(d=>d.dataset.idx);
+  // [수정] innerHTML을 통째로 교체하면 스크롤 위치가 0으로 초기화되어 "+요일별 요금 추가" 등을
+  // 클릭할 때마다 화면이 항목 상단으로 튀어 오르는 문제가 있었다 — 렌더링 전 스크롤 위치를
+  // 저장했다가 렌더링 후 그대로 복원한다
+  const scrollTop = body.scrollTop;
   if (activeAdvTab==='basic') body.innerHTML=advBasicHTML(p);
   else if (activeAdvTab==='media') body.innerHTML=advMediaHTML(p);
   else if (activeAdvTab==='contact') body.innerHTML=advContactHTML(p);
   body.querySelectorAll('textarea.auto-grow').forEach(autoGrowTextarea); // 기존에 입력돼 있던 내용에 맞춰 초기 높이도 조정
   openPeIdx.forEach(idx=>{ const el=body.querySelector(`.pe-block.pe-item[data-idx="${idx}"]`); if (el) el.open=true; });
+  body.scrollTop = scrollTop;
 }
 function updateAdvField(field, value, type){
   const p=getAdvProduct(); if (!p) return;

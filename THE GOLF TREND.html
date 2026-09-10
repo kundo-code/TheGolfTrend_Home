@@ -374,7 +374,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-video-item{position:relative;width:100%;aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#000;cursor:pointer}
 .pd-video-item video{width:100%;height:100%;object-fit:cover;display:block}
 .pd-video-item .play-ic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;background:rgba(0,0,0,.28);pointer-events:none;transition:opacity .2s}
-.pd-video-item:hover .play-ic{opacity:0}
+.pd-video-item:hover .play-ic,.pd-video-item.playing .play-ic{opacity:0}
 .pd-section-title{padding:16px 20px 8px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.85rem;color:var(--gold-deep);font-weight:600;letter-spacing:.15em;text-transform:uppercase}
 .pd-price-entries{padding:0 16px 16px;display:flex;flex-direction:column;gap:10px}
 .pd-price-entry{padding:16px;background:rgba(10,23,48,.03);border:1px solid rgba(10,23,48,.08);border-radius:14px;transition:all .2s;cursor:pointer;display:flex;flex-direction:column;gap:8px}
@@ -474,6 +474,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-sch-opt .tag{display:inline-flex;align-items:center;justify-content:center;min-width:18px;padding:1px 5px;margin-right:6px;border-radius:5px;background:rgba(221,179,103,.22);color:var(--gold-deep);font-size:.68rem;font-weight:700}
 .pd-sch-meals{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
 .pd-sch-meals span{font-size:.68rem;padding:3px 9px;border-radius:100px;background:rgba(10,23,48,.05);color:rgba(10,23,48,.65)}
+/* [수정] Tee Off Time — 항공정보에서 이 일자의 "일정 내용" 바로 아래로 이동 */
+.pd-sch-tee{margin-top:6px;font-size:.78rem;font-weight:600;color:var(--pine-deep)}
 .pd-contact{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .pd-contact a{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.1);border-radius:12px;color:var(--pine-deep);font-size:.88rem;font-weight:600;transition:all .2s}
 .pd-contact a:hover{background:rgba(10,23,48,.08);transform:translateY(-1px)}
@@ -843,6 +845,25 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .popup-cta.ghost:hover{background:rgba(255,255,255,.08);color:#fff}
 @media(max-width:780px){.popup-card{width:100%;max-width:340px}}
 
+/* ===== EDITOR'S PICK 팝업 (슬라이드 캐러셀) ===== */
+.ep-popup-box{width:320px;max-width:92vw;background:linear-gradient(180deg,var(--pine),var(--pine-deep));border:1px solid var(--glass-border-soft);border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);position:relative;animation:popupIn .4s cubic-bezier(.22,1,.36,1) both}
+.ep-popup-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 14px;background:rgba(0,0,0,.35)}
+.ep-popup-mute{background:transparent;border:1px solid rgba(255,255,255,.28);color:rgba(247,245,240,.85);font-size:.7rem;padding:6px 12px;border-radius:100px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.ep-popup-mute:hover{background:rgba(255,255,255,.12);color:#fff}
+.ep-popup-close{width:28px;height:28px;flex:0 0 auto;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.1rem;line-height:1;cursor:pointer;transition:all .2s}
+.ep-popup-close:hover{background:var(--gold);border-color:var(--gold);transform:rotate(90deg)}
+.ep-popup-viewport{overflow:hidden}
+.ep-popup-track{display:flex;transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.ep-popup-slide{flex:0 0 100%;min-width:0}
+.ep-popup-footer{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.28)}
+.ep-popup-nav{width:28px;height:28px;flex:0 0 auto;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.05rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:all .2s}
+.ep-popup-nav:hover{background:var(--gold);border-color:var(--gold)}
+.ep-popup-dots{flex:1;display:flex;justify-content:center;gap:6px}
+.ep-popup-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);border:none;cursor:pointer;padding:0;transition:all .2s}
+.ep-popup-dot.active{background:var(--gold);width:18px;border-radius:100px}
+.ep-popup-counter{font-size:.68rem;color:rgba(247,245,240,.7);flex:0 0 auto;min-width:32px;text-align:center}
+@media(max-width:780px){.ep-popup-box{width:100%;max-width:340px}}
+
 /* ===== 요금 항목(pe-block) UI ===== */
 .pe-block{background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);padding:14px 16px;margin:6px 0 10px;box-shadow:var(--nm-shadow-raised-sm)}
 /* [관리자 패널 가독성 개선] 요금표 "항목 01/02..." 카드 — 항목간 간격을 넓히고 좌측 강조선 색을
@@ -927,6 +948,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-labels[open] summary::before{transform:rotate(90deg)}
 .pe-labels-body{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(10,23,48,.12)}
 .tee-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+/* [수정] 국내 상품은 항공정보가 불필요하므로 자동 비활성화 — 입력은 막되 내용은 흐리게 계속 보이도록 함 */
+.pe-labels.pe-disabled{opacity:.55}
+.pe-labels.pe-disabled fieldset:disabled{pointer-events:none}
+.pe-disabled-note{color:var(--gold-deep);font-size:.7rem;font-weight:400}
 .tee-grid > div{display:grid;grid-template-columns:60px 1fr;gap:6px;align-items:center;padding:6px 8px;background:var(--nm-surface);border:none;border-radius:7px;box-shadow:var(--nm-shadow-raised-sm)}
 .tee-day{font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.03em}
 .tee-grid input{padding:6px 8px;font-size:.8rem;background:var(--nm-white);border:none;border-radius:5px;color:var(--nm-text);box-shadow:var(--nm-shadow-inset)}
@@ -2154,6 +2179,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 <!-- POPUP OVERLAY (홈 진입 시 활성 요금 항목 최대 3개까지 순차 노출) -->
 <div class="popup-stage" id="popupStage" onclick="if(event.target===this)closePopupStage()"></div>
+<!-- [수정] EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업으로 노출.
+     항목별 요금표 팝업(#popupStage)과는 별개의 독립 스테이지 -->
+<div class="popup-stage" id="epPopupStage" onclick="if(event.target===this)closeEpPopup()"></div>
 
 <!-- LEGAL CONTENT MODAL -->
 <div class="legal-modal-overlay" id="legalModalOverlay" onclick="if(event.target===this)closeLegalModal()">
@@ -2918,6 +2946,8 @@ const CATEGORIES = {
     {id:'guam',ko:'미국령-괌/사이판',en:'GUAM',tagline:'가까운 열대 낙원, 오션뷰 골프'}
   ]
 };
+// [수정] catId가 국내 권역인지 판별 — 국내 상품은 항공정보 입력을 비활성화하는 데 사용
+function isDomesticCat(catId){ return CATEGORIES.domestic.some(c=>c.id===catId); }
 
 // Product schema now includes optional extended fields:
 // { title, from, nights, rounds, tag,
@@ -3025,6 +3055,7 @@ function ensureExtended(p){
   if (!p.videoGallery) p.videoGallery=[]; // [Phase 3 상품등록 개선]
   if (p.pkgPoster===undefined) p.pkgPoster=null; // [Phase 3 상품등록 개선]
   if (p.editorsPick===undefined) p.editorsPick=false; // [Phase 3 상품등록 개선]
+  if (p.editorsPickPopup===undefined) p.editorsPickPopup=false; // [수정] EDITOR'S PICK 상품을 홈 진입 팝업으로도 노출할지 여부
   if (p.bookingPolicy===undefined) p.bookingPolicy=''; // [Phase 3 상품등록 개선]
   // [Phase 3 상품등록 개선 v3] 추가 요금 안내: 단일 텍스트(extraFeeNote) → 항목·금액 분리 입력(extraFees 배열)로 전환
   if (!Array.isArray(p.extraFees)){
@@ -3979,6 +4010,17 @@ function setLinkUrl(key,url){linkOverrides[key]=url;saveLinks();renderLinks();re
 
 function fmtPrice(n){return Number(n||0).toLocaleString('ko-KR')}
 function fmtDateDot(s){return (s||'').replace(/-/g,'.')} // [수정] 날짜 입력값(YYYY-MM-DD)을 "YYYY.MM.DD"로 보기 좋게 표시
+// [수정] 공휴일 지정 요금 날짜 표기 — 연도는 생략하고 날짜 끝에 (요일)을 붙인다. 예: "2026-09-24" → "09.24(목)"
+// new Date(문자열)의 UTC 해석에 따른 시간대별 하루 밀림을 피하기 위해 연/월/일을 직접 분해해 로컬 날짜로 구성한다
+const WEEKDAY_KO=['일','월','화','수','목','금','토'];
+function fmtHolidayDate(s){
+  if (!s) return '';
+  const parts = s.split('-').map(Number);
+  const y=parts[0], m=parts[1], d=parts[2];
+  if (!y||!m||!d) return fmtDateDot(s);
+  const wd = WEEKDAY_KO[new Date(y, m-1, d).getDay()];
+  return `${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}(${wd})`;
+}
 function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 // [메모리/성능 안정화] innerHTML 교체로 autoplay 동영상이 화면에서 사라질 때, 명시적으로 정지/해제하지
 // 않으면 백그라운드에서 계속 디코딩되며 화면을 오래 켜둘수록 메모리가 누적되어 "백지 현상"으로 이어질
@@ -4773,6 +4815,14 @@ function togglePeMore(cardEl){
   const d = cardEl.querySelector('.pd-pe-more');
   if (d) d.open = !d.open;
 }
+// [수정] 동영상 갤러리 재생 버튼 클릭 시 재생이 안 되던 문제 수정 — 마우스 오버에만 의존하던 방식에서
+// 클릭(탭)으로 재생/일시정지를 토글하는 방식으로 변경해 데스크톱·모바일 모두에서 동작하도록 함
+function pdToggleVideoPlay(el){
+  const v = el.querySelector('video');
+  if (!v) return;
+  if (v.paused){ v.play().catch(()=>{}); el.classList.add('playing'); }
+  else { v.pause(); el.classList.remove('playing'); }
+}
 function updateGalleryDisplay(){
   document.querySelectorAll('#pdContent .pd-gallery-main img').forEach((el,i)=>el.classList.toggle('active',i===pdGalleryIdx));
   document.querySelectorAll('#pdContent .pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===pdGalleryIdx));
@@ -4796,9 +4846,6 @@ function peLabelRows(L){
   if (L.flightNo) rows.push(['🎫 항공편', L.flightNo]);
   if (L.stayDuration && L.stayDuration!=='none') rows.push(['🏨 체류일', L.stayDuration]);
   if (L.departureDay && L.departureDay.length) rows.push(['📅 출발 요일', L.departureDay.join(', ')]);
-  const tee = L.teeOffTimes||{};
-  const teeParts = ['day1','day2','day3','day4'].map((d,i)=>tee[d]?`${i+1}일차 ${tee[d]}`:'').filter(Boolean);
-  if (teeParts.length) rows.push(['⛳ Tee Off', teeParts.join(' · ')]);
   return rows;
 }
 function labelRowsHTML(L){
@@ -4806,8 +4853,11 @@ function labelRowsHTML(L){
   if (!rows.length) return '';
   return `<div class="pd-label-rows">${rows.map(([k,v])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${escapeAttr(v)}</span></div>`).join('')}</div>`;
 }
-// 일정 요약 타임라인의 일자별 카드 목록 — 요금 항목별 일정과 상품 공통 일정에서 공용으로 사용
-function scheduleDaysHTML(days){
+// 일정 요약 타임라인의 일자별 카드 목록 — 요금 항목별 일정과 상품 공통 일정에서 공용으로 사용.
+// [수정] Tee Off Time — 항공정보(레이블)에서 이 일정 카드의 "일정 내용" 하단으로 이동 (1~4일차만 지원)
+const TEE_DAY_KEYS_PD=['day1','day2','day3','day4'];
+function scheduleDaysHTML(days, tee){
+  tee = tee||{};
   return days.map((d,di)=>`
   <div class="pd-sch-day">
     <div class="pd-sch-day-num">${di+1}</div>
@@ -4820,6 +4870,7 @@ function scheduleDaysHTML(days){
         ${o.flight?`항공: ${escapeAttr(o.flight)}<br>`:''}
         ${o.activity?escapeAttr(o.activity):''}
       </div>`).join('')}
+      ${tee[TEE_DAY_KEYS_PD[di]]?`<div class="pd-sch-tee">⛳ Tee Off Time: ${escapeAttr(tee[TEE_DAY_KEYS_PD[di]])}</div>`:''}
       ${(d.meals.breakfast||d.meals.lunch||d.meals.dinner)?`<div class="pd-sch-meals">
         ${d.meals.breakfast?`<span>조: ${escapeAttr(d.meals.breakfast)}</span>`:''}
         ${d.meals.lunch?`<span>중: ${escapeAttr(d.meals.lunch)}</span>`:''}
@@ -4877,14 +4928,15 @@ function renderProductDetail(p,cat){
   }
   html += `</div></div>`;
 
-  // [수정] 동영상 갤러리 — 이미지 갤러리보다 위에 노출, 마우스 오버 시 자동 재생
+  // [수정] 동영상 갤러리 — 이미지 갤러리보다 위에 노출. 클릭(탭)으로 재생/일시정지 토글 —
+  // 기존에는 마우스 오버로만 재생되어 모바일에서는 재생 버튼을 눌러도 아무 반응이 없었다
   const pdVideos = p.videoGallery||[];
   if (pdVideos.length){
     html += `<div class="pd-slot pd-video-gallery">
       <div class="pd-section-title">🎬 동영상 갤러리</div>
       <div class="pd-video-grid">
-        ${pdVideos.map((v,i)=>`<div class="pd-video-item">
-          <video src="${escapeAttr(v.url)}" muted loop playsinline preload="metadata" aria-label="${escapeAttr(productImgAlt(cat,p))} - 영상 ${i+1}" onmouseenter="this.play().catch(()=>{})" onmouseleave="this.pause();this.currentTime=0"></video>
+        ${pdVideos.map((v,i)=>`<div class="pd-video-item" onclick="pdToggleVideoPlay(this)">
+          <video src="${escapeAttr(v.url)}" muted loop playsinline preload="metadata" aria-label="${escapeAttr(productImgAlt(cat,p))} - 영상 ${i+1}"></video>
           <span class="play-ic">▶</span>
         </div>`).join('')}
       </div>
@@ -4956,7 +5008,7 @@ function renderProductDetail(p,cat){
           ].join('');
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ 이 요금 항목의 레이블</div>${labelRows}</div>`:'',
-            hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days)}</div></div>`:'',
+            hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:'',
             peNotesHTML
           ].join('');
           // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 변경 — 외부 링크(🔗)로 바로
@@ -4972,7 +5024,7 @@ function renderProductDetail(p,cat){
           // [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 한 줄로,
           // 여러 개인 경우 항목 사이에 구분선을 두어 가독성을 높인다. 모두 빨간색으로 강조
           const holidayItems = (pe.holidayPrices||[]).filter(h=>h.date && h.price).map(h=>{
-            const label = (h.type==='range' && h.endDate) ? `${fmtDateDot(h.date)} ~ ${fmtDateDot(h.endDate)}` : fmtDateDot(h.date);
+            const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
             return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
           });
           const holidayPriceRow = holidayItems.length ? `<div class="pd-holiday-price-row">${holidayItems.join('<span class="pd-holiday-sep"></span>')}</div>` : '';
@@ -5024,7 +5076,7 @@ function renderProductDetail(p,cat){
         ${hasCommonSchedule?`
         <div class="pd-sch-group">
           <div class="pd-sch-group-head"><div class="t">공통 일정</div><div class="h"></div></div>
-          <div class="pd-sch-days">${scheduleDaysHTML(p.schedule.days)}</div>
+          <div class="pd-sch-days">${scheduleDaysHTML(p.schedule.days, p.labels.teeOffTimes)}</div>
         </div>`:''}
         ${scheduledEntries.map(pe=>`
         <div class="pd-sch-group">
@@ -5032,7 +5084,7 @@ function renderProductDetail(p,cat){
             <div class="t">${escapeAttr(pe.headline||'일정')}</div>
             <div class="h">${pe.salePrice?`${fmtPrice(Number(pe.salePrice)||0)}${CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원'}/인`:''}</div>
           </div>
-          <div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days)}</div>
+          <div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div>
         </div>`).join('')}
         ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
       </div>
@@ -6159,6 +6211,7 @@ function duplicateProduct(idx){
   const clone = JSON.parse(JSON.stringify(productOverrides[activeProductCat][idx]));
   clone.title = (clone.title||'') + ' (복제)';
   clone.editorsPick = false; // 복제본이 원본과 함께 EDITOR'S PICK에 중복 노출되지 않도록 기본값으로 되돌림
+  clone.editorsPickPopup = false;
   productOverrides[activeProductCat].splice(idx+1, 0, clone);
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
@@ -6283,6 +6336,14 @@ function updateAdvField(field, value, type){
   obj[parts[parts.length-1]]=value;
   saveAdvChange();
 }
+// [수정] EDITOR'S PICK 해제 시, 함께 노출되던 "팝업 노출" 설정도 자동으로 해제 —
+// 팝업 토글이 잠기는(비활성화되는) 것과 실시간으로 맞물려 보이도록 다시 그려준다
+function updateEditorsPick(checked){
+  const p=getAdvProduct(); if (!p) return;
+  p.editorsPick = checked;
+  if (!checked) p.editorsPickPopup = false;
+  saveAdvChange(); renderAdvBody();
+}
 // 화폐 단위 옵션
 const CURRENCIES = [['KRW','KRW ₩ 원'],['USD','USD $ 달러'],['JPY','JPY ¥ 엔'],['EUR','EUR € 유로'],['THB','THB ฿ 밧'],['VND','VND ₫ 동'],['PHP','PHP ₱ 페소'],['MYR','MYR RM 링깃'],['IDR','IDR Rp 루피아'],['CNY','CNY ¥ 위안']];
 const CURRENCY_SYMBOL = {KRW:'원',USD:'$',JPY:'¥',EUR:'€',THB:'฿',VND:'₫',PHP:'₱',MYR:'RM',IDR:'Rp',CNY:'¥'};
@@ -6338,10 +6399,24 @@ function advBasicHTML(p){
   const tm = p.titleMedia;
   return `
     <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
-    <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px;cursor:pointer">
-      <input type="checkbox" style="width:auto" ${p.editorsPick?'checked':''} onchange="updateAdvField('editorsPick',this.checked)">
-      <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
-    </label>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:0">
+        <input type="checkbox" style="width:auto" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
+        <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
+      </label>
+      <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
+      <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
+        <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
+        <span class="toggle-slider"></span>
+        <span class="pt-lbl">팝업 노출</span>
+      </label>
+    </div>
+
+    <!-- [수정] "요금표 항목·레이블·팝업" → "항목별 요금표 팝업"으로 명칭 변경, 제목 상단으로 위치 이동 -->
+    <div class="section-divider">
+      <span class="sd-title">항목별 요금표 팝업</span>
+      <span class="sd-info">활성 팝업: <b>${popupCount}</b>/${POPUP_MAX}</span>
+    </div>
 
     <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 미디어 탭에서 이동, 이미지 전용으로 명칭 변경 -->
     <label>타이틀 이미지</label>
@@ -6410,10 +6485,6 @@ function advBasicHTML(p){
     <label>🔗 연결 링크 · URL</label>
     <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
 
-    <div class="section-divider">
-      <span class="sd-title">요금표 항목 · 레이블 · 팝업</span>
-      <span class="sd-info">활성 팝업: <b>${popupCount}</b>/${POPUP_MAX}</span>
-    </div>
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구 (요금 항목별 일정 그룹을 아우르는 문구) -->
     <label>일정 요약 타임라인 — 상단 개요 문구</label>
     <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
@@ -6547,6 +6618,8 @@ function priceEntryHTML(pe, i, popupCount){
   const currencySelect = (field, val) => `<select onchange="updatePriceEntry(${i},'${field}',this.value)" class="curr-sel">${CURRENCIES.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
   const popupLocked = !pe.popup && popupCount >= POPUP_MAX;
   const emphasisArr = Array.isArray(pe.emphasis) ? pe.emphasis : (pe.emphasis?[pe.emphasis]:[]);
+  // [수정] 국내 상품은 항공편이 없으므로 "항공정보" 입력이 불필요 — 자동으로 비활성화
+  const isDomestic = currentAdv && isDomesticCat(currentAdv.catId);
   // [수정] 항목 간 드래그로 순서 변경 — 손잡이(⠿)에만 draggable 지정(추가요금안내와 동일한 방식)
   const dropAttrs = `data-idx="${i}" ondragover="peDragOver(event)" ondragleave="peDragLeave(event)" ondrop="peDrop(event,${i})"`;
   const handleAttrs = `draggable="true" ondragstart="peDragStart(event,${i})" ondragend="peDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
@@ -6659,14 +6732,14 @@ function priceEntryHTML(pe, i, popupCount){
     </details>
 
     <!-- 이 요금표 항목에 종속된 레이블 -->
-    <details class="pe-labels" open>
-      <summary>🏷 이 요금 항목의 레이블 (항공·공항·항공편·티오프 등)</summary>
-      ${labelsHTML(pe, i)}
+    <details class="pe-labels ${isDomestic?'pe-disabled':''}" ${isDomestic?'':'open'}>
+      <summary>✈️ 항공정보${isDomestic?' <span class="pe-disabled-note">(국내 상품은 입력이 필요하지 않아 비활성화됨)</span>':''}</summary>
+      <fieldset ${isDomestic?'disabled':''} style="border:none;margin:0;padding:0">${labelsHTML(pe, i)}</fieldset>
     </details>
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->
     <details class="pe-labels" id="schDetails${i}">
-      <summary>🗓 일정 요약 타임라인 (일자별 항공·일정)</summary>
+      <summary>🗓 일정 요약 타임라인</summary>
       ${scheduleHTML(pe, i)}
     </details>
     </div>
@@ -6695,30 +6768,26 @@ function labelsHTML(pe, peIdx){
     <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="예: NH862 / JAL 편명 자유 입력" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)"></div>
     <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}</div>
     <div class="full"><label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}</div>
-    <div class="full">
-      <label>Tee Off Time · 1일차 ~ 4일차 (미사용 시 공란)</label>
-      <div class="tee-grid">
-        <div><span class="tee-day">1일차</span><input type="text" value="${escapeAttr(L.teeOffTimes.day1||'')}" placeholder="08:00~11:00" oninput="updatePriceEntryTee(${peIdx},'day1',this.value)"></div>
-        <div><span class="tee-day">2일차</span><input type="text" value="${escapeAttr(L.teeOffTimes.day2||'')}" placeholder="07:30~10:30" oninput="updatePriceEntryTee(${peIdx},'day2',this.value)"></div>
-        <div><span class="tee-day">3일차</span><input type="text" value="${escapeAttr(L.teeOffTimes.day3||'')}" placeholder="" oninput="updatePriceEntryTee(${peIdx},'day3',this.value)"></div>
-        <div><span class="tee-day">4일차</span><input type="text" value="${escapeAttr(L.teeOffTimes.day4||'')}" placeholder="" oninput="updatePriceEntryTee(${peIdx},'day4',this.value)"></div>
-      </div>
-    </div>
   </div>`;
 }
 
 // ===== 요금 항목에 종속된 "일정 요약 타임라인" UI =====
 function scheduleHTML(pe, peIdx){
   const S = pe.schedule;
+  const tee = pe.labels.teeOffTimes;
   return `
   <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer">
     <input type="checkbox" style="width:auto" ${S.enabled?'checked':''} onchange="updateScheduleField(${peIdx},'enabled',this.checked)">
     <span>이 요금 항목의 일정 타임라인을 상세페이지 요금표에 노출</span>
   </label>
-  ${S.days.map((d,di)=>scheduleDayHTML(peIdx, d, di)).join('')}
+  ${S.days.map((d,di)=>scheduleDayHTML(peIdx, d, di, tee)).join('')}
   <button class="add-product-btn" onclick="addScheduleDay(${peIdx})">+ 일자 추가</button>`;
 }
-function scheduleDayHTML(peIdx, d, di){
+// [수정] Tee Off Time — 이전에는 "항공정보"(레이블)에 1~4일차 요약 입력란이 별도로 있었으나,
+// 일정 요약 타임라인의 해당 일자 "일정 내용" 바로 아래로 이동 (day1~day4 고정 슬롯이라 1~4일차에만 노출)
+const TEE_DAY_KEYS=['day1','day2','day3','day4'];
+function scheduleDayHTML(peIdx, d, di, tee){
+  const teeKey = TEE_DAY_KEYS[di];
   return `
   <div class="pe-block">
     <div class="pe-head">
@@ -6738,6 +6807,9 @@ function scheduleDayHTML(peIdx, d, di){
       </div>
     </div>`).join('')}
     <button class="apc-btn-sm" style="margin-top:6px" onclick="addScheduleOption(${peIdx},${di})">+ 옵션(A/B) 추가</button>
+    ${teeKey?`<div class="grid-2" style="margin-top:8px">
+      <div class="full"><label>⛳ Tee Off Time (미사용 시 공란)</label><input type="text" value="${escapeAttr((tee&&tee[teeKey])||'')}" placeholder="${di===0?'08:00~11:00':(di===1?'07:30~10:30':'')}" oninput="updatePriceEntryTee(${peIdx},'${teeKey}',this.value)"></div>
+    </div>`:''}
     <div class="grid-2" style="margin-top:8px">
       <div><label>조식</label><input type="text" value="${escapeAttr(d.meals.breakfast)}" placeholder="호텔식" oninput="updateScheduleMeal(${peIdx},${di},'breakfast',this.value)"></div>
       <div><label>중식</label><input type="text" value="${escapeAttr(d.meals.lunch)}" placeholder="불포함" oninput="updateScheduleMeal(${peIdx},${di},'lunch',this.value)"></div>
@@ -7498,6 +7570,7 @@ document.addEventListener('keydown',e=>{
     else if (document.getElementById('adminPanel').classList.contains('open')) toggleAdmin();
     else if (document.getElementById('legalModalOverlay').classList.contains('show')) closeLegalModal();
     else if (document.getElementById('popupStage').classList.contains('show')) closePopupStage();
+    else if (document.getElementById('epPopupStage').classList.contains('show')) closeEpPopup();
   }
 });
 
@@ -7514,10 +7587,12 @@ try{ setInterval(cycleSpot,8000); }catch(e){ console.error('[init] cycleSpot int
 pullSiteState().then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); } }).catch(()=>{});
 
 // 홈 진입 시 팝업 최대 3개 표시 (세션당 1회)
+// 반환값: 이번 호출에서 실제로 팝업을 노출했는지 여부 — EDITOR'S PICK 팝업과 동시에 겹쳐 뜨지
+// 않도록, 이 팝업이 노출되지 않았을 때만 곧바로 EDITOR'S PICK 팝업을 이어서 띄운다
 function showEntryPopups(){
-  if (sessionStorage.getItem('popupShown')) return;
+  if (sessionStorage.getItem('popupShown')) return false;
   const popups = getActivePopups();
-  if (!popups.length) return;
+  if (!popups.length) return false;
   const stage = document.getElementById('popupStage');
   stage.innerHTML = popups.map((pop,i)=>{
     const pe = pop.entry, cat = pop.cat, p = pop.product;
@@ -7550,6 +7625,7 @@ function showEntryPopups(){
   stage.classList.add('show');
   document.body.style.overflow='hidden';
   sessionStorage.setItem('popupShown','1');
+  return true;
 }
 function closeSinglePopup(btn){
   const card = btn.closest('.popup-card');
@@ -7564,8 +7640,125 @@ function closePopupStage(){
   stage.classList.remove('show');
   stage.innerHTML = '';
   document.body.style.overflow = '';
+  showEditorsPickPopup(); // 항목별 요금표 팝업이 모두 닫히면 이어서 EDITOR'S PICK 팝업을 시도
 }
-setTimeout(showEntryPopups, 800);
+setTimeout(()=>{ if (!showEntryPopups()) showEditorsPickPopup(); }, 800);
+
+// ══ EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업(캐러셀)으로 노출 ══
+// 항목별 요금표 팝업(#popupStage)과 별개의 독립 기능. "오늘 하루 보지 않기"는 날짜 기준으로 다음 날까지
+// 재노출을 막고(localStorage), "X" 닫기는 이번 세션에서만 닫는다(popupShown과 별도의 세션 플래그)
+const EP_POPUP_MUTE_KEY = 'kundo_ep_popup_mute_date_v1';
+let epPopupItems = [];
+let epPopupIdx = 0;
+let epPopupTimer = null;
+function getEditorsPickPopupItems(){
+  const items = [];
+  const cats = CATEGORIES.domestic.concat(CATEGORIES.overseas);
+  for (const cat of cats){
+    getProducts(cat.id).forEach((p,idx)=>{
+      if (p.editorsPick && p.editorsPickPopup) items.push({cat, product:p, idx});
+    });
+  }
+  return items;
+}
+function epPopupMutedToday(){
+  try{ return localStorage.getItem(EP_POPUP_MUTE_KEY) === new Date().toDateString(); }catch(e){ return false; }
+}
+function epPopupMuteToday(){
+  try{ localStorage.setItem(EP_POPUP_MUTE_KEY, new Date().toDateString()); }catch(e){}
+  closeEpPopup();
+}
+function showEditorsPickPopup(){
+  if (sessionStorage.getItem('epPopupShown')) return false;
+  if (epPopupMutedToday()) return false;
+  epPopupItems = getEditorsPickPopupItems();
+  if (!epPopupItems.length) return false;
+  epPopupIdx = 0;
+  sessionStorage.setItem('epPopupShown','1');
+  renderEpPopup();
+  const stage = document.getElementById('epPopupStage');
+  stage.classList.add('show');
+  document.body.style.overflow='hidden';
+  epPopupStartAuto();
+  return true;
+}
+function epSlideCardHTML(item){
+  const { cat, product:p, idx } = item;
+  const pe = (p.priceEntries||[])[0];
+  const sale = pe ? (Number(pe.salePrice)||0) : 0;
+  const saleSym = pe ? (CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원') : '원';
+  const saleFrom = pe && pe.saleFromLabel!==false ? ' ~부터' : '';
+  const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
+    ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
+    : getCatBgStyle(cat);
+  return `<div class="ep-popup-slide">
+    <div class="popup-visual" style="${bgStyle}"></div>
+    <div class="popup-body">
+      <div class="popup-cat">${cat.ko} · ${cat.en}</div>
+      <h3 class="popup-title">${escapeAttr(p.title)}</h3>
+      ${pe && pe.headline?`<p class="popup-headline">${escapeAttr(pe.headline)}</p>`:''}
+      ${sale?`<div class="popup-price"><b>${fmtPrice(sale)}</b><span>${saleSym}${saleFrom}</span></div>`:''}
+      <div class="popup-actions">
+        <button class="popup-cta primary" onclick="epPopupGoToProduct('${cat.id}',${idx})">상세 보기 →</button>
+        <button class="popup-cta ghost" onclick="closeEpPopup()">닫기</button>
+      </div>
+    </div>
+  </div>`;
+}
+function renderEpPopup(){
+  const stage = document.getElementById('epPopupStage');
+  if (!stage) return;
+  const n = epPopupItems.length;
+  stage.innerHTML = `
+    <div class="ep-popup-box" onclick="event.stopPropagation()">
+      <div class="ep-popup-top">
+        <button class="ep-popup-mute" onclick="epPopupMuteToday()">오늘 하루 보지 않기</button>
+        <button class="ep-popup-close" onclick="closeEpPopup()" aria-label="닫기">×</button>
+      </div>
+      <div class="ep-popup-viewport">
+        <div class="ep-popup-track" id="epPopupTrack" style="transform:translateX(-${epPopupIdx*100}%)">
+          ${epPopupItems.map(epSlideCardHTML).join('')}
+        </div>
+      </div>
+      ${n>1?`<div class="ep-popup-footer">
+        <button class="ep-popup-nav prev" onclick="epPopupMove(-1)" aria-label="이전">‹</button>
+        <div class="ep-popup-dots">${epPopupItems.map((_,i)=>`<button class="ep-popup-dot ${i===epPopupIdx?'active':''}" onclick="epPopupGoTo(${i})"></button>`).join('')}</div>
+        <span class="ep-popup-counter">${epPopupIdx+1} / ${n}</span>
+        <button class="ep-popup-nav next" onclick="epPopupMove(1)" aria-label="다음">›</button>
+      </div>`:''}
+    </div>`;
+}
+function epPopupUpdatePosition(){
+  const track = document.getElementById('epPopupTrack');
+  if (track) track.style.transform = `translateX(-${epPopupIdx*100}%)`;
+  document.querySelectorAll('#epPopupStage .ep-popup-dot').forEach((d,i)=>d.classList.toggle('active', i===epPopupIdx));
+  const counter = document.querySelector('#epPopupStage .ep-popup-counter');
+  if (counter) counter.textContent = `${epPopupIdx+1} / ${epPopupItems.length}`;
+}
+function epPopupGoTo(i){
+  if (!epPopupItems.length) return;
+  epPopupIdx = ((i % epPopupItems.length) + epPopupItems.length) % epPopupItems.length;
+  epPopupUpdatePosition();
+  epPopupStartAuto(); // 수동 조작 시 자동 슬라이드 타이머를 재시작해 바로 다음으로 넘어가지 않게 함
+}
+function epPopupMove(dir){ epPopupGoTo(epPopupIdx + dir); }
+function epPopupStartAuto(){
+  clearInterval(epPopupTimer);
+  if (epPopupItems.length<=1) return;
+  epPopupTimer = setInterval(()=>epPopupGoTo(epPopupIdx+1), 4500);
+}
+function epPopupGoToProduct(catId, idx){
+  closeEpPopup();
+  openProductDetail(catId, idx);
+}
+function closeEpPopup(){
+  clearInterval(epPopupTimer);
+  epPopupTimer = null;
+  const stage = document.getElementById('epPopupStage');
+  stage.classList.remove('show');
+  stage.innerHTML = '';
+  document.body.style.overflow = '';
+}
 
 // 라이트박스 키보드 이벤트
 document.addEventListener('keydown', e=>{

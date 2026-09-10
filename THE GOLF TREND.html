@@ -681,11 +681,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-title-preview{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--nm-text);font-size:.85rem;font-weight:500}
 .apc-chevron{flex-shrink:0;font-size:.75rem;color:var(--nm-text-soft);transition:transform .2s}
 .admin-product-card:not([open]) .apc-chevron{transform:rotate(-90deg)}
-.apc-actions{display:flex;gap:6px;flex-shrink:0}
+.apc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
 .apc-btn-sm{padding:6px 12px;border-radius:var(--nm-r-pill);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;border:none}
 .apc-edit-btn{background:var(--nm-surface);color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-raised-sm)}
 .apc-edit-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .apc-delete{background:var(--nm-surface);color:var(--nm-danger);box-shadow:var(--nm-shadow-raised-sm)}
+/* [수정] "복제" 버튼 — 글자색은 그대로 두고, 배경·둥근 pill 모양·그림자를 고급편집/삭제 버튼과 통일 */
+.apc-dup{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm)}
+.apc-dup:hover{box-shadow:var(--nm-shadow-hover)}
 .apc-delete:hover{box-shadow:var(--nm-shadow-hover)}
 .apc-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .apc-fields .full{grid-column:1/-1}
@@ -869,8 +872,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [관리자 패널 가독성 개선] 요금표 "항목 01/02..." 카드 — 항목간 간격을 넓히고 좌측 강조선 색을
    홀/짝으로 번갈아(골드↔사이언) 주어 인접한 항목끼리 한눈에 구분되게 한다.
    자세히보기(details) 안에 중첩되는 일정 pe-block(scheduleDayHTML)은 이 클래스를 쓰지 않으므로 영향 없음 */
-.pe-item{margin:0 0 20px;border-left:4px solid var(--nm-blue-deep)}
-.pe-item.pe-item-b{background:var(--nm-surface-light);border-left-color:var(--nm-cyan)}
+.pe-item{margin:0 0 20px;border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
+.pe-item.pe-item-b{background:var(--nm-surface-light)}
 /* [수정] 요금 항목 카드를 <details>로 전환 — 접고 펼 수 있게 하고, 순서를 드래그로 바꿀 수 있게 한다.
    details 래퍼 자체의 패딩은 제거하고 summary(.pe-head)·본문(.pe-body)에 각각 패딩을 준다 */
 .pe-item{padding:0}
@@ -919,8 +922,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* .pe-head-right로 스코프를 좁혀 특이도(specificity)를 .adv-body label(클래스1+태그1)보다 높여야
    display:flex 등 아래 선언이 실제로 적용된다 — 그렇지 않으면 label 태그 특이도에 밀려 display:block으로
    되돌아가면서 토글 슬라이더가 찌그러져 "팝업 노출" 텍스트와 겹쳐 보이는 문제가 있었다 */
-.pe-head-right .popup-toggle{display:flex;align-items:center;gap:8px;padding:5px 10px;margin:0;background:var(--nm-surface);border:none;border-radius:100px;cursor:pointer;transition:all .2s;position:relative;text-transform:none;letter-spacing:normal;box-shadow:var(--nm-shadow-raised-sm)}
-.pe-head-right .popup-toggle.locked{cursor:not-allowed;opacity:.5}
+/* [수정] 이전에는 .pe-head-right 안에서만 스타일이 적용되어, EDITOR'S PICK 줄처럼 다른 위치에서
+   쓰일 때 레이아웃 없이 겹쳐 보이는 문제가 있었다 — 어디서 쓰이든 동일하게 보이도록 범위를 넓힘.
+   ".popup-toggle.popup-toggle"로 클래스를 중복 지정해 특이도를 높인 것은 ".adv-body label{display:block}"
+   같은 더 넓은 범위의 폼 레이블 기본 스타일에 밀려 레이아웃이 깨지지 않도록 하기 위함 */
+.popup-toggle.popup-toggle{display:flex;align-items:center;gap:8px;padding:5px 10px;margin:0;background:var(--nm-surface);border:none;border-radius:100px;cursor:pointer;transition:all .2s;position:relative;text-transform:none;letter-spacing:normal;box-shadow:var(--nm-shadow-raised-sm);flex-shrink:0;white-space:nowrap}
+.popup-toggle.locked{cursor:not-allowed;opacity:.5}
 .popup-toggle input{opacity:0;width:0;height:0;position:absolute}
 .popup-toggle .toggle-slider{position:relative;width:32px;height:18px;background:var(--nm-surface);border-radius:100px;transition:.2s;box-shadow:var(--nm-shadow-inset)}
 .popup-toggle .toggle-slider::before{content:'';position:absolute;height:12px;width:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(10,23,48,.3)}
@@ -947,6 +954,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-labels summary::before{content:'▸ ';color:var(--nm-blue);transition:transform .2s;display:inline-block;margin-right:4px}
 .pe-labels[open] summary::before{transform:rotate(90deg)}
 .pe-labels-body{margin-top:10px;padding-top:8px;border-top:1px dashed rgba(10,23,48,.12)}
+/* [수정] "출발 요일"을 나머지 항공정보 필드에서 분리해 하단에 배치 */
+.pe-labels-departure-day{margin-top:14px;padding-top:12px;border-top:1px dashed rgba(10,23,48,.12)}
+/* [수정] 공통 일정 요약 타임라인과 요금 항목(항목1/2...) 묶음 사이 구분선 — 간격을 넓혀 가독성 향상 */
+.pe-group-divider{display:flex;align-items:center;gap:12px;margin:30px 0 16px;color:var(--nm-text-soft);font-size:.78rem;font-weight:700;letter-spacing:.05em}
+.pe-group-divider::before,.pe-group-divider::after{content:'';flex:1;height:1px;background:rgba(10,23,48,.15)}
 .tee-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
 /* [수정] 국내 상품은 항공정보가 불필요하므로 자동 비활성화 — 입력은 막되 내용은 흐리게 계속 보이도록 함 */
 .pe-labels.pe-disabled{opacity:.55}
@@ -2960,7 +2972,7 @@ function isDomesticCat(catId){ return CATEGORIES.domestic.some(c=>c.id===catId);
 //   calendarMode: 'none'|'daily'|'auto' }
 
 // 팝업 최대 3개까지 동시 노출 가능
-const POPUP_MAX = 3;
+const POPUP_MAX = 6;
 
 function newLabels(){
   return {
@@ -6152,16 +6164,25 @@ function renderProductAdmin(catId){
     list.innerHTML=`<div class="empty-state" style="padding:30px 0"><div class="big">📦</div><p>등록된 상품이 없습니다.</p></div>`;
     return;
   }
-  // [수정] 상품 카드를 <details>로 전환 — 넘버링 옆에 제목을 함께 보여주고, 접어서 목록을 훑어볼 수 있게 한다
+  // [수정] 상품 카드를 <details>로 전환 — 넘버링 옆에 제목을 함께 보여주고, 접어서 목록을 훑어볼 수 있게 한다.
+  // 목록이 길어지면 한눈에 훑어보기 어려우므로 기본값은 접힌 상태로 시작한다
   list.innerHTML=products.map((p,i)=>`
-    <details class="admin-product-card" open>
+    <details class="admin-product-card">
       <summary class="apc-head">
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
         <span class="apc-title-preview">${p.title?escapeAttr(p.title):'(제목 없음)'}</span>
         <span class="apc-chevron">▾</span>
-        <div class="apc-actions" onclick="event.stopPropagation()">
+        <!-- [수정] stopPropagation()만으로는 <summary>의 기본 펼침/접힘 동작을 막지 못해 preventDefault()도 함께 호출 -->
+        <div class="apc-actions" onclick="event.preventDefault();event.stopPropagation()">
+          <!-- [수정] "항목별 요금표 팝업"과 같은 방식의 팝업 노출 토글을 상품 리스트에서도 바로 설정 가능하도록 추가 —
+               고급편집의 EDITOR'S PICK "팝업 노출"과 동일한 값(p.editorsPickPopup)을 제어한다 -->
+          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
+            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="toggleProductPopup(${i},this.checked)">
+            <span class="toggle-slider"></span>
+            <span class="pt-lbl">팝업노출</span>
+          </label>
           <button class="apc-btn-sm apc-edit-btn" onclick="openAdvEditor('${activeProductCat}',${i})">고급 편집</button>
-          <button class="apc-btn-sm" onclick="duplicateProduct(${i})">복제</button>
+          <button class="apc-btn-sm apc-dup" onclick="duplicateProduct(${i})">복제</button>
           <button class="apc-btn-sm apc-delete" onclick="deleteProduct(${i})">삭제</button>
         </div>
       </summary>
@@ -6188,6 +6209,16 @@ function updateProduct(idx,field,value){
   saveProducts();
   renderCategoryGrid();
   updateProductCountLabel();
+}
+// [수정] 상품 리스트에서 고급편집을 열지 않고도 EDITOR'S PICK 팝업 노출 여부를 바로 켜고 끌 수 있게 함
+function toggleProductPopup(idx, checked){
+  if (productOverrides[activeProductCat]===undefined){
+    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+  }
+  const p = productOverrides[activeProductCat][idx];
+  if (!p.editorsPick) return; // EDITOR'S PICK 미등록 상품은 잠금 상태이므로 변경하지 않음
+  p.editorsPickPopup = checked;
+  saveProducts();
 }
 function updateProductCountLabel(){
   const products=getProducts(activeProductCat);
@@ -6397,11 +6428,13 @@ const CHECKPOINT1_GUIDE = `💰 2인 단독 출발 시 150,000원 추가
 function advBasicHTML(p){
   const popupCount = countActivePopups();
   const tm = p.titleMedia;
+  // [수정] 국내 상품은 항공정보가 불필요하므로, 공통 레이블 섹션을 기본으로 접어서 항목만 보이게 한다
+  const isDomestic = currentAdv && isDomesticCat(currentAdv.catId);
   return `
     <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:0">
-        <input type="checkbox" style="width:auto" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px">
+        <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
         <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
       </label>
       <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
@@ -6494,7 +6527,7 @@ function advBasicHTML(p){
     <!-- [수정] 요금 항목(항목1/2...)을 아직 추가하지 않은 상품도 레이블·일정 요약 타임라인을 입력할 수 있도록,
          특정 요금 항목에 종속되지 않는 "공통" 레이블·일정 입력 영역을 상시 노출한다.
          요금 항목을 이후에 추가해도 이 공통 값은 그대로 유지되며, 상세페이지에는 요금 항목별 정보와 함께 노출된다 -->
-    <details class="pe-labels" open>
+    <details class="pe-labels" ${isDomestic?'':'open'}>
       <summary>🏷 공통 레이블 (항공·공항·항공편·티오프 등 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
       ${labelsHTML(p, -1)}
     </details>
@@ -6502,6 +6535,9 @@ function advBasicHTML(p){
       <summary>🗓 공통 일정 요약 타임라인 (요금 항목과 무관하게 상품 상세에 노출)</summary>
       ${scheduleHTML(p, -1)}
     </details>
+
+    <!-- [수정] 공통 일정 요약 타임라인과 요금 항목(항목1/2...) 묶음 사이에 구분선 + 넓은 간격을 두어 가독성 향상 -->
+    <div class="pe-group-divider"><span>요금 항목</span></div>
 
     ${p.priceEntries.length ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount)).join('')
       : `<div style="color:rgba(247,245,240,.5);padding:20px;text-align:center;background:rgba(0,0,0,.15);border:1px dashed rgba(255,255,255,.15);border-radius:10px;margin:6px 0">등록된 요금 항목이 없습니다</div>`}
@@ -6612,6 +6648,9 @@ function chipMultiHTML(opts, selectedArr, buildOnclick){
     return `<button type="button" class="adv-chip ${active?'active':''}" onclick="${buildOnclick(val)}">${label}</button>`;
   }).join('')}</div>`;
 }
+// [수정] 요금 항목(항목1/2/3...)이 여러 개 등록됐을 때 카드 좌측 강조선 색을 항목마다 다르게 순환시켜
+// 한눈에 구분되도록 함 — 기존에는 2색 교대(홀/짝)뿐이라 3개 이상일 때 구분이 어려웠음
+const PE_ACCENT_COLORS = ['#2F6FED','#16B8A6','#F0A63A','#EE5A6F','#8E5FE0','#33B36F'];
 function priceEntryHTML(pe, i, popupCount){
   const emphOpts = ['일반','실속','특가 (기간한정)','특가 (하계)','특가 (동계)','특가 (긴급)'];
   const layoutOpts = [['card','카드형'],['hero','대형']];
@@ -6624,13 +6663,15 @@ function priceEntryHTML(pe, i, popupCount){
   const dropAttrs = `data-idx="${i}" ondragover="peDragOver(event)" ondragleave="peDragLeave(event)" ondrop="peDrop(event,${i})"`;
   const handleAttrs = `draggable="true" ondragstart="peDragStart(event,${i})" ondragend="peDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
   return `
-  <details class="pe-block pe-item ${i%2?'pe-item-b':''}" open ${dropAttrs}>
+  <details class="pe-block pe-item ${i%2?'pe-item-b':''}" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs}>
     <summary class="pe-head">
       <span class="pe-drag-handle" title="드래그하여 순서 변경" ${handleAttrs}>⠿</span>
       <span class="pe-idx">— 항목 ${String(i+1).padStart(2,'0')}</span>
       <span class="pe-title-preview">${pe.headline?escapeAttr(pe.headline):'(제목 없음)'}</span>
       <span class="pe-chevron">▾</span>
-      <div class="pe-head-right" onclick="event.stopPropagation()">
+      <!-- [수정] stopPropagation()만으로는 <summary>의 기본 펼침/접힘 동작(네이티브 활성화 동작)을
+           막지 못한다 — preventDefault()를 함께 호출해야 이 영역 클릭 시 펼쳐지지 않는다 -->
+      <div class="pe-head-right" onclick="event.preventDefault();event.stopPropagation()">
         <label class="popup-toggle ${popupLocked?'locked':''}" title="${popupLocked?`최대 ${POPUP_MAX}개까지 동시 팝업 노출 가능`:'홈 진입 시 팝업으로 노출'}">
           <input type="checkbox" ${pe.popup?'checked':''} ${popupLocked?'disabled':''} onchange="togglePopup(${i},this.checked)">
           <span class="toggle-slider"></span>
@@ -6759,6 +6800,8 @@ const DAY_OPTS=[['월','월'],['화','화'],['수','수'],['목','목'],['금','
 function labelsHTML(pe, peIdx){
   const L = pe.labels;
   const sel=(opts,val,field)=>`<select onchange="updatePriceEntryLabel(${peIdx},'${field}',this.value)">${opts.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
+  // [수정] "출발 요일"은 나머지 항공정보 필드와 성격이 달라(요일 자체는 항공과 무관) 그리드에서
+  // 분리해 하단에 별도 블록으로 배치 — 노출 조건(값이 있을 때만 상세페이지에 표시)은 이전과 동일
   return `
   <div class="grid-2 pe-labels-body">
     <div><label>항공 포함 여부</label>${sel(AIRFARE_OPTS,L.airfare,'airfare')}</div>
@@ -6767,7 +6810,9 @@ function labelsHTML(pe, peIdx){
     <div><label>도착 공항</label><input type="text" value="${escapeAttr(L.arrAirport||'')}" placeholder="예: 시즈오카" oninput="updatePriceEntryLabel(${peIdx},'arrAirport',this.value)"></div>
     <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="예: NH862 / JAL 편명 자유 입력" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)"></div>
     <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}</div>
-    <div class="full"><label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}</div>
+  </div>
+  <div class="pe-labels-departure-day">
+    <label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}
   </div>`;
 }
 

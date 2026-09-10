@@ -392,6 +392,17 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
 .pd-price-entry .min-people{font-size:.72rem;color:var(--gold-deep);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px;margin-left:auto}
+/* [수정] 판매가와 별도인 출발 요일별·공휴일별 요금표 — 요금표(.prices) 바로 아래, 한 줄 또는
+   두 줄로 자동 줄바꿈. 요일 폰트는 "포함사항" 제목과 동일(.86rem), 금액 폰트는 판매가(1.82rem)의 75% */
+.pd-day-price-table{display:flex;flex-wrap:wrap;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px}
+.pd-day-price-cell{flex:1 1 76px;min-width:76px;text-align:center;padding:2px 8px;border-right:1px dashed rgba(10,23,48,.12)}
+.pd-day-price-cell:last-child{border-right:none}
+.pd-day-price-cell .d{font-size:.86rem;font-weight:600;color:rgba(10,23,48,.6);margin-bottom:2px;white-space:nowrap}
+.pd-day-price-cell .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:var(--pine-deep);white-space:nowrap}
+.pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
+.pd-day-price-cell.sat .d,.pd-day-price-cell.sat .v,.pd-day-price-cell.sat .v .unit{color:#1877F2}
+.pd-day-price-cell.sun .d,.pd-day-price-cell.sun .v,.pd-day-price-cell.sun .v .unit,
+.pd-day-price-cell.holiday .d,.pd-day-price-cell.holiday .v,.pd-day-price-cell.holiday .v .unit{color:#DC2626}
 .pd-price-entry .go{color:var(--gold-deep);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px;margin-top:4px}
 /* [수정] 요금 항목별 "자세히 →" 토글 — 이 항목의 레이블·일정 및 공통 포함/불포함/참고사항을 펼쳐서 보여준다 */
 .pd-pe-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -859,6 +870,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ef-drag-handle:active{ cursor:grabbing; }
 .ef-row.dragging{opacity:.4;transform:scale(.98)}
 .ef-row.drag-over{box-shadow:0 0 0 2px var(--nm-blue);border-radius:8px}
+/* [수정] 요금 항목의 출발 요일별 · 공휴일별 요금 입력 행 */
+.dp-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.dp-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+.dp-row input,.dp-row select{min-width:0}
 .pe-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.12)}
 .pe-idx{font-size:1rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.05em}
 .pe-head-right{display:flex;align-items:center;gap:10px}
@@ -2907,6 +2922,8 @@ function newPriceEntry(){
     minPeople:'', // [수정] 요금 옆에 표기할 최소 출발 인원 (예: "2인")
     // [수정] 포함사항/불포함사항/참고사항은 상품 공통이 아니라 요금 항목별로 개별 입력
     included:'', notIncluded:'', precautions:'',
+    // [수정] 판매가 이외에 출발 요일별/공휴일별 별도 요금을 함께 안내할 수 있도록 추가
+    dayPrices:[], holidayPrices:[],
     labels: newLabels(),
     popup:false,
     schedule: newSchedule() // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
@@ -3030,6 +3047,11 @@ function ensureExtended(p){
     if (pe.included===undefined) pe.included = ''; // [수정] 포함사항 — 요금 항목별 개별 입력으로 이관
     if (pe.notIncluded===undefined) pe.notIncluded = '';
     if (pe.precautions===undefined) pe.precautions = '';
+    // [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 요일/날짜별 금액을 안내
+    if (!Array.isArray(pe.dayPrices)) pe.dayPrices = [];
+    pe.dayPrices.forEach(d=>{ if (d.day===undefined) d.day=''; if (d.price===undefined) d.price=0; });
+    if (!Array.isArray(pe.holidayPrices)) pe.holidayPrices = [];
+    pe.holidayPrices.forEach(h=>{ if (h.date===undefined) h.date=''; if (h.price===undefined) h.price=0; });
     if (!Array.isArray(pe.emphasis)) pe.emphasis = pe.emphasis ? [pe.emphasis] : []; // [Phase 3 상품등록 개선] 강조태그 복수 선택
     pe.labels = ensureLabels(pe.labels);
     pe.schedule = ensureSchedule(pe.schedule); // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
@@ -4914,6 +4936,14 @@ function renderProductDetail(p,cat){
           // 이동하던 카드 전체 클릭 동작은 제거하고, 외부 링크는 별도 버튼으로만 이동하게 분리한다.
           // 첫 번째 항목(idx===0)은 기본으로 펼쳐서 노출한다.
           const clickAttr = moreBody ? `onclick="togglePeMore(this)"` : '';
+          // [수정] 판매가와 별도인 출발 요일별·공휴일별 요금 — 요금표(.prices) 바로 아래에 노출.
+          // 토요일은 파란색, 일요일·공휴일은 빨간색으로 요일명과 금액을 함께 강조한다
+          const dayPriceCells = (pe.dayPrices||[]).filter(d=>d.day && d.price).map(d=>{
+            const cls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
+            return `<div class="pd-day-price-cell ${cls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
+          }).join('') + (pe.holidayPrices||[]).filter(h=>h.date && h.price).map(h=>
+            `<div class="pd-day-price-cell holiday"><div class="d">${escapeAttr(h.date)}</div><div class="v">${fmtPrice(h.price)}<span class="unit">원</span></div></div>`
+          ).join('');
           // [Phase 3 상품등록 개선 v3] 항목별 요금표에는 포함사항 관련 정보만 노출 — 출발요일·항공패턴·추가요금안내는
           // 요금표에서 분리해 공통 안내 아래로 이동 (renderProductDetail 하단 참고)
           return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
@@ -4925,6 +4955,7 @@ function renderProductDetail(p,cat){
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
               ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
             </div>
+            ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             <div class="pd-pe-actions">
               ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 상세보기 →</a>`:''}
               ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
@@ -6411,6 +6442,7 @@ function priceEntryHTML(pe, i, popupCount){
           <span class="toggle-slider"></span>
           <span class="pt-lbl">팝업 노출</span>
         </label>
+        <button class="apc-btn-sm" onclick="duplicatePriceEntry(${i})">복제</button>
         <button class="pee-del" onclick="removePriceEntry(${i})">삭제</button>
       </div>
     </summary>
@@ -6457,6 +6489,38 @@ function priceEntryHTML(pe, i, popupCount){
         </div>
       </div>
     </div>
+
+    <!-- [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 특정 요일(구간)·날짜의 금액을 함께 안내.
+         상세페이지 요금표 하단에 "월~목 출발 / 금 출발 / 토 출발 / 일 출발" 식의 표로 노출된다 -->
+    <details class="pe-labels" open>
+      <summary>🗓️ 출발 요일별 · 공휴일 요금</summary>
+      <div class="pe-labels-body">
+        <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
+        <div class="dp-list">
+          ${(pe.dayPrices||[]).map((d,di)=>`
+          <div class="dp-row">
+            <select onchange="updateDayPrice(${i},${di},'day',this.value)">
+              <option value="">요일 선택</option>
+              ${DAY_OPTS.map(o=>`<option value="${o[0]}" ${d.day===o[0]?'selected':''}>${o[1]} 출발</option>`).join('')}
+            </select>
+            <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateDayPrice(${i},${di},'price',this.value,'number')">
+            <button class="pee-del" onclick="removeDayPrice(${i},${di})">삭제</button>
+          </div>`).join('')}
+        </div>
+        <button class="apc-btn-sm" onclick="addDayPrice(${i})">+ 요일별 요금 추가</button>
+
+        <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시)</span></label>
+        <div class="dp-list">
+          ${(pe.holidayPrices||[]).map((h,hi)=>`
+          <div class="dp-row">
+            <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateHolidayPrice(${i},${hi},'date',this.value)">
+            <input type="number" value="${h.price||''}" placeholder="890000" oninput="updateHolidayPrice(${i},${hi},'price',this.value,'number')">
+            <button class="pee-del" onclick="removeHolidayPrice(${i},${hi})">삭제</button>
+          </div>`).join('')}
+        </div>
+        <button class="apc-btn-sm" onclick="addHolidayPrice(${i})">+ 공휴일 요금 추가</button>
+      </div>
+    </details>
 
     <!-- [수정] 포함사항/불포함사항/참고사항 — 요금 항목별 개별 입력 (상세페이지 요금표 "상세보기→"에서 노출) -->
     <details class="pe-labels" open>
@@ -6660,6 +6724,51 @@ function removePriceEntry(i){
   if (!confirm('이 요금 항목을 삭제하시겠습니까?')) return;
   p.priceEntries.splice(i,1);
   saveAdvChange(); renderAdvBody();
+}
+// [수정] 요금 항목(항목1/2...) 복제 — 입력해둔 값을 그대로 복사해 바로 아래에 추가.
+// 상품 복제(duplicateProduct)와 동일한 패턴: 제목에 " (복제)"를 붙이고, 팝업 노출은 동시 노출
+// 최대 개수(POPUP_MAX)를 넘기지 않도록 꺼진 상태로 되돌린다
+function duplicatePriceEntry(i){
+  const p=getAdvProduct(); if (!p) return;
+  const clone = JSON.parse(JSON.stringify(p.priceEntries[i]));
+  clone.headline = (clone.headline||'') + ' (복제)';
+  clone.popup = false;
+  p.priceEntries.splice(i+1, 0, clone);
+  saveAdvChange(); renderAdvBody();
+}
+// [수정] 출발 요일별 요금 — 판매가와 별도로 특정 요일(또는 요일 구간)에 대한 금액을 추가 안내
+function addDayPrice(peIdx){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].dayPrices.push({day:'', price:0});
+  saveAdvChange(); renderAdvBody();
+}
+function removeDayPrice(peIdx, i){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].dayPrices.splice(i,1);
+  saveAdvChange(); renderAdvBody();
+}
+function updateDayPrice(peIdx, i, field, val, type){
+  const p=getAdvProduct(); if (!p) return;
+  if (type==='number') val=parseInt(val)||0;
+  p.priceEntries[peIdx].dayPrices[i][field]=val;
+  saveAdvChange();
+}
+// [수정] 공휴일 지정 요금 — 특정 날짜를 공휴일로 지정하고 그 날짜의 금액을 추가 안내
+function addHolidayPrice(peIdx){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].holidayPrices.push({date:'', price:0});
+  saveAdvChange(); renderAdvBody();
+}
+function removeHolidayPrice(peIdx, i){
+  const p=getAdvProduct(); if (!p) return;
+  p.priceEntries[peIdx].holidayPrices.splice(i,1);
+  saveAdvChange(); renderAdvBody();
+}
+function updateHolidayPrice(peIdx, i, field, val, type){
+  const p=getAdvProduct(); if (!p) return;
+  if (type==='number') val=parseInt(val)||0;
+  p.priceEntries[peIdx].holidayPrices[i][field]=val;
+  saveAdvChange();
 }
 
 // ===== 미디어 탭 (타이틀 이미지/동영상 + 갤러리) =====

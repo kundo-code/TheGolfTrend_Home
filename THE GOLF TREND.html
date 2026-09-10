@@ -6841,8 +6841,6 @@ function labelsHTML(pe, peIdx, showDepartureDay){
   if (showDepartureDay===undefined) showDepartureDay=true;
   const L = pe.labels;
   const sel=(opts,val,field)=>`<select onchange="updatePriceEntryLabel(${peIdx},'${field}',this.value)">${opts.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
-  // [수정] "출발 요일"은 나머지 항공정보 필드와 성격이 달라(요일 자체는 항공과 무관) 그리드에서
-  // 분리해 하단에 별도 블록으로 배치 — 노출 조건(값이 있을 때만 상세페이지에 표시)은 이전과 동일
   return `
   <div class="grid-2 pe-labels-body">
     <div><label>항공 포함 여부</label>${sel(AIRFARE_OPTS,L.airfare,'airfare')}</div>

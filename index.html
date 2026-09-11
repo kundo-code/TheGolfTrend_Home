@@ -317,7 +317,12 @@ section.block{padding:100px 24px;position:relative}
    0.25줄(6px)씩 두 차례 좁힌 뒤(10px→4px→0px), 다시 0.15줄(3.6px) 벌렸다(0px→3.6px) */
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:3.6px;column-gap:14px}
 .product .meta span{display:inline-flex;align-items:center;gap:4px;min-width:0}
-.product .meta span:nth-child(odd):not(:last-child):not(.meta-full){padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
+/* [수정] 예전에는 nth-child(홀/짝)로 좌/우 칸을 구분해 구분선을 그렸으나, "한 줄로" 항목이
+   중간에 섞이면 그 뒤 항목들의 시각적 좌/우 칸이 DOM 순서의 홀/짝과 어긋나 구분선이 엉뚱한
+   자리(빠지거나 잘못 붙는)에 나타나는 문제가 있었다. 이제 JS(productCardHTML)에서 실제
+   그리드가 흘러가는 좌/우 칸을 계산해 "같은 줄에 우측 항목이 있는 좌측 항목"에만
+   .meta-border-r 클래스를 직접 부여한다 */
+.product .meta span.meta-border-r{padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
 /* [수정] 관리자에서 "한 줄로" 토글을 켠 meta 항목은 카드에서 그리드 전체 폭(2칸)을 혼자 차지해
    내용이 길어도 줄바꿈 없이 한 줄에 표시되도록 한다 */
 .product .meta span.meta-full{grid-column:1/-1}
@@ -4216,6 +4221,27 @@ function productCardHTML(p, catId, idx){
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
   const transferLabel = isDomesticCat(catId) ? '숙소→골프장' : '공항→호텔';
   const mw = p.metaWide || {};
+  // [수정] meta 항목 중 일부가 "한 줄로"(전체 폭)로 표시되면, 이후 항목들의 시각적 좌/우 칸이
+  // DOM 순서의 홀/짝과 어긋나 nth-child 기반 구분선이 엉뚱한 자리에 나타나는 문제가 있었다
+  // (예: 식사를 한 줄로 켜면 항공포함여부·비행시간 사이 구분선이 빠지고 비행시간 뒤에 잘못 붙음).
+  // 그리드가 실제로 흘러가는 좌/우 칸을 여기서 직접 계산해, "같은 줄에 우측 항목이 있는 좌측
+  // 항목"에만 구분선을 붙인다
+  const metaItems = [
+    {full: !!mw.rounds, html: `⛳ ${p.rounds||'-'}`},
+    ...(p.stay ? [{full: !!mw.stay, html: `🏨 ${p.stay}`}] : []),
+    ...(p.meals ? [{full: !!mw.meals, html: `🍽 ${p.meals}`}] : []),
+    ...(airfareText ? [{full: !!mw.airfare, html: `✈️ ${airfareText}`}] : []),
+    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 비행시간 ${escapeAttr(p.flightTime)}`}] : []),
+    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 ${transferLabel} ${escapeAttr(p.transferTime)}`}] : []),
+  ];
+  let metaCol = 0;
+  const metaHTML = metaItems.map((item,i)=>{
+    if (item.full){ metaCol = 0; return `<span class="meta-full">${item.html}</span>`; }
+    const isLeft = metaCol===0;
+    const hasRightSibling = isLeft && metaItems[i+1] && !metaItems[i+1].full;
+    metaCol = isLeft ? 1 : 0;
+    return `<span class="${hasRightSibling?'meta-border-r':''}">${item.html}</span>`;
+  }).join('');
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       <div class="pv-bg" style="${visualStyle}"></div>
@@ -4229,14 +4255,7 @@ function productCardHTML(p, catId, idx){
       <span class="prt-right">${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}</span>
     </div>
     <div class="product-divider"></div>
-    <div class="meta">
-      <span class="${mw.rounds?'meta-full':''}">⛳ ${p.rounds||'-'}</span>
-      ${p.stay?`<span class="${mw.stay?'meta-full':''}">🏨 ${p.stay}</span>`:''}
-      ${p.meals?`<span class="${mw.meals?'meta-full':''}">🍽 ${p.meals}</span>`:''}
-      ${airfareText?`<span class="${mw.airfare?'meta-full':''}">✈️ ${airfareText}</span>`:''}
-      ${p.flightTime?`<span class="${mw.flightTime?'meta-full':''}">🛫 비행시간 ${escapeAttr(p.flightTime)}</span>`:''}
-      ${p.transferTime?`<span class="${mw.transferTime?'meta-full':''}">🚌 ${transferLabel} ${escapeAttr(p.transferTime)}</span>`:''}
-    </div>
+    <div class="meta">${metaHTML}</div>
     ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
     ${p.minPeople?`<div class="product-period-row">
       <span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>

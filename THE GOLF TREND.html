@@ -2196,13 +2196,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 </nav>
 
 <!-- POPUP OVERLAY (홈 진입 시 활성 요금 항목 최대 3개까지 순차 노출) -->
-<div class="popup-stage" id="popupStage" onclick="if(event.target===this)closePopupStage()"></div>
+<div class="popup-stage" id="popupStage" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closePopupStage)"></div>
 <!-- [수정] EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업으로 노출.
      항목별 요금표 팝업(#popupStage)과는 별개의 독립 스테이지 -->
-<div class="popup-stage" id="epPopupStage" onclick="if(event.target===this)closeEpPopup()"></div>
+<div class="popup-stage" id="epPopupStage" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeEpPopup)"></div>
 
 <!-- LEGAL CONTENT MODAL -->
-<div class="legal-modal-overlay" id="legalModalOverlay" onclick="if(event.target===this)closeLegalModal()">
+<div class="legal-modal-overlay" id="legalModalOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeLegalModal)">
   <div class="legal-modal">
     <div class="legal-modal-head">
       <h3 id="legalModalTitle"></h3>
@@ -2777,7 +2777,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <!-- PRODUCT DETAIL MODAL (Litt.ly style) -->
 <!-- [수정] 상품 상세 안에서 이전/다음 상품(같은 국내·해외 권역 루프)으로 바로 이동할 수 있도록
      상단 고정 내비게이션 바(지역명·순번·이전/다음 버튼)와 권역 전환 시 잠깐 노출되는 전환 화면을 추가 -->
-<div class="pd-overlay" id="pdOverlay" onclick="if(event.target===this)closeProductDetail()">
+<div class="pd-overlay" id="pdOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeProductDetail)">
   <div class="pd-container" id="pdContainer">
     <div class="pd-nav-bar" id="pdNavBar">
       <button class="pd-nav-arrow prev" onclick="pdMove(-1)" aria-label="이전 상품">‹</button>
@@ -2891,7 +2891,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 <!-- [수정] "상품 초기화" — 전체 초기화와 달리 상품·요금표 데이터만, 그것도 관리자가 직접 선택한
      국내 권역/해외 국가에 한해서만 초기화한다. 1단계: 권역/국가 선택 → 2단계: 최종 확인 -->
-<div class="reset-product-overlay" id="resetProductOverlay" onclick="if(event.target===this)closeProductResetModal()">
+<div class="reset-product-overlay" id="resetProductOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeProductResetModal)">
   <div class="reset-product-modal">
     <div class="adv-head">
       <div><h3>상품 초기화</h3><p>선택한 권역·국가의 상품/요금표 데이터만 기본값으로 초기화됩니다</p></div>
@@ -2906,7 +2906,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 </div>
 
 <!-- ADVANCED PRODUCT EDITOR -->
-<div class="adv-editor-overlay" id="advOverlay" onclick="if(event.target===this)closeAdvEditor()">
+<div class="adv-editor-overlay" id="advOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeAdvEditor)">
   <div class="adv-editor" id="advEditor">
     <div class="adv-head">
       <div><h3 id="advTitle">상품 고급 편집</h3><p id="advSubtitle"></p></div>
@@ -4053,6 +4053,13 @@ function fmtHolidayDate(s){
   return `${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}(${wd})`;
 }
 function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+// [수정] 배경(오버레이) 클릭 시 팝업/모달을 닫는 "onclick=if(event.target===this)" 방식의 버그 —
+// 입력창/텍스트를 드래그로 선택하다 마우스를 오버레이 위에서 떼면(mousedown은 input, mouseup은
+// 오버레이), 브라우저가 합성하는 click 이벤트의 target이 두 지점의 공통 조상인 오버레이 자신으로
+// 잡혀버려 실제로는 배경을 클릭한 적이 없는데도 닫혀버렸다. mousedown이 오버레이 자기 자신에서
+// 시작했을 때만(자식 요소가 아니라) 닫히도록 두 단계로 나눠 검사한다
+function overlayMouseDown(e){ e.currentTarget.dataset.mdOnSelf = (e.target===e.currentTarget) ? '1' : ''; }
+function overlayClickClose(e, fn){ if (e.target===e.currentTarget && e.currentTarget.dataset.mdOnSelf==='1') fn(); }
 // [메모리/성능 안정화] innerHTML 교체로 autoplay 동영상이 화면에서 사라질 때, 명시적으로 정지/해제하지
 // 않으면 백그라운드에서 계속 디코딩되며 화면을 오래 켜둘수록 메모리가 누적되어 "백지 현상"으로 이어질
 // 수 있다. 동영상을 포함할 수 있는 영역을 다시 그리기 직전에 항상 호출한다.

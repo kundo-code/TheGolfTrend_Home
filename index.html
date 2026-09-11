@@ -671,6 +671,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    같은 .admin-section 클래스를 쓰는 다른 탭(링크)에는 영향이 없도록 #tabImages로 범위를 한정한다 */
 #tabImages .admin-section{padding-top:20px;border-top:1px solid rgba(32,43,58,.12)}
 #tabImages .admin-section:first-child{padding-top:0;border-top:none}
+/* [수정] "국내 권역"/"해외 국가" 섹션을 "권역별/국가별 골프 여행지" 제목 아래로 묶어 접는 그룹 토글 —
+   제목 크기는 다른 주요 섹션 제목(.admin-h4-lg)과 동일하게 맞추고, 기본 접힘 상태로 표시 */
+.admin-group-collapse{margin-bottom:22px}
+#tabImages .admin-group-collapse{padding-top:20px;border-top:1px solid rgba(32,43,58,.12)}
+.admin-group-collapse>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:#000;font-size:1.107rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase}
+.admin-group-collapse>summary::-webkit-details-marker{display:none}
+.admin-group-collapse>summary::after{content:'▾';transition:transform .2s;font-size:.9rem}
+.admin-group-collapse[open]>summary::after{transform:rotate(180deg)}
+.admin-group-collapse .admin-group-body{margin-top:14px}
 .admin-item{display:flex;gap:12px;align-items:center;padding:10px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);margin-bottom:8px;box-shadow:var(--nm-shadow-raised-sm)}
 .admin-thumb{width:52px;height:52px;border-radius:8px;background-size:cover;background-position:center;border:1px solid var(--nm-border);flex-shrink:0}
 .admin-thumb.bg-korea{background-size:300% 200%}
@@ -2797,8 +2806,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="admin-section"><h4 class="admin-h4-lg">시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">회사소개 카드 이미지 (핵심가치 · 역량 및 강점)</h4><div id="adminAbout"></div></div>
       <div class="admin-info-box"><b>💡</b> 각 이미지 옆 <b>"교체"</b> 버튼을 눌러 새 이미지를 업로드하세요. 헤드라인은 <b>이미지·동영상</b> 모두 지원. 블로그는 <b>URL</b>만 입력하면 네이버·T-Story 등에서 <b>제목·대표 이미지가 자동으로 불러와집니다</b>. 자동 저장.</div>
-      <div class="admin-section"><h4>국내 권역 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminDomestic"></div></div>
-      <div class="admin-section"><h4>해외 국가 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminOverseas"></div></div>
+      <details class="admin-group-collapse">
+        <summary>권역별/국가별 골프 여행지</summary>
+        <div class="admin-group-body">
+          <div class="admin-section"><h4>국내 권역 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminDomestic"></div></div>
+          <div class="admin-section"><h4>해외 국가 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminOverseas"></div></div>
+        </div>
+      </details>
       <div class="admin-section">
         <div class="admin-section-head">
           <h4 class="admin-h4-lg">블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4>

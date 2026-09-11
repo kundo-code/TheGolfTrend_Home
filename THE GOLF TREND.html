@@ -5116,8 +5116,8 @@ function renderProductDetail(p,cat){
             <div class="pd-pe-actions">
               ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
               ${(linkVisible||linkBrand)?`<div class="pd-pe-links" onclick="event.stopPropagation()">
-                ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener">🔗 상세보기 →</a>`:''}
-                ${linkBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">${linkBrand.icon} ${linkBrand.label}</a>`:''}
+                ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener">💬 밴드에서 보기 →</a>`:''}
+                ${linkBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">💬 블로그에서 보기 →</a>`:''}
               </div>`:''}
             </div>
           </div>`;

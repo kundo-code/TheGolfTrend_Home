@@ -5071,10 +5071,15 @@ function renderProductDetail(p,cat){
           // 이 요금 항목의 포함/불포함/참고사항을 함께 펼쳐서 보여준다(항목별 개별 입력)
           const labelRows = labelRowsHTML(pe.labels);
           const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
+          // [수정] 공백/줄바꿈만 입력된 경우 bulletRows()가 빈 문자열을 반환하므로, 원본 값이
+          // 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다(빈 제목만 노출되는 문제 방지)
+          const includedRows = bulletRows(pe.included||'','✓');
+          const notIncludedRows = bulletRows(pe.notIncluded||'','✕');
+          const precautionsRows = bulletRows(pe.precautions||'','•');
           const peNotesHTML = [
-            pe.included?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${bulletRows(pe.included,'✓')}</div></div>`:'',
-            pe.notIncluded?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${bulletRows(pe.notIncluded,'✕')}</div></div>`:'',
-            pe.precautions?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${bulletRows(pe.precautions,'•')}</div></div>`:''
+            includedRows?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
+            notIncludedRows?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'',
+            precautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>`:''
           ].join('');
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ 이 요금 항목의 레이블</div>${labelRows}</div>`:'',
@@ -5128,9 +5133,12 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
-  // [수정] 공통 안내
-  if (p.notes){
-    html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${bulletRows(p.notes,'•')}</div></div>`;
+  // [수정] 공통 안내 — 공백/줄바꿈만 입력된 경우 bulletRows()가 모든 줄을 걸러내 빈 문자열을
+  // 반환하므로, 원본 문자열이 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다
+  // (그렇지 않으면 내용은 없이 "✳️ 공통 안내" 제목만 빈 섹션으로 노출되는 문제가 있었다)
+  const notesRows = bulletRows(p.notes||'','•');
+  if (notesRows){
+    html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
   }
   // [수정] 포함사항 · 불포함사항 · 참고사항은 더 이상 상품 공통으로 항상 노출하지 않는다 — 요금 항목별로
   // 개별 입력하며, 요금표의 각 항목 "상세보기 →"를 클릭했을 때만 노출된다 (위 pd-price-entries 참고)
@@ -5179,8 +5187,11 @@ function renderProductDetail(p,cat){
     </div>`;
   }
 
-  if (p.bookingPolicy){
-    html += `<div class="pd-slot"><div class="pd-section-title">⏰ 예약 · 결제 · 취소 규정</div><div class="pd-check-list plain">${bulletRows(p.bookingPolicy,'•')}</div></div>`;
+  // [수정] 공통 안내와 동일한 이유로, 공백/줄바꿈만 입력된 경우 빈 섹션이 노출되지 않도록
+  // 실제 표시할 내용이 있는지로 판단한다
+  const bookingPolicyRows = bulletRows(p.bookingPolicy||'','•');
+  if (bookingPolicyRows){
+    html += `<div class="pd-slot"><div class="pd-section-title">⏰ 예약 · 결제 · 취소 규정</div><div class="pd-check-list plain">${bookingPolicyRows}</div></div>`;
   }
 
   // Calendar note (informational)

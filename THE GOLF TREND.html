@@ -309,14 +309,13 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 타이틀 바로 아래 줄에 "🌙 박수"(좌측)와 "🗓 기간 · Nights"(우측)를 함께 배치 —
    최소인원(👥)은 그대로 meta 아래 product-period-row에 남는다. 두 배지 중 하나만 있어도
    각자의 자리(좌/우)를 유지하도록 prt-left/prt-right 래퍼로 감싸 justify-content:space-between.
-   [수정] 이 줄 아래(구분선·meta 방향) 간격은 기존 대비 0.25줄(6px)씩 두 차례 좁혔다
-   (15.84px→9.84px→3.84px) */
-.product-period-row-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;min-height:10.5px;margin-bottom:3.84px}
+   [수정] 이 줄 아래(구분선·meta 방향) 간격은 기존 대비 0.25줄(6px)씩 두 차례 좁힌 뒤
+   (15.84px→9.84px→3.84px), 다시 0.15줄(3.6px) 벌렸다(3.84px→7.44px) */
+.product-period-row-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;min-height:10.5px;margin-bottom:7.44px}
 .product-period-row-top .prt-left,.product-period-row-top .prt-right{display:flex}
 /* [수정] meta 그리드의 행 간(라운드·숙박 / 식사·항공포함여부 / 비행시간·소요시간) 간격을
-   0.25줄(6px)씩 두 차례 좁혔다(10px→4px→0px). row-gap은 음수를 허용하지 않아 0px가
-   CSS로 표현 가능한 기술적 하한이다 */
-.product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:0;column-gap:14px}
+   0.25줄(6px)씩 두 차례 좁힌 뒤(10px→4px→0px), 다시 0.15줄(3.6px) 벌렸다(0px→3.6px) */
+.product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:3.6px;column-gap:14px}
 .product .meta span{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .product .meta span:nth-child(odd):not(:last-child):not(.meta-full){padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
 /* [수정] 관리자에서 "한 줄로" 토글을 켠 meta 항목은 카드에서 그리드 전체 폭(2칸)을 혼자 차지해

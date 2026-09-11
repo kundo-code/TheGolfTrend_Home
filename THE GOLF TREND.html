@@ -981,9 +981,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-block{background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);padding:14px 16px;margin:6px 0 10px;box-shadow:var(--nm-shadow-raised-sm)}
 /* [관리자 패널 가독성 개선] 요금표 "항목 01/02..." 카드 — 항목간 간격을 넓히고 좌측 강조선 색을
    홀/짝으로 번갈아(골드↔사이언) 주어 인접한 항목끼리 한눈에 구분되게 한다.
-   자세히보기(details) 안에 중첩되는 일정 pe-block(scheduleDayHTML)은 이 클래스를 쓰지 않으므로 영향 없음 */
+   자세히보기(details) 안에 중첩되는 일정 pe-block(scheduleDayHTML)은 이 클래스(.pe-item)를 쓰지
+   않으므로 접고 펼치는 동작 등 이 클래스의 다른 스타일에는 영향 없음 — 강조선 색상만 아래
+   .sch-day-block에서 별도로 재사용한다 */
 .pe-item{margin:0 0 10px;border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
 .pe-item.pe-item-b{background:var(--nm-surface-light)}
+/* [수정] 일정 요약 타임라인의 일자 카드(scheduleDayHTML)를 일차별로 다른 색 강조선으로 구분 —
+   .pe-item과 같은 --pe-accent 변수·팔레트를 재사용하지만, 접고 펼치는 동작은 없는 단순 카드이므로
+   .pe-item의 details/summary 관련 스타일은 가져오지 않고 테두리 색상만 별도로 적용한다 */
+.sch-day-block{border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
 /* [수정] 요금 항목 카드를 <details>로 전환 — 접고 펼 수 있게 하고, 순서를 드래그로 바꿀 수 있게 한다.
    details 래퍼 자체의 패딩은 제거하고 summary(.pe-head)·본문(.pe-body)에 각각 패딩을 준다 */
 .pe-item{padding:0}
@@ -6608,11 +6614,11 @@ function advBasicHTML(p){
     <!-- [수정] "출발 요일"을 공통 레이블에서 완전히 분리해 별도 섹션으로 — 공통 레이블·공통 일정
          요약 타임라인과 같은 레벨(형제 <details>)로 두되 그 사이에 배치. 노출 조건(요금 항목과
          무관하게 상품 상세에 항상 노출)은 이전과 동일하게 유지 -->
-    <details class="pe-labels" ${isDomestic?'':'open'}>
+    <details class="pe-labels" open>
       <summary>📅 공통 출발 요일 (요금 항목과 무관하게 상품 상세에 노출)</summary>
       <div class="pe-labels-body">${departureDayFieldHTML(p.labels, -1)}</div>
     </details>
-    <details class="pe-labels" id="schDetails-1">
+    <details class="pe-labels" id="schDetails-1" open>
       <summary>🗓 공통 일정 요약 타임라인 (요금 항목과 무관하게 상품 상세에 노출)</summary>
       ${scheduleHTML(p, -1)}
     </details>
@@ -6859,7 +6865,7 @@ function priceEntryHTML(pe, i, popupCount){
     </details>
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->
-    <details class="pe-labels" id="schDetails${i}">
+    <details class="pe-labels" id="schDetails${i}" open>
       <summary>🗓 일정 요약 타임라인</summary>
       ${scheduleHTML(pe, i)}
     </details>
@@ -6900,15 +6906,22 @@ function labelsHTML(pe, peIdx, showDepartureDay){
 }
 
 // ===== 요금 항목에 종속된 "일정 요약 타임라인" UI =====
+// [수정] 일자가 많아지면 폼이 길어지므로, 일자 카드 목록을 하나의 접이식 그룹으로 묶어 기본 접힘
+// 상태로 두고(reopenScheduleDetails가 일자 추가/삭제 시에는 다시 펼쳐 편집 흐름을 유지한다),
+// 각 일자 카드는 PE_ACCENT_COLORS 팔레트로 일차별로 다른 색 강조선을 준다(요금 항목 카드와 동일한 방식)
 function scheduleHTML(pe, peIdx){
   const S = pe.schedule;
   const tee = pe.labels.teeOffTimes;
+  const daysHTML = S.days.map((d,di)=>scheduleDayHTML(peIdx, d, di, tee)).join('');
   return `
   <label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer">
     <input type="checkbox" style="width:auto" ${S.enabled?'checked':''} onchange="updateScheduleField(${peIdx},'enabled',this.checked)">
     <span>이 요금 항목의 일정 타임라인을 상세페이지 요금표에 노출</span>
   </label>
-  ${S.days.map((d,di)=>scheduleDayHTML(peIdx, d, di, tee)).join('')}
+  ${S.days.length?`<details class="pe-labels sch-days-group" id="schDaysGroup${peIdx}">
+    <summary>일자별 상세 일정 (${S.days.length}일)</summary>
+    <div class="pe-labels-body">${daysHTML}</div>
+  </details>`:''}
   <button class="add-product-btn" onclick="addScheduleDay(${peIdx})">+ 일자 추가</button>`;
 }
 // [수정] Tee Off Time — 이전에는 "항공정보"(레이블)에 1~4일차 요약 입력란이 별도로 있었으나,
@@ -6917,7 +6930,7 @@ const TEE_DAY_KEYS=['day1','day2','day3','day4'];
 function scheduleDayHTML(peIdx, d, di, tee){
   const teeKey = TEE_DAY_KEYS[di];
   return `
-  <div class="pe-block">
+  <div class="pe-block sch-day-block" style="--pe-accent:${PE_ACCENT_COLORS[di % PE_ACCENT_COLORS.length]}">
     <div class="pe-head">
       <span class="pe-idx">일자 ${di+1}</span>
       <button class="pee-del" onclick="removeScheduleDay(${peIdx},${di})">삭제</button>
@@ -6946,10 +6959,13 @@ function scheduleDayHTML(peIdx, d, di, tee){
   </div>`;
 }
 // [Phase 3 상품등록 개선 v5] renderAdvBody()가 전체를 다시 그리면서 <details>가 기본 닫힘 상태로
-// 초기화되어, 일자를 이어서 추가할 때마다 패널이 닫혀버리던 문제를 막기 위해 다시 열어준다
+// 초기화되어, 일자를 이어서 추가할 때마다 패널이 닫혀버리던 문제를 막기 위해 다시 열어준다.
+// [수정] 일자별 상세 일정을 묶는 접이식 그룹(sch-days-group)도 같은 이유로 편집 중에는 계속 열어둔다
 function reopenScheduleDetails(peIdx){
   const el = document.getElementById('schDetails'+peIdx);
   if (el){ el.open = true; el.scrollIntoView({block:'nearest'}); }
+  const groupEl = document.getElementById('schDaysGroup'+peIdx);
+  if (groupEl) groupEl.open = true;
 }
 // peIdx===-1은 특정 요금 항목에 속하지 않는 "공통" 레이블·일정(상품 레벨 p.labels/p.schedule)을 가리킨다.
 // 요금 항목(항목1/2...)을 아직 추가하지 않은 상품도 레이블·일정 정보를 입력할 수 있도록 한다.

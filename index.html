@@ -630,7 +630,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-head p{font-size:.78rem;color:var(--nm-text-soft);margin-top:2px}
 .admin-close{background:var(--nm-surface);border:none;color:var(--nm-text-soft);width:32px;height:32px;border-radius:50%;font-size:1.3rem;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm)}
 .admin-close:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
-.admin-logout{background:var(--nm-surface);border:none;color:var(--nm-text-soft);font-size:.76rem;font-weight:600;padding:8px 14px;border-radius:var(--nm-r-pill);cursor:pointer;margin-right:12px;box-shadow:var(--nm-shadow-raised-sm)}
+/* [수정] 로그아웃 버튼을 헤더에서 탭 메뉴바(.admin-tabs) 안으로 옮기고, margin-left:auto로
+   나머지 탭들과 떨어져 항상 바(bar) 우측 끝에 붙도록 한다 */
+.admin-logout{flex-shrink:0;margin-left:auto;background:var(--nm-surface);border:none;color:var(--nm-text-soft);font-size:.76rem;font-weight:600;padding:8px 14px;border-radius:var(--nm-r-pill);cursor:pointer;box-shadow:var(--nm-shadow-raised-sm)}
 .admin-logout:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
 .admin-login{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:32px 24px;overflow-y:auto}
 .admin-login .al-desc{font-size:.86rem;color:var(--nm-text-soft);line-height:1.5;margin-bottom:4px}
@@ -656,7 +658,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-body::-webkit-scrollbar-thumb:hover{background:rgba(221,179,103,.6)}
 .admin-section{margin-bottom:22px}
 .admin-section h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
+/* [수정] 이미지 탭 주요 섹션 제목(헤드라인 배너/사이트 아이덴티티/시즌 테마/회사소개 카드 이미지/블로그 대표 이미지) 크기를
+   기본 제목(.82rem)의 1.5배로 통일하고 검정 볼드로 강조 — 국내권역/해외국가 h4에는 적용하지 않음 */
+.admin-section h4.admin-h4-lg{font-size:1.23rem;color:#000;font-weight:700}
 .admin-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+/* [수정] 제목이 1.5배(.admin-h4-lg)로 커지면서 버튼이 하위 항목과 겹치지 않도록 살짝 위로 올림 */
+.admin-section-head-btn{margin-top:-6px}
 .admin-section-head h4{flex:1}
 /* [수정] 관리자 패널>이미지의 각 섹션(헤드라인 배너·아이덴티티·시즌테마·회사소개 카드·패키지 포스터·
    국내 권역·해외 국가·블로그 대표 이미지) 사이를 회색 구분선으로 나누어 간격을 벌리고 구획을 명확히 한다.
@@ -674,6 +681,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .file-btn input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 .file-hint{display:block;font-size:.66rem;font-weight:400;color:var(--nm-text-soft);margin-top:4px;letter-spacing:normal;text-transform:none}
 .admin-info-box{padding:12px 14px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);font-size:.8rem;color:var(--nm-text-soft);line-height:1.5;margin-bottom:18px;box-shadow:var(--nm-shadow-inset)}
+/* [수정] 시즌 테마 섹션의 안내 설명을 기본적으로 접어두는 접이식 토글 (.pd-pe-more 패턴 재사용) */
+.admin-info-collapse{margin-bottom:18px}
+.admin-info-collapse summary{color:var(--nm-blue-deep);font-size:.8rem;font-weight:600;cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px}
+.admin-info-collapse summary::-webkit-details-marker{display:none}
+.admin-info-collapse summary::after{content:'▾';transition:transform .2s}
+.admin-info-collapse[open] summary::after{transform:rotate(180deg)}
+.admin-info-collapse .admin-info-box{margin-top:10px;margin-bottom:0}
 .ast-group{margin-bottom:16px}
 .ast-group:last-child{margin-bottom:0}
 .ast-season-label{font-size:.72rem;color:var(--nm-text-soft);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:600}
@@ -1856,79 +1870,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .plb-detail-link:hover{ background:var(--btn-highlight),#fff;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine); }
 .plb-detail-link:active{ background:#fff;transform:translateY(1px);box-shadow:var(--btn-press); }
 
-/* ── 관리자 포스터 영역 ─────────────────────────────────────── */
-.apkg-group-title{
-  font-size:.85rem;font-weight:700;color:var(--nm-blue-deep);
-  letter-spacing:.06em;text-transform:uppercase;margin-bottom:0;
-}
-.apkg-count{color:var(--nm-text-soft);font-weight:500;letter-spacing:normal;text-transform:none;font-size:.78rem;margin-left:4px}
-.admin-pkg-group{ padding:16px;background:var(--nm-surface);border-radius:var(--nm-r-card);box-shadow:var(--nm-shadow-raised-sm); }
-.apkg-group-header{ display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;margin-bottom:14px; }
-.apkg-group-toggle{ display:flex;align-items:center;gap:10px;flex-shrink:0; }
-.apkg-chevron{ font-size:.7rem;color:var(--nm-text-soft);transition:transform .25s; }
-.apkg-preview-btn{
-  font-size:.68rem;padding:6px 12px;background:var(--nm-surface);
-  border:none;border-radius:100px;
-  color:var(--nm-text-soft);cursor:pointer;white-space:nowrap;transition:all .2s;box-shadow:var(--nm-shadow-raised-sm);
-}
-.apkg-preview-btn:hover{ background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue); }
-.apkg-preview-btn.active{ background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press); }
-.apkg-preview-btn.active:hover{ box-shadow:var(--nm-shadow-gold-press); }
-.apkg-group-body{ overflow:hidden;max-height:20000px;transition:max-height .3s ease,opacity .2s ease;opacity:1; }
-.admin-pkg-group.collapsed .apkg-group-body{ max-height:0!important;opacity:0; }
-.admin-pkg-group.collapsed .apkg-chevron{ transform:rotate(-90deg); }
-.admin-pkg-group.collapsed .apkg-preview{ display:none!important; }
-.apkg-preview{
-  position:relative;margin-bottom:14px;border-radius:var(--nm-r-md);overflow:hidden;
-  background:#000;aspect-ratio:3/2;display:none;
-}
-.apkg-preview.show{ display:block; }
-.apkg-preview img{ position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .5s; }
-.apkg-preview img.active{ opacity:1; }
-.apkg-preview-empty{ position:absolute;inset:0;display:grid;place-items:center;color:rgba(247,245,240,.4);font-size:.82rem;text-align:center;padding:0 20px; }
-.apkg-preview-nav{
-  position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;
-  border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;
-  cursor:pointer;font-size:1rem;z-index:2;border:1px solid rgba(255,255,255,.2);
-}
-.apkg-preview-nav.prev{ left:8px; } .apkg-preview-nav.next{ right:8px; }
-.apkg-preview-dots{ position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:2; }
-.apkg-preview-dots button{ width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);border:none;cursor:pointer;padding:0; }
-.apkg-preview-dots button.active{ background:var(--nm-blue);width:16px;border-radius:100px; }
-.apkg-preview-label{
-  position:absolute;bottom:10px;left:12px;right:52px;color:#fff;font-size:.76rem;
-  background:rgba(0,0,0,.55);padding:5px 12px;border-radius:100px;z-index:2;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.apkg-item{
-  display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start;
-  padding:10px;background:var(--nm-surface-light);
-  border:none;border-radius:var(--nm-r-md);margin-bottom:8px;
-}
-.apkg-thumb{
-  width:100px;aspect-ratio:3/4;object-fit:cover;
-  border-radius:7px;display:block;box-shadow:var(--nm-shadow-raised-sm);
-}
-.apkg-meta{ min-width:0;display:flex;flex-direction:column;gap:8px; }
-.apkg-label-input{
-  width:100%;padding:9px 11px;
-  background:var(--nm-white);border:none;
-  border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.82rem;font-family:inherit;box-shadow:var(--nm-shadow-inset);
-}
-.apkg-label-input:focus{ outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue); }
-.apkg-btns{ display:flex;gap:6px;flex-wrap:wrap; }
-.apkg-btns .file-btn{ padding:6px 12px;font-size:.72rem;min-height:auto; }
-.apkg-add-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:14px;
-  background:var(--nm-surface);border:2px dashed rgba(221,179,103,.3);
-  border-radius:var(--nm-r-md);color:var(--nm-blue-deep);
-  font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;
-  margin-top:4px;font-family:inherit;
-}
-.apkg-add-btn:hover{ border-color:var(--nm-blue);box-shadow:var(--nm-shadow-raised-sm); }
-.apkg-add-btn input[type=file]{ display:none; }
-
 /* 반응형 */
 @media(max-width:640px){
   .pkg-group-title{ font-size:1.1rem; }
@@ -1937,48 +1878,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pkg-card{ max-width:72vw; } /* [Phase 3] 모바일에서 카드 폭도 화면을 거의 채우지 않고 옆 카드가 살짝 보이도록 제한 */
 }
 
-
-/* ── 포스터 관리자 드래그&드롭 ──────────────────────────────── */
-.apkg-drag-handle{
-  font-size:1.1rem;color:var(--nm-text-soft);cursor:grab;
-  padding:0 4px;flex-shrink:0;user-select:none;line-height:1;
-  align-self:center;
-}
-.apkg-drag-handle:active{ cursor:grabbing; }
-.apkg-item{
-  display:grid;grid-template-columns:20px 100px 1fr;gap:10px;align-items:start;
-  padding:10px;background:var(--nm-surface-light);
-  border:none;border-radius:var(--nm-r-md);margin-bottom:8px;
-  cursor:default;transition:background .15s;
-}
-.apkg-item.apkg-dragging{ opacity:.4;transform:scale(.97); }
-.apkg-item.apkg-drag-over{
-  background:var(--nm-surface);
-  box-shadow:0 0 0 2px var(--nm-blue);
-}
-.apkg-thumb{
-  width:100px;aspect-ratio:3/4;object-fit:cover;
-  border-radius:7px;display:block;box-shadow:var(--nm-shadow-raised-sm);
-}
-.apkg-meta{ min-width:0;display:flex;flex-direction:column;gap:8px; }
-.apkg-label-input{
-  width:100%;padding:9px 11px;
-  background:var(--nm-white);border:none;
-  border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.82rem;font-family:inherit;box-shadow:var(--nm-shadow-inset);
-}
-.apkg-label-input:focus{ outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue); }
-.apkg-btns{ display:flex;gap:6px;flex-wrap:wrap; }
-.apkg-btns .file-btn{ padding:6px 12px;font-size:.72rem;min-height:auto; }
-.apkg-add-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:14px;
-  background:var(--nm-surface);border:2px dashed rgba(221,179,103,.3);
-  border-radius:var(--nm-r-md);color:var(--nm-blue-deep);
-  font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;
-  margin-top:4px;font-family:inherit;box-sizing:border-box;
-}
-.apkg-add-btn:hover{ border-color:var(--nm-blue);box-shadow:var(--nm-shadow-raised-sm); }
-.apkg-add-btn input[type=file]{ display:none; }
 
 /* ── 포스터 섹션 화이트 패널 내 카드 보정 ─────────────────── */
 .pkg-poster-section .pkg-card{
@@ -2872,7 +2771,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>
   <div class="admin-head">
     <div><h3>관리자 패널</h3><p>이미지 · 상품 · 링크 · AI 리드를 관리하세요</p></div>
-    <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
     <button class="admin-close" onclick="toggleAdmin()" aria-label="닫기">×</button>
   </div>
   <div class="admin-login" id="adminLoginGate" style="display:none">
@@ -2889,47 +2787,21 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
+    <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
   </div>
   <div class="admin-body">
     <div id="tabImages">
-      <div class="admin-section"><h4>헤드라인 배너</h4><div id="adminHeadline"></div></div>
-      <div class="admin-section"><h4>사이트 아이덴티티 (로고·태그라인·회사소개 배너)</h4><div id="adminIdentity"></div></div>
-      <div class="admin-section"><h4>시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
-      <div class="admin-section"><h4>회사소개 카드 이미지 (핵심가치 · 역량 및 강점)</h4><div id="adminAbout"></div></div>
-      <div class="admin-section">
-        <h4>패키지 요금 포스터</h4>
-        <div id="adminPkg">
-          <div class="admin-pkg-group" id="adminPkgWrap_domestic">
-            <div class="apkg-group-header" onclick="toggleApkgGroup('domestic')">
-              <div class="apkg-group-title">🇰🇷 국내 골프 패키지 포스터 <span class="apkg-count" id="apkgCount_domestic"></span></div>
-              <div class="apkg-group-toggle">
-                <button type="button" class="apkg-preview-btn" id="apkgPreviewBtn_domestic" onclick="event.stopPropagation();toggleApkgPreview('domestic')">▶ 슬라이드 미리보기</button>
-                <span class="apkg-chevron">▾</span>
-              </div>
-            </div>
-            <div class="apkg-preview" id="apkgPreview_domestic"></div>
-            <div class="apkg-group-body" id="adminPkgGroup_domestic"></div>
-          </div>
-          <div class="admin-pkg-group" id="adminPkgWrap_overseas" style="margin-top:24px">
-            <div class="apkg-group-header" onclick="toggleApkgGroup('overseas')">
-              <div class="apkg-group-title">🌏 해외 골프 패키지 포스터 <span class="apkg-count" id="apkgCount_overseas"></span></div>
-              <div class="apkg-group-toggle">
-                <button type="button" class="apkg-preview-btn" id="apkgPreviewBtn_overseas" onclick="event.stopPropagation();toggleApkgPreview('overseas')">▶ 슬라이드 미리보기</button>
-                <span class="apkg-chevron">▾</span>
-              </div>
-            </div>
-            <div class="apkg-preview" id="apkgPreview_overseas"></div>
-            <div class="apkg-group-body" id="adminPkgGroup_overseas"></div>
-          </div>
-        </div>
-      </div>
+      <div class="admin-section"><h4 class="admin-h4-lg">헤드라인 배너</h4><div id="adminHeadline"></div></div>
+      <div class="admin-section"><h4 class="admin-h4-lg">사이트 아이덴티티 (로고·태그라인·회사소개 배너)</h4><div id="adminIdentity"></div></div>
+      <div class="admin-section"><h4 class="admin-h4-lg">시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
+      <div class="admin-section"><h4 class="admin-h4-lg">회사소개 카드 이미지 (핵심가치 · 역량 및 강점)</h4><div id="adminAbout"></div></div>
       <div class="admin-info-box"><b>💡</b> 각 이미지 옆 <b>"교체"</b> 버튼을 눌러 새 이미지를 업로드하세요. 헤드라인은 <b>이미지·동영상</b> 모두 지원. 블로그는 <b>URL</b>만 입력하면 네이버·T-Story 등에서 <b>제목·대표 이미지가 자동으로 불러와집니다</b>. 자동 저장.</div>
       <div class="admin-section"><h4>국내 권역 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminDomestic"></div></div>
       <div class="admin-section"><h4>해외 국가 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminOverseas"></div></div>
       <div class="admin-section">
         <div class="admin-section-head">
-          <h4>블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4>
-          <button type="button" class="reset-cat-btn" onclick="clearAllBlogEntries()">전체 삭제</button>
+          <h4 class="admin-h4-lg">블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4>
+          <button type="button" class="reset-cat-btn admin-section-head-btn" onclick="clearAllBlogEntries()">전체 삭제</button>
         </div>
         <div id="adminBlog"></div>
       </div>
@@ -5618,7 +5490,6 @@ function renderAdminAbout(){
 const PKG_KEY = 'kundo_pkg_posters_v1';
 let pkgPosters = {domestic:[], overseas:[]};
 try{ pkgPosters = JSON.parse(localStorage.getItem(PKG_KEY)||'{"domestic":[],"overseas":[]}'); }catch(e){}
-function savePkgPosters(){ try{localStorage.setItem(PKG_KEY,JSON.stringify(pkgPosters));}catch(e){alert('저장 공간 부족');} queueSiteStateSync(); }
 
 // 슬라이드 상태 — 연속(마퀴) 스크롤 방식: posPx가 매 프레임 조금씩 증가하며 트랙 전체가 왼쪽으로 흐름
 const pkgState = {
@@ -5961,185 +5832,6 @@ function initPkgDrag(type){
 initPkgDrag('domestic');
 initPkgDrag('overseas');
 
-function renderAdminPkg(){
-  const c = document.getElementById('adminPkg'); if(!c) return;
-  ['domestic','overseas'].forEach(type=>{
-    const list = getPkgManualList(type);
-    const el = document.getElementById('adminPkgGroup_'+type); if(!el) return;
-    el.innerHTML = list.map((p,i)=>`
-      <div class="apkg-item" draggable="true" data-type="${type}" data-idx="${i}"
-           ondragstart="apkgDragStart(event,'${type}',${i})"
-           ondragover="apkgDragOver(event)"
-           ondragleave="apkgDragLeave(event)"
-           ondrop="apkgDrop(event,'${type}',${i})"
-           ondragend="apkgDragEnd(event)">
-        <div class="apkg-drag-handle" title="드래그하여 순서 변경">⠿</div>
-        <img src="${escapeAttr(p.url)}" class="apkg-thumb" alt="">
-        <div class="apkg-meta">
-          <input type="text" class="apkg-label-input"
-            placeholder="레이블 (예: 2025 시즌 특가)"
-            value="${escapeAttr(p.label||'')}"
-            oninput="setPkgLabel('${type}',${i},this.value)">
-          <div class="apkg-btns">
-            <button class="file-btn danger" onclick="removePkgPoster('${type}',${i})">🗑 삭제</button>
-          </div>
-        </div>
-      </div>`).join('') + `
-      <label class="apkg-add-btn">
-        📷 포스터 추가 (다중 선택 · 권장 900×1200px, 3:4 비율 · JPG/PNG 15MB 이하)
-        <input type="file" accept="image/*" multiple
-          onchange="handlePkgUpload('${type}',this)">
-      </label>`;
-    const countEl = document.getElementById('apkgCount_'+type);
-    if (countEl) countEl.textContent = list.length ? `${list.length}장` : '';
-    if (apkgPreviewState[type].open) renderApkgPreview(type);
-  });
-}
-
-// ── 관리자 포스터: 그룹 접기/펼치기 + 슬라이드 미리보기 ──────────────
-const apkgPreviewState = {
-  domestic:{open:false, idx:0, timer:null},
-  overseas:{open:false, idx:0, timer:null},
-};
-function toggleApkgGroup(type){
-  const wrap = document.getElementById('adminPkgWrap_'+type); if (!wrap) return;
-  wrap.classList.toggle('collapsed');
-}
-function toggleApkgPreview(type){
-  const state = apkgPreviewState[type];
-  const btn = document.getElementById('apkgPreviewBtn_'+type);
-  const box = document.getElementById('apkgPreview_'+type);
-  const wrap = document.getElementById('adminPkgWrap_'+type);
-  state.open = !state.open;
-  if (btn) btn.classList.toggle('active', state.open);
-  if (btn) btn.textContent = state.open ? '■ 미리보기 닫기' : '▶ 슬라이드 미리보기';
-  if (box) box.classList.toggle('show', state.open);
-  if (wrap && wrap.classList.contains('collapsed')) wrap.classList.remove('collapsed');
-  if (state.open){ state.idx = 0; renderApkgPreview(type); }
-  else apkgPreviewStopAuto(type);
-}
-function renderApkgPreview(type){
-  const box = document.getElementById('apkgPreview_'+type); if (!box) return;
-  const list = getPkgManualList(type);
-  if (!list.length){
-    box.innerHTML = `<div class="apkg-preview-empty">등록된 포스터가 없습니다. 아래에서 이미지를 추가하면 여기서 실제 슬라이드처럼 미리 볼 수 있습니다.</div>`;
-    apkgPreviewStopAuto(type);
-    return;
-  }
-  const state = apkgPreviewState[type];
-  if (state.idx >= list.length) state.idx = 0;
-  box.innerHTML = `
-    ${list.map((p,i)=>`<img src="${escapeAttr(p.url)}" class="${i===state.idx?'active':''}" alt="${escapeAttr(p.label||'')}">`).join('')}
-    ${list.length>1?`
-    <div class="apkg-preview-nav prev" onclick="apkgPreviewGoTo('${type}', ${state.idx-1<0?list.length-1:state.idx-1})">‹</div>
-    <div class="apkg-preview-nav next" onclick="apkgPreviewGoTo('${type}', ${(state.idx+1)%list.length})">›</div>
-    <div class="apkg-preview-dots">${list.map((_,i)=>`<button class="${i===state.idx?'active':''}" onclick="apkgPreviewGoTo('${type}',${i})"></button>`).join('')}</div>`:''}
-    ${list[state.idx].label?`<div class="apkg-preview-label">${escapeAttr(list[state.idx].label)}</div>`:''}
-  `;
-  apkgPreviewStartAuto(type);
-}
-function apkgPreviewGoTo(type, idx){
-  const state = apkgPreviewState[type];
-  state.idx = idx;
-  renderApkgPreview(type);
-}
-function apkgPreviewStartAuto(type){
-  apkgPreviewStopAuto(type);
-  const list = getPkgManualList(type);
-  if (list.length <= 1) return;
-  apkgPreviewState[type].timer = setInterval(()=>{
-    const st = apkgPreviewState[type];
-    st.idx = (st.idx + 1) % getPkgManualList(type).length;
-    renderApkgPreview(type);
-  }, 3500);
-}
-function apkgPreviewStopAuto(type){
-  const st = apkgPreviewState[type];
-  if (st.timer){ clearInterval(st.timer); st.timer = null; }
-}
-
-// 드래그&드롭 헬퍼
-
-// ── canvas 기반 이미지 리사이즈 (높이 maxH 기준) ─────────────────
-function resizePkgImage(file, maxH){
-  return new Promise((resolve, reject)=>{
-    const reader = new FileReader();
-    reader.onload = ev=>{
-      const imgEl = new Image();
-      imgEl.onload = ()=>{
-        let w=imgEl.width, h=imgEl.height;
-        if(h > maxH){ w=Math.round(w*maxH/h); h=maxH; }
-        const canvas=document.createElement('canvas');
-        canvas.width=w; canvas.height=h;
-        canvas.getContext('2d').drawImage(imgEl,0,0,w,h);
-        canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('이미지 변환 실패')), 'image/jpeg', 0.85);
-      };
-      imgEl.onerror=reject;
-      imgEl.src=ev.target.result;
-    };
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// ── 포스터 업로드 ────────────────────────────────────────────────
-async function handlePkgUpload(type, inputEl){
-  const files=Array.from(inputEl.files||[]);
-  if(!files.length){ inputEl.value=''; return; }
-  const limit=50;
-  const remain=limit - getPkgManualList(type).length;
-  if(remain<=0){ alert('최대 '+limit+'장까지 등록 가능합니다.'); inputEl.value=''; return; }
-  const toAdd=files.slice(0,remain);
-  if(files.length>remain) alert(`잔여 슬롯 ${remain}장만 추가됩니다 (선택된 ${files.length}장 중).`);
-  for(const file of toAdd){
-    if(file.size>15*1024*1024){ alert(file.name+' 는 15MB 초과'); continue; }
-    if (isLikelyDuplicateUpload('pkg-'+type, file)){
-      if(!confirm(`"${file.name}" 파일은 이미 등록하신 것 같습니다. 그래도 추가하시겠습니까?`)) continue;
-    }
-    try{
-      const resized=await resizePkgImage(file, 1200);
-      const url=await uploadToStorage(resized, 'posters');
-      pkgPosters[type].push({url, label:''});
-      markFileUploaded('pkg-'+type, file);
-    }catch(e){ console.error('upload err',e); alert(`${file.name} 업로드 실패: `+(e.message||e)); }
-  }
-  savePkgPosters(); renderPkgGroup(type); renderAdminPkg();
-  inputEl.value='';
-}
-
-// ── 포스터 삭제 ──────────────────────────────────────────────────
-function removePkgPoster(type, idx){
-  if(!confirm('이 포스터를 삭제하시겠습니까?')) return;
-  pkgPosters[type].splice(idx,1);
-  pkgState[type].posPx=0;
-  savePkgPosters(); renderPkgGroup(type); renderAdminPkg();
-}
-
-// ── 드래그&드롭 헬퍼 ─────────────────────────────────────────────
-let _apkgDragType='', _apkgDragIdx=-1;
-function apkgDragStart(e,type,idx){
-  _apkgDragType=type; _apkgDragIdx=idx;
-  e.dataTransfer.effectAllowed='move';
-  e.currentTarget.classList.add('apkg-dragging');
-}
-function apkgDragOver(e){
-  e.preventDefault(); e.dataTransfer.dropEffect='move';
-  e.currentTarget.classList.add('apkg-drag-over');
-}
-function apkgDragLeave(e){ e.currentTarget.classList.remove('apkg-drag-over'); }
-function apkgDragEnd(e){ e.currentTarget.classList.remove('apkg-dragging'); }
-function apkgDrop(e,type,targetIdx){
-  e.preventDefault();
-  e.currentTarget.classList.remove('apkg-drag-over');
-  if(_apkgDragType!==type||_apkgDragIdx===targetIdx){ _apkgDragIdx=-1; return; }
-  const list=pkgPosters[type];
-  const [item]=list.splice(_apkgDragIdx,1);
-  list.splice(targetIdx,0,item);
-  pkgState[type].posPx=0;
-  _apkgDragIdx=-1;
-  savePkgPosters(); renderPkgGroup(type); renderAdminPkg();
-}
-
 // ── 라이트박스 ───────────────────────────────────────────────────
 let lbType='', lbIdx=0;
 function openPkgLightbox(type, idx){
@@ -6187,12 +5879,6 @@ function closePkgLightbox(){
   document.body.style.overflow='';
 }
 
-
-function setPkgLabel(type, idx, val){
-  pkgPosters[type][idx].label = val;
-  savePkgPosters(); renderPkgGroup(type);
-}
-
 function switchTab(tab){
   activeAdminTab=tab;
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
@@ -6207,7 +5893,7 @@ function refreshCurrentAdminTab(){
   else if (activeAdminTab==='links') renderAdminLinks();
   else if (activeAdminTab==='legal') renderAdminLegal();
   else if (activeAdminTab==='leads') fetchLeads();
-  if (activeAdminTab==='images') { renderAdminAbout(); renderAdminPkg(); }
+  if (activeAdminTab==='images') { renderAdminAbout(); }
 }
 
 // IMAGES ADMIN
@@ -7597,7 +7283,7 @@ function renderAdminSeasonTheme(){
   const c=document.getElementById('adminSeasonTheme'); if(!c) return;
   const active=getSeasonTheme();
   const groups=[['spring','봄'],['summer','여름'],['autumn','가을'],['winter','겨울']];
-  c.innerHTML=`<div class="admin-info-box" style="margin-bottom:14px">🌤 홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.<br>권장 규격: 정사각형(1:1) 200×200px 이상, 배경 투명 PNG · 5MB 이하</div>` +
+  c.innerHTML=`<details class="admin-info-collapse"><summary>🌤 안내 보기</summary><div class="admin-info-box">홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.<br>권장 규격: 정사각형(1:1) 200×200px 이상, 배경 투명 PNG · 5MB 이하</div></details>` +
     groups.map(([season,label])=>{
       const keys=Object.keys(SEASON_THEMES).filter(k=>SEASON_THEMES[k].season===season);
       return `<div class="ast-group">

@@ -884,9 +884,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    자동으로 높이가 맞춰지므로 수동 리사이즈 손잡이·내부 스크롤은 끔 */
 .adv-body textarea.auto-grow{resize:none;overflow:hidden}
 /* [수정] 체크포인트1 입력란은 옅은 분홍색 바탕으로, 체크포인트2 입력란은 입력 텍스트를 빨간색으로
-   강조해 두 필드를 시각적으로 구분한다 */
-.adv-body textarea.cp1-field{background:#FDE7EE}
-.adv-body textarea.cp2-field{color:#D6293E}
+   강조해 두 필드를 시각적으로 구분한다 — 고급편집(.adv-body)과 상품 리스트 펼쳐보기(.apc-fields)
+   양쪽 모두에 동일하게 적용 */
+.adv-body textarea.cp1-field,.apc-fields textarea.cp1-field{background:#FDE7EE}
+.adv-body textarea.cp2-field,.apc-fields textarea.cp2-field{color:#D6293E}
+/* [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 구분 */
+.cardprice-box{background:var(--nm-surface-light);border-radius:var(--nm-r-md);padding:12px 16px 14px;box-shadow:var(--nm-shadow-inset);margin-top:18px}
+.cardprice-box>label{margin-top:0}
 .media-slot{padding:16px;background:var(--nm-surface);border:2px dashed rgba(221,179,103,.25);border-radius:var(--nm-r-md);text-align:center;margin-top:6px}
 /* [수정] 전역 img{display:block} 리셋 때문에 .media-slot의 text-align:center가 이미지에는 적용되지
    않아 가운데 정렬이 안 되던 문제 — margin:auto로 블록 박스를 직접 가운데 정렬한다 */
@@ -6163,8 +6167,9 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>식사 · Meals</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),`toggleMetaWide(${i},'meals',this.checked)`)}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
         <div><div class="mw-label-row"><label>비행시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),`toggleMetaWide(${i},'flightTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
         <div><div class="mw-label-row"><label>${transferFieldLabel}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
-        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4, 체크포인트1은 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
-        <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
+        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4는 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
+        <div class="full"><label>체크포인트1 (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
+        <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea class="cp2-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
     </details>`).join('');
 }
@@ -6577,13 +6582,16 @@ function advBasicHTML(p){
     <textarea class="cp2-field" style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
 
     <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
-    <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
-    <div class="price-row">
-      <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
-      <label class="from-toggle" title="'~부터' 표시 여부">
-        <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
-        <span>~부터</span>
-      </label>
+    <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
+    <div class="cardprice-box">
+      <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
+      <div class="price-row">
+        <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
+        <label class="from-toggle" title="'~부터' 표시 여부">
+          <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
+          <span>~부터</span>
+        </label>
+      </div>
     </div>
     <label>카드 태그 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 요금 위쪽에 노출, 최대 4개)</span></label>
     <div class="grid-2">

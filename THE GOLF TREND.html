@@ -425,7 +425,12 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-item .dt{font-size:.86rem;font-weight:600;color:#DC2626}
 .pd-holiday-price-item .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:#DC2626}
 .pd-holiday-price-item .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:#DC2626;font-weight:500;margin-left:1px}
-.pd-price-entry .go{color:var(--gold-deep);font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:4px}
+/* [수정] "연결 링크·URL" 버튼(상품 공통·항목별 공통) — 옅은 회색 요금 카드와 구분되도록 로고
+   색상(gold) 배경에 흰색 텍스트를 넣은 음영처리(embossed) 버튼으로 스타일링한다.
+   .btn-elevate/.btn-shine은 사이트 전반의 버튼 음영 시스템과 동일한 값을 재사용 */
+.pd-price-entry .go{display:flex;align-items:center;gap:5px;background:var(--gold);color:#fff;font-size:.8rem;font-weight:700;padding:9px 16px;border-radius:100px;box-shadow:var(--btn-elevate),var(--btn-shine);transition:all .2s}
+.pd-price-entry .go:hover{background:var(--gold-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
+.pd-price-entry .go:active{transform:translateY(1px);box-shadow:var(--btn-press)}
 /* [수정] 요금 항목별 "자세히 →" 토글 — 이 항목의 레이블·일정 및 공통 포함/불포함/참고사항을 펼쳐서 보여준다.
    링크 버튼(.pd-pe-links)은 "상세보기" 토글 아래에 별도 배치한다 */
 .pd-pe-actions{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:4px}
@@ -435,10 +440,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-more summary::after{content:'→';transition:transform .2s}
 .pd-pe-more[open] summary::after{transform:rotate(90deg)}
 .pd-pe-more-body{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.14);display:flex;flex-direction:column;gap:20px}
-/* [수정] 항목별 "연결 링크·URL" 버튼 — 옅은 회색(.pd-price-entry) 카드와 구분되도록 흰색 박스에 담아
-   "상세보기" 토글 하단에 배치한다 */
-.pd-pe-links{display:flex;flex-wrap:wrap;align-items:center;gap:14px;width:100%;padding:12px 16px;background:#fff;border:1px solid rgba(10,23,48,.08);border-radius:12px;box-shadow:0 2px 8px rgba(10,23,48,.05)}
-.pd-pe-links .go{margin-top:0}
+/* [수정] 상품 공통·항목별 링크 버튼을 카드 우측 끝으로 정렬 — 버튼 사이 간격(gap)은 그대로 유지 */
+.pd-pe-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:14px;width:100%}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
 .pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:10px}
 .pd-pe-more-sub .pd-check-list{padding:0}
@@ -5107,8 +5110,9 @@ function renderProductDetail(p,cat){
             ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             ${holidayPriceRow}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
-                 값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저(좌측), 공통 링크가 그 다음.
-                 옅은 회색 카드와 구분되도록 흰색 박스(.pd-pe-links)에 담아 "상세보기" 토글 아래에 배치 -->
+                 값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저, 공통 링크가 그 다음.
+                 옅은 회색 카드와 구분되도록 로고색 음영 버튼으로 스타일링하고, "상세보기" 토글 아래
+                 카드 우측 끝에 정렬해 배치(.pd-pe-links) -->
             <div class="pd-pe-actions">
               ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
               ${(linkVisible||linkBrand)?`<div class="pd-pe-links" onclick="event.stopPropagation()">

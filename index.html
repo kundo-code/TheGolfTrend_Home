@@ -61,7 +61,9 @@
   /* [관리자 패널 Soft Neumorphism] 실버·화이트 표면 + 일렉트릭 블루 포인트.
      사용자 화면 톤(다크 네이비+골드)은 그대로 두고, 관리자 패널(.admin-panel 이하)에서만 사용한다. */
   --nm-bg:#E8EDF3;--nm-surface:#E8EDF3;--nm-surface-light:#F4F7FB;--nm-white:#FFFFFF;
-  --nm-text:#202B3A;--nm-text-soft:#667385;--nm-placeholder:#A7AFBC;
+  --nm-text:#202B3A;--nm-text-soft:#667385;
+  /* [수정] 관리자패널 입력필드 가이드(placeholder) 텍스트를 기존 대비 3톤 더 연하게(#A7AFBC → #DBDEE4) */
+  --nm-placeholder:#DBDEE4;
   --nm-blue:var(--gold);--nm-blue-deep:var(--gold-deep);--nm-cyan:#38C8F4;
   --nm-border:rgba(255,255,255,0.65);--nm-danger:#E0455B;
   --nm-shadow-raised:8px 8px 18px rgba(163,177,198,.35),-8px -8px 18px rgba(255,255,255,.9);
@@ -6095,9 +6097,9 @@ function blockSummaryToggle(e){
 // [수정] meta 항목(라운드/숙박/식사/항공포함여부/비행시간/소요시간) 라벨 옆에 붙는 "한 줄로" 토글 —
 // 켜면 상품 카드에서 이 항목이 그리드 전체 폭(2칸)을 혼자 차지해 내용이 길어도 줄바꿈 없이 표시된다.
 // 기존 .popup-toggle 스타일을 그대로 재사용한다
-function mwToggleHTML(checked, onchangeJs){
+function mwToggleHTML(checked, onchangeJs, disabled){
   return `<label class="popup-toggle" title="상품 카드에서 이 항목을 한 줄 전체로 표시">
-    <input type="checkbox" ${checked?'checked':''} onchange="${onchangeJs}">
+    <input type="checkbox" ${checked?'checked':''} ${disabled?'disabled':''} onchange="${onchangeJs}">
     <span class="toggle-slider"></span>
     <span class="pt-lbl">한 줄로</span>
   </label>`;
@@ -6573,8 +6575,8 @@ function advBasicHTML(p){
       </div>
       <div><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
       <div><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-      <div><div class="mw-label-row"><label>비행시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)"></div>
       <div><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+      <div><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
     </div>
     <label>체크포인트1 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
     <textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>

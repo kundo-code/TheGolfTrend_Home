@@ -331,7 +331,8 @@ section.block{padding:100px 24px;position:relative}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
-.product-checkpoint{font-size:.76rem;line-height:1.55;color:rgba(10,23,48,.65);white-space:pre-line;margin-bottom:12px}
+/* [수정] 체크포인트2는 상품 카드에서 빨간색 텍스트로 강조 노출 */
+.product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
 /* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
 .product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
 .product-tag-row .tag-inline{display:inline-block;background:rgba(221,179,103,.14);color:var(--gold-deep);font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(221,179,103,.35);letter-spacing:.05em}
@@ -882,6 +883,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 내용이 길어질 수 있는 입력란은 내부 스크롤 대신 세로로 자동으로 늘어나도록 함 —
    자동으로 높이가 맞춰지므로 수동 리사이즈 손잡이·내부 스크롤은 끔 */
 .adv-body textarea.auto-grow{resize:none;overflow:hidden}
+/* [수정] 체크포인트1 입력란은 옅은 분홍색 바탕으로, 체크포인트2 입력란은 입력 텍스트를 빨간색으로
+   강조해 두 필드를 시각적으로 구분한다 */
+.adv-body textarea.cp1-field{background:#FDE7EE}
+.adv-body textarea.cp2-field{color:#D6293E}
 .media-slot{padding:16px;background:var(--nm-surface);border:2px dashed rgba(221,179,103,.25);border-radius:var(--nm-r-md);text-align:center;margin-top:6px}
 /* [수정] 전역 img{display:block} 리셋 때문에 .media-slot의 text-align:center가 이미지에는 적용되지
    않아 가운데 정렬이 안 되던 문제 — margin:auto로 블록 박스를 직접 가운데 정렬한다 */
@@ -6567,9 +6572,9 @@ function advBasicHTML(p){
       <div><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
     </div>
     <label>체크포인트1 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
-    <textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
+    <textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
     <label>체크포인트2 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 아래에 노출)</span></label>
-    <textarea style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
+    <textarea class="cp2-field" style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
 
     <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
     <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
@@ -6916,9 +6921,10 @@ function labelsHTML(pe, peIdx, showDepartureDay){
 }
 
 // ===== 요금 항목에 종속된 "일정 요약 타임라인" UI =====
-// [수정] 일자가 많아지면 폼이 길어지므로, 일자 카드 목록을 하나의 접이식 그룹으로 묶어 기본 접힘
-// 상태로 두고(reopenScheduleDetails가 일자 추가/삭제 시에는 다시 펼쳐 편집 흐름을 유지한다),
-// 각 일자 카드는 PE_ACCENT_COLORS 팔레트로 일차별로 다른 색 강조선을 준다(요금 항목 카드와 동일한 방식)
+// [수정] 일자 카드 목록은 "일자별 상세 일정" 그룹으로 묶되 기본 펼침 상태로 노출하고(각 일자 카드
+// 자체는 sch-day-block이 개별로 접고 펼 수 있음), 일자 추가/삭제 시에는 reopenScheduleDetails가
+// 다시 펼쳐 편집 흐름을 유지한다. 각 일자 카드는 PE_ACCENT_COLORS 팔레트로 일차별로 다른 색
+// 강조선을 준다(요금 항목 카드와 동일한 방식)
 function scheduleHTML(pe, peIdx){
   const S = pe.schedule;
   const tee = pe.labels.teeOffTimes;
@@ -6928,7 +6934,7 @@ function scheduleHTML(pe, peIdx){
     <input type="checkbox" style="width:auto" ${S.enabled?'checked':''} onchange="updateScheduleField(${peIdx},'enabled',this.checked)">
     <span>이 요금 항목의 일정 타임라인을 상세페이지 요금표에 노출</span>
   </label>
-  ${S.days.length?`<details class="pe-labels sch-days-group" id="schDaysGroup${peIdx}">
+  ${S.days.length?`<details class="pe-labels sch-days-group" id="schDaysGroup${peIdx}" open>
     <summary>일자별 상세 일정 (${S.days.length}일)</summary>
     <div class="pe-labels-body">${daysHTML}</div>
   </details>`:''}

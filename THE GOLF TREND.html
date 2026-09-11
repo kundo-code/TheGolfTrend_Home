@@ -725,13 +725,32 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .reset-cat-btn:hover{background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue);color:#fff}
 .product-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
 .product-toolbar .info{font-size:.78rem;color:var(--nm-text-soft)}
-.admin-foot{padding:14px 24px;background:var(--nm-surface-light);border-top:1px solid var(--nm-border);display:flex;gap:10px;flex-shrink:0}
-.admin-foot button{flex:1;min-height:44px;padding:11px;border-radius:var(--nm-r-pill);font-size:.88rem;font-weight:600;cursor:pointer;border:none}
+/* [수정] "상품 초기화" 버튼 추가로 3개가 된 하단 버튼 행 — reset-btn 2개(전체 초기화·상품 초기화)는
+   각각 apply-btn(완료)의 절반 너비가 되도록 flex 비율을 1:1:2로 설정. 각 버튼의 입체(neumorphism)
+   그림자가 옆 버튼이나 패널 가장자리에 잘리지 않도록 gap과 좌우 padding을 넉넉히 확보한다 */
+.admin-foot{padding:16px 26px;background:var(--nm-surface-light);border-top:1px solid var(--nm-border);display:flex;gap:14px;flex-shrink:0;overflow:visible}
+.admin-foot button{flex:1;min-height:44px;padding:11px;border-radius:var(--nm-r-pill);font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:box-shadow .2s,background .2s,color .2s}
 .reset-btn{background:var(--nm-surface);color:var(--nm-text-soft);box-shadow:var(--nm-shadow-raised-sm)}
 .reset-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
+.reset-btn:active{box-shadow:var(--nm-shadow-gold-press)}
+/* [수정] .admin-foot button{flex:1}이 명시도(0,1,1)로 .apply-btn{flex:2}(0,1,0)보다 앞서
+   flex 비율이 적용되지 않던 문제 — .admin-foot .apply-btn으로 명시도를 높여 이긴다 */
+.admin-foot .apply-btn{flex:2}
 .apply-btn{background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .apply-btn:hover{box-shadow:0 6px 20px rgba(221,179,103,.35)}
 .apply-btn:active{box-shadow:var(--nm-shadow-gold-press)}
+/* [수정] 상품 초기화 모달 — 고급편집 모달(.adv-editor-overlay)과 동일한 관리자 패널 디자인
+   시스템을 재사용하되, 체크리스트만 담는 용도라 더 좁은 폭으로 별도 정의 */
+.reset-product-overlay{position:fixed;inset:0;z-index:222;background:rgba(10,23,48,.55);backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
+.reset-product-overlay.show{display:block;opacity:1}
+.reset-product-modal{max-width:520px;margin:40px auto;background:var(--nm-surface);border:none;border-radius:var(--nm-r-lg);box-shadow:0 24px 70px rgba(10,23,48,.35);overflow:hidden;color:var(--nm-text)}
+.rpm-body{padding:20px 26px;max-height:55vh;overflow-y:auto;background:var(--nm-surface)}
+.rpm-group{margin-bottom:20px}
+.rpm-group:last-child{margin-bottom:0}
+.rpm-check-row{display:flex;align-items:center;gap:10px;padding:8px 4px;font-size:.86rem;color:var(--nm-text);cursor:pointer}
+.rpm-check-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--nm-blue);cursor:pointer;flex-shrink:0}
+.rpm-check-all{font-weight:700;padding-bottom:10px;margin-bottom:6px;border-bottom:1px solid var(--nm-border)}
+.rpm-check-list{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;padding-left:2px}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
 .overlay.show{opacity:1;pointer-events:auto}
 
@@ -2937,10 +2956,27 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
   <div class="admin-foot">
     <button class="reset-btn" onclick="resetAllOverrides()">전체 초기화</button>
+    <button class="reset-btn" onclick="openProductResetModal()">상품 초기화</button>
     <button class="apply-btn" onclick="toggleAdmin()">완료</button>
   </div>
   </div>
 </aside>
+
+<!-- [수정] "상품 초기화" — 전체 초기화와 달리 상품·요금표 데이터만, 그것도 관리자가 직접 선택한
+     국내 권역/해외 국가에 한해서만 초기화한다. 1단계: 권역/국가 선택 → 2단계: 최종 확인 -->
+<div class="reset-product-overlay" id="resetProductOverlay" onclick="if(event.target===this)closeProductResetModal()">
+  <div class="reset-product-modal">
+    <div class="adv-head">
+      <div><h3>상품 초기화</h3><p>선택한 권역·국가의 상품/요금표 데이터만 기본값으로 초기화됩니다</p></div>
+      <button class="adv-close" onclick="closeProductResetModal()" aria-label="닫기">×</button>
+    </div>
+    <div class="rpm-body" id="resetProductBody"></div>
+    <div class="adv-foot">
+      <button class="cancel" onclick="closeProductResetModal()">취소</button>
+      <button class="save" onclick="confirmProductReset()">선택 항목 초기화</button>
+    </div>
+  </div>
+</div>
 
 <!-- ADVANCED PRODUCT EDITOR -->
 <div class="adv-editor-overlay" id="advOverlay" onclick="if(event.target===this)closeAdvEditor()">
@@ -4148,6 +4184,7 @@ let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 let currentAdv=null; // {catId, idx}
 let activeAdvTab='basic';
+let productResetSelection = new Set(); // "상품 초기화" 모달에서 선택된 권역/국가 catId 목록
 let pdGalleryIdx=0, pdGalleryTimer=null;
 // [수정] 상품 상세보기 안에서 이전/다음 상품으로 이동하기 위한 탐색 순서.
 // 같은 권역(국내: 강원권→충청권→호남권→영남권→수도권→제주, 해외: 등록 순서)을 순환(loop)한다
@@ -6402,6 +6439,59 @@ function resetAllOverrides(){
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 
+// [수정] "상품 초기화" — 전체 초기화와 달리 상품/요금표 데이터(productOverrides)만, 그것도 관리자가
+// 직접 선택한 국내 권역/해외 국가에 한해서만 기본값으로 되돌린다. 1단계 선택 모달 → 2단계 최종 확인
+function renderResetProductBody(){
+  const body = document.getElementById('resetProductBody');
+  if (!body) return;
+  const rows = (list, koField) => list.map(c => `
+    <label class="rpm-check-row">
+      <input type="checkbox" ${productResetSelection.has(c.id)?'checked':''} onchange="toggleProductResetCat('${c.id}',this.checked)">
+      <span>${c[koField]||c.ko}</span>
+    </label>`).join('');
+  const domAll = CATEGORIES.domestic.every(c=>productResetSelection.has(c.id));
+  const ovAll = CATEGORIES.overseas.every(c=>productResetSelection.has(c.id));
+  body.innerHTML = `
+    <div class="rpm-group">
+      <label class="rpm-check-row rpm-check-all">
+        <input type="checkbox" ${domAll?'checked':''} onchange="toggleProductResetGroup('domestic',this.checked)">
+        <span>국내권역 전체</span>
+      </label>
+      <div class="rpm-check-list">${rows(CATEGORIES.domestic,'koFull')}</div>
+    </div>
+    <div class="rpm-group">
+      <label class="rpm-check-row rpm-check-all">
+        <input type="checkbox" ${ovAll?'checked':''} onchange="toggleProductResetGroup('overseas',this.checked)">
+        <span>해외국가 전체</span>
+      </label>
+      <div class="rpm-check-list">${rows(CATEGORIES.overseas,'ko')}</div>
+    </div>`;
+}
+function toggleProductResetCat(catId, checked){
+  if (checked) productResetSelection.add(catId); else productResetSelection.delete(catId);
+  renderResetProductBody();
+}
+function toggleProductResetGroup(region, checked){
+  CATEGORIES[region].forEach(c => checked ? productResetSelection.add(c.id) : productResetSelection.delete(c.id));
+  renderResetProductBody();
+}
+function openProductResetModal(){
+  productResetSelection = new Set();
+  renderResetProductBody();
+  document.getElementById('resetProductOverlay').classList.add('show');
+}
+function closeProductResetModal(){
+  document.getElementById('resetProductOverlay').classList.remove('show');
+}
+function confirmProductReset(){
+  if (!productResetSelection.size){ alert('초기화할 국내 권역 또는 해외 국가를 하나 이상 선택하세요.'); return; }
+  if (!confirm('정말로 초기화하시겠습니까?')) return;
+  productResetSelection.forEach(catId => { delete productOverrides[catId]; });
+  saveProducts();
+  closeProductResetModal();
+  renderAll();refreshCurrentAdminTab();
+}
+
 // LINKS ADMIN
 function renderAdminLinks(){
   document.getElementById('adminBand').innerHTML = renderLinkAdminGroup(LINK_DEFS.band.items);
@@ -7772,6 +7862,7 @@ document.querySelectorAll('#navMenu a').forEach(a=>a.addEventListener('click',()
 document.addEventListener('keydown',e=>{
   if (e.key==='Escape'){
     if (document.getElementById('advOverlay').classList.contains('show')) closeAdvEditor();
+    else if (document.getElementById('resetProductOverlay').classList.contains('show')) closeProductResetModal();
     else if (document.getElementById('pdOverlay').classList.contains('show')) closeProductDetail();
     // [Phase 3 접근성 강화] 관리자 패널·법적고지 모달·홈 진입 팝업도 ESC로 닫기
     else if (document.getElementById('adminPanel').classList.contains('open')) toggleAdmin();

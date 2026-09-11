@@ -850,14 +850,24 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ===== POPUP STAGE (홈 진입 팝업) ===== */
 .popup-stage{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;gap:16px;padding:40px 20px;flex-wrap:wrap;overflow:auto}
 .popup-stage.show{display:flex}
+/* [수정] 모바일(APP) 화면에서는 기존 크기를 유지하고, 데스크톱(웹) 화면에서는 팝업 전체를 140%로
+   확대해 보여준다. 팝업 카드 자신에는 popupIn 진입 애니메이션이 이미 transform을 사용 중이라
+   같은 요소에 정적 scale을 더하면 애니메이션 종료 시점의 값에 덮어써지므로, 한 단계 바깥인
+   .popup-stage(뷰포트를 덮는 배경 레이어)에 스케일을 적용한다 */
+@media(min-width:781px){ .popup-stage{ transform:scale(1.4); } }
 .popup-card{width:320px;background:linear-gradient(180deg,var(--pine),var(--pine-deep));border:1px solid var(--glass-border-soft);border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);position:relative;animation:popupIn .4s cubic-bezier(.22,1,.36,1) both}
 .popup-card.closing{animation:popupOut .25s ease-in both}
 @keyframes popupIn{from{opacity:0;transform:translateY(30px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes popupOut{to{opacity:0;transform:scale(.92)}}
 .popup-close{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.2rem;cursor:pointer;z-index:5;transition:all .2s}
 .popup-close:hover{background:var(--gold);border-color:var(--gold);transform:rotate(90deg)}
-.popup-visual{height:180px;background-size:cover;background-position:center;position:relative;border-bottom:1px solid rgba(255,255,255,.08)}
-.popup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.55) 100%)}
+/* [수정] 이미지 영역을 상품 카드(.product-visual)와 동일한 4:3 비율로 맞추고, 배경 이미지를 배지
+   (.popup-emph)와 분리된 별도 레이어(.pv-bg)에 담아 카드에 마우스를 올리면 이미지만 120%로
+   확대되는 호버줌 효과를 적용한다 */
+.popup-visual{aspect-ratio:4/3;overflow:hidden;position:relative;border-bottom:1px solid rgba(255,255,255,.08)}
+.popup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.55) 100%);z-index:1}
+.popup-visual .pv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.popup-card:hover .popup-visual .pv-bg,.ep-popup-box:hover .popup-visual .pv-bg{transform:scale(1.2)}
 .popup-emph{position:absolute;top:14px;left:14px;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:700;letter-spacing:.05em;z-index:2}
 .popup-emph.normal{background:rgba(255,255,255,.9);color:var(--pine)}
 .popup-emph.value{background:var(--gold);color:#fff}
@@ -1703,9 +1713,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   display:block;width:100%;height:100%;object-fit:contain;
   /* [수정] 드래그로 트랙을 밀 때 브라우저 기본 이미지-드래그(고스트)가 끼어들지 않도록 방지 */
   -webkit-user-drag:none;user-select:none;-webkit-user-select:none;
-  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease;
+  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease,transform .35s cubic-bezier(.2,.7,.2,1);
 }
-.pkg-card:hover .pkg-img{ opacity:1; }
+/* [수정] 이미지 슬롯(.pkg-card)에 마우스를 올리면 이미지가 120%로 확대되는 호버줌 효과.
+   .pkg-label·.pkg-zoom-hint는 .pkg-img의 형제 요소라 함께 커지지 않고, .pkg-card의
+   overflow:hidden이 확대된 영역을 카드 경계에서 그대로 잘라낸다 */
+.pkg-card:hover .pkg-img{ opacity:1;transform:scale(1.2); }
 .pkg-card.pkg-dim:hover{ opacity:1; }
 .pkg-label{
   position:absolute;bottom:0;left:0;right:0;
@@ -5436,9 +5449,12 @@ function renderStrImages(){
   });
 }
 
-// 업로드 트리거
-function triggerCvImgUpload(id){ document.getElementById('cvImgFile_'+id)?.click(); }
-function triggerStrImgUpload(id){ document.getElementById('strImgFile_'+id)?.click(); }
+// 업로드 트리거 — [수정] 관리자 로그인 상태가 아니면 아무 동작도 하지 않는다.
+// 원래 관리자가 회사소개 화면에서 바로 이미지를 교체할 수 있도록 만든 기능인데, 로그인 여부와
+// 무관하게 항상 클릭 시 파일 탐색창이 열려 일반 방문자가 이미지를 클릭해도 파일 선택창이 뜨는
+// 문제가 있었다
+function triggerCvImgUpload(id){ if(!adminSession) return; document.getElementById('cvImgFile_'+id)?.click(); }
+function triggerStrImgUpload(id){ if(!adminSession) return; document.getElementById('strImgFile_'+id)?.click(); }
 
 async function handleCvImgUpload(id, inputEl){
   const file=inputEl.files[0]; if(!file) return;
@@ -7765,7 +7781,8 @@ function showEntryPopups(){
       : getCatBgStyle(cat);
     return `<div class="popup-card" style="animation-delay:${i*0.15}s">
       <button class="popup-close" onclick="closeSinglePopup(this)" aria-label="닫기">×</button>
-      <div class="popup-visual" style="${bgStyle}">
+      <div class="popup-visual">
+        <div class="pv-bg" style="${bgStyle}"></div>
         ${emphFirst?`<span class="popup-emph ${emphCls}">${escapeAttr(emphFirst)}</span>`:''}
       </div>
       <div class="popup-body">
@@ -7839,7 +7856,7 @@ function epSlideCardHTML(item){
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);
   return `<div class="ep-popup-slide">
-    <div class="popup-visual" style="${bgStyle}"></div>
+    <div class="popup-visual"><div class="pv-bg" style="${bgStyle}"></div></div>
     <div class="popup-body">
       <div class="popup-cat">${cat.ko} · ${cat.en}</div>
       <h3 class="popup-title">${escapeAttr(p.title)}</h3>

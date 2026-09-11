@@ -697,7 +697,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-info-collapse summary::-webkit-details-marker{display:none}
 .admin-info-collapse summary::after{content:'▾';transition:transform .2s}
 .admin-info-collapse[open] summary::after{transform:rotate(180deg)}
-.admin-info-collapse .ast-groups-body{margin-top:14px}
+.admin-info-collapse .admin-collapse-body{margin-top:14px}
 .ast-group{margin-bottom:16px}
 .ast-group:last-child{margin-bottom:0}
 .ast-season-label{font-size:.72rem;color:var(--nm-text-soft);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:600}
@@ -2809,6 +2809,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <details class="admin-group-collapse">
         <summary>권역별/국가별 골프 여행지</summary>
         <div class="admin-group-body">
+          <div class="admin-info-box">💡 각 카드의 이미지를 업로드하면 홈페이지 국가 및 지역카드에 바로 반영됩니다. 권장 1200×800px (3:2 비율), 10MB 이하 JPG/PNG.</div>
           <div class="admin-section"><h4>국내 권역 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminDomestic"></div></div>
           <div class="admin-section"><h4>해외 국가 <span class="file-hint" style="display:inline;margin:0">권장 1200×800px (3:2 비율)</span></h4><div id="adminOverseas"></div></div>
         </div>
@@ -2818,7 +2819,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <h4 class="admin-h4-lg">블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4>
           <button type="button" class="reset-cat-btn admin-section-head-btn" onclick="clearAllBlogEntries()">전체 삭제</button>
         </div>
-        <div id="adminBlog"></div>
+        <div class="admin-info-box">💡 각 카드의 이미지와 홍보할 블로그내용을 링크해주세요. 권장 1200×800px (16:10 비율), 10MB 이하 JPG/PNG.</div>
+        <details class="admin-info-collapse" open>
+          <summary>등록된 블로그 카드 목록</summary>
+          <div class="admin-collapse-body">
+            <div id="adminBlog"></div>
+          </div>
+        </details>
       </div>
     </div>
     <div id="tabProducts" style="display:none">
@@ -5494,10 +5501,15 @@ function renderAdminAbout(){
 
   c.innerHTML = `
     <div class="admin-info-box">💡 각 카드의 이미지를 업로드하면 홈페이지 카드 상단에 바로 반영됩니다. 권장 800×450px (16:9 비율), 10MB 이하 JPG/PNG.</div>
-    <h5 class="aab-section-label">Core Values · 핵심가치 카드</h5>
-    <div class="aab-grid">${cvCards}</div>
-    <h5 class="aab-section-label" style="margin-top:20px">Our Strengths · 역량 및 강점 카드</h5>
-    <div class="aab-grid">${strCards}</div>`;
+    <details class="admin-info-collapse">
+      <summary>핵심가치·역량 카드 목록</summary>
+      <div class="admin-collapse-body">
+        <h5 class="aab-section-label">Core Values · 핵심가치 카드</h5>
+        <div class="aab-grid">${cvCards}</div>
+        <h5 class="aab-section-label" style="margin-top:20px">Our Strengths · 역량 및 강점 카드</h5>
+        <div class="aab-grid">${strCards}</div>
+      </div>
+    </details>`;
 }
 
 
@@ -7299,7 +7311,7 @@ function renderAdminSeasonTheme(){
   const active=getSeasonTheme();
   const groups=[['spring','봄'],['summer','여름'],['autumn','가을'],['winter','겨울']];
   c.innerHTML=`<div class="admin-info-box">홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.<br>권장 규격: 정사각형(1:1) 200×200px 이상, 배경 투명 PNG · 5MB 이하</div>` +
-    `<details class="admin-info-collapse"><summary>🌤 계절별 테마 설정 보기</summary><div class="ast-groups-body">` +
+    `<details class="admin-info-collapse"><summary>🌤 계절별 테마 설정 보기</summary><div class="admin-collapse-body">` +
     groups.map(([season,label])=>{
       const keys=Object.keys(SEASON_THEMES).filter(k=>SEASON_THEMES[k].season===season);
       return `<div class="ast-group">

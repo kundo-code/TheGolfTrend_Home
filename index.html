@@ -313,7 +313,9 @@ section.block{padding:100px 24px;position:relative}
    (15.84px→9.84px→3.84px) */
 .product-period-row-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;min-height:10.5px;margin-bottom:3.84px}
 .product-period-row-top .prt-left,.product-period-row-top .prt-right{display:flex}
-.product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:10px;column-gap:14px}
+/* [수정] meta 그리드의 행 간(라운드·숙박 / 식사·항공포함여부 / 비행시간·소요시간) 간격을
+   0.25줄(6px) 좁힌다(10px→4px) */
+.product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:4px;column-gap:14px}
 .product .meta span{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .product .meta span:nth-child(odd):not(:last-child){padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
 .product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}

@@ -987,9 +987,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-item{margin:0 0 10px;border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
 .pe-item.pe-item-b{background:var(--nm-surface-light)}
 /* [수정] 일정 요약 타임라인의 일자 카드(scheduleDayHTML)를 일차별로 다른 색 강조선으로 구분 —
-   .pe-item과 같은 --pe-accent 변수·팔레트를 재사용하지만, 접고 펼치는 동작은 없는 단순 카드이므로
-   .pe-item의 details/summary 관련 스타일은 가져오지 않고 테두리 색상만 별도로 적용한다 */
-.sch-day-block{border-left:4px solid var(--pe-accent, var(--nm-blue-deep))}
+   .pe-item과 같은 --pe-accent 변수·팔레트를 재사용한다.
+   [수정] 일자 카드가 많아지면 폼이 길어지므로, 각 일자 카드도 "일자 N" 제목 아래로 개별 접고 펼 수
+   있게 <details>/<summary>로 전환 — .pe-item과 동일한 접이식 패턴(패딩 재배치·chevron 회전)을
+   별도 클래스로 재구현해 드래그·팝업노출 등 .pe-item 전용 동작과는 섞이지 않게 한다 */
+.sch-day-block{border-left:4px solid var(--pe-accent, var(--nm-blue-deep));padding:0}
+.sch-day-block > summary.pe-head{padding:14px 16px;margin-bottom:0;list-style:none;cursor:pointer}
+.sch-day-block > summary.pe-head::-webkit-details-marker{display:none}
+.sch-day-block .pe-body{padding:4px 16px 16px}
+.sch-day-block:not([open]) .pe-chevron{transform:rotate(-90deg)}
 /* [수정] 요금 항목 카드를 <details>로 전환 — 접고 펼 수 있게 하고, 순서를 드래그로 바꿀 수 있게 한다.
    details 래퍼 자체의 패딩은 제거하고 summary(.pe-head)·본문(.pe-body)에 각각 패딩을 준다 */
 .pe-item{padding:0}
@@ -6425,6 +6431,9 @@ function renderAdvBody(){
   // <details>는 다시 그려지면 기본(닫힘) 상태로 초기화된다 — 편집 중이던 요금 항목이 매번 다시
   // 접혀버리지 않도록, 렌더링 전 열려 있던 항목의 인덱스를 기억해뒀다가 렌더링 후 복원한다
   const openPeIdx = Array.from(body.querySelectorAll('.pe-block.pe-item[open]')).map(d=>d.dataset.idx);
+  // [수정] 일정 요약 타임라인의 일자 카드(sch-day-block)도 같은 이유로 재렌더링 전 열려 있던
+  // 일자만 골라 기억해뒀다가 렌더링 후 복원 — data-sch-key(peIdx:일자인덱스)로 식별
+  const openSchKeys = Array.from(body.querySelectorAll('.sch-day-block[open]')).map(d=>d.dataset.schKey);
   // [수정] innerHTML을 통째로 교체하면 스크롤 위치가 0으로 초기화되어 "+요일별 요금 추가" 등을
   // 클릭할 때마다 화면이 항목 상단으로 튀어 오르는 문제가 있었다 — 렌더링 전 스크롤 위치를
   // 저장했다가 렌더링 후 그대로 복원한다
@@ -6434,6 +6443,7 @@ function renderAdvBody(){
   else if (activeAdvTab==='contact') body.innerHTML=advContactHTML(p);
   body.querySelectorAll('textarea.auto-grow').forEach(autoGrowTextarea); // 기존에 입력돼 있던 내용에 맞춰 초기 높이도 조정
   openPeIdx.forEach(idx=>{ const el=body.querySelector(`.pe-block.pe-item[data-idx="${idx}"]`); if (el) el.open=true; });
+  openSchKeys.forEach(key=>{ const el=body.querySelector(`.sch-day-block[data-sch-key="${key}"]`); if (el) el.open=true; });
   body.scrollTop = scrollTop;
 }
 function updateAdvField(field, value, type){
@@ -6930,11 +6940,16 @@ const TEE_DAY_KEYS=['day1','day2','day3','day4'];
 function scheduleDayHTML(peIdx, d, di, tee){
   const teeKey = TEE_DAY_KEYS[di];
   return `
-  <div class="pe-block sch-day-block" style="--pe-accent:${PE_ACCENT_COLORS[di % PE_ACCENT_COLORS.length]}">
-    <div class="pe-head">
+  <details class="pe-block sch-day-block" data-sch-key="${peIdx}:${di}" style="--pe-accent:${PE_ACCENT_COLORS[di % PE_ACCENT_COLORS.length]}">
+    <summary class="pe-head">
       <span class="pe-idx">일자 ${di+1}</span>
-      <button class="pee-del" onclick="removeScheduleDay(${peIdx},${di})">삭제</button>
-    </div>
+      <span class="pe-title-preview">${d.dayLabel?escapeAttr(d.dayLabel):'(일차 표기 없음)'}</span>
+      <span class="pe-chevron">▾</span>
+      <div class="pe-head-right" onclick="blockSummaryToggle(event)">
+        <button class="pee-del" onclick="removeScheduleDay(${peIdx},${di})">삭제</button>
+      </div>
+    </summary>
+    <div class="pe-body">
     <div class="grid-2">
       <div><label>일차 표기</label><input type="text" value="${escapeAttr(d.dayLabel)}" placeholder="예: 1일차 (토요일)" oninput="updateScheduleDay(${peIdx},${di},'dayLabel',this.value)"></div>
       <div><label>구간</label><input type="text" value="${escapeAttr(d.route)}" placeholder="예: 인천 → 임기" oninput="updateScheduleDay(${peIdx},${di},'route',this.value)"></div>
@@ -6956,7 +6971,8 @@ function scheduleDayHTML(peIdx, d, di, tee){
       <div><label>중식</label><input type="text" value="${escapeAttr(d.meals.lunch)}" placeholder="불포함" oninput="updateScheduleMeal(${peIdx},${di},'lunch',this.value)"></div>
       <div><label>석식</label><input type="text" value="${escapeAttr(d.meals.dinner)}" placeholder="현지식" oninput="updateScheduleMeal(${peIdx},${di},'dinner',this.value)"></div>
     </div>
-  </div>`;
+    </div>
+  </details>`;
 }
 // [Phase 3 상품등록 개선 v5] renderAdvBody()가 전체를 다시 그리면서 <details>가 기본 닫힘 상태로
 // 초기화되어, 일자를 이어서 추가할 때마다 패널이 닫혀버리던 문제를 막기 위해 다시 열어준다.

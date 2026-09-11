@@ -6246,12 +6246,14 @@ function renderAdminImages(){
       <div class="admin-thumb" style="background-image:url('${getImage(c.id)}')"></div>
       <div class="admin-item-info"><div class="n">${c.ko} <span style="color:var(--gold);font-size:.72rem">${imageOverrides[c.id]?'· 사용자 업로드':'· 기본'}</span></div><div class="k">${c.koFull} · ${c.en}</div></div>
       <label class="file-btn">교체<input type="file" accept="image/*" onchange="handleImageUpload('${c.id}',this)"></label>
+      ${imageOverrides[c.id]?`<button class="file-btn danger" onclick="resetImageOverride('${c.id}')">삭제</button>`:''}
     </div>`).join('');
   ov.innerHTML=CATEGORIES.overseas.map(c=>`
     <div class="admin-item">
       <div class="admin-thumb" style="background-image:url('${getImage(c.id)}')"></div>
       <div class="admin-item-info"><div class="n">${c.ko}</div><div class="k">${c.en}</div></div>
       <label class="file-btn">교체<input type="file" accept="image/*" onchange="handleImageUpload('${c.id}',this)"></label>
+      ${imageOverrides[c.id]?`<button class="file-btn danger" onclick="resetImageOverride('${c.id}')">삭제</button>`:''}
     </div>`).join('');
   renderAdminBlog();
 }
@@ -6264,6 +6266,15 @@ async function handleImageUpload(key,inputEl){
     renderAdminImages();
   }catch(e){alert('업로드 실패: '+(e.message||e))}
   inputEl.value='';
+}
+// [수정] 국내 권역·해외 국가 대표 이미지 "삭제" — 업로드한 이미지를 지우고 기본 이미지로 되돌린다
+function resetImageOverride(key){
+  if (!imageOverrides[key]) return;
+  if (!confirm('업로드한 이미지를 삭제하고 기본 이미지로 되돌리시겠습니까?')) return;
+  delete imageOverrides[key];
+  saveImages();
+  renderAll();
+  renderAdminImages();
 }
 
 // [수정] <details>/<summary> 헤더 안에 버튼·토글 영역을 두되, 그 영역 클릭은 펼침/접힘을 일으키지

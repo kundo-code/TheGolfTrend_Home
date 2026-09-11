@@ -305,13 +305,15 @@ section.block{padding:100px 24px;position:relative}
    카드마다 제목 길이가 달라도 높이가 흔들리지 않도록 2줄 고정(line-clamp) */
 .product-visual-title{margin-bottom:10px;min-height:48px;display:flex;align-items:flex-start}
 .product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-/* [수정] "기간 · Nights" 표시(product-period-row-top)를 타이틀 바로 아래로 옮기고 우측 정렬.
-   내용이 없는 카드도 자리가 흔들리지 않도록 min-height로 공간을 항상 확보한다 */
-.product-period-row-top{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px;min-height:30px;margin-bottom:12px}
+/* [수정] "기간 · Nights"(p.nights)만 타이틀 바로 아래로 옮기고 우측 정렬 — 박수·최소인원은
+   원래 위치(meta 아래 product-period-row)로 유지. 확보 공간은 기존 대비 위쪽(min-height) 65%
+   좁히고(30px→10.5px) 아래쪽 여백(margin-bottom)은 10% 넓힌다(12px→13.2px) */
+.product-period-row-top{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px;min-height:10.5px;margin-bottom:13.2px}
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:10px;column-gap:14px}
 .product .meta span{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .product .meta span:nth-child(odd):not(:last-child){padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
 .product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
+.product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
@@ -3144,6 +3146,9 @@ function ensureExtended(p){
   if (p.airfareIncluded===undefined) p.airfareIncluded = '';
   if (p.minPeople===undefined) p.minPeople = '';
   if (p.nightsCount===undefined) p.nightsCount = ''; // [수정] 박수 — 카드에서 기간 옆에 노출
+  // [수정] 비행시간 · 이동 소요시간 — 국내는 "숙소→골프장", 해외는 "공항→호텔"로 레이블만 다르게 표시
+  if (p.flightTime===undefined) p.flightTime = '';
+  if (p.transferTime===undefined) p.transferTime = '';
   return p;
 }
 // 전역 활성 팝업 카운트
@@ -4194,6 +4199,7 @@ function productCardHTML(p, catId, idx){
   const displayPrice = getDisplayPrice(p);
   const cardTags = [p.cardTag1, p.cardTag2, p.cardTag3, p.cardTag4].filter(t=>t && t.trim());
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
+  const transferLabel = isDomesticCat(catId) ? '숙소→골프장' : '공항→호텔';
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       <div class="pv-bg" style="${visualStyle}"></div>
@@ -4204,16 +4210,20 @@ function productCardHTML(p, catId, idx){
     <div class="product-visual-title"><h4>${p.title}</h4></div>
     <div class="product-period-row-top">
       ${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}
-      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
-      ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
     </div>
     <div class="meta">
       <span>⛳ ${p.rounds||'-'}</span>
       ${p.stay?`<span>🏨 ${p.stay}</span>`:''}
       ${p.meals?`<span>🍽 ${p.meals}</span>`:''}
       ${airfareText?`<span>✈️ ${airfareText}</span>`:''}
+      ${p.flightTime?`<span>🛫 비행시간 ${escapeAttr(p.flightTime)}</span>`:''}
+      ${p.transferTime?`<span>🚌 ${transferLabel} ${escapeAttr(p.transferTime)}</span>`:''}
     </div>
     ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
+    ${(p.nightsCount || p.minPeople)?`<div class="product-period-row">
+      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
+      ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
+    </div>`:''}
     ${p.checkpoint2?`<div class="product-divider"></div><div class="product-checkpoint">${escapeAttr(p.checkpoint2)}</div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
     <div class="product-foot">
@@ -6019,6 +6029,7 @@ function renderProductAdmin(catId){
   const list=document.getElementById('productList');
   const products=getProducts(activeProductCat);
   const catObj=findCat(activeProductCat);
+  const transferFieldLabel = isDomesticCat(activeProductCat) ? '숙소→골프장 소요시간' : '공항→호텔 소요시간';
   document.getElementById('productCount').textContent=`${catObj.ko} · 총 ${products.length}개`;
   if (products.length===0){
     list.innerHTML=`<div class="empty-state" style="padding:30px 0"><div class="big">📦</div><p>등록된 상품이 없습니다.</p></div>`;
@@ -6059,6 +6070,8 @@ function renderProductAdmin(catId){
         <div><label>라운드 · Rounds</label><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
         <div><label>숙박 · Stay</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
         <div><label>식사 · Meals</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
+        <div><label>비행시간</label><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
+        <div><label>${transferFieldLabel}</label><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4, 체크포인트1은 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
         <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
@@ -6460,6 +6473,8 @@ function advBasicHTML(p){
       </div>
       <div><label>숙박</label><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
       <div><label>식사</label><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+      <div><label>비행시간</label><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)"></div>
+      <div><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
     </div>
     <label>체크포인트1 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
     <textarea style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>

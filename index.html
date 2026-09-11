@@ -6381,8 +6381,22 @@ function resetCategoryProducts(){
   delete productOverrides[activeProductCat];
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
+// [수정] 되돌릴 수 없는 파괴적 작업이므로, 실제로 초기화되는 항목을 먼저 안내하고
+// 한 번 더 최종 확인을 받는 2단계 확인 절차로 변경
 function resetAllOverrides(){
-  if (!confirm('모든 이미지·헤드라인·상품·링크 변경사항을 초기화하시겠습니까?')) return;
+  const itemList = [
+    '· 상품 · 요금표 데이터 (전체 카테고리)',
+    '· 지역 · 카테고리 대표 이미지',
+    '· 헤드라인 배너 · 로고 · 태그라인 · 회사소개 배너',
+    '· 히어로 배경 이미지 · 영상',
+    '· 링크(밴드 · 블로그 · SNS) URL 및 노출 여부',
+    '· 회사소개 카드 이미지(핵심가치 · 역량 및 강점)',
+    '· 요금 포스터(국내/해외 패키지 캐러셀)',
+    '· 출입국신고서 안내 국가 목록',
+    '· 법적고지 문서 연결 URL',
+  ].join('\n');
+  if (!confirm(`전체 초기화 시 다음 항목이 모두 기본값으로 되돌아갑니다:\n\n${itemList}\n\n계속하시겠습니까?`)) return;
+  if (!confirm('되돌릴 수 없는 작업입니다. 정말로 전체 초기화하시겠습니까?')) return;
   imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];
   localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();

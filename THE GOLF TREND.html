@@ -1678,9 +1678,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pkg-track-wrap{
   overflow:hidden;border-radius:16px;
   position:relative;
-  /* [수정] 카드 자체가 호버 시 115%로 커지는 효과(.pkg-card:hover)를 위쪽 위·아래로 잘리지 않고
-     보여주기 위한 여유 공간 — 카드 최대 높이(480px) 기준 7.5%(36px)보다 넉넉하게 확보 */
-  padding:40px 0;
+  /* [수정] 카드 자체가 호버 시 120%로 커지는 효과(.pkg-card:hover)를 위쪽 위·아래로 잘리지 않고
+     보여주기 위한 여유 공간 — 카드 최대 높이(480px) 기준 10%(48px)보다 넉넉하게 확보 */
+  padding:56px 0;
   /* [수정] PC 드래그·모바일 스와이프로 트랙을 직접 밀 수 있도록 — 세로 스크롤(pan-y)은 그대로 두고
      가로 방향 포인터 움직임만 JS(initPkgDrag)가 가로채 처리한다 */
   touch-action:pan-y;
@@ -1705,11 +1705,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   transition:transform .25s, box-shadow .25s, opacity var(--pkg-hover-fade-ms,1000ms) ease;
 }
 .pkg-card.pkg-dim{ opacity:.6; }
-/* [수정] 선택(호버)한 카드만 이미지가 담긴 틀(프레임) 자체가 115%로 커지도록 변경 — 기존에는
+/* [수정] 선택(호버)한 카드만 이미지가 담긴 틀(프레임) 자체가 120%로 커지도록 변경 — 기존에는
    카드 크기는 고정한 채 내부 이미지만 확대·크롭했지만, 이제 카드 전체가 함께 커져 이웃 카드
    위로 자연스럽게 부각되어 보인다. z-index로 옆 카드에 가리지 않게 위로 띄운다 */
 .pkg-card:hover{
-  transform:translateY(-4px) scale(1.15);
+  transform:translateY(-4px) scale(1.2);
   box-shadow:0 14px 40px rgba(0,0,0,.5);
   border-color:rgba(221,179,103,.3);
   z-index:5;

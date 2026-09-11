@@ -305,11 +305,13 @@ section.block{padding:100px 24px;position:relative}
    카드마다 제목 길이가 달라도 높이가 흔들리지 않도록 2줄 고정(line-clamp) */
 .product-visual-title{margin-bottom:10px;min-height:48px;display:flex;align-items:flex-start}
 .product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* [수정] "기간 · Nights" 표시(product-period-row-top)를 타이틀 바로 아래로 옮기고 우측 정렬.
+   내용이 없는 카드도 자리가 흔들리지 않도록 min-height로 공간을 항상 확보한다 */
+.product-period-row-top{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px;min-height:30px;margin-bottom:12px}
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:10px;column-gap:14px}
 .product .meta span{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .product .meta span:nth-child(odd):not(:last-child){padding-right:16px;border-right:1px solid rgba(10,23,48,.14)}
 .product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
-.product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
@@ -4200,6 +4202,11 @@ function productCardHTML(p, catId, idx){
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
     <div class="product-visual-title"><h4>${p.title}</h4></div>
+    <div class="product-period-row-top">
+      ${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}
+      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
+      ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
+    </div>
     <div class="meta">
       <span>⛳ ${p.rounds||'-'}</span>
       ${p.stay?`<span>🏨 ${p.stay}</span>`:''}
@@ -4207,11 +4214,6 @@ function productCardHTML(p, catId, idx){
       ${airfareText?`<span>✈️ ${airfareText}</span>`:''}
     </div>
     ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
-    ${(p.nights || p.nightsCount || p.minPeople)?`<div class="product-period-row">
-      ${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}
-      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
-      ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
-    </div>`:''}
     ${p.checkpoint2?`<div class="product-divider"></div><div class="product-checkpoint">${escapeAttr(p.checkpoint2)}</div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
     <div class="product-foot">

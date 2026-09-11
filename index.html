@@ -659,8 +659,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-section{margin-bottom:22px}
 .admin-section h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
 /* [수정] 이미지 탭 주요 섹션 제목(헤드라인 배너/사이트 아이덴티티/시즌 테마/회사소개 카드 이미지/블로그 대표 이미지) 크기를
-   기본 제목(.82rem)의 1.5배로 통일하고 검정 볼드로 강조 — 국내권역/해외국가 h4에는 적용하지 않음 */
-.admin-section h4.admin-h4-lg{font-size:1.23rem;color:#000;font-weight:700}
+   기본 제목(.82rem)의 1.5배(1.23rem)로 통일한 뒤, 다시 90%로 축소(1.107rem)하고 볼드는 제거(기본 600 유지)
+   — 색상만 검정으로 강조. 국내권역/해외국가 h4에는 적용하지 않음 */
+.admin-section h4.admin-h4-lg{font-size:1.107rem;color:#000}
 .admin-section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 /* [수정] 제목이 1.5배(.admin-h4-lg)로 커지면서 버튼이 하위 항목과 겹치지 않도록 살짝 위로 올림 */
 .admin-section-head-btn{margin-top:-6px}
@@ -687,7 +688,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-info-collapse summary::-webkit-details-marker{display:none}
 .admin-info-collapse summary::after{content:'▾';transition:transform .2s}
 .admin-info-collapse[open] summary::after{transform:rotate(180deg)}
-.admin-info-collapse .admin-info-box{margin-top:10px;margin-bottom:0}
+.admin-info-collapse .ast-groups-body{margin-top:14px}
 .ast-group{margin-bottom:16px}
 .ast-group:last-child{margin-bottom:0}
 .ast-season-label{font-size:.72rem;color:var(--nm-text-soft);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:600}
@@ -5340,7 +5341,7 @@ function renderAdminLegal(){
       </div>
     </div>`;
   }).join('') +
-  `<div style="margin-top:14px;padding:12px 14px;background:rgba(221,179,103,.08);border-radius:8px;font-size:.78rem;color:rgba(247,245,240,.7)">
+  `<div style="margin-top:14px;padding:12px 14px;background:rgba(221,179,103,.08);border-radius:8px;font-size:.78rem;color:var(--nm-text-soft)">
     현재 노출 중: ${LEGAL_DEFAULT.filter(l=>getLegalUrl(l.key)||getLegalContent(l.key)).length} / ${LEGAL_DEFAULT.length}개
   </div>`;
 }
@@ -7283,7 +7284,8 @@ function renderAdminSeasonTheme(){
   const c=document.getElementById('adminSeasonTheme'); if(!c) return;
   const active=getSeasonTheme();
   const groups=[['spring','봄'],['summer','여름'],['autumn','가을'],['winter','겨울']];
-  c.innerHTML=`<details class="admin-info-collapse"><summary>🌤 안내 보기</summary><div class="admin-info-box">홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.<br>권장 규격: 정사각형(1:1) 200×200px 이상, 배경 투명 PNG · 5MB 이하</div></details>` +
+  c.innerHTML=`<div class="admin-info-box">홈페이지 배경 분위기를 계절별로 2가지 테마 중에서 선택하세요. 방문자에게는 선택한 테마만 표시되며, 방문자가 직접 바꿀 수는 없습니다. 테마별로 떨어지는 기본 이모지 스티커 대신, 원하는 스티커 이미지를 업로드해 교체할 수도 있습니다.<br>권장 규격: 정사각형(1:1) 200×200px 이상, 배경 투명 PNG · 5MB 이하</div>` +
+    `<details class="admin-info-collapse"><summary>🌤 계절별 테마 설정 보기</summary><div class="ast-groups-body">` +
     groups.map(([season,label])=>{
       const keys=Object.keys(SEASON_THEMES).filter(k=>SEASON_THEMES[k].season===season);
       return `<div class="ast-group">
@@ -7305,7 +7307,8 @@ function renderAdminSeasonTheme(){
           }).join('')}
         </div>
       </div>`;
-    }).join('');
+    }).join('') +
+    `</div></details>`;
 }
 
 // 렌더 함수 하나가 (손상된 localStorage/Supabase 데이터 등으로) 예외를 던져도

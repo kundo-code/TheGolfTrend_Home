@@ -4941,9 +4941,35 @@ function cycleSpot(){
 }
 
 // BLOG
+// [Phase] 여행 이야기 카드의 링크 URL을 직접 입력하지 않고, 연결된 상품의 "🔗 연결 링크 · URL"
+// (p.linkUrl)에서 가져와 사용 — 관리자패널>상품>고급편집>기본·요금표에서 값을 바꾸면 여행 이야기
+// 카드에도 그대로 반영된다. b.productCat/b.productIdx로 상품을 가리키고, b.url은 그 값을 그대로
+// 반영한 캐시(OG 태그 자동 로드 등 기존 로직이 b.url을 그대로 쓸 수 있도록 유지하기 위함)다
+function resolveBlogProductUrl(b){
+  if (!b.productCat || b.productIdx===undefined || b.productIdx===null) return null;
+  const prod = (getProducts(b.productCat)||[])[b.productIdx];
+  return prod ? (prod.linkUrl||'') : '';
+}
+// 연결된 상품이 있는 항목은 매 렌더링마다 최신 linkUrl로 b.url을 동기화한다. 관리자가 상품
+// 자체의 연결 링크를 나중에 수정하더라도 여행 이야기 카드가 항상 최신 값을 따라가도록 하기 위함
+// — 단, 관리자가 직접 입력해둔 타이틀·이미지 등은 여기서는 건드리지 않는다(상품을 바꿔 연결할
+// 때만 setBlogProduct()에서 초기화한다)
+function syncBlogProductLinks(){
+  const list = getBlogList();
+  let changed = false;
+  list.forEach(b=>{
+    const liveUrl = resolveBlogProductUrl(b);
+    if (liveUrl!==null && liveUrl!==(b.url||'')){
+      b.url = liveUrl;
+      changed = true;
+    }
+  });
+  if (changed) saveBlogList(list);
+  return list;
+}
 function renderBlog(){
   const grid=document.getElementById('blogGrid');
-  const list = getBlogList();
+  const list = syncBlogProductLinks();
   grid.innerHTML = list.map((b,i)=>{
     const bg = b.image || getImage(b.fallbackCat) || '';
     const title = b.title1 || b.title || `${b.tag||'블로그'} 새 글 보러가기`;
@@ -5001,11 +5027,16 @@ async function fetchBlogMeta(url, idx){
     renderBlog();
   } catch(e){ /* 프록시 실패 시 조용히 폴백 유지 */ }
 }
-function setBlogUrl(idx, url){
+// [Phase] 관리자가 여행 이야기 카드를 특정 상품과 연결(또는 연결 해제) — 상품을 바꾸면 완전히
+// 다른 글로 취급해 기존 자동 로드된 제목·이미지·설명은 초기화한다(setBlogUrl의 기존 동작과 동일)
+function setBlogProduct(idx, catId, prodIdxStr){
   const list = getBlogList();
-  list[idx].url = url;
-  list[idx].title = ''; list[idx].title1 = ''; list[idx].title2 = ''; list[idx].image = ''; list[idx].description = '';
-  _blogMetaAttempted.delete(url); // 새/변경된 URL은 자동 로드가 다시 한 번 시도되도록 허용
+  const b = list[idx];
+  b.productCat = catId || '';
+  b.productIdx = (catId && prodIdxStr!=='') ? Number(prodIdxStr) : null;
+  b.url = resolveBlogProductUrl(b) || '';
+  b.title=''; b.title1=''; b.title2=''; b.image=''; b.description='';
+  _blogMetaAttempted.delete(b.url);
   saveBlogList(list); renderBlog(); renderAdminBlog();
 }
 function setBlogTag(idx, tag){
@@ -5015,7 +5046,7 @@ function setBlogTag(idx, tag){
 }
 function addBlogEntry(){
   const list = getBlogList();
-  list.push({url:'', tag:'블로그', title:'', title1:'', title2:'', image:'', description:'', fallbackCat:'gangwon'});
+  list.push({url:'', productCat:'', productIdx:null, tag:'블로그', title:'', title1:'', title2:'', image:'', description:'', fallbackCat:'gangwon'});
   saveBlogList(list); renderBlog(); renderAdminBlog();
 }
 function removeBlogEntry(idx){
@@ -5075,12 +5106,27 @@ function renderAdminBlog(){
           <label class="abc-label">타이틀2 <em>부제</em></label>
           <input type="text" class="abc-input" placeholder="카드 부제목 (선택)" value="${escapeAttr(b.title2||'')}" oninput="setBlogField(${i},'title2',this.value)">
         </div>
+        <!-- [Phase] 링크 URL을 직접 입력하지 않고, 연결할 상품(지역/국가 → 상품)을 선택하면
+             그 상품의 "🔗 연결 링크 · URL"을 그대로 가져와 사용한다 -->
         <div class="abc-field-row">
-          <label class="abc-label">링크 URL</label>
+          <label class="abc-label">연결 상품</label>
           <div class="abc-url-row">
-            <input type="url" class="abc-input" placeholder="https://blog.naver.com/..." value="${escapeAttr(b.url||'')}" oninput="setBlogField(${i},'url',this.value)">
+            <select class="abc-select" onchange="setBlogProduct(${i},this.value,'')">
+              <option value="">-- 지역/국가 선택 --</option>
+              <optgroup label="국내">
+                ${CATEGORIES.domestic.map(c=>`<option value="${c.id}" ${b.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
+              </optgroup>
+              <optgroup label="해외">
+                ${CATEGORIES.overseas.map(c=>`<option value="${c.id}" ${b.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
+              </optgroup>
+            </select>
+            <select class="abc-select" onchange="setBlogProduct(${i},'${escapeAttr(b.productCat||'')}',this.value)" ${!b.productCat?'disabled':''}>
+              <option value="">-- 상품 선택 --</option>
+              ${b.productCat ? (getProducts(b.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${b.productIdx===pi?'selected':''}>${escapeAttr(p.title||'(제목 없음)')}</option>`).join('') : ''}
+            </select>
             <button class="abc-btn-sm" onclick="refreshBlogMeta(${i})" title="OG 태그 자동 로드">🔄</button>
           </div>
+          ${b.url?`<span class="file-hint" style="display:block;margin-top:4px">연결된 링크: ${escapeAttr(b.url)}</span>`:'<span class="file-hint" style="display:block;margin-top:4px;color:var(--nm-danger)">상품의 연결 링크·URL이 비어있거나 상품이 선택되지 않았습니다</span>'}
         </div>
         <div class="abc-actions">
           <button class="file-btn danger" onclick="removeBlogEntry(${i})">삭제</button>

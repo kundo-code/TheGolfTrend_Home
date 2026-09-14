@@ -387,10 +387,11 @@ section.block{padding:100px 24px;position:relative}
    가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)과 팝업으로 노출되는
    상품(.popup-visual — 항목별 요금표 팝업·EDITOR'S PICK 팝업 공통)에도 동일하게 적용 */
 .product-visual .card-label-stack,.spot-visual .card-label-stack,.popup-visual .card-label-stack{position:absolute;z-index:3;display:flex;gap:6px;pointer-events:none}
-/* [수정] 상품 카드의 레이블만 기존 크기의 80%로 축소(30%→24%, 최대 100px→80px, 최소 56px→45px) —
-   EDITOR'S PICK 히어로(.spot-visual)·팝업(.popup-visual)의 레이블 크기는 그대로 유지 */
-.product-visual .card-label-stack{width:24%;max-width:80px;min-width:45px}
-.spot-visual .card-label-stack,.popup-visual .card-label-stack{width:30%;max-width:100px;min-width:56px}
+/* [수정] 상품 카드·팝업(항목별 요금표 팝업·EDITOR'S PICK 팝업)의 레이블은 기존 크기의 80%로
+   축소(30%→24%, 최대 100px→80px, 최소 56px→45px) — EDITOR'S PICK 히어로(.spot-visual)의
+   레이블 크기는 그대로 유지 */
+.product-visual .card-label-stack,.popup-visual .card-label-stack{width:24%;max-width:80px;min-width:45px}
+.spot-visual .card-label-stack{width:30%;max-width:100px;min-width:56px}
 .product-visual .card-label-stack[data-corner="bl"],.spot-visual .card-label-stack[data-corner="bl"],.popup-visual .card-label-stack[data-corner="bl"]{left:-6px;bottom:-6px;flex-direction:column-reverse}
 .product-visual .card-label-stack[data-corner="tl"],.spot-visual .card-label-stack[data-corner="tl"],.popup-visual .card-label-stack[data-corner="tl"]{left:-6px;top:-6px;flex-direction:column}
 .product-visual .card-label-stack[data-corner="tr"],.spot-visual .card-label-stack[data-corner="tr"],.popup-visual .card-label-stack[data-corner="tr"]{right:-6px;top:-6px;flex-direction:column}

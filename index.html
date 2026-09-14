@@ -496,6 +496,8 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 요금 항목별 라운드·숙박·식사 — 금액·최소 인원(.prices) 바로 아래 구분선을 두고 노출 */
 .pd-pe-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px;font-size:.82rem;color:rgba(10,23,48,.72)}
 .pd-pe-meta span{display:inline-flex;align-items:center;gap:4px}
+/* [수정] 라운드·숙박·식사 내용(값) 가독성 강화 — 볼드 + 파란색 계열(항목별 요금표 좌측 강조선과 같은 톤) */
+.pd-pe-meta .pd-pe-meta-value{font-weight:700;color:#2F6FED}
 /* [수정] 같은 줄에 있는 항목 사이에만 구분선 표시 — "한 줄로" 토글로 줄이 끊긴 항목의 앞뒤에는 넣지 않는다 */
 .pd-pe-meta span.pd-pe-meta-border-r{padding-right:10px;border-right:1px dashed rgba(10,23,48,.18)}
 /* [수정] "한 줄로" 토글을 켠 항목은 내용이 길어도 줄바꿈 없이 혼자 한 줄 전체를 차지 */
@@ -5499,9 +5501,9 @@ function renderProductDetail(p,cat){
           // "한 줄로" 항목은 줄이 끊기므로 그 앞뒤로는 구분선을 넣지 않는다(같은 줄에 있을 때만 표시)
           const peMW = pe.metaWide||{};
           const peMetaData = [
-            {full: !!peMW.rounds, html: pe.rounds?`⛳ ${escapeAttr(pe.rounds)}`:''},
-            {full: !!peMW.stay, html: pe.stay?`🏨 ${escapeAttr(pe.stay)}`:''},
-            {full: !!peMW.meals, html: pe.meals?`🍽 ${escapeAttr(pe.meals)}`:''},
+            {full: !!peMW.rounds, html: pe.rounds?`⛳ <b class="pd-pe-meta-value">${escapeAttr(pe.rounds)}</b>`:''},
+            {full: !!peMW.stay, html: pe.stay?`🏨 <b class="pd-pe-meta-value">${escapeAttr(pe.stay)}</b>`:''},
+            {full: !!peMW.meals, html: pe.meals?`🍽 <b class="pd-pe-meta-value">${escapeAttr(pe.meals)}</b>`:''},
           ].filter(item=>item.html);
           const peMetaItems = peMetaData.map((item,mi)=>{
             const next = peMetaData[mi+1];

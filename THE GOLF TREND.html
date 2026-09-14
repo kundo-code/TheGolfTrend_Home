@@ -308,11 +308,21 @@ section.block{padding:100px 24px;position:relative}
 }
 .pc-track::-webkit-scrollbar{display:none}
 .pc-track.dragging{cursor:grabbing;scroll-behavior:auto}
-.pc-track>.product{flex:0 0 calc((100% - 20px*2)/3);scroll-snap-align:start;min-width:0;transform-origin:top}
+/* [수정] 기본 .product 규칙의 transition:all은 리사이즈로 flex-basis(폭)가 바뀔 때도 함께 애니메이션돼,
+   리사이즈 직후 카드 실측 좌표(getBoundingClientRect)를 재는 pcRecalcPadding·pcUpdateCenterDim이
+   전환 중인 중간값을 읽어버리는 문제가 있었다 — 캐러셀 카드는 transform·그림자·투명도·색상만
+   전환되도록 좁혀 폭 변화는 즉시 반영되게 한다 */
+.pc-track>.product{flex:0 0 calc((100% - 20px*2)/3);scroll-snap-align:start;min-width:0;transform-origin:top;transition:transform .3s,box-shadow .3s,opacity .3s,border-color .3s,background .3s}
 /* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(108%)로
    자연스럽게 커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다. transform-origin:top이라 카드
    윗변은 그 자리에 고정된 채 아래·양옆으로만 커져 상단 내비게이션 바를 절대 침범하지 않는다 */
 .pc-track>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
+/* [수정] 데스크톱(3장 노출)에서는 3장 중 가운데(중앙에 가장 가까운) 카드만 선명하게 두고 양옆
+   카드는 반투명 처리해 현재 선택된 카드의 가독성을 높인다 — 요금 포스터 캐러셀의 pkg-dim과 동일한
+   방식. 반투명 카드에 마우스를 올리면 다시 100%로 보인다(아래 :hover가 dim보다 나중에 선언되어
+   우선 적용됨) */
+.pc-track>.product.pc-dim{opacity:.6}
+.pc-track>.product.pc-dim:hover{opacity:1}
 /* [수정] 이전/다음 버튼을 카드 영역(트랙) 위에 겹치지 않도록 카드 아래 별도 컨트롤 바로 이동 —
    도트·좌우 버튼·숫자 카운터를 한 줄에 모아, 몇 번째/총 몇 개 카드인지 수치로도 보여준다 */
 .pc-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
@@ -4489,26 +4499,53 @@ function pcRecalcPadding(regionKey){
   const growth = maxH * (scale - 1);
   track.style.paddingBottom = Math.ceil(growth + 16) + 'px'; // +16px 안전 여유
 }
+// [수정] 데스크톱(3장 노출)에서 트랙 중앙에 가장 가까운(=가운데) 카드만 선명하게 두고 나머지는
+// 반투명(.pc-dim) 처리 — 요금 포스터 캐러셀(pkgUpdateActiveCard)과 동일한 "가장 가까운 카드 찾기"
+// 방식이지만, 카드 폭이 균일하므로 각 카드의 실제 중심 좌표를 트랙 뷰포트 중심과 비교해 구한다.
+// 태블릿(2장)·모바일(1장)에서는 "가운데"라는 개념이 모호하므로 반투명 처리를 하지 않는다
+function pcUpdateCenterDim(regionKey){
+  const track = document.getElementById('pcTrack_'+regionKey);
+  if (!track) return;
+  const cards = Array.from(track.querySelectorAll('.product'));
+  if (window.innerWidth<=1024 || cards.length<=3){
+    cards.forEach(c=>c.classList.remove('pc-dim'));
+    return;
+  }
+  const trackRect = track.getBoundingClientRect();
+  const centerX = trackRect.left + trackRect.width/2;
+  let nearest=null, nearestDist=Infinity;
+  cards.forEach(c=>{
+    const r = c.getBoundingClientRect();
+    const dist = Math.abs((r.left+r.width/2) - centerX);
+    if (dist < nearestDist){ nearestDist=dist; nearest=c; }
+  });
+  cards.forEach(c=>c.classList.toggle('pc-dim', c!==nearest));
+}
 function initProductCarousel(regionKey){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
   initCarouselDrag(track);
   pcRecalcPadding(regionKey);
+  pcUpdateCenterDim(regionKey);
   let scrollTimer=null;
   track.addEventListener('scroll', ()=>{
     clearTimeout(scrollTimer);
-    scrollTimer=setTimeout(()=>pcUpdateDots(regionKey), 80);
+    scrollTimer=setTimeout(()=>{ pcUpdateDots(regionKey); pcUpdateCenterDim(regionKey); }, 80);
   });
   pcUpdateDots(regionKey);
 }
-// [수정] 리사이즈로 카드 폭(→높이)이 바뀌면 필요한 여유 패딩도 달라지므로 다시 계산 — 요금 포스터
+// [수정] 리사이즈로 카드 폭(→높이)이 바뀌면 필요한 여유 패딩도 달라지므로 다시 계산하고, 데스크톱↔
+// 태블릿/모바일 경계를 넘나들 때 가운데 카드 반투명 처리 여부도 함께 갱신한다 — 요금 포스터
 // 캐러셀의 리사이즈 디바운스(pkgResizeTimer)와 동일한 방식
 let pcResizeTimer=null;
 window.addEventListener('resize', ()=>{
   clearTimeout(pcResizeTimer);
   pcResizeTimer=setTimeout(()=>{
     ['domestic','overseas'].forEach(regionKey=>{
-      if (document.getElementById('pcTrack_'+regionKey)) pcRecalcPadding(regionKey);
+      if (document.getElementById('pcTrack_'+regionKey)){
+        pcRecalcPadding(regionKey);
+        pcUpdateCenterDim(regionKey);
+      }
     });
   }, 150);
 });

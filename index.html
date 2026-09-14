@@ -1111,8 +1111,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    모서리에 잘리지 않도록 클리핑을 풀어준다 */
 .ep-popup-box.pv-label-overflow{overflow:visible}
 /* [Phase] 캐러셀(여러 슬라이드 좌우 스와이프)을 위해 가로 방향은 계속 클리핑이 필요하지만, 세로
-   방향은 클리핑을 풀어 상단/하단 모서리에 걸린 "이미지 밖으로 배치" 레이블이 잘리지 않게 한다 */
-.ep-popup-viewport{overflow-x:hidden;overflow-y:visible}
+   방향은 클리핑을 풀어 상단/하단 모서리에 걸린 "이미지 밖으로 배치" 레이블이 잘리지 않게 한다.
+   [수정] overflow-x:hidden과 overflow-y:visible을 함께 쓰면 CSS 스펙상 overflow-y가 "visible"이
+   아니라 "auto"로 재계산되는 규칙이 있다("한쪽이 visible이 아니면 다른 쪽의 visible도 auto로
+   전환") — auto는 스크롤 가능 컨테이너가 되어, 요소의 시작 방향(위쪽, top:-6px처럼 음수 오프셋)으로
+   넘치는 내용은 스크롤로도 도달할 수 없어 사실상 계속 잘려 보이는 문제가 있었다(실제로 팝업에서
+   레이블 위쪽이 평평하게 잘려 보이던 원인). overflow 대신 clip-path로 가로축만 정확히 카드 경계에서
+   자르고 세로축은 사실상 무제한(±9999px)으로 열어둬 진짜로 잘리지 않도록 함 */
+.ep-popup-viewport{overflow:visible;clip-path:inset(-9999px 0 -9999px 0)}
 .ep-popup-track{display:flex;transition:transform .45s cubic-bezier(.22,1,.36,1)}
 .ep-popup-slide{flex:0 0 100%;min-width:0}
 .ep-popup-footer{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.28)}

@@ -1134,8 +1134,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .popup-toggle input:checked ~ .toggle-slider::before{transform:translateX(14px)}
 .popup-toggle .pt-lbl{font-size:.75rem;color:var(--nm-text-soft);font-weight:600}
 /* [수정] meta 항목(라운드/숙박/식사/항공포함여부/비행시간/소요시간) 라벨 옆에 "한 줄로" 토글을
-   나란히 배치하는 행 래퍼 — 토글 자체는 기존 .popup-toggle을 그대로 재사용한다 */
-.mw-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+   나란히 배치하는 행 래퍼 — 토글 자체는 기존 .popup-toggle을 그대로 재사용한다.
+   [수정] 라벨에 안내문구(예: "이 요금 항목의 금액 아래 노출")가 길게 붙으면 토글과 공간을 다투며
+   겹쳐 보이던 문제가 있어, 라벨 자체의 margin-bottom은 없애고 이 행에 margin-bottom을 주어 아래
+   입력창과의 간격을 확보한다. 긴 안내문구는 .mw-hint로 행 밖으로 분리해 겹침을 원천적으로 방지 */
+.mw-label-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.mw-label-row label{margin-bottom:0}
+.mw-hint{display:block;font-size:.7rem;color:var(--nm-text-soft);font-weight:400;margin:-4px 0 8px}
 .pee-del{padding:5px 12px;background:var(--nm-surface);border:none;color:var(--nm-danger);border-radius:var(--nm-r-pill);font-size:.72rem;cursor:pointer;transition:all .2s;font-family:inherit;box-shadow:var(--nm-shadow-raised-sm)}
 .pee-del:hover{box-shadow:var(--nm-shadow-hover)}
 /* 판매가·정가 열 */
@@ -7131,7 +7136,7 @@ function priceEntryHTML(pe, i, popupCount){
         </div>
       </div>
       <div><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="예: 2" oninput="updatePriceEntry(${i},'minPeople',this.value)"></div>
-      <div><div class="mw-label-row"><label>라운드 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(이 요금 항목의 금액 아래 노출)</span></label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="예: 2R" oninput="updatePriceEntry(${i},'rounds',this.value)"></div>
+      <div><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="예: 2R" oninput="updatePriceEntry(${i},'rounds',this.value)"></div>
       <div><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updatePriceEntry(${i},'stay',this.value)"></div>
       <div><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="예: 조식 3회" oninput="updatePriceEntry(${i},'meals',this.value)"></div>
       <div class="full"><label>정가 (할인 전)</label>

@@ -201,6 +201,10 @@ header{padding-top:var(--topbar-h,108px)}
    [수정] 상품 카드(.product-visual)와 동일하게 이미지 레이어(.sv-bg)를 분리 —
    사방 2px씩 더 크게(inset:-2px) 채워 서브픽셀 라인을 없애고, 카드에 마우스를 올리면 이미지가 확대(호버줌)된다 */
 .spot-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:12px;border:1px solid rgba(255,255,255,.15)}
+/* [Phase] 상품 카드(.pv-clip)와 동일하게 사진(.sv-bg/video)만 항상 가두는 전용 클리핑 레이어 —
+   레이블이 "이미지 밖으로 배치"로 설정되어 .spot-visual 자체의 overflow가 풀려도, 사진은 이
+   레이어가 따로 잡아줘서 호버 확대(줌) 시에도 둥근 모서리 밖으로 삐져나오지 않는다 */
+.spot-visual .sv-clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit}
 .spot-visual .sv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .spot-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .spotlight:hover .spot-visual .sv-bg,.spotlight:hover .spot-visual video{transform:scale(1.06)}
@@ -364,6 +368,10 @@ section.block{padding:100px 24px;position:relative}
    1) 카드 경계보다 사방 2px씩 더 크게(inset:-2px) 채워 서브픽셀 반올림으로 생기던 1~2px 어두운
       테두리 라인을 없애고, 2) 카드에 마우스를 올리면 배지는 그대로 두고 이미지만 확대(호버줌)되게 한다 */
 .product-visual{aspect-ratio:4/3;border-radius:14px;overflow:hidden;position:relative;margin-bottom:16px;border:1px solid rgba(10,23,48,.08)}
+/* [Phase] 사진(.pv-bg/video)만 항상 가두는 전용 클리핑 레이어 — 레이블이 "이미지 밖으로 배치"로
+   설정되어 .product-visual 자체의 overflow가 풀려도(.pv-label-overflow), 사진은 이 레이어가
+   따로 잡아줘서 호버 확대(줌) 시에도 둥근 모서리 밖으로 삐져나오지 않고 항상 프레임에 맞게 노출된다 */
+.product-visual .pv-clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit}
 .product-visual .pv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .product-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .product:hover .product-visual .pv-bg,.product:hover .product-visual video{transform:scale(1.06)}
@@ -4476,8 +4484,10 @@ function productCardHTML(p, catId, idx){
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual${cardLabelOverlay.hasOutside?' pv-label-overflow':''}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
-      <div class="pv-bg" style="${visualStyle}"></div>
-      ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop preload="metadata" aria-hidden="true"></video>`:''}
+      <div class="pv-clip">
+        <div class="pv-bg" style="${visualStyle}"></div>
+        ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop preload="metadata" aria-hidden="true"></video>`:''}
+      </div>
       ${cardLabelOverlay.html}
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
@@ -4806,7 +4816,7 @@ function renderSpotlightSlot(slot, layer, entry){
   // [Phase] 상품 카드와 동일하게 "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 노출
   const spotLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   visualEl.classList.toggle('pv-label-overflow', spotLabelOverlay.hasOutside);
-  visualEl.innerHTML = `<div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}${spotLabelOverlay.html}`;
+  visualEl.innerHTML = `<div class="sv-clip"><div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}</div>${spotLabelOverlay.html}`;
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다

@@ -4403,19 +4403,26 @@ function refreshCategoryProducts(regionKey){
 // 하되, 상품 카드는 이미지 포스터보다 내용이 많고 폭이 균일하므로 이미지 비율 기반의 가변폭·무한
 // 복제 루프 대신 네이티브 스크롤(scroll-snap) + 포인터 드래그로 더 단순하게 구현한다.
 // 카드 마크업 자체(productCardHTML)는 전혀 건드리지 않는다
+// [수정] 맨 앞에 "마지막 상품"의 복제, 맨 뒤에 "첫 상품"의 복제를 하나씩 붙여(양끝 범퍼) 첫 카드와
+// 마지막 카드도 3장 중 가운데(선명하게 강조되는 위치)에 올 수 있도록 한다. 맨 앞/뒤 경계에서 같은
+// 방향으로 한 번 더 넘기면(pcScroll) 반대쪽 끝(마지막↔첫 상품)이 가운데로 오도록 순간 이동시켜
+// 무한 로테이션처럼 보이게 한다
 const pcState = {domestic:{}, overseas:{}};
 function productCarouselHTML(products, catId, regionKey){
+  const total = products.length;
+  const lastCloneHTML = productCardHTML(products[total-1], catId, total-1);
+  const firstCloneHTML = productCardHTML(products[0], catId, 0);
   const cardsHTML = products.map((p,i)=>productCardHTML(p,catId,i)).join('');
   const dotsHTML = products.map((_,i)=>`<button type="button" class="pc-dot" onclick="pcGoTo('${regionKey}',${i})" aria-label="${i+1}번째 상품로 이동"></button>`).join('');
   // [수정] 좌/우 이동 버튼은 카드 영역(트랙) 밖, 카드 아래 컨트롤 바로 빼서 카드를 가리지 않게 하고,
   // 도트 옆에 "N / 전체" 숫자 카운터를 함께 보여줘 몇 개 상품이 있는지 한눈에 알 수 있게 한다
   return `<div class="pc-carousel">
-    <div class="pc-track" id="pcTrack_${regionKey}">${cardsHTML}</div>
+    <div class="pc-track" id="pcTrack_${regionKey}" data-total="${total}">${lastCloneHTML}${cardsHTML}${firstCloneHTML}</div>
   </div>
   <div class="pc-controls">
     <button type="button" class="pc-nav-btn pc-prev" onclick="pcScroll('${regionKey}',-1)" aria-label="이전 상품">‹</button>
     <div class="pc-dots" id="pcDots_${regionKey}">${dotsHTML}</div>
-    <span class="pc-counter" id="pcCounter_${regionKey}">1 / ${products.length}</span>
+    <span class="pc-counter" id="pcCounter_${regionKey}">1 / ${total}</span>
     <button type="button" class="pc-nav-btn pc-next" onclick="pcScroll('${regionKey}',1)" aria-label="다음 상품">›</button>
   </div>`;
 }
@@ -4425,26 +4432,67 @@ function pcSlideStep(track){
   const gap = parseFloat(getComputedStyle(track).columnGap) || 20;
   return first.getBoundingClientRect().width + gap;
 }
-function pcActiveIndex(track){
-  const step = pcSlideStep(track);
-  return step>0 ? Math.round(track.scrollLeft / step) : 0;
+// [수정] "지금 가운데(뷰포트 중앙에 가장 가까운) 카드가 몇 번째 카드인가"를 유일한 기준으로 삼아
+// 반투명 처리(pcUpdateCenterDim)와 도트/카운터(pcUpdateDots)가 항상 같은 카드를 가리키도록
+// 통일한다. 양끝 범퍼를 포함한 "화면상" 인덱스(0=맨 앞 범퍼, 1..total=실제 카드, total+1=맨 뒤
+// 범퍼)를 반환 — 카드 폭이 균일하므로 각 카드의 실제 중심 좌표를 트랙 뷰포트
+// 중심과 비교해 가장 가까운 카드를 찾는다
+function pcNearestExtIndex(track){
+  const cards = track.querySelectorAll('.product');
+  if (!cards.length) return 0;
+  const trackRect = track.getBoundingClientRect();
+  const centerX = trackRect.left + trackRect.width/2;
+  let nearestIdx=0, nearestDist=Infinity;
+  cards.forEach((c,i)=>{
+    const r = c.getBoundingClientRect();
+    const dist = Math.abs((r.left+r.width/2) - centerX);
+    if (dist < nearestDist){ nearestDist=dist; nearestIdx=i; }
+  });
+  return nearestIdx;
 }
+// 도트·카운터에 노출할 "실제" 상품 인덱스(0..total-1) — 범퍼 위가 가운데일 때는 그 범퍼가 대신하는
+// 실제 카드(마지막/첫) 인덱스로 환산한다
+function pcRealIndex(track){
+  const total = parseInt(track.dataset.total, 10) || 0;
+  if (!total) return 0;
+  const idx = pcNearestExtIndex(track);
+  if (idx<=0) return total-1;
+  if (idx>=total+1) return 0;
+  return idx-1;
+}
+// [수정] 3장이 꽉 차게 보이는 구조상 네이티브 스크롤은 "첫 상품이 가운데"(scrollLeft=0)와
+// "마지막 상품이 가운데"(scrollLeft=최대)를 넘어서는 이동을 허용하지 않는다 — 즉 범퍼(복제 카드)
+// 자체가 가운데에 오는 상황은 애초에 발생하지 않는다. 그래서 무한 로테이션은 "이미 그 경계에 있는데
+// 같은 방향으로 한 번 더 넘긴다"는 동작 자체를 감지해 처리한다: 맨 앞 경계에서 이전으로 넘기면
+// 마지막 상품이, 맨 뒤 경계에서 다음으로 넘기면 첫 상품이 가운데로 오도록 순간 이동시킨다. 경계에서
+// 마주치는 범퍼 카드가 실제 마지막/첫 상품과 내용이 똑같으므로 이 점프는 자연스럽게 이어져 보인다
 function pcScroll(regionKey, dir){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
+  const maxScroll = track.scrollWidth - track.clientWidth;
+  const atStart = track.scrollLeft<=1, atEnd = track.scrollLeft>=maxScroll-1;
+  if ((dir<0 && atStart) || (dir>0 && atEnd)){
+    const prevBehavior = track.style.scrollBehavior;
+    track.style.scrollBehavior = 'auto'; // 트랙 자체의 scroll-behavior:smooth를 잠시 꺼서 순간 이동시킨다
+    track.scrollLeft = dir<0 ? maxScroll : 0;
+    track.style.scrollBehavior = prevBehavior;
+    return;
+  }
   track.scrollBy({left: dir*pcSlideStep(track), behavior:'smooth'});
 }
 function pcGoTo(regionKey, idx){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
+  // real[idx]가 3장 중 "가운데"에 오려면, 그 앞장(real[idx-1] = 확장 인덱스 idx)이 맨 앞(leading)에
+  // 와야 한다 — 즉 목표 scrollLeft는 idx*step (범퍼 오프셋은 leading 기준이라 이미 상쇄되어 있음)
   track.scrollTo({left: idx*pcSlideStep(track), behavior:'smooth'});
 }
 function pcUpdateDots(regionKey){
   const track = document.getElementById('pcTrack_'+regionKey);
   const dots = document.getElementById('pcDots_'+regionKey);
   if (!track || !dots) return;
+  const idx = pcRealIndex(track);
   const total = dots.querySelectorAll('.pc-dot').length;
-  const idx = Math.max(0, Math.min(total-1, pcActiveIndex(track)));
   dots.querySelectorAll('.pc-dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
   const counter = document.getElementById('pcCounter_'+regionKey);
   if (counter) counter.textContent = `${idx+1} / ${total}`;
@@ -4511,15 +4559,8 @@ function pcUpdateCenterDim(regionKey){
     cards.forEach(c=>c.classList.remove('pc-dim'));
     return;
   }
-  const trackRect = track.getBoundingClientRect();
-  const centerX = trackRect.left + trackRect.width/2;
-  let nearest=null, nearestDist=Infinity;
-  cards.forEach(c=>{
-    const r = c.getBoundingClientRect();
-    const dist = Math.abs((r.left+r.width/2) - centerX);
-    if (dist < nearestDist){ nearestDist=dist; nearest=c; }
-  });
-  cards.forEach(c=>c.classList.toggle('pc-dim', c!==nearest));
+  const nearestIdx = pcNearestExtIndex(track);
+  cards.forEach((c,i)=>c.classList.toggle('pc-dim', i!==nearestIdx));
 }
 function initProductCarousel(regionKey){
   const track = document.getElementById('pcTrack_'+regionKey);
@@ -4530,7 +4571,11 @@ function initProductCarousel(regionKey){
   let scrollTimer=null;
   track.addEventListener('scroll', ()=>{
     clearTimeout(scrollTimer);
-    scrollTimer=setTimeout(()=>{ pcUpdateDots(regionKey); pcUpdateCenterDim(regionKey); }, 80);
+    // 스크롤(드래그 포함)이 멈춰 스냅 위치에 안착한 뒤에만 도트·반투명 처리를 갱신한다
+    scrollTimer=setTimeout(()=>{
+      pcUpdateDots(regionKey);
+      pcUpdateCenterDim(regionKey);
+    }, 80);
   });
   pcUpdateDots(regionKey);
 }
@@ -4542,9 +4587,11 @@ window.addEventListener('resize', ()=>{
   clearTimeout(pcResizeTimer);
   pcResizeTimer=setTimeout(()=>{
     ['domestic','overseas'].forEach(regionKey=>{
-      if (document.getElementById('pcTrack_'+regionKey)){
+      const track = document.getElementById('pcTrack_'+regionKey);
+      if (track){
         pcRecalcPadding(regionKey);
         pcUpdateCenterDim(regionKey);
+        pcUpdateDots(regionKey);
       }
     });
   }, 150);

@@ -6687,6 +6687,7 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>${transferFieldLabel}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
         <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4는 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
+        <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
         <div class="full"><label>체크포인트1 (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
         <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea class="cp2-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
@@ -7112,6 +7113,9 @@ function advBasicHTML(p){
     </div>
     <label>추천 판매 시기 <span style="color:var(--nm-text-soft);font-weight:400;font-size:.7rem">(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>
     ${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsMulti(${val})`)}
+    <!-- [수정] 연결 링크·URL을 체크포인트1 위쪽으로 이동 -->
+    <label>🔗 연결 링크 · URL</label>
+    <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
     <label>체크포인트1 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
     <textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
     <label>체크포인트2 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 아래에 노출)</span></label>
@@ -7152,10 +7156,6 @@ function advBasicHTML(p){
     <!-- [Phase 3 상품등록 개선] 예약·결제·취소 규정 -->
     <label>⏰ 예약 · 결제 · 취소 규정</label>
     <textarea class="auto-grow" style="min-height:120px" placeholder="예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ..." oninput="updateAdvField('bookingPolicy',this.value);autoGrowTextarea(this)">${escapeAttr(p.bookingPolicy||'')}</textarea>
-
-    <!-- [Phase 3 상품등록 개선 v2] 연결 링크·URL — 상품 정보 박스에 "상세보기→"로 노출 -->
-    <label>🔗 연결 링크 · URL</label>
-    <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구 (요금 항목별 일정 그룹을 아우르는 문구) -->
     <label>일정 요약 타임라인 — 상단 개요 문구</label>

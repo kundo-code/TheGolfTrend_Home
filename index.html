@@ -999,6 +999,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .cardprice-box{background:var(--nm-surface-light);border-radius:var(--nm-r-md);padding:12px 16px 14px;box-shadow:var(--nm-shadow-inset);margin-top:18px}
 .cardprice-box>label{margin-top:0}
 .media-slot{padding:16px;background:var(--nm-surface);border:2px dashed rgba(221,179,103,.25);border-radius:var(--nm-r-md);text-align:center;margin-top:6px}
+/* [수정] 등록된 레이블 이미지가 여러 개일 때 한눈에 훑어보기 쉽도록 2개씩 나란히(그리드) 배치 —
+   모바일에서는 @media(max-width:780px)에서 1열로 반응형 전환(아래 위치) */
+.card-label-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.card-label-grid .media-slot{margin-top:0}
 /* [수정] 전역 img{display:block} 리셋 때문에 .media-slot의 text-align:center가 이미지에는 적용되지
    않아 가운데 정렬이 안 되던 문제 — margin:auto로 블록 박스를 직접 가운데 정렬한다 */
 .media-preview{display:block;max-width:100%;max-height:180px;border-radius:8px;margin:0 auto 10px;object-fit:cover}
@@ -1347,7 +1351,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .foot-grid{grid-template-columns:1fr}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
-  .apc-fields,.adv-body .grid-2{grid-template-columns:1fr}
+  .apc-fields,.adv-body .grid-2,.card-label-grid{grid-template-columns:1fr}
   .pd-container{margin:16px auto;padding:0 12px 20px}
   .adv-editor{margin:16px 12px}
   .core-values{grid-template-columns:1fr}
@@ -7750,7 +7754,7 @@ function removeTitleMedia(){
 // 프레임 밖으로 튀어나오게 배치할지도 항목별로 개별 설정할 수 있다
 const CARD_LABEL_CORNERS = [['tl','좌상단'],['tr','우상단'],['bl','좌하단'],['br','우하단']];
 function cardLabelItemHTML(label, i){
-  return `<div class="media-slot" style="margin-top:${i===0?'0':'10px'}">
+  return `<div class="media-slot">
     <img src="${escapeAttr(label.url)}" class="media-preview">
     <div class="media-controls">
       <label class="popup-toggle" title="켜면 이 레이블이 상품 카드 이미지에 노출됩니다">
@@ -7774,7 +7778,9 @@ function cardLabelItemHTML(label, i){
 function cardLabelsHTML(p){
   const labels = p.cardLabels||[];
   if (!labels.length) return `<div style="color:rgba(247,245,240,.5);padding:14px 0;text-align:center">등록된 레이블 이미지가 없습니다</div>`;
-  return labels.map((l,i)=>cardLabelItemHTML(l,i)).join('');
+  // [수정] 등록된 레이블이 많아져도 한눈에 훑어보기 쉽도록 2개씩 나란히(그리드) 배치 —
+  // 모바일 화면에서는 좁아서 2열이 답답해 보이므로 1열로 반응형 전환(@media 780px 이하)
+  return `<div class="card-label-grid">${labels.map((l,i)=>cardLabelItemHTML(l,i)).join('')}</div>`;
 }
 async function addCardLabel(inputEl){
   const file=inputEl.files[0]; if (!file) return;

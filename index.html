@@ -292,16 +292,19 @@ section.block{padding:100px 24px;position:relative}
    동작하고, PC 드래그는 initCarouselDrag()가 보조한다 */
 .pc-carousel{position:relative;margin-top:14px}
 .pc-track{
+  --pc-hover-scale:1.08; /* [수정] JS(pcRecalcPadding)가 이 값을 읽어 카드 실제 높이 기준으로 필요한
+    하단 여유 공간을 계산 — 카드 내용(체크포인트1/2·태그 등)에 따라 높이가 달라져도 항상 정확한
+    만큼만 확보되도록, 고정 픽셀값 대신 실측 기반으로 자동 계산한다 */
   display:flex;gap:20px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;touch-action:pan-y;cursor:grab;
   scrollbar-width:none;-ms-overflow-style:none;
   /* [수정] 카드가 호버 시 위쪽 기준(top)으로 커지도록(아래 .pc-track>.product transform-origin)
      바꿔, 위로는 전혀 자라지 않고 아래·양옆으로만 커지게 했다 — 이 덕분에 카드가 아무리 커져도
-     상단 내비게이션 바(.cv-nav) 영역을 침범할 일이 없다. 아래쪽 여유 공간은 음수 마진으로 상쇄하지
-     않고 실제 여백으로 남겨(트랙 패딩 + 컨트롤 바 margin-top), 카드가 커져도 아래 컨트롤 바(이전/
-     다음 버튼·도트·카운터)와 절대 겹치지 않게 한다 */
-  padding-bottom:50px;
+     상단 내비게이션 바(.cv-nav) 영역을 침범할 일이 없다. 아래쪽 여유 공간은 실제 여백으로 남기고
+     (트랙 패딩 + 컨트롤 바 margin-top), 카드가 커져도 아래 컨트롤 바(이전/다음 버튼·도트·카운터)와
+     절대 겹치지 않게 한다 — 기본값은 아래 폴백이고, JS가 렌더 직후 카드 실측 높이로 정확히 덮어쓴다 */
+  padding-bottom:24px;
 }
 .pc-track::-webkit-scrollbar{display:none}
 .pc-track.dragging{cursor:grabbing;scroll-behavior:auto}
@@ -309,7 +312,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(108%)로
    자연스럽게 커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다. transform-origin:top이라 카드
    윗변은 그 자리에 고정된 채 아래·양옆으로만 커져 상단 내비게이션 바를 절대 침범하지 않는다 */
-.pc-track>.product:hover{transform:scale(1.08);z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
+.pc-track>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
 /* [수정] 이전/다음 버튼을 카드 영역(트랙) 위에 겹치지 않도록 카드 아래 별도 컨트롤 바로 이동 —
    도트·좌우 버튼·숫자 카운터를 한 줄에 모아, 몇 번째/총 몇 개 카드인지 수치로도 보여준다 */
 .pc-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
@@ -1889,9 +1892,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pkg-card:hover .pkg-zoom-hint{ opacity:1; }
 
 /* 도트 인디케이터 */
+/* [수정] 도트 옆에 "N / 전체" 숫자 카운터를 함께 보여줘 몇 번째/총 몇 개 포스터인지 바로 알 수 있게 함 */
+.pkg-dots-row{ display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px; }
 .pkg-dots{
-  display:flex;justify-content:center;gap:6px;margin-top:16px;
+  display:flex;justify-content:center;gap:6px;
 }
+.pkg-counter{ font-size:.78rem;font-weight:600;color:rgba(247,245,240,.55);letter-spacing:.02em; }
+.pkg-poster-section .pkg-counter{ color:rgba(10,23,48,.5); }
 .pkg-dot{
   width:7px;height:7px;border-radius:50%;
   background:rgba(247,245,240,.25);border:none;cursor:pointer;
@@ -2511,7 +2518,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="pkg-track-wrap">
         <div class="pkg-track" id="pkgTrack_domestic"></div>
       </div>
-      <div class="pkg-dots" id="pkgDots_domestic"></div>
+      <div class="pkg-dots-row">
+        <div class="pkg-dots" id="pkgDots_domestic"></div>
+        <span class="pkg-counter" id="pkgCounter_domestic"></span>
+      </div>
     </div>
 
     <!-- 해외 -->
@@ -2529,7 +2539,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <div class="pkg-track-wrap">
         <div class="pkg-track" id="pkgTrack_overseas"></div>
       </div>
-      <div class="pkg-dots" id="pkgDots_overseas"></div>
+      <div class="pkg-dots-row">
+        <div class="pkg-dots" id="pkgDots_overseas"></div>
+        <span class="pkg-counter" id="pkgCounter_overseas"></span>
+      </div>
     </div>
 
   </div>
@@ -4461,10 +4474,26 @@ function initCarouselDrag(track){
     if (track.dataset.justDragged){ e.preventDefault(); e.stopPropagation(); }
   }, true);
 }
+// [수정] 카드 호버 확대(--pc-hover-scale)로 실제로 자라나는 픽셀 높이를 카드 실측 높이 기준으로
+// 계산해 트랙 하단 패딩에 정확히 반영 — 체크포인트1/2·카드태그 등으로 카드 내용이 길어져 높이가
+// 커져도(고정 픽셀값과 달리) 항상 충분한 여유 공간이 확보되어 카드가 아래 컨트롤 바(이전/다음
+// 버튼·도트·카운터)를 침범하지 않는다
+function pcRecalcPadding(regionKey){
+  const track = document.getElementById('pcTrack_'+regionKey);
+  if (!track) return;
+  const cards = track.querySelectorAll('.product');
+  if (!cards.length) return;
+  let maxH = 0;
+  cards.forEach(c=>{ const h=c.getBoundingClientRect().height; if (h>maxH) maxH=h; });
+  const scale = parseFloat(getComputedStyle(track).getPropertyValue('--pc-hover-scale')) || 1.08;
+  const growth = maxH * (scale - 1);
+  track.style.paddingBottom = Math.ceil(growth + 16) + 'px'; // +16px 안전 여유
+}
 function initProductCarousel(regionKey){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
   initCarouselDrag(track);
+  pcRecalcPadding(regionKey);
   let scrollTimer=null;
   track.addEventListener('scroll', ()=>{
     clearTimeout(scrollTimer);
@@ -4472,6 +4501,17 @@ function initProductCarousel(regionKey){
   });
   pcUpdateDots(regionKey);
 }
+// [수정] 리사이즈로 카드 폭(→높이)이 바뀌면 필요한 여유 패딩도 달라지므로 다시 계산 — 요금 포스터
+// 캐러셀의 리사이즈 디바운스(pkgResizeTimer)와 동일한 방식
+let pcResizeTimer=null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(pcResizeTimer);
+  pcResizeTimer=setTimeout(()=>{
+    ['domestic','overseas'].forEach(regionKey=>{
+      if (document.getElementById('pcTrack_'+regionKey)) pcRecalcPadding(regionKey);
+    });
+  }, 150);
+});
 
 // HERO + SPOTLIGHT
 function renderHeroBg(){
@@ -5949,10 +5989,12 @@ function pkgUpdateActiveCard(type){
     card.classList.toggle('pkg-dim', i!==nearestIdx);
   });
   const dots = document.getElementById('pkgDots_'+type);
+  const activeOrigIdx = nearestIdx % st.listLen;
   if(dots){
-    const activeOrigIdx = nearestIdx % st.listLen;
     dots.querySelectorAll('.pkg-dot').forEach((d,i)=>d.classList.toggle('active', i===activeOrigIdx));
   }
+  const counter = document.getElementById('pkgCounter_'+type);
+  if(counter) counter.textContent = `${activeOrigIdx+1} / ${st.listLen}`;
 }
 
 // 이전/다음 버튼: 현재 활성 카드 기준 한 칸 옆 카드로 부드럽게 이동한 뒤 연속 스크롤 재개

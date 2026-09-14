@@ -8365,7 +8365,32 @@ try{ setInterval(cycleSpot,8000); }catch(e){ console.error('[init] cycleSpot int
 // 로컬(localStorage/IndexedDB) 데이터로 먼저 빠르게 그린 뒤, Supabase에 저장된 공유 상태를
 // 백그라운드에서 가져와 있으면(다른 기기/브라우저에서 저장한 최신 내용) 다시 렌더링해 동기화.
 // 오프라인이거나 Supabase 연결 전이면 조용히 무시하고 로컬 데이터 그대로 유지.
-pullSiteState().then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); } }).catch(()=>{});
+// [Phase] @supabase/supabase-js 라이브러리는 </body> 근처에 defer로 로드되는데, defer 스크립트는
+// 문서 파싱이 모두 끝난 뒤에야 실행되어 window.supabase를 채운다 — 그런데 이 초기화 코드는 그보다
+// 앞선 인라인 <script> 블록 안에서 문서 파싱과 동시에(=defer 스크립트 실행보다 먼저) 실행되므로,
+// getSupabaseClient()가 이 시점에 곧바로 호출되면 window.supabase가 아직 undefined라서 매번
+// null을 반환하고 pullSiteState()가 조용히 실패해 "지금 막 새로고침해도 Supabase에 저장된 최신
+// 관리자 수정 내용이 전혀 반영되지 않는" 문제가 있었다. defer 스크립트가 실제로 로드될 때까지
+// 짧게 폴링해 기다린 뒤에 pullSiteState()를 호출하도록 수정
+function waitForSupabaseLib(maxMs){
+  return new Promise(resolve=>{
+    if (typeof window.supabase!=='undefined') { resolve(true); return; }
+    const start=Date.now();
+    const iv=setInterval(()=>{
+      if (typeof window.supabase!=='undefined'){ clearInterval(iv); resolve(true); }
+      else if (Date.now()-start>=maxMs){ clearInterval(iv); resolve(false); }
+    }, 50);
+  });
+}
+// [Phase] pullSiteState()가 끝나기 전에는(예: 관리자가 방금 등록한 레이블 이미지·"이미지 밖으로
+// 배치" 설정이 아직 이 기기에 동기화되지 않은 상태) 아래 홈 진입 팝업이 오래된(동기화 전) 상품
+// 데이터로 먼저 렌더링돼버릴 수 있다 — 팝업은 한 번 그려지면 다시 그려지지 않으므로, 이 완료
+// 여부를 팝업 노출 타이밍에서도 기다리도록 Promise로 노출해둔다(오프라인 등으로 계속 끝나지 않는
+// 경우를 대비해 최대 대기 시간은 별도로 둠)
+const siteStatePulled = waitForSupabaseLib(3000)
+  .then(()=>pullSiteState())
+  .then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); } return ok; })
+  .catch(()=>false);
 
 // 홈 진입 시 팝업 최대 3개 표시 (세션당 1회)
 // 반환값: 이번 호출에서 실제로 팝업을 노출했는지 여부 — EDITOR'S PICK 팝업과 동시에 겹쳐 뜨지
@@ -8427,7 +8452,15 @@ function closePopupStage(){
   document.body.style.overflow = '';
   showEditorsPickPopup(); // 항목별 요금표 팝업이 모두 닫히면 이어서 EDITOR'S PICK 팝업을 시도
 }
-setTimeout(()=>{ if (!showEntryPopups()) showEditorsPickPopup(); }, 800);
+// [Phase] Supabase 동기화(siteStatePulled)가 끝나거나, 오프라인 등으로 오래 걸리는 경우를 대비한
+// 최대 대기 시간(4000ms — waitForSupabaseLib의 3000ms보다 여유 있게)이 지나면 팝업을 노출한다 —
+// 둘 중 먼저 끝나는 쪽을 따른다
+Promise.race([
+  siteStatePulled,
+  new Promise(resolve=>setTimeout(()=>resolve(false), 4000)),
+]).then(()=>{
+  setTimeout(()=>{ if (!showEntryPopups()) showEditorsPickPopup(); }, 300);
+});
 
 // ══ EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업(캐러셀)으로 노출 ══
 // 항목별 요금표 팝업(#popupStage)과 별개의 독립 기능. [수정] "오늘 하루 보지 않기"·"X" 닫기 기능은

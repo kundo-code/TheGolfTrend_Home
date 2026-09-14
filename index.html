@@ -383,7 +383,11 @@ section.block{padding:100px 24px;position:relative}
    좌상단 tl·우상단 tr·좌하단 bl·우하단 br)에 걸쳐 노출, 실제 태그가 붙어있는 듯한 느낌을 준다.
    같은 모서리에 여러 개가 동시에 켜져 있으면 그 모서리에서 멀어지는 방향으로 쌓아 올려 서로
    가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)에도 동일하게 적용 */
-.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;z-index:3;display:flex;gap:6px;pointer-events:none;width:30%;max-width:100px;min-width:56px}
+.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;z-index:3;display:flex;gap:6px;pointer-events:none}
+/* [수정] 상품 카드의 레이블만 기존 크기의 80%로 축소(30%→24%, 최대 100px→80px, 최소 56px→45px) —
+   EDITOR'S PICK 히어로(.spot-visual)의 레이블 크기는 그대로 유지 */
+.product-visual .card-label-stack{width:24%;max-width:80px;min-width:45px}
+.spot-visual .card-label-stack{width:30%;max-width:100px;min-width:56px}
 .product-visual .card-label-stack[data-corner="bl"],.spot-visual .card-label-stack[data-corner="bl"]{left:-6px;bottom:-6px;flex-direction:column-reverse}
 .product-visual .card-label-stack[data-corner="tl"],.spot-visual .card-label-stack[data-corner="tl"]{left:-6px;top:-6px;flex-direction:column}
 .product-visual .card-label-stack[data-corner="tr"],.spot-visual .card-label-stack[data-corner="tr"]{right:-6px;top:-6px;flex-direction:column}

@@ -827,6 +827,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-head{display:flex;gap:10px;align-items:center;margin-bottom:0;padding-bottom:8px;border-bottom:1px dashed rgba(10,23,48,.12);cursor:pointer}
 .apc-head .idx{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;font-weight:600;letter-spacing:.1em;flex-shrink:0}
 .apc-title-preview{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--nm-text);font-size:.85rem;font-weight:500}
+/* [Phase] 제목 영역 우측 끝의 "추천 판매 시기" 요약 배지 — 권역별=월, 국가별=시즌 */
+.apc-period-badge{flex-shrink:0;font-size:.7rem;font-weight:600;color:var(--nm-blue-deep);background:rgba(56,200,244,.14);padding:3px 10px;border-radius:100px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .apc-chevron{flex-shrink:0;font-size:.75rem;color:var(--nm-text-soft);transition:transform .2s}
 .admin-product-card:not([open]) .apc-chevron{transform:rotate(-90deg)}
 .apc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
@@ -4242,6 +4244,18 @@ const SEASON_DEFS = [
   {key:'winter', label:'겨울 (12~2월)', months:[12,1,2]},
 ];
 const MONTH_OPTS = Array.from({length:12},(_,i)=>i+1);
+const SEASON_SHORT = {spring:'봄', summer:'여름', fall:'가을', winter:'겨울'};
+// [Phase] 관리자 상품 목록의 제목 우측에 노출할 "추천 판매 시기" 요약 — 권역별(국내)은 등록된 월을
+// 그대로, 국가별(해외)은 그 월이 속한 시즌(들)을 표시한다(전면 소팅 기준과 동일하게)
+function productPeriodBadgeText(p, catId){
+  const months = Array.isArray(p.months) ? p.months : [];
+  if (!months.length) return '전체 시기';
+  if (isDomesticCat(catId)){
+    return months.slice().sort((a,b)=>a-b).map(m=>m+'월').join(',');
+  }
+  const seasons = SEASON_DEFS.filter(s=>months.some(m=>s.months.includes(m))).map(s=>SEASON_SHORT[s.key]);
+  return [...new Set(seasons)].join(',');
+}
 
 // STATE
 // [수정] 국가/지역 카드를 클릭하면 그 카드 그룹(해외/국내) 하단에 상품 목록이 펼쳐지도록, 지역마다
@@ -6528,6 +6542,7 @@ function renderProductAdmin(catId){
         <span class="apc-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</span>
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
         <span class="apc-title-preview">${p.title?escapeAttr(p.title):'(제목 없음)'}</span>
+        <span class="apc-period-badge">${escapeAttr(productPeriodBadgeText(p, activeProductCat))}</span>
         <span class="apc-chevron">▾</span>
         <!-- [수정] preventDefault()로 <summary> 펼침만 막고, 체크박스 클릭은 blockSummaryToggle()이 직접 대신 처리 -->
         <div class="apc-actions" onclick="blockSummaryToggle(event)">
@@ -6952,17 +6967,17 @@ function advBasicHTML(p){
     <div class="grid-2">
       <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
       <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-      <div><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
-      <div><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
-      <div><div class="mw-label-row"><label>항공 포함 여부</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
+      <div class="full"><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>항공 포함 여부</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
         <select onchange="updateAdvField('airfareIncluded',this.value)">
           ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
         </select>
       </div>
-      <div><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
-      <div><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-      <div><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
-      <div><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
+      <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
     </div>
     <label>추천 판매 시기 <span style="color:var(--nm-text-soft);font-weight:400;font-size:.7rem">(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>
     ${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsMulti(${val})`)}
@@ -7211,10 +7226,10 @@ function priceEntryHTML(pe, i, popupCount){
           </label>
         </div>
       </div>
-      <div><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="예: 2" oninput="updatePriceEntry(${i},'minPeople',this.value)"></div>
-      <div><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="예: 2R" oninput="updatePriceEntry(${i},'rounds',this.value)"></div>
-      <div><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updatePriceEntry(${i},'stay',this.value)"></div>
-      <div><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="예: 조식 3회" oninput="updatePriceEntry(${i},'meals',this.value)"></div>
+      <div class="full"><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="예: 2" oninput="updatePriceEntry(${i},'minPeople',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="예: 2R" oninput="updatePriceEntry(${i},'rounds',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updatePriceEntry(${i},'stay',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="예: 조식 3회" oninput="updatePriceEntry(${i},'meals',this.value)"></div>
       <div class="full"><label>정가 (할인 전)</label>
         <div class="price-row">
           <input type="number" value="${pe.originalPrice||''}" placeholder="1200000" oninput="updatePriceEntry(${i},'originalPrice',this.value,'number')">

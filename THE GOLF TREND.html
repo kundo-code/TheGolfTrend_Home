@@ -375,29 +375,34 @@ section.block{padding:100px 24px;position:relative}
 .product-visual .pv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .product-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .product:hover .product-visual .pv-bg,.product:hover .product-visual video{transform:scale(1.06)}
-.product-visual .save-btn{position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
+/* [수정] 상품 카드 이미지 위 하트 모양 "찜하기" 버튼은 더 이상 노출하지 않음(하이드) —
+   레이아웃 계산에 영향을 주지 않도록 DOM은 유지하고 화면에서만 숨긴다 */
+.product-visual .save-btn{display:none;position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
 /* [수정] 상품 카드 이미지 위 좌측 상단의 권역별/국가별 레이블은 더 이상 노출하지 않음(하이드) —
    레이아웃 계산에 영향을 주지 않도록 DOM은 유지하고 화면에서만 숨긴다 */
 .product-visual .product-region-pill{display:none}
 /* [Phase] 관리자가 "카드에 노출"을 켠 레이블(코너 태그) 이미지 — 등록된 모서리(data-corner:
    좌상단 tl·우상단 tr·좌하단 bl·우하단 br)에 걸쳐 노출, 실제 태그가 붙어있는 듯한 느낌을 준다.
    같은 모서리에 여러 개가 동시에 켜져 있으면 그 모서리에서 멀어지는 방향으로 쌓아 올려 서로
-   가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)에도 동일하게 적용 */
-.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;z-index:3;display:flex;gap:6px;pointer-events:none}
+   가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)과 팝업으로 노출되는
+   상품(.popup-visual — 항목별 요금표 팝업·EDITOR'S PICK 팝업 공통)에도 동일하게 적용 */
+.product-visual .card-label-stack,.spot-visual .card-label-stack,.popup-visual .card-label-stack{position:absolute;z-index:3;display:flex;gap:6px;pointer-events:none}
 /* [수정] 상품 카드의 레이블만 기존 크기의 80%로 축소(30%→24%, 최대 100px→80px, 최소 56px→45px) —
-   EDITOR'S PICK 히어로(.spot-visual)의 레이블 크기는 그대로 유지 */
+   EDITOR'S PICK 히어로(.spot-visual)·팝업(.popup-visual)의 레이블 크기는 그대로 유지 */
 .product-visual .card-label-stack{width:24%;max-width:80px;min-width:45px}
-.spot-visual .card-label-stack{width:30%;max-width:100px;min-width:56px}
-.product-visual .card-label-stack[data-corner="bl"],.spot-visual .card-label-stack[data-corner="bl"]{left:-6px;bottom:-6px;flex-direction:column-reverse}
-.product-visual .card-label-stack[data-corner="tl"],.spot-visual .card-label-stack[data-corner="tl"]{left:-6px;top:-6px;flex-direction:column}
-.product-visual .card-label-stack[data-corner="tr"],.spot-visual .card-label-stack[data-corner="tr"]{right:-6px;top:-6px;flex-direction:column}
-.product-visual .card-label-stack[data-corner="br"],.spot-visual .card-label-stack[data-corner="br"]{right:-6px;bottom:-6px;flex-direction:column-reverse}
+.spot-visual .card-label-stack,.popup-visual .card-label-stack{width:30%;max-width:100px;min-width:56px}
+.product-visual .card-label-stack[data-corner="bl"],.spot-visual .card-label-stack[data-corner="bl"],.popup-visual .card-label-stack[data-corner="bl"]{left:-6px;bottom:-6px;flex-direction:column-reverse}
+.product-visual .card-label-stack[data-corner="tl"],.spot-visual .card-label-stack[data-corner="tl"],.popup-visual .card-label-stack[data-corner="tl"]{left:-6px;top:-6px;flex-direction:column}
+.product-visual .card-label-stack[data-corner="tr"],.spot-visual .card-label-stack[data-corner="tr"],.popup-visual .card-label-stack[data-corner="tr"]{right:-6px;top:-6px;flex-direction:column}
+.product-visual .card-label-stack[data-corner="br"],.spot-visual .card-label-stack[data-corner="br"],.popup-visual .card-label-stack[data-corner="br"]{right:-6px;bottom:-6px;flex-direction:column-reverse}
 /* [수정] 레이블에 뚜렷한 음영(그림자)을 더해 이미지 위에서도 또렷하게 도드라져 보이도록 함 */
-.product-visual .card-label-stack .card-label-img,.spot-visual .card-label-stack .card-label-img{display:block;width:100%;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+.product-visual .card-label-stack .card-label-img,.spot-visual .card-label-stack .card-label-img,.popup-visual .card-label-stack .card-label-img{display:block;width:100%;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
 /* [Phase] "이미지 밖으로 배치"를 켠 레이블이 하나라도 있으면 이미지 프레임(overflow:hidden)을
    풀어 레이블이 잘리지 않고 프레임 밖으로 튀어나오도록 한다 — 이 경우 이미지 자체의 둥근 모서리
-   클리핑·호버 확대 시 클리핑도 함께 풀리는 점은 프레임 밖 배치를 위해 불가피한 트레이드오프 */
-.product-visual.pv-label-overflow,.spot-visual.pv-label-overflow{overflow:visible}
+   클리핑·호버 확대 시 클리핑도 함께 풀리는 점은 프레임 밖 배치를 위해 불가피한 트레이드오프.
+   [Phase] 팝업(.popup-visual)은 부모 .popup-card 자체가 overflow:hidden으로 카드를 감싸고 있어
+   프레임 밖 배치를 켜더라도 카드 경계 안쪽까지만 보이지만, 사진이 가려지지 않도록 동일하게 적용 */
+.product-visual.pv-label-overflow,.spot-visual.pv-label-overflow,.popup-visual.pv-label-overflow{overflow:visible}
 /* [수정] 상품 제목을 이미지 위 오버레이가 아닌, 이미지 하단에 별도 영역을 확보해 노출.
    [수정] 타이틀 바로 아래의 "🌙 박수 · 🗓 기간 · Nights" 배지 줄과의 간격을 기존 대비
    0.25줄(6px) 추가로 벌린다(6px→12px) */
@@ -1066,6 +1071,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    아니라) 110%로 확대되는 호버줌 효과를 적용한다 */
 .popup-visual{aspect-ratio:4/3;overflow:hidden;position:relative;border-bottom:1px solid rgba(255,255,255,.08)}
 .popup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.55) 100%);z-index:1}
+/* [Phase] 사진(.pv-bg)만 항상 가두는 전용 클리핑 레이어 — 카드 상품과 동일하게, 레이블이 "이미지
+   밖으로 배치"로 설정되어 .popup-visual 자체의 overflow가 풀려도(.pv-label-overflow) 사진은 이
+   레이어가 따로 잡아줘서 호버 확대(줌) 시에도 프레임 밖으로 삐져나오지 않는다 */
+.popup-visual .pv-clip{position:absolute;inset:0;overflow:hidden}
 .popup-visual .pv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .popup-visual:hover .pv-bg{transform:scale(1.1)}
 .popup-emph{position:absolute;top:14px;left:14px;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:700;letter-spacing:.05em;z-index:2}
@@ -8364,10 +8373,13 @@ function showEntryPopups(){
     const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
       ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
       : getCatBgStyle(cat);
+    // [Phase] 팝업으로 노출되는 상품 이미지에도 등록된 레이블 이미지를 동일하게 노출
+    const popupLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
     return `<div class="popup-card" style="animation-delay:${i*0.15}s">
       <button class="popup-close" onclick="closeSinglePopup(this)" aria-label="닫기">×</button>
-      <div class="popup-visual">
-        <div class="pv-bg" style="${bgStyle}"></div>
+      <div class="popup-visual${popupLabelOverlay.hasOutside?' pv-label-overflow':''}">
+        <div class="pv-clip"><div class="pv-bg" style="${bgStyle}"></div></div>
+        ${popupLabelOverlay.html}
         ${emphFirst?`<span class="popup-emph ${emphCls}">${escapeAttr(emphFirst)}</span>`:''}
       </div>
       <div class="popup-body">
@@ -8440,8 +8452,13 @@ function epSlideCardHTML(item){
   const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);
+  // [Phase] EDITOR'S PICK 팝업 이미지에도 등록된 레이블 이미지를 동일하게 노출
+  const epLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   return `<div class="ep-popup-slide">
-    <div class="popup-visual"><div class="pv-bg" style="${bgStyle}"></div></div>
+    <div class="popup-visual${epLabelOverlay.hasOutside?' pv-label-overflow':''}">
+      <div class="pv-clip"><div class="pv-bg" style="${bgStyle}"></div></div>
+      ${epLabelOverlay.html}
+    </div>
     <div class="popup-body">
       <div class="popup-cat">${cat.ko} · ${cat.en}</div>
       <h3 class="popup-title">${escapeAttr(p.title)}</h3>

@@ -486,6 +486,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
 .pd-price-entry .min-people{font-size:.72rem;color:var(--gold-deep);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px;margin-left:auto}
+/* [수정] 요금 항목별 라운드·숙박·식사 — 금액·최소 인원(.prices) 바로 아래 구분선을 두고 노출 */
+.pd-pe-meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px;font-size:.82rem;color:rgba(10,23,48,.72)}
+.pd-pe-meta span{display:inline-flex;align-items:center;gap:4px}
 /* [수정] 판매가와 별도인 출발 요일별·공휴일별 요금표 — 요금표(.prices) 바로 아래, 한 줄 또는
    두 줄로 자동 줄바꿈. 요일 폰트는 "포함사항" 제목과 동일(.86rem), 금액 폰트는 판매가(1.82rem)의 75% */
 .pd-day-price-table{display:flex;flex-wrap:wrap;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px}
@@ -3217,6 +3220,9 @@ function ensureExtended(p){
     if (pe.linkVisible===undefined) pe.linkVisible = true; // [수정] 연결 링크 버튼 노출 여부(선택 옵션)
     if (pe.popup===undefined) pe.popup = false;
     if (pe.minPeople===undefined) pe.minPeople = ''; // [수정] 최소 출발 인원
+    if (pe.rounds===undefined) pe.rounds = ''; // [수정] 이 요금 항목의 라운드 — 항목별로 다를 수 있어 개별 입력
+    if (pe.stay===undefined) pe.stay = '';
+    if (pe.meals===undefined) pe.meals = '';
     if (pe.included===undefined) pe.included = ''; // [수정] 포함사항 — 요금 항목별 개별 입력으로 이관
     if (pe.notIncluded===undefined) pe.notIncluded = '';
     if (pe.precautions===undefined) pe.precautions = '';
@@ -5403,6 +5409,12 @@ function renderProductDetail(p,cat){
             return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
           });
           const holidayPriceRow = holidayItems.length ? `<div class="pd-holiday-price-row">${holidayItems.join('')}</div>` : '';
+          // [수정] 요금 항목별 라운드·숙박·식사 — 금액/최소 인원 바로 아래 구분선을 두고 노출
+          const peMetaItems = [
+            pe.rounds?`<span>⛳ ${escapeAttr(pe.rounds)}</span>`:'',
+            pe.stay?`<span>🏨 ${escapeAttr(pe.stay)}</span>`:'',
+            pe.meals?`<span>🍽 ${escapeAttr(pe.meals)}</span>`:'',
+          ].filter(Boolean).join('');
           // [Phase 3 상품등록 개선 v3] 항목별 요금표에는 포함사항 관련 정보만 노출 — 출발요일·항공패턴·추가요금안내는
           // 요금표에서 분리해 공통 안내 아래로 이동 (renderProductDetail 하단 참고)
           return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
@@ -5414,6 +5426,7 @@ function renderProductDetail(p,cat){
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
               ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
             </div>
+            ${peMetaItems?`<div class="pd-pe-meta">${peMetaItems}</div>`:''}
             ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             ${holidayPriceRow}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
@@ -7103,6 +7116,9 @@ function priceEntryHTML(pe, i, popupCount){
         </div>
       </div>
       <div><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="예: 2" oninput="updatePriceEntry(${i},'minPeople',this.value)"></div>
+      <div><label>라운드 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(이 요금 항목의 금액 아래 노출)</span></label><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="예: 2R" oninput="updatePriceEntry(${i},'rounds',this.value)"></div>
+      <div><label>숙박</label><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updatePriceEntry(${i},'stay',this.value)"></div>
+      <div><label>식사</label><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="예: 조식 3회" oninput="updatePriceEntry(${i},'meals',this.value)"></div>
       <div class="full"><label>정가 (할인 전)</label>
         <div class="price-row">
           <input type="number" value="${pe.originalPrice||''}" placeholder="1200000" oninput="updatePriceEntry(${i},'originalPrice',this.value,'number')">

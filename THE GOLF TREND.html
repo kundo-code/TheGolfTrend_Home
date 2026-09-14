@@ -394,6 +394,9 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 관리자에서 "한 줄로" 토글을 켠 meta 항목은 카드에서 그리드 전체 폭(2칸)을 혼자 차지해
    내용이 길어도 줄바꿈 없이 한 줄에 표시되도록 한다 */
 .product .meta span.meta-full{grid-column:1/-1}
+/* [수정] 라운드·항공포함여부·숙박·식사·소요시간·비행시간 내용 가독성 강화 — 볼드 + 파란색 계열
+   (상품 상세 항목별 요금표의 동일 항목과 같은 톤) */
+.product .meta .meta-value{font-weight:700;color:#2F6FED}
 .product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
 .product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
@@ -4408,12 +4411,12 @@ function productCardHTML(p, catId, idx){
   // 그리드가 실제로 흘러가는 좌/우 칸을 여기서 직접 계산해, "같은 줄에 우측 항목이 있는 좌측
   // 항목"에만 구분선을 붙인다
   const metaItems = [
-    {full: !!mw.rounds, html: `⛳ ${p.rounds||'-'}`},
-    ...(p.stay ? [{full: !!mw.stay, html: `🏨 ${p.stay}`}] : []),
-    ...(p.meals ? [{full: !!mw.meals, html: `🍽 ${p.meals}`}] : []),
-    ...(airfareText ? [{full: !!mw.airfare, html: `✈️ ${airfareText}`}] : []),
-    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 비행시간 ${escapeAttr(p.flightTime)}`}] : []),
-    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 ${transferLabel} ${escapeAttr(p.transferTime)}`}] : []),
+    {full: !!mw.rounds, html: `⛳ <b class="meta-value">${p.rounds||'-'}</b>`},
+    ...(p.stay ? [{full: !!mw.stay, html: `🏨 <b class="meta-value">${p.stay}</b>`}] : []),
+    ...(p.meals ? [{full: !!mw.meals, html: `🍽 <b class="meta-value">${p.meals}</b>`}] : []),
+    ...(airfareText ? [{full: !!mw.airfare, html: `✈️ <b class="meta-value">${airfareText}</b>`}] : []),
+    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <b class="meta-value">비행시간 ${escapeAttr(p.flightTime)}</b>`}] : []),
+    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <b class="meta-value">${transferLabel} ${escapeAttr(p.transferTime)}</b>`}] : []),
   ];
   let metaCol = 0;
   const metaHTML = metaItems.map((item,i)=>{

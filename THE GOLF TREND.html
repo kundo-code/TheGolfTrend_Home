@@ -290,43 +290,47 @@ section.block{padding:100px 24px;position:relative}
    마크업은 동일하게 재사용하고, 배치를 grid에서 가로 스크롤 flex 트랙으로 바꿔 좌우로 넘겨볼 수
    있게 한다. 네이티브 overflow-x 스크롤(+scroll-snap)을 기반으로 하므로 모바일 스와이프는 그대로
    동작하고, PC 드래그는 initCarouselDrag()가 보조한다 */
-.pc-carousel{position:relative}
+.pc-carousel{position:relative;margin-top:14px}
 .pc-track{
   display:flex;gap:20px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;touch-action:pan-y;cursor:grab;
   scrollbar-width:none;-ms-overflow-style:none;
-  /* [수정] 호버 시 카드 프레임째 120%로 커질 때 위아래가 스크롤 컨테이너에 잘리지 않도록 여유
-     패딩을 확보하고, 그만큼 음수 마진으로 상쇄해 카드 바로 아래 요소(도트)와의 간격은 그대로 둔다 */
-  padding:56px 0;margin:-56px 0;
+  /* [수정] 카드가 호버 시 위쪽 기준(top)으로 커지도록(아래 .pc-track>.product transform-origin)
+     바꿔, 위로는 전혀 자라지 않고 아래·양옆으로만 커지게 했다 — 이 덕분에 카드가 아무리 커져도
+     상단 내비게이션 바(.cv-nav) 영역을 침범할 일이 없다. 아래쪽 여유 공간은 음수 마진으로 상쇄하지
+     않고 실제 여백으로 남겨(트랙 패딩 + 컨트롤 바 margin-top), 카드가 커져도 아래 컨트롤 바(이전/
+     다음 버튼·도트·카운터)와 절대 겹치지 않게 한다 */
+  padding-bottom:50px;
 }
 .pc-track::-webkit-scrollbar{display:none}
 .pc-track.dragging{cursor:grabbing;scroll-behavior:auto}
-.pc-track>.product{flex:0 0 calc((100% - 20px*2)/3);scroll-snap-align:start;min-width:0}
-/* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 120%로 자연스럽게
-   커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다 */
-.pc-track>.product:hover{transform:translateY(-4px) scale(1.2);z-index:5;box-shadow:0 30px 64px rgba(10,23,48,.32),0 8px 18px rgba(10,23,48,.16)}
+.pc-track>.product{flex:0 0 calc((100% - 20px*2)/3);scroll-snap-align:start;min-width:0;transform-origin:top}
+/* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(108%)로
+   자연스럽게 커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다. transform-origin:top이라 카드
+   윗변은 그 자리에 고정된 채 아래·양옆으로만 커져 상단 내비게이션 바를 절대 침범하지 않는다 */
+.pc-track>.product:hover{transform:scale(1.08);z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
+/* [수정] 이전/다음 버튼을 카드 영역(트랙) 위에 겹치지 않도록 카드 아래 별도 컨트롤 바로 이동 —
+   도트·좌우 버튼·숫자 카운터를 한 줄에 모아, 몇 번째/총 몇 개 카드인지 수치로도 보여준다 */
+.pc-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
 .pc-nav-btn{
-  position:absolute;top:50%;transform:translateY(-50%);
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(255,255,255,.92);border:1px solid rgba(10,23,48,.12);
-  color:#0A1730;font-size:1.4rem;cursor:pointer;
+  flex-shrink:0;width:36px;height:36px;border-radius:50%;
+  background:rgba(10,23,48,.05);border:1px solid rgba(10,23,48,.12);
+  color:#0A1730;font-size:1.2rem;cursor:pointer;
   display:grid;place-items:center;line-height:1;
-  box-shadow:0 6px 20px rgba(10,23,48,.18);
-  z-index:6;transition:all .2s;
+  box-shadow:var(--btn-elevate),var(--btn-shine);
+  transition:all .2s;
 }
-.pc-nav-btn:hover{background:var(--gold);border-color:var(--gold);color:#fff;transform:translateY(-50%) scale(1.08)}
-.pc-prev{left:8px}
-.pc-next{right:8px}
-.pc-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
+.pc-nav-btn:hover{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.08)}
+.pc-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .pc-dot{width:7px;height:7px;border-radius:50%;background:rgba(10,23,48,.18);border:none;cursor:pointer;transition:all .2s;padding:0}
 .pc-dot.active{background:var(--gold);transform:scale(1.3)}
+.pc-counter{font-size:.82rem;font-weight:600;color:rgba(10,23,48,.55);letter-spacing:.02em;min-width:38px;text-align:center}
 @media(max-width:1024px){
   .pc-track>.product{flex:0 0 calc((100% - 20px)/2)}
 }
 @media(max-width:780px){
   .pc-track>.product{flex:0 0 100%}
-  .pc-nav-btn{display:none} /* 모바일은 스와이프로만 넘기고, 카드 위 버튼은 숨겨 화면을 하나의 카드로 온전히 채운다 */
 }
 /* [수정] 글래스모피즘 통일 — 다른 카드(.post)와 동일하게 반투명+블러 적용 */
 /* [수정] backdrop-filter가 적용된 요소에서 hover 시 transform이 바뀌면 브라우저가 매번 블러
@@ -4380,12 +4384,17 @@ const pcState = {domestic:{}, overseas:{}};
 function productCarouselHTML(products, catId, regionKey){
   const cardsHTML = products.map((p,i)=>productCardHTML(p,catId,i)).join('');
   const dotsHTML = products.map((_,i)=>`<button type="button" class="pc-dot" onclick="pcGoTo('${regionKey}',${i})" aria-label="${i+1}번째 상품로 이동"></button>`).join('');
+  // [수정] 좌/우 이동 버튼은 카드 영역(트랙) 밖, 카드 아래 컨트롤 바로 빼서 카드를 가리지 않게 하고,
+  // 도트 옆에 "N / 전체" 숫자 카운터를 함께 보여줘 몇 개 상품이 있는지 한눈에 알 수 있게 한다
   return `<div class="pc-carousel">
-    <button type="button" class="pc-nav-btn pc-prev" onclick="pcScroll('${regionKey}',-1)" aria-label="이전 상품">‹</button>
     <div class="pc-track" id="pcTrack_${regionKey}">${cardsHTML}</div>
-    <button type="button" class="pc-nav-btn pc-next" onclick="pcScroll('${regionKey}',1)" aria-label="다음 상품">›</button>
   </div>
-  <div class="pc-dots" id="pcDots_${regionKey}">${dotsHTML}</div>`;
+  <div class="pc-controls">
+    <button type="button" class="pc-nav-btn pc-prev" onclick="pcScroll('${regionKey}',-1)" aria-label="이전 상품">‹</button>
+    <div class="pc-dots" id="pcDots_${regionKey}">${dotsHTML}</div>
+    <span class="pc-counter" id="pcCounter_${regionKey}">1 / ${products.length}</span>
+    <button type="button" class="pc-nav-btn pc-next" onclick="pcScroll('${regionKey}',1)" aria-label="다음 상품">›</button>
+  </div>`;
 }
 function pcSlideStep(track){
   const first = track.querySelector('.product');
@@ -4411,8 +4420,11 @@ function pcUpdateDots(regionKey){
   const track = document.getElementById('pcTrack_'+regionKey);
   const dots = document.getElementById('pcDots_'+regionKey);
   if (!track || !dots) return;
-  const idx = pcActiveIndex(track);
+  const total = dots.querySelectorAll('.pc-dot').length;
+  const idx = Math.max(0, Math.min(total-1, pcActiveIndex(track)));
   dots.querySelectorAll('.pc-dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+  const counter = document.getElementById('pcCounter_'+regionKey);
+  if (counter) counter.textContent = `${idx+1} / ${total}`;
 }
 // [수정] PC 마우스 드래그·모바일 스와이프로 트랙을 직접 밀 수 있게 한다(요금 포스터 캐러셀과 동일한
 // 방식) — 실제로 드래그가 발생했을 때만 뒤따르는 click을 한 번 차단해, 카드 클릭으로 상세페이지가

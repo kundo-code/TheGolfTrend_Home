@@ -368,12 +368,14 @@ section.block{padding:100px 24px;position:relative}
 .product-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .product:hover .product-visual .pv-bg,.product:hover .product-visual video{transform:scale(1.06)}
 .product-visual .save-btn{position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;display:grid;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
-.product-visual .product-region-pill{position:absolute;top:10px;left:10px;z-index:2;background:var(--btn-highlight),rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#fff;font-size:.68rem;font-weight:600;padding:5px 11px;border-radius:100px;letter-spacing:.02em;box-shadow:var(--btn-elevate),var(--btn-shine)}
+/* [수정] 상품 카드 이미지 위 좌측 상단의 권역별/국가별 레이블은 더 이상 노출하지 않음(하이드) —
+   레이아웃 계산에 영향을 주지 않도록 DOM은 유지하고 화면에서만 숨긴다 */
+.product-visual .product-region-pill{display:none}
 /* [Phase] 관리자가 "카드에 노출"을 켠 레이블(코너 태그) 이미지 — 카드 이미지 좌측 하단 모서리에
    걸쳐 노출, 실제 태그가 붙어있는 듯한 느낌을 준다. 여러 개가 동시에 켜져 있으면 아래에서 위로
-   쌓아 올려 서로 가리지 않게 한다 */
-.product-visual .card-label-stack{position:absolute;left:-6px;bottom:-6px;z-index:3;display:flex;flex-direction:column-reverse;align-items:flex-start;gap:6px;pointer-events:none}
-.product-visual .card-label-stack .card-label-img{width:30%;max-width:100px;min-width:56px;height:auto;filter:drop-shadow(0 4px 8px rgba(10,23,48,.35))}
+   쌓아 올려 서로 가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)에도 동일하게 적용 */
+.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;left:-6px;bottom:-6px;z-index:3;display:flex;flex-direction:column-reverse;align-items:flex-start;gap:6px;pointer-events:none}
+.product-visual .card-label-stack .card-label-img,.spot-visual .card-label-stack .card-label-img{width:30%;max-width:100px;min-width:56px;height:auto;filter:drop-shadow(0 4px 8px rgba(10,23,48,.35))}
 /* [수정] 상품 제목을 이미지 위 오버레이가 아닌, 이미지 하단에 별도 영역을 확보해 노출.
    [수정] 타이틀 바로 아래의 "🌙 박수 · 🗓 기간 · Nights" 배지 줄과의 간격을 기존 대비
    0.25줄(6px) 추가로 벌린다(6px→12px) */
@@ -4771,7 +4773,12 @@ function renderSpotlightSlot(slot, layer, entry){
   pauseVideosIn(visualEl);
   // [수정] EDITOR'S PICK 배지는 이미지를 가리지 않도록 spot-tag-row(요금 위)로 이동 — 여기선 이미지/영상만 채운다.
   // 상품 카드(.product-visual)와 동일하게 배경 이미지를 별도 레이어(.sv-bg)에 담아 호버줌 효과를 적용한다
-  visualEl.innerHTML = `<div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}`;
+  // [Phase] 상품 카드와 동일하게 "카드에 노출"을 켠 레이블 이미지를 좌측 하단에 노출
+  const activeSpotLabels = (p.cardLabels||[]).filter(l=>l.active&&l.url);
+  const spotLabelHTML = activeSpotLabels.length
+    ? `<div class="card-label-stack">${activeSpotLabels.map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true">`).join('')}</div>`
+    : '';
+  visualEl.innerHTML = `<div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}${spotLabelHTML}`;
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다

@@ -286,6 +286,48 @@ section.block{padding:100px 24px;position:relative}
 .cv-nav-item.active{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600;box-shadow:var(--btn-press)}
 .cv-nav-item.active:hover{transform:none;box-shadow:var(--btn-press)}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+/* [수정] 상품이 4개 이상(3개 초과)이면 위 .product-grid 대신 이 캐러셀로 전환 — 카드(.product)
+   마크업은 동일하게 재사용하고, 배치를 grid에서 가로 스크롤 flex 트랙으로 바꿔 좌우로 넘겨볼 수
+   있게 한다. 네이티브 overflow-x 스크롤(+scroll-snap)을 기반으로 하므로 모바일 스와이프는 그대로
+   동작하고, PC 드래그는 initCarouselDrag()가 보조한다 */
+.pc-carousel{position:relative}
+.pc-track{
+  display:flex;gap:20px;
+  overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y;cursor:grab;
+  scrollbar-width:none;-ms-overflow-style:none;
+  /* [수정] 호버 시 카드 프레임째 120%로 커질 때 위아래가 스크롤 컨테이너에 잘리지 않도록 여유
+     패딩을 확보하고, 그만큼 음수 마진으로 상쇄해 카드 바로 아래 요소(도트)와의 간격은 그대로 둔다 */
+  padding:56px 0;margin:-56px 0;
+}
+.pc-track::-webkit-scrollbar{display:none}
+.pc-track.dragging{cursor:grabbing;scroll-behavior:auto}
+.pc-track>.product{flex:0 0 calc((100% - 20px*2)/3);scroll-snap-align:start;min-width:0}
+/* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 120%로 자연스럽게
+   커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다 */
+.pc-track>.product:hover{transform:translateY(-4px) scale(1.2);z-index:5;box-shadow:0 30px 64px rgba(10,23,48,.32),0 8px 18px rgba(10,23,48,.16)}
+.pc-nav-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.92);border:1px solid rgba(10,23,48,.12);
+  color:#0A1730;font-size:1.4rem;cursor:pointer;
+  display:grid;place-items:center;line-height:1;
+  box-shadow:0 6px 20px rgba(10,23,48,.18);
+  z-index:6;transition:all .2s;
+}
+.pc-nav-btn:hover{background:var(--gold);border-color:var(--gold);color:#fff;transform:translateY(-50%) scale(1.08)}
+.pc-prev{left:8px}
+.pc-next{right:8px}
+.pc-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
+.pc-dot{width:7px;height:7px;border-radius:50%;background:rgba(10,23,48,.18);border:none;cursor:pointer;transition:all .2s;padding:0}
+.pc-dot.active{background:var(--gold);transform:scale(1.3)}
+@media(max-width:1024px){
+  .pc-track>.product{flex:0 0 calc((100% - 20px)/2)}
+}
+@media(max-width:780px){
+  .pc-track>.product{flex:0 0 100%}
+  .pc-nav-btn{display:none} /* 모바일은 스와이프로만 넘기고, 카드 위 버튼은 숨겨 화면을 하나의 카드로 온전히 채운다 */
+}
 /* [수정] 글래스모피즘 통일 — 다른 카드(.post)와 동일하게 반투명+블러 적용 */
 /* [수정] backdrop-filter가 적용된 요소에서 hover 시 transform이 바뀌면 브라우저가 매번 블러
    레이어를 새로 합성하면서 마우스를 빠르게 움직일 때 화면이 하얗게 깜빡이는 버그가 생길 수 있다
@@ -4302,6 +4344,8 @@ function productCardHTML(p, catId, idx){
 // [수정] 특정 카테고리(id)의 상품 목록만 갱신 — 해외/국내 각각 독립적으로 열려있는 패널을 지원하기 위해
 // 더 이상 하나의 공용 패널이 아닌, 열려있는 카드 id로 대상을 지정한다. 패널이 열려있지 않으면 아무 것도 하지 않는다
 // [수정] 패널이 지역(overseas/domestic)마다 하나씩 고정 id를 가지므로, 갱신 대상도 지역으로 지정한다
+// [수정] 상품이 4개 이상이면(3개 초과) 정적 그리드 대신 좌우로 넘겨보는 캐러셀로 전환 — 카드 내용
+// (productCardHTML)은 그대로, 배치·넘기기 방식만 바뀐다
 function refreshCategoryProducts(regionKey){
   const selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
   if (!selectedId) return;
@@ -4313,11 +4357,108 @@ function refreshCategoryProducts(regionKey){
   if (tagEl) tagEl.textContent=cat.tagline+` · 총 ${products.length}개 상품`;
   pauseVideosIn(grid); // 새로 그리기 전에 기존 상품 카드의 자동재생 동영상 정지
   if (products.length===0){
+    grid.className='product-grid';
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>이 지역의 상품은 곧 업데이트됩니다.</p></div>`;
+  } else if (products.length>3){
+    grid.className='product-carousel-host';
+    grid.innerHTML=productCarouselHTML(products, selectedId, regionKey);
+    observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
+    initProductCarousel(regionKey);
   } else {
+    grid.className='product-grid';
     grid.innerHTML=products.map((p,i)=>productCardHTML(p,selectedId,i)).join('');
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
   }
+}
+
+// ===== 상품 캐러셀(카드가 4개 이상일 때) =====
+// [수정] 국내/해외 골프 패키지 요금표 캐러셀(pkg-*)과 같은 방식으로 카드를 좌우로 넘겨볼 수 있게
+// 하되, 상품 카드는 이미지 포스터보다 내용이 많고 폭이 균일하므로 이미지 비율 기반의 가변폭·무한
+// 복제 루프 대신 네이티브 스크롤(scroll-snap) + 포인터 드래그로 더 단순하게 구현한다.
+// 카드 마크업 자체(productCardHTML)는 전혀 건드리지 않는다
+const pcState = {domestic:{}, overseas:{}};
+function productCarouselHTML(products, catId, regionKey){
+  const cardsHTML = products.map((p,i)=>productCardHTML(p,catId,i)).join('');
+  const dotsHTML = products.map((_,i)=>`<button type="button" class="pc-dot" onclick="pcGoTo('${regionKey}',${i})" aria-label="${i+1}번째 상품로 이동"></button>`).join('');
+  return `<div class="pc-carousel">
+    <button type="button" class="pc-nav-btn pc-prev" onclick="pcScroll('${regionKey}',-1)" aria-label="이전 상품">‹</button>
+    <div class="pc-track" id="pcTrack_${regionKey}">${cardsHTML}</div>
+    <button type="button" class="pc-nav-btn pc-next" onclick="pcScroll('${regionKey}',1)" aria-label="다음 상품">›</button>
+  </div>
+  <div class="pc-dots" id="pcDots_${regionKey}">${dotsHTML}</div>`;
+}
+function pcSlideStep(track){
+  const first = track.querySelector('.product');
+  if (!first) return track.clientWidth;
+  const gap = parseFloat(getComputedStyle(track).columnGap) || 20;
+  return first.getBoundingClientRect().width + gap;
+}
+function pcActiveIndex(track){
+  const step = pcSlideStep(track);
+  return step>0 ? Math.round(track.scrollLeft / step) : 0;
+}
+function pcScroll(regionKey, dir){
+  const track = document.getElementById('pcTrack_'+regionKey);
+  if (!track) return;
+  track.scrollBy({left: dir*pcSlideStep(track), behavior:'smooth'});
+}
+function pcGoTo(regionKey, idx){
+  const track = document.getElementById('pcTrack_'+regionKey);
+  if (!track) return;
+  track.scrollTo({left: idx*pcSlideStep(track), behavior:'smooth'});
+}
+function pcUpdateDots(regionKey){
+  const track = document.getElementById('pcTrack_'+regionKey);
+  const dots = document.getElementById('pcDots_'+regionKey);
+  if (!track || !dots) return;
+  const idx = pcActiveIndex(track);
+  dots.querySelectorAll('.pc-dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+}
+// [수정] PC 마우스 드래그·모바일 스와이프로 트랙을 직접 밀 수 있게 한다(요금 포스터 캐러셀과 동일한
+// 방식) — 실제로 드래그가 발생했을 때만 뒤따르는 click을 한 번 차단해, 카드 클릭으로 상세페이지가
+// 열리는 동작(openProductDetail)과 드래그 넘기기가 서로 방해하지 않도록 한다
+function initCarouselDrag(track){
+  let dragging=false, moved=false, startX=0, startScroll=0, pointerId=null;
+  track.addEventListener('pointerdown', e=>{
+    if (e.pointerType==='mouse' && e.button!==0) return;
+    dragging=true; moved=false; startX=e.clientX; startScroll=track.scrollLeft; pointerId=e.pointerId;
+  });
+  track.addEventListener('pointermove', e=>{
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    if (!moved && Math.abs(dx)>4){
+      moved = true;
+      track.classList.add('dragging');
+      try{ track.setPointerCapture(pointerId); }catch(err){}
+    }
+    if (!moved) return;
+    track.scrollLeft = startScroll - dx;
+  });
+  const endDrag=()=>{
+    if (!dragging) return;
+    dragging=false;
+    track.classList.remove('dragging');
+    if (moved){
+      track.dataset.justDragged='1';
+      setTimeout(()=>{ delete track.dataset.justDragged; }, 50);
+    }
+  };
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+  track.addEventListener('click', e=>{
+    if (track.dataset.justDragged){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+}
+function initProductCarousel(regionKey){
+  const track = document.getElementById('pcTrack_'+regionKey);
+  if (!track) return;
+  initCarouselDrag(track);
+  let scrollTimer=null;
+  track.addEventListener('scroll', ()=>{
+    clearTimeout(scrollTimer);
+    scrollTimer=setTimeout(()=>pcUpdateDots(regionKey), 80);
+  });
+  pcUpdateDots(regionKey);
 }
 
 // HERO + SPOTLIGHT

@@ -371,12 +371,21 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 상품 카드 이미지 위 좌측 상단의 권역별/국가별 레이블은 더 이상 노출하지 않음(하이드) —
    레이아웃 계산에 영향을 주지 않도록 DOM은 유지하고 화면에서만 숨긴다 */
 .product-visual .product-region-pill{display:none}
-/* [Phase] 관리자가 "카드에 노출"을 켠 레이블(코너 태그) 이미지 — 카드 이미지 좌측 하단 모서리에
-   걸쳐 노출, 실제 태그가 붙어있는 듯한 느낌을 준다. 여러 개가 동시에 켜져 있으면 아래에서 위로
-   쌓아 올려 서로 가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)에도 동일하게 적용.
-   [수정] 원래 크기(1배)로 되돌리고, 모서리에 바짝 붙도록(12px→-6px) 되돌림 */
-.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;left:-6px;bottom:-6px;z-index:3;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none;width:30%;max-width:100px;min-width:56px}
-.product-visual .card-label-stack .card-label-img,.spot-visual .card-label-stack .card-label-img{display:block;width:100%;height:auto;filter:drop-shadow(0 4px 8px rgba(10,23,48,.35))}
+/* [Phase] 관리자가 "카드에 노출"을 켠 레이블(코너 태그) 이미지 — 등록된 모서리(data-corner:
+   좌상단 tl·우상단 tr·좌하단 bl·우하단 br)에 걸쳐 노출, 실제 태그가 붙어있는 듯한 느낌을 준다.
+   같은 모서리에 여러 개가 동시에 켜져 있으면 그 모서리에서 멀어지는 방향으로 쌓아 올려 서로
+   가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)에도 동일하게 적용 */
+.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;z-index:3;display:flex;gap:6px;pointer-events:none;width:30%;max-width:100px;min-width:56px}
+.product-visual .card-label-stack[data-corner="bl"],.spot-visual .card-label-stack[data-corner="bl"]{left:-6px;bottom:-6px;flex-direction:column-reverse}
+.product-visual .card-label-stack[data-corner="tl"],.spot-visual .card-label-stack[data-corner="tl"]{left:-6px;top:-6px;flex-direction:column}
+.product-visual .card-label-stack[data-corner="tr"],.spot-visual .card-label-stack[data-corner="tr"]{right:-6px;top:-6px;flex-direction:column}
+.product-visual .card-label-stack[data-corner="br"],.spot-visual .card-label-stack[data-corner="br"]{right:-6px;bottom:-6px;flex-direction:column-reverse}
+/* [수정] 레이블에 뚜렷한 음영(그림자)을 더해 이미지 위에서도 또렷하게 도드라져 보이도록 함 */
+.product-visual .card-label-stack .card-label-img,.spot-visual .card-label-stack .card-label-img{display:block;width:100%;height:auto;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+/* [Phase] "이미지 밖으로 배치"를 켠 레이블이 하나라도 있으면 이미지 프레임(overflow:hidden)을
+   풀어 레이블이 잘리지 않고 프레임 밖으로 튀어나오도록 한다 — 이 경우 이미지 자체의 둥근 모서리
+   클리핑·호버 확대 시 클리핑도 함께 풀리는 점은 프레임 밖 배치를 위해 불가피한 트레이드오프 */
+.product-visual.pv-label-overflow,.spot-visual.pv-label-overflow{overflow:visible}
 /* [수정] 상품 제목을 이미지 위 오버레이가 아닌, 이미지 하단에 별도 영역을 확보해 노출.
    [수정] 타이틀 바로 아래의 "🌙 박수 · 🗓 기간 · Nights" 배지 줄과의 간격을 기존 대비
    0.25줄(6px) 추가로 벌린다(6px→12px) */
@@ -3237,6 +3246,12 @@ function ensureExtended(p){
     p.cardLabels = (p.cardLabel && p.cardLabel.url) ? [{url:p.cardLabel.url, active:true}] : [];
   }
   delete p.cardLabel;
+  // [수정] 레이블별 노출 위치(코너)와 "이미지 밖으로 배치" 여부 — 기존 데이터는 기본값(좌측 하단,
+  // 이미지 안쪽)으로 백필해 이전과 동일하게 보이도록 함
+  p.cardLabels.forEach(l=>{
+    if (!l.corner) l.corner='bl'; // 'tl'|'tr'|'bl'|'br'
+    if (l.outside===undefined) l.outside=false;
+  });
   // [Phase 3 상품등록 개선] 상품 레벨 출발/도착 공항·항공편은 요금표 항목별로 통합 이관됨.
   // 기존에 입력된 값이 있으면, 아직 비어있는 요금표 항목에 초기값으로 복사한 뒤 상품 레벨 필드는 제거.
   if (p.depAirport || p.arrAirport || p.airline){
@@ -4407,6 +4422,23 @@ function closeCategory(regionKey){
 function getDisplayPrice(p){
   return p.from;
 }
+// [Phase] 상품 카드/스팟라이트(EDITOR'S PICK 히어로) 공통: "카드에 노출"을 켠 레이블 이미지를
+// 등록된 모서리(corner)별로 그룹핑해 각각의 스택으로 렌더링한다. 같은 모서리에 여러 개가 켜져
+// 있으면 서로 가리지 않도록 쌓아서 노출. hasOutside는 하나라도 "이미지 밖으로 배치"가 켜져
+// 있는지를 나타내며, 호출부에서 이미지 프레임(overflow:hidden)을 풀어줄지 판단하는 데 쓰인다
+function cardLabelOverlayHTML(cardLabels){
+  const active = (cardLabels||[]).filter(l=>l.active&&l.url);
+  if (!active.length) return { html:'', hasOutside:false };
+  const groups = {};
+  active.forEach(l=>{
+    const corner = l.corner||'bl';
+    (groups[corner]=groups[corner]||[]).push(l);
+  });
+  const html = Object.keys(groups).map(corner=>
+    `<div class="card-label-stack" data-corner="${corner}">${groups[corner].map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true">`).join('')}</div>`
+  ).join('');
+  return { html, hasOutside: active.some(l=>l.outside) };
+}
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
   const bgStyle=getCatBgStyle(cat);
@@ -4440,16 +4472,13 @@ function productCardHTML(p, catId, idx){
     metaCol = isLeft ? 1 : 0;
     return `<span class="${hasRightSibling?'meta-border-r':''}">${item.html}</span>`;
   }).join('');
-  // [Phase] "카드에 노출"을 켠 레이블 이미지만(여러 개 가능) 카드 좌측 하단에 쌓아서 노출
-  const activeCardLabels = (p.cardLabels||[]).filter(l=>l.active&&l.url);
-  const cardLabelHTML = activeCardLabels.length
-    ? `<div class="card-label-stack">${activeCardLabels.map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true">`).join('')}</div>`
-    : '';
+  // [Phase] "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 쌓아서 노출
+  const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
-    <div class="product-visual" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
+    <div class="product-visual${cardLabelOverlay.hasOutside?' pv-label-overflow':''}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       <div class="pv-bg" style="${visualStyle}"></div>
       ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop preload="metadata" aria-hidden="true"></video>`:''}
-      ${cardLabelHTML}
+      ${cardLabelOverlay.html}
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
@@ -4774,12 +4803,10 @@ function renderSpotlightSlot(slot, layer, entry){
   pauseVideosIn(visualEl);
   // [수정] EDITOR'S PICK 배지는 이미지를 가리지 않도록 spot-tag-row(요금 위)로 이동 — 여기선 이미지/영상만 채운다.
   // 상품 카드(.product-visual)와 동일하게 배경 이미지를 별도 레이어(.sv-bg)에 담아 호버줌 효과를 적용한다
-  // [Phase] 상품 카드와 동일하게 "카드에 노출"을 켠 레이블 이미지를 좌측 하단에 노출
-  const activeSpotLabels = (p.cardLabels||[]).filter(l=>l.active&&l.url);
-  const spotLabelHTML = activeSpotLabels.length
-    ? `<div class="card-label-stack">${activeSpotLabels.map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true">`).join('')}</div>`
-    : '';
-  visualEl.innerHTML = `<div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}${spotLabelHTML}`;
+  // [Phase] 상품 카드와 동일하게 "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 노출
+  const spotLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
+  visualEl.classList.toggle('pv-label-overflow', spotLabelOverlay.hasOutside);
+  visualEl.innerHTML = `<div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}${spotLabelOverlay.html}`;
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째)의 레이블에서 가져온다
@@ -6883,6 +6910,9 @@ function renderAdvBody(){
   // [수정] 일정 요약 타임라인의 일자 카드(sch-day-block)도 같은 이유로 재렌더링 전 열려 있던
   // 일자만 골라 기억해뒀다가 렌더링 후 복원 — data-sch-key(peIdx:일자인덱스)로 식별
   const openSchKeys = Array.from(body.querySelectorAll('.sch-day-block[open]')).map(d=>d.dataset.schKey);
+  // [수정] "레이블 이미지"(코너 태그) 등록 섹션도 같은 이유로, 토글·삭제·추가 버튼을 눌러 다시
+  // 그려질 때마다 접혀버리지 않도록 열려 있던 접이식(.adv-collapsible[data-ck]) 항목을 기억해뒀다가 복원
+  const openCollapsibleKeys = Array.from(body.querySelectorAll('.adv-collapsible[open]')).map(d=>d.dataset.ck).filter(Boolean);
   // [수정] innerHTML을 통째로 교체하면 스크롤 위치가 0으로 초기화되어 "+요일별 요금 추가" 등을
   // 클릭할 때마다 화면이 항목 상단으로 튀어 오르는 문제가 있었다 — 렌더링 전 스크롤 위치를
   // 저장했다가 렌더링 후 그대로 복원한다
@@ -6893,6 +6923,7 @@ function renderAdvBody(){
   body.querySelectorAll('textarea.auto-grow').forEach(autoGrowTextarea); // 기존에 입력돼 있던 내용에 맞춰 초기 높이도 조정
   openPeIdx.forEach(idx=>{ const el=body.querySelector(`.pe-block.pe-item[data-idx="${idx}"]`); if (el) el.open=true; });
   openSchKeys.forEach(key=>{ const el=body.querySelector(`.sch-day-block[data-sch-key="${key}"]`); if (el) el.open=true; });
+  openCollapsibleKeys.forEach(key=>{ const el=body.querySelector(`.adv-collapsible[data-ck="${key}"]`); if (el) el.open=true; });
   body.scrollTop = scrollTop;
 }
 function updateAdvField(field, value, type){
@@ -7001,10 +7032,10 @@ function advBasicHTML(p){
 
     <!-- [Phase] 상품 카드 이미지 위에 얹는 "신상품" 등 레이블(코너 태그) 이미지 — 여러 개 등록해두고
          항목별 "카드에 노출" 토글을 켠 것만 카드 좌측 하단에 노출한다 -->
-    <details class="adv-collapsible">
+    <details class="adv-collapsible" data-ck="card-labels">
       <summary>레이블 이미지 (${(p.cardLabels||[]).length}개 등록)</summary>
       <div class="adv-collapsible-body">
-        <span class="file-hint" style="display:block;margin-bottom:8px">권장 사이즈 200×200px 이상(1:1 정사각형 비율) · 배경이 비치는 투명 PNG 권장 · 2MB 이하 · "카드에 노출"을 켠 레이블만 상품 카드 이미지의 좌측 하단 모서리에 노출됩니다</span>
+        <span class="file-hint" style="display:block;margin-bottom:8px">권장 사이즈 200×200px 이상(1:1 정사각형 비율) · 배경이 비치는 투명 PNG 권장 · 2MB 이하 · "카드에 노출"을 켠 레이블만 상품 카드 이미지에 노출되며, 항목별로 노출 위치(모서리)와 이미지 밖으로 배치할지 개별 설정할 수 있습니다</span>
         ${cardLabelsHTML(p)}
         <label class="media-btn" style="margin-top:10px">+ 레이블 이미지 추가하기<input type="file" accept="image/*" onchange="addCardLabel(this)"></label>
       </div>
@@ -7056,7 +7087,7 @@ function advBasicHTML(p){
     <!-- [수정] 포함사항 · 불포함사항 · 참고사항은 상품 공통이 아니라 요금 항목(항목1/2...)별로
          개별 입력하도록 이관 — 아래 각 요금 항목 카드에서 입력한다. 여기(공통사항)에는 모든 요금
          항목에 공통으로 적용되는 공통 안내·추가 요금 안내만 남긴다 -->
-    <details class="adv-collapsible" open>
+    <details class="adv-collapsible" data-ck="common-notes" open>
       <summary>공통사항 — 공통 안내 · 추가 요금</summary>
       <div class="adv-collapsible-body">
         <label>✳️ 공통 안내</label><textarea class="auto-grow" style="min-height:140px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value);autoGrowTextarea(this)">${escapeAttr(p.notes||'')}</textarea>
@@ -7705,17 +7736,28 @@ function removeTitleMedia(){
   p.titleMedia=null; saveAdvChange();renderAdvBody();
 }
 // [Phase] 상품 카드 이미지 위에 얹는 레이블(코너 태그) 이미지 — 여러 개 등록 가능, 항목별
-// "카드에 노출" 토글로 실제 카드에 보일지 개별 결정한다
+// "카드에 노출" 토글로 실제 카드에 보일지 개별 결정한다. 노출 위치(4개 모서리)와, 이미지
+// 프레임 밖으로 튀어나오게 배치할지도 항목별로 개별 설정할 수 있다
+const CARD_LABEL_CORNERS = [['tl','좌상단'],['tr','우상단'],['bl','좌하단'],['br','우하단']];
 function cardLabelItemHTML(label, i){
   return `<div class="media-slot" style="margin-top:${i===0?'0':'10px'}">
     <img src="${escapeAttr(label.url)}" class="media-preview">
     <div class="media-controls">
-      <label class="popup-toggle" title="켜면 이 레이블이 상품 카드 이미지 좌측 하단에 노출됩니다">
+      <label class="popup-toggle" title="켜면 이 레이블이 상품 카드 이미지에 노출됩니다">
         <input type="checkbox" ${label.active?'checked':''} onchange="toggleCardLabelActive(${i},this.checked)">
         <span class="toggle-slider"></span>
         <span class="pt-lbl">카드에 노출</span>
       </label>
       <button class="media-btn danger" onclick="removeCardLabel(${i})">제거</button>
+    </div>
+    <div style="margin-top:10px">
+      <span class="file-hint" style="display:block;margin-bottom:4px">노출 위치 (모서리 기준)</span>
+      <div class="adv-chip-group" style="justify-content:center">
+        ${CARD_LABEL_CORNERS.map(([val,lbl])=>`<button type="button" class="adv-chip ${(label.corner||'bl')===val?'active':''}" onclick="setCardLabelCorner(${i},'${val}')">${lbl}</button>`).join('')}
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <button type="button" class="adv-chip ${label.outside?'active':''}" onclick="toggleCardLabelOutside(${i},${!label.outside})" title="켜면 이미지가 둥근 모서리로 잘리지 않고, 레이블이 이미지 프레임 밖으로 튀어나오도록 배치됩니다">🖼️ 이미지 밖으로 배치</button>
     </div>
   </div>`;
 }
@@ -7732,7 +7774,7 @@ async function addCardLabel(inputEl){
     const url=await uploadToStorage(file, 'products');
     const p=getAdvProduct(); if (!p) return;
     if (!Array.isArray(p.cardLabels)) p.cardLabels=[];
-    p.cardLabels.push({url, active:true}); // 새로 추가한 레이블은 기본적으로 카드 노출 켜짐
+    p.cardLabels.push({url, active:true, corner:'bl', outside:false}); // 새로 추가한 레이블은 기본적으로 카드 노출 켜짐, 좌측 하단, 이미지 안쪽
     saveAdvChange();renderAdvBody();
   }catch(e){alert('업로드 실패: '+(e.message||e))}
   inputEl.value='';
@@ -7745,6 +7787,16 @@ function removeCardLabel(i){
 function toggleCardLabelActive(i, checked){
   const p=getAdvProduct(); if (!p) return;
   if (p.cardLabels[i]) p.cardLabels[i].active=checked;
+  saveAdvChange();renderAdvBody();
+}
+function setCardLabelCorner(i, corner){
+  const p=getAdvProduct(); if (!p) return;
+  if (p.cardLabels[i]) p.cardLabels[i].corner=corner;
+  saveAdvChange();renderAdvBody();
+}
+function toggleCardLabelOutside(i, checked){
+  const p=getAdvProduct(); if (!p) return;
+  if (p.cardLabels[i]) p.cardLabels[i].outside=checked;
   saveAdvChange();renderAdvBody();
 }
 

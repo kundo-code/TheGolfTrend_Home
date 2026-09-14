@@ -1068,15 +1068,23 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .popup-close:hover{background:var(--gold);border-color:var(--gold);transform:rotate(90deg)}
 /* [수정] 이미지 영역을 상품 카드(.product-visual)와 동일한 4:3 비율로 맞추고, 배경 이미지를 배지
    (.popup-emph)와 분리된 별도 레이어(.pv-bg)에 담아 "이미지 영역에" 마우스를 올렸을 때만(카드 전체가
-   아니라) 110%로 확대되는 호버줌 효과를 적용한다 */
-.popup-visual{aspect-ratio:4/3;overflow:hidden;position:relative;border-bottom:1px solid rgba(255,255,255,.08)}
-.popup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.55) 100%);z-index:1}
+   아니라) 110%로 확대되는 호버줌 효과를 적용한다.
+   [Phase] 기존에는 .popup-visual 자체에 둥근 모서리가 없이 부모 카드(.popup-card)의 overflow:hidden
+   +border-radius에만 의존해 위쪽 모서리가 둥글게 보였다 — 이 경우 "이미지 밖으로 배치" 레이블이
+   부모 카드의 둥근 모서리 곡선에 걸려 잘려 보이는 문제가 있었다. .popup-visual에 직접 둥근 위쪽
+   모서리를 부여해 부모의 클리핑에 기대지 않고도 이미지가 항상 둥글게 보이도록 한다 */
+.popup-visual{aspect-ratio:4/3;overflow:hidden;position:relative;border-bottom:1px solid rgba(255,255,255,.08);border-radius:22px 22px 0 0}
+.popup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.55) 100%);z-index:1;border-radius:inherit}
 /* [Phase] 사진(.pv-bg)만 항상 가두는 전용 클리핑 레이어 — 카드 상품과 동일하게, 레이블이 "이미지
    밖으로 배치"로 설정되어 .popup-visual 자체의 overflow가 풀려도(.pv-label-overflow) 사진은 이
    레이어가 따로 잡아줘서 호버 확대(줌) 시에도 프레임 밖으로 삐져나오지 않는다 */
-.popup-visual .pv-clip{position:absolute;inset:0;overflow:hidden}
+.popup-visual .pv-clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit}
 .popup-visual .pv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .popup-visual:hover .pv-bg{transform:scale(1.1)}
+/* [Phase] 레이블이 "이미지 밖으로 배치"로 설정된 경우, 팝업 이미지(.popup-visual)뿐 아니라 그
+   바깥을 감싸는 카드(.popup-card, EDITOR'S PICK 팝업의 .ep-popup-box)의 클리핑도 함께 풀어줘야
+   레이블이 카드의 둥근 모서리에 잘리지 않고 상품 카드/스포트라이트와 동일하게 노출된다 */
+.popup-card.pv-label-overflow{overflow:visible}
 .popup-emph{position:absolute;top:14px;left:14px;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:700;letter-spacing:.05em;z-index:2}
 .popup-emph.normal{background:rgba(255,255,255,.9);color:var(--pine)}
 .popup-emph.value{background:var(--gold);color:#fff}
@@ -1098,7 +1106,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ===== EDITOR'S PICK 팝업 (슬라이드 캐러셀) ===== */
 .ep-popup-box{width:320px;max-width:92vw;background:linear-gradient(180deg,var(--pine),var(--pine-deep));border:1px solid var(--glass-border-soft);border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);position:relative;animation:popupIn .4s cubic-bezier(.22,1,.36,1) both}
-.ep-popup-viewport{overflow:hidden}
+/* [Phase] 항목별 요금표 팝업(.popup-card)과 동일하게, "이미지 밖으로 배치" 레이블이 카드의 둥근
+   모서리에 잘리지 않도록 클리핑을 풀어준다 */
+.ep-popup-box.pv-label-overflow{overflow:visible}
+/* [Phase] 캐러셀(여러 슬라이드 좌우 스와이프)을 위해 가로 방향은 계속 클리핑이 필요하지만, 세로
+   방향은 클리핑을 풀어 상단/하단 모서리에 걸린 "이미지 밖으로 배치" 레이블이 잘리지 않게 한다 */
+.ep-popup-viewport{overflow-x:hidden;overflow-y:visible}
 .ep-popup-track{display:flex;transition:transform .45s cubic-bezier(.22,1,.36,1)}
 .ep-popup-slide{flex:0 0 100%;min-width:0}
 .ep-popup-footer{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.28)}
@@ -8375,7 +8388,7 @@ function showEntryPopups(){
       : getCatBgStyle(cat);
     // [Phase] 팝업으로 노출되는 상품 이미지에도 등록된 레이블 이미지를 동일하게 노출
     const popupLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
-    return `<div class="popup-card" style="animation-delay:${i*0.15}s">
+    return `<div class="popup-card${popupLabelOverlay.hasOutside?' pv-label-overflow':''}" style="animation-delay:${i*0.15}s">
       <button class="popup-close" onclick="closeSinglePopup(this)" aria-label="닫기">×</button>
       <div class="popup-visual${popupLabelOverlay.hasOutside?' pv-label-overflow':''}">
         <div class="pv-clip"><div class="pv-bg" style="${bgStyle}"></div></div>
@@ -8475,8 +8488,11 @@ function renderEpPopup(){
   const stage = document.getElementById('epPopupStage');
   if (!stage) return;
   const n = epPopupItems.length;
+  // [Phase] 캐러셀에 포함된 상품 중 하나라도 "이미지 밖으로 배치" 레이블이 있으면 팝업 카드
+  // 자체의 둥근 모서리 클리핑도 함께 풀어줘 레이블이 잘리지 않도록 한다
+  const anyOutside = epPopupItems.some(it => cardLabelOverlayHTML(it.product.cardLabels).hasOutside);
   stage.innerHTML = `
-    <div class="ep-popup-box" onclick="event.stopPropagation()">
+    <div class="ep-popup-box${anyOutside?' pv-label-overflow':''}" onclick="event.stopPropagation()">
       <div class="ep-popup-viewport">
         <div class="ep-popup-track" id="epPopupTrack" style="transform:translateX(-${epPopupIdx*100}%)">
           ${epPopupItems.map(epSlideCardHTML).join('')}

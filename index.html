@@ -372,10 +372,10 @@ section.block{padding:100px 24px;position:relative}
    레이아웃 계산에 영향을 주지 않도록 DOM은 유지하고 화면에서만 숨긴다 */
 .product-visual .product-region-pill{display:none}
 /* [Phase] 관리자가 "카드에 노출"을 켠 레이블(코너 태그) 이미지 — 카드 이미지 좌측 하단 모서리에
-   노출, 실제 태그가 붙어있는 듯한 느낌을 준다. 여러 개가 동시에 켜져 있으면 아래에서 위로
+   걸쳐 노출, 실제 태그가 붙어있는 듯한 느낌을 준다. 여러 개가 동시에 켜져 있으면 아래에서 위로
    쌓아 올려 서로 가리지 않게 한다. EDITOR'S PICK 히어로 "이번 주 추천"(.spot-visual)에도 동일하게 적용.
-   [수정] 기존보다 약 2배 크게 키우고, 모서리에 바짝 붙지 않도록(하단 -6px→12px) 여백을 둠 */
-.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;width:60%;max-width:200px;min-width:112px}
+   [수정] 원래 크기(1배)로 되돌리고, 모서리에 바짝 붙도록(12px→-6px) 되돌림 */
+.product-visual .card-label-stack,.spot-visual .card-label-stack{position:absolute;left:-6px;bottom:-6px;z-index:3;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none;width:30%;max-width:100px;min-width:56px}
 .product-visual .card-label-stack .card-label-img,.spot-visual .card-label-stack .card-label-img{display:block;width:100%;height:auto;filter:drop-shadow(0 4px 8px rgba(10,23,48,.35))}
 /* [수정] 상품 제목을 이미지 위 오버레이가 아닌, 이미지 하단에 별도 영역을 확보해 노출.
    [수정] 타이틀 바로 아래의 "🌙 박수 · 🗓 기간 · Nights" 배지 줄과의 간격을 기존 대비

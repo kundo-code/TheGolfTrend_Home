@@ -1642,17 +1642,29 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-channel-type{font-size:.72rem;font-weight:700;color:var(--nm-blue-deep)}
 .admin-channel-handle{font-size:.85rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .admin-channel-actions{display:flex;gap:6px;flex-shrink:0}
+/* [수정] "수집된 글/영상 N개 — 직접 편집"을 <details>의 기본 summary 대신 독립된 버튼으로 —
+   위쪽 구분선으로 헤더와 분리하고, 버튼 자체는 음영(입체감 있는 배경)을 준 뒤 우측 정렬한다 */
+.admin-channel-items-toggle-row{margin-top:12px;padding-top:12px;border-top:1px solid rgba(10,23,48,.08);display:flex;justify-content:flex-end}
+.admin-channel-items-toggle{padding:8px 14px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-pill);color:var(--nm-blue-deep);font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);transition:all .2s}
+.admin-channel-items-toggle:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
+.admin-channel-items-toggle .chev{margin-left:4px;font-size:.7rem}
 .admin-channel-item{padding:12px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px}
 /* 항목 헤더(썸네일+원본 제목+이미지 업로드 버튼)는 한 줄로, 편집 필드들은 그 아래 전체 너비로 */
 .admin-channel-item-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
 /* [수정] "블로그 대표 이미지"(.abc-thumb)와 출력 비율을 16:9로 통일 — 정사각형(64px)이던 것을
-   16:9 와이드 썸네일로 바꾸면서 폭도 함께 넓혀 비율이 자연스럽게 보이도록 함 */
-.admin-channel-item-thumb{width:120px;aspect-ratio:16/9;background-size:cover;background-position:center;background-color:#0A1730;border-radius:6px;position:relative;overflow:hidden;flex-shrink:0}
+   16:9 와이드 썸네일로 바꾸면서 폭도 함께 넓혀 비율이 자연스럽게 보이도록 함. 가독성을 위해
+   추가로 폭을 한 번 더 넓힘(120px→160px) */
+.admin-channel-item-thumb{width:160px;aspect-ratio:16/9;background-size:cover;background-position:center;background-color:#0A1730;border-radius:6px;position:relative;overflow:hidden;flex-shrink:0}
 .admin-channel-item-headinfo{min-width:0;flex:1;display:flex;flex-direction:column;gap:6px}
 .admin-channel-item-title{font-size:.8rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .admin-channel-item-actions{display:flex;gap:6px;flex-wrap:wrap}
 .admin-channel-item-actions .abc-img-btn{padding:6px 9px;font-size:.72rem}
 .admin-channel-item-fields{display:flex;flex-direction:column;gap:10px}
+/* "연결 상품" 필드의 값 영역(url-row + 연결된 링크 안내) — abc-field-row(라벨|값 2열 그리드)의
+   값 칸 하나에 이 둘을 함께 넣어, 안내 문구가 별도 그리드 행의 라벨 칸(70px)으로 밀려 좁게
+   눌리며 겹쳐 보이던 문제를 없앤다. 선택 영역과 안내 문구 사이 간격도 여유 있게 확보 */
+.abc-field-value-stack{display:flex;flex-direction:column;gap:8px}
+.abc-field-value-stack .file-hint{display:block}
 
 /* ── 여행 스타일 드롭다운 다중선택 ──────────────────────────────── */
 .style-dropdown-wrap{position:relative;width:100%}
@@ -3610,6 +3622,17 @@ const CHANNELS_KEY = 'kundo_channels_v1';
 let channelsOverride = null;
 try{ channelsOverride = JSON.parse(localStorage.getItem(CHANNELS_KEY)||'null'); }catch(e){}
 function getChannelsList(){ return channelsOverride || []; }
+// [수정] "수집된 글/영상 — 직접 편집" 펼침 상태를 네이티브 <details>의 open 속성이 아니라 이
+// 독립적인 Set으로 직접 관리한다 — renderAdminChannels()가 다시 호출될 때마다 DOM을 통째로
+// 새로 만들면서 <details>가 매번 새 노드로 교체되는데, 이전에는 다시 그리기 직전에 DOM에서
+// open 상태를 읽어와 복원하는 방식이라 타이밍에 따라 여전히 접혀 보이는 경우가 있었다.
+// 렌더링과 완전히 분리된 이 상태값을 기준으로 펼침 여부를 그리므로 항상 정확하다
+let _channelItemsOpen = new Set();
+function toggleChannelItemsOpen(chId){
+  if (_channelItemsOpen.has(chId)) _channelItemsOpen.delete(chId);
+  else _channelItemsOpen.add(chId);
+  renderAdminChannels();
+}
 function saveChannelsList(list){
   channelsOverride = list;
   try{ localStorage.setItem(CHANNELS_KEY, JSON.stringify(list)); }catch(e){ alert('저장 공간 부족'); }
@@ -3655,21 +3678,21 @@ function renderAdminChannels(){
   if (!c) return;
   const list = getChannelsList();
   if (!list.length){ c.innerHTML = `<div style="color:rgba(247,245,240,.5);padding:14px 0;text-align:center">등록된 채널이 없습니다</div>`; return; }
-  // [수정] 이미지 업로드·연결 상품 변경처럼 이 함수를 다시 호출하는 동작이 있을 때마다 "수집된
-  // 글/영상 — 직접 편집" 펼침 영역이 매번 접혀 보이던 문제를 막기 위해, 다시 그리기 전에 현재
-  // 펼쳐진 채널의 id를 기억해두었다가 다시 그린 뒤 그대로 복원한다
-  const openIds = new Set(Array.from(c.querySelectorAll('details[data-ch-id]')).filter(d=>d.open).map(d=>d.dataset.chId));
   const overridesMap = getChannelPostOverrides();
   c.innerHTML = list.map(ch=>{
     const cached = _rssCache[ch.id];
     const items = cached ? cached.items : [];
     const statusText = cached ? `최근 수집: ${items.length}개 글/영상` : '아직 수집 전';
+    const isOpen = _channelItemsOpen.has(ch.id);
     // [Phase] 채널별로 실제 수집된 글/영상 목록을 펼쳐 보여주고, 수동 블로그 카드와 동일한
     // 필드(태그·타이틀1·타이틀2·이미지·연결 상품)를 글 URL 단위로 직접 덮어쓸 수 있게 한다.
     // 네이버 블로그는 테마에 따라 RSS에 태그·썸네일이 부실한 경우가 많아 특히 필요하다
-    const itemsHTML = items.length ? `<details class="admin-info-collapse" data-ch-id="${ch.id}" style="margin-top:8px" ${openIds.has(ch.id)?'open':''}>
-      <summary>수집된 글/영상 ${items.length}개 — 직접 편집</summary>
-      <div class="admin-collapse-body">
+    const toggleRow = items.length ? `<div class="admin-channel-items-toggle-row">
+      <button type="button" class="admin-channel-items-toggle" onclick="toggleChannelItemsOpen('${ch.id}')">
+        수집된 글/영상 ${items.length}개 — 직접 편집 <span class="chev">${isOpen?'▲':'▼'}</span>
+      </button>
+    </div>` : '';
+    const itemsBody = (items.length && isOpen) ? `<div class="admin-collapse-body">
         ${items.map((item,ii)=>{
           const ov = overridesMap[item.link] || {};
           const thumb = ov.image || item.thumbnail || '';
@@ -3714,28 +3737,32 @@ function renderAdminChannels(){
               </div>
               <div class="abc-field-row">
                 <label class="abc-label">연결 상품 <em>선택 시 원본 글 대신 상품 링크로 이동</em></label>
-                <div class="abc-url-row">
-                  <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}',this.value,'')">
-                    <option value="">-- 지역/국가 선택 --</option>
-                    <optgroup label="국내">
-                      ${CATEGORIES.domestic.map(cat=>`<option value="${cat.id}" ${ov.productCat===cat.id?'selected':''}>${escapeAttr(cat.ko)}</option>`).join('')}
-                    </optgroup>
-                    <optgroup label="해외">
-                      ${CATEGORIES.overseas.map(cat=>`<option value="${cat.id}" ${ov.productCat===cat.id?'selected':''}>${escapeAttr(cat.ko)}</option>`).join('')}
-                    </optgroup>
-                  </select>
-                  <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}','${escapeAttr(ov.productCat||'')}',this.value)" ${!ov.productCat?'disabled':''}>
-                    <option value="">-- 상품 선택 --</option>
-                    ${ov.productCat ? (getProducts(ov.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${ov.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, ov.productCat))}</option>`).join('') : ''}
-                  </select>
+                <!-- [수정] url-row와 "연결된 링크" 안내 문구를 하나의 래퍼로 묶는다 — 이전에는
+                     abc-field-row(2열 그리드)에 자식이 3개(라벨·url-row·안내문구)라서, 안내
+                     문구가 다음 그리드 행의 라벨 칸(폭 70px)에 배치되며 좁게 눌려 겹쳐 보였다 -->
+                <div class="abc-field-value-stack">
+                  <div class="abc-url-row">
+                    <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}',this.value,'')">
+                      <option value="">-- 지역/국가 선택 --</option>
+                      <optgroup label="국내">
+                        ${CATEGORIES.domestic.map(cat=>`<option value="${cat.id}" ${ov.productCat===cat.id?'selected':''}>${escapeAttr(cat.ko)}</option>`).join('')}
+                      </optgroup>
+                      <optgroup label="해외">
+                        ${CATEGORIES.overseas.map(cat=>`<option value="${cat.id}" ${ov.productCat===cat.id?'selected':''}>${escapeAttr(cat.ko)}</option>`).join('')}
+                      </optgroup>
+                    </select>
+                    <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}','${escapeAttr(ov.productCat||'')}',this.value)" ${!ov.productCat?'disabled':''}>
+                      <option value="">-- 상품 선택 --</option>
+                      ${ov.productCat ? (getProducts(ov.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${ov.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, ov.productCat))}</option>`).join('') : ''}
+                    </select>
+                  </div>
+                  <span class="file-hint">연결된 링크: ${escapeAttr(resolvedUrl||'(없음)')}</span>
                 </div>
-                <span class="file-hint" style="display:block;margin-top:4px">연결된 링크: ${escapeAttr(resolvedUrl||'(없음)')}</span>
               </div>
             </div>
           </div>`;
         }).join('')}
-      </div>
-    </details>` : '';
+      </div>` : '';
     // [수정] 헤더(채널 정보+최근 수집 상태+새로고침/삭제 버튼)를 별도의 flex 행(.admin-channel-head)으로
     // 감싸 카드 전체와 같은 flex 컨테이너에 두지 않는다 — 이전에는 헤더와 수집 항목 목록(itemsHTML)이
     // 같은 가로 flex 행의 형제로 놓여 항목 목록이 좁게 눌리고 헤더가 세로로 찌그러져 보였다
@@ -3751,7 +3778,8 @@ function renderAdminChannels(){
           <button type="button" class="file-btn danger" onclick="removeChannel('${ch.id}')">삭제</button>
         </div>
       </div>
-      ${itemsHTML}
+      ${toggleRow}
+      ${itemsBody}
     </div>`;
   }).join('');
 }
@@ -5718,23 +5746,28 @@ function renderAdminBlog(){
              그 상품의 "🔗 연결 링크 · URL"을 그대로 가져와 사용한다 -->
         <div class="abc-field-row">
           <label class="abc-label">연결 상품</label>
-          <div class="abc-url-row">
-            <select class="abc-select" onchange="setBlogProduct(${i},this.value,'')">
-              <option value="">-- 지역/국가 선택 --</option>
-              <optgroup label="국내">
-                ${CATEGORIES.domestic.map(c=>`<option value="${c.id}" ${b.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
-              </optgroup>
-              <optgroup label="해외">
-                ${CATEGORIES.overseas.map(c=>`<option value="${c.id}" ${b.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
-              </optgroup>
-            </select>
-            <select class="abc-select" onchange="setBlogProduct(${i},'${escapeAttr(b.productCat||'')}',this.value)" ${!b.productCat?'disabled':''}>
-              <option value="">-- 상품 선택 --</option>
-              ${b.productCat ? (getProducts(b.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${b.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, b.productCat))}</option>`).join('') : ''}
-            </select>
-            <button class="abc-btn-sm" onclick="refreshBlogMeta(${i})" title="OG 태그 자동 로드">🔄</button>
+          <!-- [수정] url-row와 "연결된 링크" 안내 문구를 하나의 래퍼로 묶는다 — abc-field-row(2열
+               그리드)에 자식이 3개(라벨·url-row·안내문구)면 안내 문구가 다음 그리드 행의 라벨 칸
+               (폭 70px)에 배치되며 좁게 눌려 겹쳐 보인다 -->
+          <div class="abc-field-value-stack">
+            <div class="abc-url-row">
+              <select class="abc-select" onchange="setBlogProduct(${i},this.value,'')">
+                <option value="">-- 지역/국가 선택 --</option>
+                <optgroup label="국내">
+                  ${CATEGORIES.domestic.map(c=>`<option value="${c.id}" ${b.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
+                </optgroup>
+                <optgroup label="해외">
+                  ${CATEGORIES.overseas.map(c=>`<option value="${c.id}" ${b.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
+                </optgroup>
+              </select>
+              <select class="abc-select" onchange="setBlogProduct(${i},'${escapeAttr(b.productCat||'')}',this.value)" ${!b.productCat?'disabled':''}>
+                <option value="">-- 상품 선택 --</option>
+                ${b.productCat ? (getProducts(b.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${b.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, b.productCat))}</option>`).join('') : ''}
+              </select>
+              <button class="abc-btn-sm" onclick="refreshBlogMeta(${i})" title="OG 태그 자동 로드">🔄</button>
+            </div>
+            ${b.url?`<span class="file-hint">연결된 링크: ${escapeAttr(b.url)}</span>`:'<span class="file-hint" style="color:var(--nm-danger)">상품의 연결 링크·URL이 비어있거나 상품이 선택되지 않았습니다</span>'}
           </div>
-          ${b.url?`<span class="file-hint" style="display:block;margin-top:4px">연결된 링크: ${escapeAttr(b.url)}</span>`:'<span class="file-hint" style="display:block;margin-top:4px;color:var(--nm-danger)">상품의 연결 링크·URL이 비어있거나 상품이 선택되지 않았습니다</span>'}
         </div>
         <div class="abc-actions">
           <button class="file-btn danger" onclick="removeBlogEntry(${i})">삭제</button>

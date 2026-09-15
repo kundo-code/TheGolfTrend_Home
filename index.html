@@ -3654,6 +3654,10 @@ function renderAdminChannels(){
   if (!c) return;
   const list = getChannelsList();
   if (!list.length){ c.innerHTML = `<div style="color:rgba(247,245,240,.5);padding:14px 0;text-align:center">등록된 채널이 없습니다</div>`; return; }
+  // [수정] 이미지 업로드·연결 상품 변경처럼 이 함수를 다시 호출하는 동작이 있을 때마다 "수집된
+  // 글/영상 — 직접 편집" 펼침 영역이 매번 접혀 보이던 문제를 막기 위해, 다시 그리기 전에 현재
+  // 펼쳐진 채널의 id를 기억해두었다가 다시 그린 뒤 그대로 복원한다
+  const openIds = new Set(Array.from(c.querySelectorAll('details[data-ch-id]')).filter(d=>d.open).map(d=>d.dataset.chId));
   const overridesMap = getChannelPostOverrides();
   c.innerHTML = list.map(ch=>{
     const cached = _rssCache[ch.id];
@@ -3662,7 +3666,7 @@ function renderAdminChannels(){
     // [Phase] 채널별로 실제 수집된 글/영상 목록을 펼쳐 보여주고, 수동 블로그 카드와 동일한
     // 필드(태그·타이틀1·타이틀2·이미지·연결 상품)를 글 URL 단위로 직접 덮어쓸 수 있게 한다.
     // 네이버 블로그는 테마에 따라 RSS에 태그·썸네일이 부실한 경우가 많아 특히 필요하다
-    const itemsHTML = items.length ? `<details class="admin-info-collapse" style="margin-top:8px">
+    const itemsHTML = items.length ? `<details class="admin-info-collapse" data-ch-id="${ch.id}" style="margin-top:8px" ${openIds.has(ch.id)?'open':''}>
       <summary>수집된 글/영상 ${items.length}개 — 직접 편집</summary>
       <div class="admin-collapse-body">
         ${items.map((item,ii)=>{
@@ -3804,9 +3808,14 @@ function setChannelPostOverride(url, patch){
   map[url] = Object.assign({}, map[url], patch);
   saveChannelPostOverrides(map);
 }
+// [수정] 태그·타이틀1·타이틀2는 입력 중(oninput)마다 호출되는데, 여기서 renderAdminChannels()까지
+// 다시 부르면 관리자 패널 입력창 자체가 매 글자마다 새 DOM으로 교체되어 포커스가 끊기고(연속 입력
+// 불가) "직접 편집" 펼침 영역도 매번 접혀 보였다. 이 값들은 입력창이 이미 스스로 최신 값을
+// 보여주고 있어 관리자 패널을 다시 그릴 필요가 없으므로(수동 블로그 카드의 setBlogField와 동일한
+// 방식), 고객 화면(renderBlog)만 갱신한다
 function setChannelPostField(url, field, val){
   setChannelPostOverride(url, {[field]: val});
-  renderBlog(); renderAdminChannels();
+  renderBlog();
 }
 // [Phase] 연결할 상품을 선택하면(수동 블로그 카드와 동일하게) 그 상품의 "연결 링크 · URL"이
 // 원래 글 링크 대신 카드 클릭 시 이동할 주소가 된다. 선택 해제하면 원래 글 링크로 돌아간다

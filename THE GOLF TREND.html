@@ -1574,7 +1574,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .abc-thumb-wrap{display:flex;flex-direction:column;gap:8px;align-items:stretch}
 .abc-thumb{
-  width:100%;aspect-ratio:4/3;background-size:cover;background-position:center;
+  width:100%;aspect-ratio:16/9;background-size:cover;background-position:center;
   background-color:#0A1730;border-radius:8px;position:relative;overflow:hidden;
   box-shadow:var(--nm-shadow-raised-sm);
 }
@@ -1617,7 +1617,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .abc-actions{display:flex;justify-content:flex-end;margin-top:4px}
 @media(max-width:600px){
   .admin-blog-card{grid-template-columns:1fr}
-  .abc-thumb{aspect-ratio:16/7}
 }
 
 /* [Phase] 고객 후기 관리 — 썸네일이 없는 단일 컬럼 카드(블로그 카드와 달리 이미지가 없음) */
@@ -1646,7 +1645,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-channel-item{padding:12px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px}
 /* 항목 헤더(썸네일+원본 제목+이미지 업로드 버튼)는 한 줄로, 편집 필드들은 그 아래 전체 너비로 */
 .admin-channel-item-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
-.admin-channel-item-thumb{width:64px;aspect-ratio:1;background-size:cover;background-position:center;background-color:#0A1730;border-radius:6px;position:relative;overflow:hidden;flex-shrink:0}
+/* [수정] "블로그 대표 이미지"(.abc-thumb)와 출력 비율을 16:9로 통일 — 정사각형(64px)이던 것을
+   16:9 와이드 썸네일로 바꾸면서 폭도 함께 넓혀 비율이 자연스럽게 보이도록 함 */
+.admin-channel-item-thumb{width:120px;aspect-ratio:16/9;background-size:cover;background-position:center;background-color:#0A1730;border-radius:6px;position:relative;overflow:hidden;flex-shrink:0}
 .admin-channel-item-headinfo{min-width:0;flex:1;display:flex;flex-direction:column;gap:6px}
 .admin-channel-item-title{font-size:.8rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .admin-channel-item-actions{display:flex;gap:6px;flex-wrap:wrap}
@@ -3086,7 +3087,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         <div class="admin-section-head">
           <h4 class="admin-h4-lg">📡 블로그 · 유튜브 자동 수집 채널</h4>
         </div>
-        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 새 글·영상이 올라올 때마다 자동으로 "여행 이야기"에 노출됩니다. 채널당 최신 3개까지 가져옵니다.</div>
+        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 새 글·영상이 올라올 때마다 자동으로 "여행 이야기"에 노출됩니다. 채널당 최신 3개까지 가져옵니다.<br><br>💡 자동으로 불러온 이미지가 없거나 마음에 들지 않으면 각 글/영상마다 직접 업로드할 수 있습니다. 권장 1280×720px (16:9 비율), 10MB 이하 JPG/PNG.</div>
         <div class="admin-channel-add-row">
           <select id="newChannelType" class="abc-input" style="flex:0 0 auto;width:auto">
             <option value="blog">📝 네이버 블로그</option>
@@ -3100,10 +3101,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       </div>
       <div class="admin-section">
         <div class="admin-section-head">
-          <h4 class="admin-h4-lg">블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4>
+          <h4 class="admin-h4-lg">블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×720px (16:9 비율)</span></h4>
           <button type="button" class="reset-cat-btn admin-section-head-btn" onclick="clearAllBlogEntries()">전체 삭제</button>
         </div>
-        <div class="admin-info-box">💡 각 카드의 이미지와 홍보할 블로그내용을 링크해주세요. 권장 1200×800px (16:10 비율), 10MB 이하 JPG/PNG.<br><br>💡 각 이미지 옆 <b>"교체"</b> 버튼을 눌러 새 이미지를 업로드하세요. 헤드라인은 <b>이미지·동영상</b> 모두 지원. 블로그는 <b>URL</b>만 입력하면 네이버·T-Story 등에서 <b>제목·대표 이미지가 자동으로 불러와집니다</b>.</div>
+        <div class="admin-info-box">💡 각 카드의 이미지와 홍보할 블로그내용을 링크해주세요. 권장 1280×720px (16:9 비율), 10MB 이하 JPG/PNG.<br><br>💡 각 이미지 옆 <b>"교체"</b> 버튼을 눌러 새 이미지를 업로드하세요. 헤드라인은 <b>이미지·동영상</b> 모두 지원. 블로그는 <b>URL</b>만 입력하면 네이버·T-Story 등에서 <b>제목·대표 이미지가 자동으로 불러와집니다</b>.</div>
         <details class="admin-info-collapse" open>
           <summary>등록된 블로그 카드 목록</summary>
           <div class="admin-collapse-body">
@@ -5692,7 +5693,7 @@ function renderAdminBlog(){
           <input type="file" accept="image/*" onchange="handleBlogImageUpload(${i},this)">
         </label>
         ${imgSrc?`<button class="abc-img-btn danger" onclick="clearBlogImage(${i})">이미지 제거</button>`:''}
-        <span class="file-hint">권장 1280×800px (16:10 비율)</span>
+        <span class="file-hint">권장 1280×720px (16:9 비율)</span>
       </div>
       <!-- 입력 필드들 -->
       <div class="abc-fields">

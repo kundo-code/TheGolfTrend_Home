@@ -645,6 +645,21 @@ section.block{padding:100px 24px;position:relative}
 .post-body p{font-size:.88rem;color:rgba(10,23,48,.6);flex:1}
 .post-meta{font-size:.75rem;color:rgba(10,23,48,.45);display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(10,23,48,.10)}
 
+/* [Phase] 고객 후기 — 여행 이야기 섹션 하단에 노출 */
+.reviews-section{margin-top:56px}
+.reviews-head{text-align:center;margin-bottom:28px}
+.reviews-head .tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+.reviews-head h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.6rem;color:var(--pine-deep);font-weight:500}
+.reviews-head h3 em{color:var(--gold);font-style:normal}
+.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.review-card{padding:22px 24px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:18px;box-shadow:0 10px 28px rgba(10,23,48,.12),0 2px 6px rgba(10,23,48,.06);display:flex;flex-direction:column;gap:10px}
+.review-stars{color:var(--gold);font-size:.95rem;letter-spacing:2px}
+.review-text{font-size:.88rem;color:rgba(10,23,48,.75);line-height:1.6;flex:1}
+.review-author{font-size:.78rem;color:rgba(10,23,48,.5);font-weight:600;padding-top:8px;border-top:1px solid rgba(10,23,48,.08)}
+.review-src{color:var(--gold);font-weight:700}
+@media(max-width:900px){.review-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.review-grid{grid-template-columns:1fr}}
+
 /* SNS/LINKS section */
 .link-hub{padding:80px 24px}
 .link-hub-inner{max-width:1280px;margin:0 auto;padding:48px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08);text-align:center}
@@ -1598,6 +1613,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .admin-blog-card{grid-template-columns:1fr}
   .abc-thumb{aspect-ratio:16/7}
 }
+
+/* [Phase] 고객 후기 관리 — 썸네일이 없는 단일 컬럼 카드(블로그 카드와 달리 이미지가 없음) */
+.admin-review-card{display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-card);margin-bottom:14px;box-shadow:var(--nm-shadow-raised-sm)}
+/* 구글 리뷰 자동 수집 결과(후보 목록) — 체크박스로 선택해 등록할 항목만 고름 */
+.review-candidate{display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--nm-surface);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px;cursor:pointer}
+.review-candidate input[type="checkbox"]{margin-top:3px;flex-shrink:0}
+.review-candidate-body{min-width:0}
+.review-candidate-meta{font-size:.75rem;color:var(--nm-text-soft);font-weight:600;margin-bottom:4px}
+.review-candidate-text{font-size:.82rem;color:var(--nm-text);line-height:1.5}
 
 /* ── 여행 스타일 드롭다운 다중선택 ──────────────────────────────── */
 .style-dropdown-wrap{position:relative;width:100%}
@@ -2600,6 +2624,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <a class="sec-more">전체 아티클 →</a>
     </div>
     <div class="blog-grid" id="blogGrid"></div>
+    <!-- [Phase] 고객 후기 — 등록된 후기 중 매번 5~10개를 무작위로 골라 노출 (관리자패널>이미지>⭐ 고객 후기에서 등록) -->
+    <div class="reviews-section" id="reviewsSection" style="display:none">
+      <div class="reviews-head">
+        <span class="tag">Real Stories</span>
+        <h3>고객이 남긴 <em>생생한 후기</em></h3>
+      </div>
+      <div class="review-grid" id="reviewsGrid"></div>
+    </div>
   </div>
 </section>
 
@@ -3030,6 +3062,28 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <summary>등록된 블로그 카드 목록</summary>
           <div class="admin-collapse-body">
             <div id="adminBlog"></div>
+          </div>
+        </details>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-head">
+          <h4 class="admin-h4-lg">⭐ 고객 후기</h4>
+        </div>
+        <div class="admin-info-box">💡 화면에는 등록된 후기 중 매번 5~10개가 무작위로 골라 노출됩니다. 구글 리뷰 자동 수집 또는 직접 입력으로 원하는 만큼 등록해두세요.</div>
+        <details class="admin-info-collapse">
+          <summary>구글 리뷰 자동 수집</summary>
+          <div class="admin-collapse-body">
+            <div class="abc-field-row"><label class="abc-label">API 키</label><input type="text" class="abc-input" id="googleApiKeyInput" placeholder="AIza..." oninput="saveGoogleReviewsCfgField('apiKey',this.value)"></div>
+            <div class="abc-field-row"><label class="abc-label">Place ID</label><input type="text" class="abc-input" id="googlePlaceIdInput" placeholder="ChIJ..." oninput="saveGoogleReviewsCfgField('placeId',this.value)"></div>
+            <span class="file-hint">이 값은 이 기기(브라우저)에만 저장되며 고객 화면에는 노출되지 않습니다.</span>
+            <div style="margin-top:10px"><button type="button" class="abc-btn-sm" onclick="fetchGoogleReviews()">🔄 자동 수집</button> <span id="googleReviewStatus" class="file-hint"></span></div>
+            <div id="googleReviewCandidates" style="margin-top:10px"></div>
+          </div>
+        </details>
+        <details class="admin-info-collapse" open>
+          <summary>등록된 후기 목록</summary>
+          <div class="admin-collapse-body">
+            <div id="adminReviewsList"></div>
           </div>
         </details>
       </div>
@@ -3495,6 +3549,32 @@ function saveBlogList(list){
 // 레거시 호환 (기존 BLOG 참조 방지)
 const BLOG = [];
 
+// ── 고객 후기 ──────────────────────────────────────────────────
+// [Phase] "여행 이야기" 섹션에 노출할 고객 후기 — 관리자가 직접 입력하거나, 구글 리뷰를 자동
+// 수집해 선별 추가한다. 화면에는 등록된 전체 후기 중 매번 5~10개를 무작위로 골라 노출해(모두
+// 한 번에 보여주지 않음) 방문할 때마다 새로운 느낌을 준다
+const REVIEWS_KEY = 'kundo_reviews_v1';
+const REVIEWS_DEFAULT = [];
+let reviewsOverride = null;
+try{ reviewsOverride = JSON.parse(localStorage.getItem(REVIEWS_KEY)||'null'); }catch(e){}
+function getReviewsList(){ return reviewsOverride || JSON.parse(JSON.stringify(REVIEWS_DEFAULT)); }
+function saveReviewsList(list){
+  reviewsOverride = list;
+  try{ localStorage.setItem(REVIEWS_KEY, JSON.stringify(list)); }catch(e){ alert('저장 공간 부족'); }
+  queueSiteStateSync();
+}
+// 구글 리뷰 자동 수집에 쓰는 API 키·Place ID는 이 브라우저(관리자 기기)에만 저장하고 공유 상태
+// (Supabase)에는 절대 포함하지 않는다 — 고객 화면에는 노출되지 않아야 하는 값이기 때문
+const GOOGLE_REVIEWS_CFG_KEY = 'kundo_google_reviews_cfg';
+function getGoogleReviewsCfg(){
+  try{ return JSON.parse(localStorage.getItem(GOOGLE_REVIEWS_CFG_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveGoogleReviewsCfgField(field, val){
+  const cfg = getGoogleReviewsCfg();
+  cfg[field] = val;
+  try{ localStorage.setItem(GOOGLE_REVIEWS_CFG_KEY, JSON.stringify(cfg)); }catch(e){}
+}
+
 // Editor's Pick: 상단(해외)/하단(국내)에 각각 노출할 실제 상품 (catId, idx) 큐레이션.
 // 자세히 → 클릭 시 해당 실제 상품의 상세 정보(openProductDetail)로 이동.
 // [Phase 3 상품등록 개선] 관리자 패널 상품 고급편집에서 "EDITOR'S PICK 등록"을 체크한 상품들로
@@ -3616,6 +3696,7 @@ function collectSiteState(){
     pkgPosters, blogOverride, logoOverride, taglineOverride,
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
+    reviewsOverride,
   };
 }
 function applySiteState(state){
@@ -3637,6 +3718,7 @@ function applySiteState(state){
   if (state.aboutBannerOverride !== undefined) aboutBannerOverride = state.aboutBannerOverride;
   if (state.heroBgList) heroBgList = state.heroBgList;
   if (state.entryExitList) entryExitList = state.entryExitList;
+  if (state.reviewsOverride !== undefined) reviewsOverride = state.reviewsOverride;
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
@@ -3648,6 +3730,7 @@ function applySiteState(state){
     localStorage.setItem(STR_IMG_KEY, JSON.stringify(strImageOverrides));
     localStorage.setItem(PKG_KEY, JSON.stringify(pkgPosters));
     if (blogOverride!=null) localStorage.setItem(BLOG_KEY, JSON.stringify(blogOverride));
+    if (reviewsOverride!=null) localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviewsOverride));
     if (logoOverride!=null) localStorage.setItem(LOGO_KEY, logoOverride);
     if (taglineOverride!=null) localStorage.setItem(TAGLINE_KEY, taglineOverride);
     localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides));
@@ -5068,6 +5151,159 @@ function refreshBlogMeta(idx){
   _blogMetaAttempted.delete(b.url); // 관리자가 수동으로 새로고침하면 이전 시도 여부와 무관하게 다시 시도
   fetchBlogMeta(b.url, idx);
 }
+
+// ── 고객 후기: 구글 리뷰 자동 수집 ─────────────────────────────────
+// 구글 Maps JavaScript API(Places 라이브러리)를 동적으로 로드해 PlacesService로 리뷰를 가져온다.
+// [수정] 구글 Places API는 한 장소당 최대 5개의 리뷰만 반환한다(구글 자체 정책 — 저희 쪽에서
+// 더 많이 가져올 방법은 없음). "모두 수집"은 곧 "구글이 내려주는 최대 5개를 모두 수집"을 뜻한다
+let _gmapsLoadPromise = null;
+function loadGoogleMapsPlaces(apiKey){
+  if (window.google && window.google.maps && window.google.maps.places) return Promise.resolve();
+  if (_gmapsLoadPromise) return _gmapsLoadPromise;
+  _gmapsLoadPromise = new Promise((resolve, reject)=>{
+    const cbName = '_gmapsReadyCb_' + Date.now();
+    window[cbName] = () => { resolve(); delete window[cbName]; };
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&callback=${cbName}`;
+    script.async = true;
+    script.onerror = () => { _gmapsLoadPromise = null; reject(new Error('구글 지도 스크립트 로드 실패')); };
+    document.head.appendChild(script);
+  });
+  return _gmapsLoadPromise;
+}
+let _googleReviewCandidates = [];
+function fetchGoogleReviews(){
+  const cfg = getGoogleReviewsCfg();
+  const statusEl = document.getElementById('googleReviewStatus');
+  if (!cfg.apiKey || !cfg.placeId){
+    if (statusEl) statusEl.textContent = '먼저 API 키와 Place ID를 입력해주세요.';
+    return;
+  }
+  if (statusEl) statusEl.textContent = '불러오는 중...';
+  loadGoogleMapsPlaces(cfg.apiKey).then(()=>{
+    const svc = new google.maps.places.PlacesService(document.createElement('div'));
+    svc.getDetails({ placeId: cfg.placeId, fields:['name','rating','user_ratings_total','reviews'] }, (place, status)=>{
+      if (status !== google.maps.places.PlacesServiceStatus.OK || !place){
+        if (statusEl) statusEl.textContent = '불러오기 실패 — API 키·Place ID를 확인해주세요 (' + status + ')';
+        return;
+      }
+      _googleReviewCandidates = (place.reviews||[]).map((r,i)=>({
+        _tmpId: 'cand_'+i,
+        text: r.text||'',
+        author: r.author_name||'익명',
+        rating: r.rating||null,
+        time: r.relative_time_description||'',
+      }));
+      if (statusEl) statusEl.textContent = _googleReviewCandidates.length
+        ? `${_googleReviewCandidates.length}개 불러옴 (구글 API 특성상 최대 5개까지만 제공됩니다)`
+        : '수집된 리뷰가 없습니다.';
+      renderGoogleReviewCandidates();
+    });
+  }).catch(e=>{
+    if (statusEl) statusEl.textContent = '불러오기 실패: ' + (e.message||e);
+  });
+}
+function renderGoogleReviewCandidates(){
+  const c = document.getElementById('googleReviewCandidates');
+  if (!c) return;
+  if (!_googleReviewCandidates.length){ c.innerHTML=''; return; }
+  c.innerHTML = _googleReviewCandidates.map(r=>`
+    <label class="review-candidate">
+      <input type="checkbox" data-cand-id="${r._tmpId}" checked>
+      <div class="review-candidate-body">
+        <div class="review-candidate-meta">${escapeAttr(r.author)}${r.rating?' · '+'★'.repeat(r.rating):''}${r.time?' · '+escapeAttr(r.time):''}</div>
+        <div class="review-candidate-text">${escapeAttr(r.text)}</div>
+      </div>
+    </label>`).join('') + `<button type="button" class="add-product-btn" onclick="applySelectedGoogleReviews()">선택한 후기 등록하기</button>`;
+}
+function applySelectedGoogleReviews(){
+  const checked = Array.from(document.querySelectorAll('#googleReviewCandidates input[type="checkbox"]:checked')).map(inp=>inp.dataset.candId);
+  const chosen = _googleReviewCandidates.filter(r=>checked.includes(r._tmpId));
+  if (!chosen.length){ alert('등록할 후기를 선택해주세요.'); return; }
+  const list = getReviewsList();
+  chosen.forEach(r=>{
+    list.push({ id:'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), text:r.text, author:r.author, rating:r.rating, source:'google', createdAt:new Date().toISOString() });
+  });
+  saveReviewsList(list);
+  _googleReviewCandidates = [];
+  renderReviews(); renderAdminReviews();
+  const statusEl = document.getElementById('googleReviewStatus');
+  if (statusEl) statusEl.textContent = `${chosen.length}개의 후기를 등록했습니다.`;
+}
+
+// ── 고객 후기: 직접 등록 · 관리 ────────────────────────────────────
+function addManualReview(){
+  const list = getReviewsList();
+  list.push({ id:'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), text:'', author:'', rating:null, source:'manual', createdAt:new Date().toISOString() });
+  saveReviewsList(list); renderAdminReviews();
+}
+function setReviewField(id, field, val){
+  const list = getReviewsList();
+  const r = list.find(x=>x.id===id);
+  if (!r) return;
+  r[field] = (field==='rating') ? (val?Number(val):null) : val;
+  saveReviewsList(list); renderReviews();
+}
+function removeReview(id){
+  if (!confirm('이 후기를 삭제하시겠습니까?')) return;
+  const list = getReviewsList().filter(x=>x.id!==id);
+  saveReviewsList(list); renderReviews(); renderAdminReviews();
+}
+function renderAdminReviews(){
+  const c = document.getElementById('adminReviewsList');
+  if (!c) return;
+  const cfg = getGoogleReviewsCfg();
+  const apiKeyInput = document.getElementById('googleApiKeyInput');
+  const placeIdInput = document.getElementById('googlePlaceIdInput');
+  // 입력 중 커서 위치가 튀지 않도록, 포커스가 없는 경우에만 값을 채워넣는다
+  if (apiKeyInput && document.activeElement!==apiKeyInput) apiKeyInput.value = cfg.apiKey||'';
+  if (placeIdInput && document.activeElement!==placeIdInput) placeIdInput.value = cfg.placeId||'';
+  const list = getReviewsList();
+  if (!list.length){ c.innerHTML = `<div style="color:rgba(247,245,240,.5);padding:14px 0;text-align:center">등록된 후기가 없습니다</div>`; }
+  else {
+    c.innerHTML = list.map(r=>`
+      <div class="admin-review-card">
+        <div class="abc-field-row"><label class="abc-label">후기 내용</label><textarea class="abc-input" style="min-height:60px" oninput="setReviewField('${r.id}','text',this.value)">${escapeAttr(r.text)}</textarea></div>
+        <div class="abc-field-row"><label class="abc-label">고객명</label><input type="text" class="abc-input" value="${escapeAttr(r.author||'')}" placeholder="예: 김OO 고객님" oninput="setReviewField('${r.id}','author',this.value)"></div>
+        <div class="abc-field-row">
+          <label class="abc-label">평점</label>
+          <div class="abc-url-row">
+            <select class="abc-select" onchange="setReviewField('${r.id}','rating',this.value)">
+              <option value="">없음</option>
+              ${[5,4,3,2,1].map(n=>`<option value="${n}" ${r.rating===n?'selected':''}>${'★'.repeat(n)}</option>`).join('')}
+            </select>
+            <span class="file-hint" style="white-space:nowrap">${r.source==='google'?'출처: Google 리뷰':'출처: 직접 입력'}</span>
+          </div>
+        </div>
+        <div class="abc-actions"><button class="file-btn danger" onclick="removeReview('${r.id}')">삭제</button></div>
+      </div>`).join('');
+  }
+  c.innerHTML += `<button class="add-product-btn" onclick="addManualReview()">+ 후기 직접 추가</button>`;
+}
+// 등록된 후기 중 5~10개를 무작위로 골라 보여준다(전부 다 보여주지 않아 방문할 때마다 다른 느낌을 줌)
+function pickRandomReviews(list, min, max){
+  min = min||5; max = max||10;
+  if (!list.length) return [];
+  const n = Math.min(list.length, min + Math.floor(Math.random()*(max-min+1)));
+  const shuffled = list.slice().sort(()=>Math.random()-0.5);
+  return shuffled.slice(0, n);
+}
+function renderReviews(){
+  const section = document.getElementById('reviewsSection');
+  const grid = document.getElementById('reviewsGrid');
+  if (!grid || !section) return;
+  const picked = pickRandomReviews(getReviewsList());
+  section.style.display = picked.length ? '' : 'none';
+  grid.innerHTML = picked.map(r=>{
+    const stars = r.rating ? '★'.repeat(r.rating)+'☆'.repeat(5-r.rating) : '';
+    return `<article class="review-card">
+      ${stars?`<div class="review-stars">${stars}</div>`:''}
+      <p class="review-text">"${escapeAttr(r.text)}"</p>
+      <div class="review-author">${escapeAttr(r.author||'익명')}${r.source==='google'?' <span class="review-src">· Google 리뷰</span>':''}</div>
+    </article>`;
+  }).join('');
+}
+
 function renderAdminBlog(){
   const c = document.getElementById('adminBlog');
   if (!c) return;
@@ -6605,6 +6841,7 @@ function renderAdminImages(){
       ${imageOverrides[c.id]?`<button class="file-btn danger" onclick="resetImageOverride('${c.id}')">삭제</button>`:''}
     </div>`).join('');
   renderAdminBlog();
+  renderAdminReviews();
 }
 async function handleImageUpload(key,inputEl){
   const file=inputEl.files[0]; if (!file) return;
@@ -6851,8 +7088,8 @@ function resetAllOverrides(){
   ].join('\n');
   if (!confirm(`전체 초기화 시 다음 항목이 모두 기본값으로 되돌아갑니다:\n\n${itemList}\n\n계속하시겠습니까?`)) return;
   if (!confirm('되돌릴 수 없는 작업입니다. 정말로 전체 초기화하시겠습니까?')) return;
-  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];
-  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
+  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;
+  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 
@@ -8145,7 +8382,7 @@ function safeRender(fn){
 }
 function renderAll(){
   // renderCategoryGrid()가 두 지역을 모두 다시 그리며, 열려있는 카드의 상품 목록도 함께 갱신한다
-  [renderTopBar, renderHeadline, renderAboutBanner, renderFooterLegal, renderCvImages, renderStrImages, renderPkgAll, renderCategoryGrid, renderHeroBg, renderSpotlight, renderBlog, renderLinks, renderFootSocials].forEach(safeRender);
+  [renderTopBar, renderHeadline, renderAboutBanner, renderFooterLegal, renderCvImages, renderStrImages, renderPkgAll, renderCategoryGrid, renderHeroBg, renderSpotlight, renderBlog, renderReviews, renderLinks, renderFootSocials].forEach(safeRender);
 }
 
 // INIT

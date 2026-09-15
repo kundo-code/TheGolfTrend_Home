@@ -3721,7 +3721,7 @@ function renderAdminChannels(){
                   </select>
                   <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}','${escapeAttr(ov.productCat||'')}',this.value)" ${!ov.productCat?'disabled':''}>
                     <option value="">-- 상품 선택 --</option>
-                    ${ov.productCat ? (getProducts(ov.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${ov.productIdx===pi?'selected':''}>${escapeAttr(p.title||'(제목 없음)')}</option>`).join('') : ''}
+                    ${ov.productCat ? (getProducts(ov.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${ov.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, ov.productCat))}</option>`).join('') : ''}
                   </select>
                 </div>
                 <span class="file-hint" style="display:block;margin-top:4px">연결된 링크: ${escapeAttr(resolvedUrl||'(없음)')}</span>
@@ -5623,7 +5623,7 @@ function renderAdminReviews(){
             </select>
             <select class="abc-select" onchange="setReviewProduct('${r.id}','${escapeAttr(r.productCat||'')}',this.value)" ${!r.productCat?'disabled':''}>
               <option value="">-- 상품 선택 --</option>
-              ${r.productCat ? (getProducts(r.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${r.productIdx===pi?'selected':''}>${escapeAttr(p.title||'(제목 없음)')}</option>`).join('') : ''}
+              ${r.productCat ? (getProducts(r.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${r.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, r.productCat))}</option>`).join('') : ''}
             </select>
           </div>
         </div>` : ''}
@@ -5720,7 +5720,7 @@ function renderAdminBlog(){
             </select>
             <select class="abc-select" onchange="setBlogProduct(${i},'${escapeAttr(b.productCat||'')}',this.value)" ${!b.productCat?'disabled':''}>
               <option value="">-- 상품 선택 --</option>
-              ${b.productCat ? (getProducts(b.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${b.productIdx===pi?'selected':''}>${escapeAttr(p.title||'(제목 없음)')}</option>`).join('') : ''}
+              ${b.productCat ? (getProducts(b.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${b.productIdx===pi?'selected':''}>${escapeAttr((p.title||'(제목 없음)') + ' · ' + productPeriodBadgeText(p, b.productCat))}</option>`).join('') : ''}
             </select>
             <button class="abc-btn-sm" onclick="refreshBlogMeta(${i})" title="OG 태그 자동 로드">🔄</button>
           </div>

@@ -1596,6 +1596,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .abc-field-row{display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center}
 .abc-label{font-size:.75rem;color:var(--nm-text-soft);font-weight:600;white-space:nowrap}
 .abc-label em{font-style:normal;color:var(--nm-text-soft);opacity:.7;font-size:.68rem;display:block}
+/* [수정] 채널 "연결 상품" 필드의 안내 문구만 라벨과의 간격을 0.25줄(6px) 더 벌리고 우측 정렬 */
+.abc-label-em-spaced{margin-top:6px;text-align:right}
 .abc-input{
   padding:9px 11px;background:var(--nm-white);
   border:none;border-radius:var(--nm-r-sm);
@@ -1640,7 +1642,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-channel-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .admin-channel-info{display:flex;flex-direction:column;gap:3px;min-width:0}
 .admin-channel-type{font-size:.72rem;font-weight:700;color:var(--nm-blue-deep)}
-.admin-channel-handle{font-size:.85rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* [수정] 표시 이름을 언제든 고쳐 쓸 수 있도록 span 대신 input으로 바꾸면서 원래 span과 동일하게
+   보이도록 테두리·배경을 없앴다. 글자 크기는 기존(.85rem) 대비 110%로 확대(.935rem) */
+.admin-channel-handle{font-size:.935rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:none;background:transparent;padding:0;font-family:inherit;width:100%}
+.admin-channel-handle:focus{outline:none;text-decoration:underline;text-decoration-color:var(--nm-blue);text-decoration-style:dashed}
 .admin-channel-actions{display:flex;gap:6px;flex-shrink:0}
 /* [수정] "수집된 글/영상 N개 — 직접 편집"을 <details>의 기본 summary 대신 독립된 버튼으로 —
    위쪽 구분선으로 헤더와 분리하고, 버튼 자체는 음영(입체감 있는 배경)을 준 뒤 우측 정렬한다 */
@@ -1649,6 +1654,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-channel-items-toggle:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .admin-channel-items-toggle .chev{margin-left:4px;font-size:.7rem}
 .admin-channel-item{padding:12px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px}
+/* [Phase] 화면에서 숨긴 글/영상은 관리자 목록에서도 흐리게 표시해 한눈에 구분되게 한다 */
+.admin-channel-item-hidden{opacity:.55}
+.admin-channel-hidden-badge{display:inline-block;padding:2px 8px;background:var(--nm-danger);color:#fff;border-radius:var(--nm-r-pill);font-size:.65rem;font-weight:700;vertical-align:middle}
 /* 항목 헤더(썸네일+원본 제목+이미지 업로드 버튼)는 한 줄로, 편집 필드들은 그 아래 전체 너비로 */
 .admin-channel-item-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
 /* [수정] "블로그 대표 이미지"(.abc-thumb)와 출력 비율을 16:9로 통일 — 정사각형(64px)이던 것을
@@ -3700,18 +3708,19 @@ function renderAdminChannels(){
           const linkedProduct = (ov.productCat && ov.productIdx!=null) ? (getProducts(ov.productCat)||[])[ov.productIdx] : null;
           const resolvedUrl = linkedProduct ? (linkedProduct.linkUrl||'') : item.link;
           const inputId = 'chImgInput_'+ch.id+'_'+ii;
-          return `<div class="admin-channel-item admin-channel-item-full">
+          return `<div class="admin-channel-item admin-channel-item-full${ov.hidden?' admin-channel-item-hidden':''}">
             <div class="admin-channel-item-head">
               <div class="admin-channel-item-thumb" style="${thumb?`background-image:url('${escapeAttr(thumb)}');background-size:cover;background-position:center`:''}">
                 ${!thumb?'<span class="abc-no-img">이미지 없음</span>':''}
               </div>
               <div class="admin-channel-item-headinfo">
-                <div class="admin-channel-item-title">원본: ${escapeAttr(item.title||'(제목 없음)')}</div>
+                <div class="admin-channel-item-title">${ov.hidden?'<span class="admin-channel-hidden-badge">숨김</span> ':''}원본: ${escapeAttr(item.title||'(제목 없음)')}</div>
                 <div class="admin-channel-item-actions">
                   <label class="abc-img-btn">📷 이미지 업로드
                     <input type="file" id="${inputId}" accept="image/*" onchange="handleChannelPostImageUpload('${escapeAttr(item.link)}',this)">
                   </label>
                   ${ov.image?`<button type="button" class="abc-img-btn danger" onclick="clearChannelPostImage('${escapeAttr(item.link)}')">업로드 이미지 제거</button>`:''}
+                  <button type="button" class="abc-img-btn" onclick="toggleChannelPostHidden('${escapeAttr(item.link)}')">${ov.hidden?'👁️ 다시 노출':'🙈 화면에서 숨기기'}</button>
                 </div>
               </div>
             </div>
@@ -3720,8 +3729,8 @@ function renderAdminChannels(){
                 <label class="abc-label">태그</label>
                 <select class="abc-select" onchange="setChannelPostField('${escapeAttr(item.link)}','tag',this.value)">
                   <option value="" ${!ov.tag?'selected':''}>기본값 (${defaultTag})</option>
-                  <option value="국내" ${ov.tag==='국내'?'selected':''}>국내</option>
-                  <option value="해외" ${ov.tag==='해외'?'selected':''}>해외</option>
+                  <option value="국내-블로그" ${ov.tag==='국내-블로그'?'selected':''}>국내-블로그</option>
+                  <option value="해외-블로그" ${ov.tag==='해외-블로그'?'selected':''}>해외-블로그</option>
                   <option value="스토리" ${ov.tag==='스토리'?'selected':''}>스토리</option>
                   <option value="블로그" ${ov.tag==='블로그'?'selected':''}>블로그</option>
                   <option value="유튜브" ${ov.tag==='유튜브'?'selected':''}>유튜브</option>
@@ -3736,7 +3745,7 @@ function renderAdminChannels(){
                 <input type="text" class="abc-input" placeholder="카드 부제목 (선택)" value="${escapeAttr(ov.title2||'')}" oninput="setChannelPostField('${escapeAttr(item.link)}','title2',this.value)">
               </div>
               <div class="abc-field-row">
-                <label class="abc-label">연결 상품 <em>선택 시 원본 글 대신 상품 링크로 이동</em></label>
+                <label class="abc-label">연결 상품 <em class="abc-label-em-spaced">선택 시 원본 글 대신 상품 링크로 이동</em></label>
                 <!-- [수정] url-row와 "연결된 링크" 안내 문구를 하나의 래퍼로 묶는다 — 이전에는
                      abc-field-row(2열 그리드)에 자식이 3개(라벨·url-row·안내문구)라서, 안내
                      문구가 다음 그리드 행의 라벨 칸(폭 70px)에 배치되며 좁게 눌려 겹쳐 보였다 -->
@@ -3770,7 +3779,8 @@ function renderAdminChannels(){
       <div class="admin-channel-head">
         <div class="admin-channel-info">
           <span class="admin-channel-type">${ch.type==='youtube'?'▶️ 유튜브':'📝 네이버 블로그'}</span>
-          <span class="admin-channel-handle">${escapeAttr(ch.label || ch.handle)}</span>
+          <!-- [Phase] 표시 이름을 나중에도 고쳐 쓸 수 있도록 고정 텍스트 대신 입력창으로 변경 -->
+          <input type="text" class="admin-channel-handle" value="${escapeAttr(ch.label || ch.handle)}" placeholder="표시 이름" oninput="setChannelLabel('${ch.id}',this.value)">
           <span class="file-hint">${escapeAttr(statusText)}</span>
         </div>
         <div class="admin-channel-actions">
@@ -3867,6 +3877,24 @@ function clearChannelPostImage(url){
   setChannelPostOverride(url, { image: '' });
   renderBlog(); renderAdminChannels();
 }
+// [Phase] 자동 수집된 특정 글/영상을 삭제하지 않고 "여행 이야기" 화면에서만 숨긴다 — RSS
+// 캐시·오버라이드는 그대로 유지되므로 언제든 다시 노출할 수 있다
+function toggleChannelPostHidden(url){
+  const ov = getChannelPostOverride(url);
+  setChannelPostOverride(url, { hidden: !ov.hidden });
+  renderBlog(); renderAdminChannels();
+}
+// [Phase] 채널 등록 시 입력한 표시 이름을 나중에도 자유롭게 고쳐 쓸 수 있게 한다(기존에는
+// 삭제 후 재등록해야만 이름을 바꿀 수 있었음). 입력창 자체가 최신 값을 보여주고 있으므로
+// admin 패널은 다시 그리지 않고 고객 화면만 갱신한다(빈 제목일 때 카드 제목 대체용으로 쓰임)
+function setChannelLabel(chId, label){
+  const list = getChannelsList();
+  const ch = list.find(c=>c.id===chId);
+  if (!ch) return;
+  ch.label = label;
+  saveChannelsList(list);
+  renderBlog();
+}
 // 채널에서 자동 수집된 항목들을 여행 이야기 카드(.post)와 동일한 형태로 변환
 function getAutoCollectedPosts(){
   const list = getChannelsList();
@@ -3878,6 +3906,7 @@ function getAutoCollectedPosts(){
     cached.items.forEach(item=>{
       if (!item.link) return;
       const ov = overrides[item.link] || {};
+      if (ov.hidden) return; // 관리자가 화면에서 숨긴 글/영상은 제외
       // 연결 상품이 지정되어 있으면 그 상품의 최신 연결 링크를 그대로 가져와 쓴다(상품 정보가
       // 나중에 바뀌어도 매번 다시 계산되므로 수동 블로그 카드처럼 별도 동기화가 필요 없다)
       const linkedProduct = (ov.productCat && ov.productIdx!=null) ? (getProducts(ov.productCat)||[])[ov.productIdx] : null;

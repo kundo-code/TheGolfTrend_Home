@@ -3531,6 +3531,11 @@ const DEFAULT_PRODUCTS = {
   ]
 };
 
+// [Phase] 여행 이야기(블로그) 카드의 OG태그 자동 로드 + 블로그/유튜브 RSS 채널 자동 수집에 쓰는
+// 자체 서버사이드 프록시(Cloudflare Workers) 엔드포인트. 브라우저에서 외부 사이트를 직접
+// fetch하면 CORS에 막히기 때문에 이 프록시를 거쳐 요청한다
+const PROXY_ENDPOINT = 'https://falling-smoke-4022.edgar-meshugas.workers.dev/';
+
 // 블로그 - URL 기반 자동 프리뷰 (관리자가 URL 입력 시 OG 태그로 제목·이미지 자동 로드)
 const BLOG_KEY = 'kundo_blog_v2';
 const BLOG_DEFAULT = [
@@ -5071,14 +5076,14 @@ function renderBlog(){
     </article>`;
   }).join('');
   // 백그라운드에서 OG 태그 자동 로드 (제목/이미지 없는 항목만, 이번 세션에서 아직 시도하지 않은 것만)
-  // 주의: 프록시(allorigins.win)가 og:title/og:image를 완전히 못 채워주는 경우
-  // (네이버 블로그가 프록시를 차단/에러 응답하는 등) 재시도 제한이 없으면 renderBlog()→
-  // fetchBlogMeta()→renderBlog()가 서로를 무한히 재호출해 같은 URL에 수천 번 요청을 쏟아붓고
-  // 브라우저 네트워크 리소스를 고갈시켜(ERR_INSUFFICIENT_RESOURCES) 페이지 전체가 먹통이 될 수 있다.
+  // 주의: 프록시(PROXY_ENDPOINT)가 og:title/og:image를 완전히 못 채워주는 경우(대상 사이트가
+  // 오류를 반환하는 등) 재시도 제한이 없으면 renderBlog()→fetchBlogMeta()→renderBlog()가 서로를
+  // 무한히 재호출해 같은 URL에 수천 번 요청을 쏟아붓고 브라우저 네트워크 리소스를 고갈시켜
+  // (ERR_INSUFFICIENT_RESOURCES) 페이지 전체가 먹통이 될 수 있다.
   // _blogMetaAttempted로 한 세션당 URL별 자동 시도를 1회로 제한해 이를 막는다.
-  // [수정] 프록시가 CORS 차단/장애로 실패하면 모든 방문자의 콘솔에 매번 에러가 찍힌다 — 일반
-  // 방문자에게는 자동 시도를 하지 않고, 관리자가 로그인된 상태에서만 자동으로 시도한다. 관리자는
-  // 언제든 관리자 패널의 "새로고침" 버튼(refreshBlogMeta)으로 수동 재시도할 수 있다
+  // [수정] 프록시가 실패하면 모든 방문자의 콘솔에 매번 에러가 찍힌다 — 일반 방문자에게는 자동
+  // 시도를 하지 않고, 관리자가 로그인된 상태에서만 자동으로 시도한다. 관리자는 언제든 관리자
+  // 패널의 "새로고침" 버튼(refreshBlogMeta)으로 수동 재시도할 수 있다
   if (adminSession){
     list.forEach((b,i) => {
       if (b.url && (!b.title || !b.image) && !_blogMetaAttempted.has(b.url)) fetchBlogMeta(b.url, i);
@@ -5087,25 +5092,22 @@ function renderBlog(){
 }
 const _blogMetaAttempted = new Set();
 
-// OG 태그를 CORS 프록시(allorigins.win)로 가져와 자동 채움
+// OG 태그를 자체 프록시(Cloudflare Workers)로 가져와 자동 채움
+// [수정] 기존에는 공개 무료 CORS 프록시(allorigins.win)를 썼는데, 네이버 블로그가 그 프록시를
+// 차단/에러 응답하는 경우가 잦아 불안정했다 — 직접 배포한 Cloudflare Workers 프록시로 교체해
+// 서버 쪽에서 직접 OG 태그를 파싱해 { title, image, description } 형태로 곧바로 받는다
 async function fetchBlogMeta(url, idx){
   _blogMetaAttempted.add(url);
   try {
-    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+    const proxy = PROXY_ENDPOINT + '?mode=og&url=' + encodeURIComponent(url);
     const res = await fetch(proxy);
     if (!res.ok) return;
     const data = await res.json();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data.contents || '', 'text/html');
-    const q = (sel, attr) => { const el = doc.querySelector(sel); return el ? (attr ? el.getAttribute(attr) : el.textContent) : ''; };
-    const title = q('meta[property="og:title"]','content') || q('meta[name="twitter:title"]','content') || q('title');
-    const image = q('meta[property="og:image"]','content') || q('meta[name="twitter:image"]','content');
-    const description = q('meta[property="og:description"]','content') || q('meta[name="description"]','content');
     const list = getBlogList();
     if (!list[idx]) return;
-    if (title) list[idx].title = title.trim().slice(0,80);
-    if (image) list[idx].image = image;
-    if (description) list[idx].description = description.trim();
+    if (data.title) list[idx].title = data.title.trim().slice(0,80);
+    if (data.image) list[idx].image = data.image;
+    if (data.description) list[idx].description = data.description.trim();
     saveBlogList(list);
     renderBlog();
   } catch(e){ /* 프록시 실패 시 조용히 폴백 유지 */ }

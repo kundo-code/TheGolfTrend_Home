@@ -1637,7 +1637,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-channel-type{font-size:.72rem;font-weight:700;color:var(--nm-blue-deep)}
 .admin-channel-handle{font-size:.85rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .admin-channel-actions{display:flex;gap:6px;flex-shrink:0}
-.admin-channel-item{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:10px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px;align-items:center}
+.admin-channel-item{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:10px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px;align-items:start}
+.admin-channel-item-full .admin-channel-item-info{gap:10px}
+.admin-channel-item-full .abc-field-row{grid-template-columns:64px 1fr}
 .admin-channel-item-thumb{width:90px;aspect-ratio:4/3;background-size:cover;background-position:center;background-color:#0A1730;border-radius:6px;position:relative;overflow:hidden;flex-shrink:0}
 .admin-channel-item-info{min-width:0;display:flex;flex-direction:column;gap:6px}
 .admin-channel-item-title{font-size:.8rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -3645,32 +3647,73 @@ function renderAdminChannels(){
   if (!c) return;
   const list = getChannelsList();
   if (!list.length){ c.innerHTML = `<div style="color:rgba(247,245,240,.5);padding:14px 0;text-align:center">등록된 채널이 없습니다</div>`; return; }
-  const imgOverrides = getChannelImgOverrides();
+  const overridesMap = getChannelPostOverrides();
   c.innerHTML = list.map(ch=>{
     const cached = _rssCache[ch.id];
     const items = cached ? cached.items : [];
     const statusText = cached ? `최근 수집: ${items.length}개 글/영상` : '아직 수집 전';
-    // [Phase] 채널별로 실제 수집된 글/영상 목록을 펼쳐 보여주고, RSS 썸네일이 비어있거나
-    // 마음에 들지 않으면 항목마다 직접 이미지를 업로드해 덮어쓸 수 있게 한다. 네이버 블로그는
-    // 테마에 따라 RSS에 썸네일 태그가 아예 없는 경우가 많아 이 기능이 특히 필요하다
+    // [Phase] 채널별로 실제 수집된 글/영상 목록을 펼쳐 보여주고, 수동 블로그 카드와 동일한
+    // 필드(태그·타이틀1·타이틀2·이미지·연결 상품)를 글 URL 단위로 직접 덮어쓸 수 있게 한다.
+    // 네이버 블로그는 테마에 따라 RSS에 태그·썸네일이 부실한 경우가 많아 특히 필요하다
     const itemsHTML = items.length ? `<details class="admin-info-collapse" style="margin-top:8px">
-      <summary>수집된 글/영상 ${items.length}개 — 이미지 확인 · 직접 업로드</summary>
+      <summary>수집된 글/영상 ${items.length}개 — 직접 편집</summary>
       <div class="admin-collapse-body">
         ${items.map((item,ii)=>{
-          const overrideImg = imgOverrides[item.link];
-          const thumb = overrideImg || item.thumbnail || '';
+          const ov = overridesMap[item.link] || {};
+          const thumb = ov.image || item.thumbnail || '';
+          const defaultTag = ch.type==='youtube' ? '유튜브' : '블로그';
+          const linkedProduct = (ov.productCat && ov.productIdx!=null) ? (getProducts(ov.productCat)||[])[ov.productIdx] : null;
+          const resolvedUrl = linkedProduct ? (linkedProduct.linkUrl||'') : item.link;
           const inputId = 'chImgInput_'+ch.id+'_'+ii;
-          return `<div class="admin-channel-item">
+          return `<div class="admin-channel-item admin-channel-item-full">
             <div class="admin-channel-item-thumb" style="${thumb?`background-image:url('${escapeAttr(thumb)}');background-size:cover;background-position:center`:''}">
               ${!thumb?'<span class="abc-no-img">이미지 없음</span>':''}
             </div>
             <div class="admin-channel-item-info">
-              <div class="admin-channel-item-title">${escapeAttr(item.title||'(제목 없음)')}</div>
+              <div class="admin-channel-item-title">원본: ${escapeAttr(item.title||'(제목 없음)')}</div>
               <div class="admin-channel-item-actions">
                 <label class="abc-img-btn">📷 이미지 업로드
                   <input type="file" id="${inputId}" accept="image/*" onchange="handleChannelPostImageUpload('${escapeAttr(item.link)}',this)">
                 </label>
-                ${overrideImg?`<button type="button" class="abc-img-btn danger" onclick="clearChannelPostImage('${escapeAttr(item.link)}')">업로드 이미지 제거</button>`:''}
+                ${ov.image?`<button type="button" class="abc-img-btn danger" onclick="clearChannelPostImage('${escapeAttr(item.link)}')">업로드 이미지 제거</button>`:''}
+              </div>
+              <div class="abc-field-row">
+                <label class="abc-label">태그</label>
+                <select class="abc-select" onchange="setChannelPostField('${escapeAttr(item.link)}','tag',this.value)">
+                  <option value="" ${!ov.tag?'selected':''}>기본값 (${defaultTag})</option>
+                  <option value="국내" ${ov.tag==='국내'?'selected':''}>국내</option>
+                  <option value="해외" ${ov.tag==='해외'?'selected':''}>해외</option>
+                  <option value="스토리" ${ov.tag==='스토리'?'selected':''}>스토리</option>
+                  <option value="블로그" ${ov.tag==='블로그'?'selected':''}>블로그</option>
+                  <option value="유튜브" ${ov.tag==='유튜브'?'selected':''}>유튜브</option>
+                </select>
+              </div>
+              <div class="abc-field-row">
+                <label class="abc-label">타이틀1 <em>제목</em></label>
+                <input type="text" class="abc-input" placeholder="비워두면 원본 제목 사용" value="${escapeAttr(ov.title1||'')}" oninput="setChannelPostField('${escapeAttr(item.link)}','title1',this.value)">
+              </div>
+              <div class="abc-field-row">
+                <label class="abc-label">타이틀2 <em>부제</em></label>
+                <input type="text" class="abc-input" placeholder="카드 부제목 (선택)" value="${escapeAttr(ov.title2||'')}" oninput="setChannelPostField('${escapeAttr(item.link)}','title2',this.value)">
+              </div>
+              <div class="abc-field-row">
+                <label class="abc-label">연결 상품 <em>선택 시 원본 글 대신 상품 링크로 이동</em></label>
+                <div class="abc-url-row">
+                  <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}',this.value,'')">
+                    <option value="">-- 지역/국가 선택 --</option>
+                    <optgroup label="국내">
+                      ${CATEGORIES.domestic.map(cat=>`<option value="${cat.id}" ${ov.productCat===cat.id?'selected':''}>${escapeAttr(cat.ko)}</option>`).join('')}
+                    </optgroup>
+                    <optgroup label="해외">
+                      ${CATEGORIES.overseas.map(cat=>`<option value="${cat.id}" ${ov.productCat===cat.id?'selected':''}>${escapeAttr(cat.ko)}</option>`).join('')}
+                    </optgroup>
+                  </select>
+                  <select class="abc-select" onchange="setChannelPostProduct('${escapeAttr(item.link)}','${escapeAttr(ov.productCat||'')}',this.value)" ${!ov.productCat?'disabled':''}>
+                    <option value="">-- 상품 선택 --</option>
+                    ${ov.productCat ? (getProducts(ov.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${ov.productIdx===pi?'selected':''}>${escapeAttr(p.title||'(제목 없음)')}</option>`).join('') : ''}
+                  </select>
+                </div>
+                <span class="file-hint" style="display:block;margin-top:4px">연결된 링크: ${escapeAttr(resolvedUrl||'(없음)')}</span>
               </div>
             </div>
           </div>`;
@@ -3716,56 +3759,86 @@ async function refreshChannelFeeds(){
   }
   if (changed) saveRssCache();
 }
-// [Phase] 네이버 블로그 RSS는 테마에 따라 썸네일 태그 자체가 없는 경우가 많아, RSS만으로는
-// 이미지가 비어 보이는 글이 자주 생긴다. 글 URL을 키로 관리자가 직접 업로드한 이미지가 있으면
-// RSS의 썸네일보다 우선 적용한다 — 모든 방문자에게 공유되도록 site state에 함께 동기화한다.
-const CHANNEL_IMG_KEY = 'kundo_channel_img_overrides_v1';
-let channelImgOverrides = null;
-try{ channelImgOverrides = JSON.parse(localStorage.getItem(CHANNEL_IMG_KEY)||'null'); }catch(e){}
-function getChannelImgOverrides(){ return channelImgOverrides || {}; }
-function saveChannelImgOverrides(map){
-  channelImgOverrides = map;
-  try{ localStorage.setItem(CHANNEL_IMG_KEY, JSON.stringify(map)); }catch(e){ alert('저장 공간 부족'); }
+// [Phase] RSS만으로는 부족한 부분(네이버 블로그 테마에 따라 썸네일이 아예 없거나, 태그·제목을
+// 다듬고 싶거나, 글 링크 대신 특정 상품 상세로 보내고 싶은 경우)을 관리자가 글 URL 단위로
+// 직접 덮어쓸 수 있게 한다 — 수동 등록 블로그 카드(getBlogList)와 동일한 필드(태그/타이틀1/
+// 타이틀2/이미지/연결 상품)를 지원. 모든 방문자에게 공유되도록 site state에 함께 동기화한다.
+const CHANNEL_POST_OV_KEY = 'kundo_channel_post_overrides_v1';
+let channelPostOverrides = null;
+try{ channelPostOverrides = JSON.parse(localStorage.getItem(CHANNEL_POST_OV_KEY)||'null'); }catch(e){}
+// 구버전(이미지만 지원하던) 저장값을 새 스키마로 1회 이전
+if (channelPostOverrides==null){
+  try{
+    const legacy = JSON.parse(localStorage.getItem('kundo_channel_img_overrides_v1')||'null');
+    if (legacy && Object.keys(legacy).length){
+      channelPostOverrides = {};
+      Object.keys(legacy).forEach(url=>{ channelPostOverrides[url] = { image: legacy[url] }; });
+    }
+  }catch(e){}
+}
+function getChannelPostOverrides(){ return channelPostOverrides || {}; }
+function saveChannelPostOverrides(map){
+  channelPostOverrides = map;
+  try{ localStorage.setItem(CHANNEL_POST_OV_KEY, JSON.stringify(map)); }catch(e){ alert('저장 공간 부족'); }
   queueSiteStateSync();
+}
+function getChannelPostOverride(url){ return getChannelPostOverrides()[url] || {}; }
+function setChannelPostOverride(url, patch){
+  const map = getChannelPostOverrides();
+  map[url] = Object.assign({}, map[url], patch);
+  saveChannelPostOverrides(map);
+}
+function setChannelPostField(url, field, val){
+  setChannelPostOverride(url, {[field]: val});
+  renderBlog(); renderAdminChannels();
+}
+// [Phase] 연결할 상품을 선택하면(수동 블로그 카드와 동일하게) 그 상품의 "연결 링크 · URL"이
+// 원래 글 링크 대신 카드 클릭 시 이동할 주소가 된다. 선택 해제하면 원래 글 링크로 돌아간다
+function setChannelPostProduct(url, catId, prodIdxStr){
+  const productIdx = (catId && prodIdxStr!=='') ? Number(prodIdxStr) : null;
+  setChannelPostOverride(url, { productCat: catId||'', productIdx });
+  renderBlog(); renderAdminChannels();
 }
 async function handleChannelPostImageUpload(url, inputEl){
   const file=inputEl.files[0]; if(!file) return;
   if(file.size>10*1024*1024){alert('이미지는 10MB 이하로 업로드해주세요.'); inputEl.value=''; return;}
   try{
     const publicUrl = await uploadToStorage(file, 'channel');
-    const map = getChannelImgOverrides();
-    map[url] = publicUrl;
-    saveChannelImgOverrides(map);
+    setChannelPostOverride(url, { image: publicUrl });
     renderBlog(); renderAdminChannels();
   }catch(e){ alert('업로드 실패: '+(e.message||e)); }
   inputEl.value='';
 }
 function clearChannelPostImage(url){
-  const map = getChannelImgOverrides();
-  if (!map[url]) return;
-  delete map[url];
-  saveChannelImgOverrides(map);
+  setChannelPostOverride(url, { image: '' });
   renderBlog(); renderAdminChannels();
 }
 // 채널에서 자동 수집된 항목들을 여행 이야기 카드(.post)와 동일한 형태로 변환
 function getAutoCollectedPosts(){
   const list = getChannelsList();
-  const imgOverrides = getChannelImgOverrides();
+  const overrides = getChannelPostOverrides();
   const posts = [];
   list.forEach(ch=>{
     const cached = _rssCache[ch.id];
     if (!cached) return;
     cached.items.forEach(item=>{
       if (!item.link) return;
+      const ov = overrides[item.link] || {};
+      // 연결 상품이 지정되어 있으면 그 상품의 최신 연결 링크를 그대로 가져와 쓴다(상품 정보가
+      // 나중에 바뀌어도 매번 다시 계산되므로 수동 블로그 카드처럼 별도 동기화가 필요 없다)
+      const linkedProduct = (ov.productCat && ov.productIdx!=null) ? (getProducts(ov.productCat)||[])[ov.productIdx] : null;
+      const url = linkedProduct ? (linkedProduct.linkUrl||'') : item.link;
       posts.push({
-        url: item.link,
-        tag: ch.type==='youtube' ? '유튜브' : '블로그',
-        title1: item.title || (ch.label||ch.handle),
-        title2: '',
-        image: imgOverrides[item.link] || item.thumbnail || '',
+        url,
+        tag: ov.tag || (ch.type==='youtube' ? '유튜브' : '블로그'),
+        title1: ov.title1 || item.title || (ch.label||ch.handle),
+        title2: ov.title2 || '',
+        image: ov.image || item.thumbnail || '',
         description: '',
         fallbackCat: ch.type==='youtube' ? 'japan' : 'gangwon',
         isAuto: true,
+        sourceUrl: item.link, // 오버라이드 UI가 원본 RSS 글 URL을 키로 계속 찾을 수 있도록 보존
+        productCat: ov.productCat||'', productIdx: ov.productIdx!=null?ov.productIdx:null,
       });
     });
   });
@@ -3919,7 +3992,7 @@ function collectSiteState(){
     pkgPosters, blogOverride, logoOverride, taglineOverride,
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
-    reviewsOverride, channelsOverride, channelImgOverrides,
+    reviewsOverride, channelsOverride, channelPostOverrides,
   };
 }
 function applySiteState(state){
@@ -3943,7 +4016,7 @@ function applySiteState(state){
   if (state.entryExitList) entryExitList = state.entryExitList;
   if (state.reviewsOverride !== undefined) reviewsOverride = state.reviewsOverride;
   if (state.channelsOverride !== undefined) channelsOverride = state.channelsOverride;
-  if (state.channelImgOverrides !== undefined) channelImgOverrides = state.channelImgOverrides;
+  if (state.channelPostOverrides !== undefined) channelPostOverrides = state.channelPostOverrides;
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
@@ -3957,7 +4030,7 @@ function applySiteState(state){
     if (blogOverride!=null) localStorage.setItem(BLOG_KEY, JSON.stringify(blogOverride));
     if (reviewsOverride!=null) localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviewsOverride));
     if (channelsOverride!=null) localStorage.setItem(CHANNELS_KEY, JSON.stringify(channelsOverride));
-    if (channelImgOverrides!=null) localStorage.setItem(CHANNEL_IMG_KEY, JSON.stringify(channelImgOverrides));
+    if (channelPostOverrides!=null) localStorage.setItem(CHANNEL_POST_OV_KEY, JSON.stringify(channelPostOverrides));
     if (logoOverride!=null) localStorage.setItem(LOGO_KEY, logoOverride);
     if (taglineOverride!=null) localStorage.setItem(TAGLINE_KEY, taglineOverride);
     localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides));
@@ -7370,8 +7443,8 @@ function resetAllOverrides(){
   ].join('\n');
   if (!confirm(`전체 초기화 시 다음 항목이 모두 기본값으로 되돌아갑니다:\n\n${itemList}\n\n계속하시겠습니까?`)) return;
   if (!confirm('되돌릴 수 없는 작업입니다. 정말로 전체 초기화하시겠습니까?')) return;
-  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;channelImgOverrides=null;
-  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(CHANNELS_KEY);localStorage.removeItem(CHANNEL_IMG_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
+  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;channelPostOverrides=null;
+  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(CHANNELS_KEY);localStorage.removeItem(CHANNEL_POST_OV_KEY);localStorage.removeItem('kundo_channel_img_overrides_v1');localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 

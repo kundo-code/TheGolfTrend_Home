@@ -1623,6 +1623,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .review-candidate-meta{font-size:.75rem;color:var(--nm-text-soft);font-weight:600;margin-bottom:4px}
 .review-candidate-text{font-size:.82rem;color:var(--nm-text);line-height:1.5}
 
+/* [Phase] 블로그·유튜브 자동 수집 채널 관리 */
+.admin-channel-add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+.admin-channel-add-row .abc-input{flex:1;min-width:120px}
+.admin-channel-card{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:var(--nm-surface);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-raised-sm);margin-bottom:8px}
+.admin-channel-info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.admin-channel-type{font-size:.72rem;font-weight:700;color:var(--nm-blue-deep)}
+.admin-channel-handle{font-size:.85rem;color:var(--nm-text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-channel-actions{display:flex;gap:6px;flex-shrink:0}
+
 /* ── 여행 스타일 드롭다운 다중선택 ──────────────────────────────── */
 .style-dropdown-wrap{position:relative;width:100%}
 .sd-tags{
@@ -3054,6 +3063,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       </details>
       <div class="admin-section">
         <div class="admin-section-head">
+          <h4 class="admin-h4-lg">📡 블로그 · 유튜브 자동 수집 채널</h4>
+        </div>
+        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 새 글·영상이 올라올 때마다 자동으로 "여행 이야기"에 노출됩니다. 채널당 최신 3개까지 가져옵니다.</div>
+        <div class="admin-channel-add-row">
+          <select id="newChannelType" class="abc-input" style="flex:0 0 auto;width:auto">
+            <option value="blog">📝 네이버 블로그</option>
+            <option value="youtube">▶️ 유튜브</option>
+          </select>
+          <input type="text" id="newChannelHandle" class="abc-input" placeholder="블로그 아이디 또는 유튜브 채널 ID">
+          <input type="text" id="newChannelLabel" class="abc-input" placeholder="표시 이름(선택)">
+          <button type="button" class="abc-btn-sm" onclick="addChannel()">+ 채널 추가</button>
+        </div>
+        <div id="adminChannelsList" style="margin-top:10px"></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-head">
           <h4 class="admin-h4-lg">블로그 대표 이미지 <span class="file-hint" style="display:inline;margin:0">권장 1280×800px (16:10 비율)</span></h4>
           <button type="button" class="reset-cat-btn admin-section-head-btn" onclick="clearAllBlogEntries()">전체 삭제</button>
         </div>
@@ -3554,6 +3579,125 @@ function saveBlogList(list){
 // 레거시 호환 (기존 BLOG 참조 방지)
 const BLOG = [];
 
+// ── 블로그 · 유튜브 자동 수집 채널 ──────────────────────────────────
+// [Phase] 개별 글/영상 링크를 하나하나 등록하는 대신, "채널"(네이버 블로그 아이디 · 유튜브 채널
+// ID)을 한 번만 등록해두면 RSS로 최신 글/영상을 자동으로 가져와 "여행 이야기"에 노출한다.
+// 네이버 블로그 RSS: https://rss.blog.naver.com/{블로그아이디}.xml
+// 유튜브 채널 RSS: https://www.youtube.com/feeds/videos.xml?channel_id={채널ID}
+const CHANNELS_KEY = 'kundo_channels_v1';
+let channelsOverride = null;
+try{ channelsOverride = JSON.parse(localStorage.getItem(CHANNELS_KEY)||'null'); }catch(e){}
+function getChannelsList(){ return channelsOverride || []; }
+function saveChannelsList(list){
+  channelsOverride = list;
+  try{ localStorage.setItem(CHANNELS_KEY, JSON.stringify(list)); }catch(e){ alert('저장 공간 부족'); }
+  queueSiteStateSync();
+}
+function buildChannelFeedUrl(ch){
+  if (ch.type==='youtube') return 'https://www.youtube.com/feeds/videos.xml?channel_id=' + encodeURIComponent(ch.handle);
+  return 'https://rss.blog.naver.com/' + encodeURIComponent(ch.handle) + '.xml';
+}
+function addChannel(){
+  const typeSel = document.getElementById('newChannelType');
+  const handleInput = document.getElementById('newChannelHandle');
+  const labelInput = document.getElementById('newChannelLabel');
+  const handle = (handleInput.value||'').trim();
+  if (!handle){ alert('블로그 아이디 또는 유튜브 채널 ID를 입력해주세요.'); return; }
+  const list = getChannelsList();
+  list.push({
+    id: 'ch_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    type: typeSel.value,
+    handle,
+    label: (labelInput.value||'').trim(),
+  });
+  saveChannelsList(list);
+  handleInput.value=''; labelInput.value='';
+  delete _rssCache[list[list.length-1].id]; // 새 채널은 곧바로 첫 수집 시도
+  renderAdminChannels();
+  refreshChannelFeeds().then(renderBlog);
+}
+function removeChannel(id){
+  if (!confirm('이 채널 등록을 삭제하시겠습니까? (이미 노출 중인 글/영상도 함께 사라집니다)')) return;
+  saveChannelsList(getChannelsList().filter(c=>c.id!==id));
+  delete _rssCache[id];
+  saveRssCache();
+  renderAdminChannels();
+  renderBlog();
+}
+function refreshChannelNow(id){
+  delete _rssCache[id];
+  refreshChannelFeeds().then(()=>{ renderBlog(); renderAdminChannels(); });
+}
+function renderAdminChannels(){
+  const c = document.getElementById('adminChannelsList');
+  if (!c) return;
+  const list = getChannelsList();
+  if (!list.length){ c.innerHTML = `<div style="color:rgba(247,245,240,.5);padding:14px 0;text-align:center">등록된 채널이 없습니다</div>`; return; }
+  c.innerHTML = list.map(ch=>{
+    const cached = _rssCache[ch.id];
+    const statusText = cached ? `최근 수집: ${cached.items.length}개 글/영상` : '아직 수집 전';
+    return `<div class="admin-channel-card">
+      <div class="admin-channel-info">
+        <span class="admin-channel-type">${ch.type==='youtube'?'▶️ 유튜브':'📝 네이버 블로그'}</span>
+        <span class="admin-channel-handle">${escapeAttr(ch.label || ch.handle)}</span>
+        <span class="file-hint">${escapeAttr(statusText)}</span>
+      </div>
+      <div class="admin-channel-actions">
+        <button type="button" class="abc-btn-sm" onclick="refreshChannelNow('${ch.id}')" title="지금 새로고침">🔄</button>
+        <button type="button" class="file-btn danger" onclick="removeChannel('${ch.id}')">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// RSS 수집 결과는 방문자 기기마다 로컬 캐시(6시간)로 보관 — 매 방문마다 다시 가져오지 않도록 하되,
+// 채널 등록·삭제 등 공유 데이터(channelsOverride)와는 별개로 취급한다(각자 자기 기기에서 수집)
+const RSS_CACHE_KEY = 'kundo_rss_cache_v1';
+const RSS_CACHE_TTL = 1000*60*60*6;
+let _rssCache = {};
+try{ _rssCache = JSON.parse(localStorage.getItem(RSS_CACHE_KEY)||'{}'); }catch(e){}
+function saveRssCache(){ try{ localStorage.setItem(RSS_CACHE_KEY, JSON.stringify(_rssCache)); }catch(e){} }
+async function refreshChannelFeeds(){
+  const channels = getChannelsList();
+  let changed = false;
+  for (const ch of channels){
+    const cached = _rssCache[ch.id];
+    if (cached && (Date.now()-cached.fetchedAt) < RSS_CACHE_TTL) continue;
+    try{
+      const feedUrl = buildChannelFeedUrl(ch);
+      const res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
+      if (!res.ok) continue;
+      const data = await res.json();
+      _rssCache[ch.id] = { items: (data.items||[]).slice(0,3), fetchedAt: Date.now() };
+      changed = true;
+    }catch(e){ /* 실패 시 조용히 다음 채널로 진행, 다음 기회에 재시도 */ }
+  }
+  if (changed) saveRssCache();
+}
+// 채널에서 자동 수집된 항목들을 여행 이야기 카드(.post)와 동일한 형태로 변환
+function getAutoCollectedPosts(){
+  const list = getChannelsList();
+  const posts = [];
+  list.forEach(ch=>{
+    const cached = _rssCache[ch.id];
+    if (!cached) return;
+    cached.items.forEach(item=>{
+      if (!item.link) return;
+      posts.push({
+        url: item.link,
+        tag: ch.type==='youtube' ? '유튜브' : '블로그',
+        title1: item.title || (ch.label||ch.handle),
+        title2: '',
+        image: item.thumbnail || '',
+        description: '',
+        fallbackCat: ch.type==='youtube' ? 'japan' : 'gangwon',
+        isAuto: true,
+      });
+    });
+  });
+  return posts;
+}
+
 // ── 고객 후기 ──────────────────────────────────────────────────
 // [Phase] "여행 이야기" 섹션에 노출할 고객 후기 — 관리자가 직접 입력하거나, 구글 리뷰를 자동
 // 수집해 선별 추가한다. 화면에는 등록된 전체 후기 중 매번 5~10개를 무작위로 골라 노출해(모두
@@ -3701,7 +3845,7 @@ function collectSiteState(){
     pkgPosters, blogOverride, logoOverride, taglineOverride,
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
-    reviewsOverride,
+    reviewsOverride, channelsOverride,
   };
 }
 function applySiteState(state){
@@ -3724,6 +3868,7 @@ function applySiteState(state){
   if (state.heroBgList) heroBgList = state.heroBgList;
   if (state.entryExitList) entryExitList = state.entryExitList;
   if (state.reviewsOverride !== undefined) reviewsOverride = state.reviewsOverride;
+  if (state.channelsOverride !== undefined) channelsOverride = state.channelsOverride;
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
@@ -3736,6 +3881,7 @@ function applySiteState(state){
     localStorage.setItem(PKG_KEY, JSON.stringify(pkgPosters));
     if (blogOverride!=null) localStorage.setItem(BLOG_KEY, JSON.stringify(blogOverride));
     if (reviewsOverride!=null) localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviewsOverride));
+    if (channelsOverride!=null) localStorage.setItem(CHANNELS_KEY, JSON.stringify(channelsOverride));
     if (logoOverride!=null) localStorage.setItem(LOGO_KEY, logoOverride);
     if (taglineOverride!=null) localStorage.setItem(TAGLINE_KEY, taglineOverride);
     localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides));
@@ -5057,7 +5203,11 @@ function syncBlogProductLinks(){
 }
 function renderBlog(){
   const grid=document.getElementById('blogGrid');
-  const list = syncBlogProductLinks();
+  const manualList = syncBlogProductLinks();
+  // 채널(블로그/유튜브) 자동 수집 글은 수동 등록 목록 뒤에 이어 붙여 함께 노출한다.
+  // fetchBlogMeta의 인덱스는 getBlogList()(수동 목록)와만 맞아야 하므로 아래 자동 시도
+  // 루프는 반드시 manualList 기준으로 돌려야 한다(합쳐진 list 기준으로 돌리면 인덱스가 어긋남).
+  const list = manualList.concat(getAutoCollectedPosts());
   grid.innerHTML = list.map((b,i)=>{
     const bg = b.image || getImage(b.fallbackCat) || '';
     const title = b.title1 || b.title || `${b.tag||'블로그'} 새 글 보러가기`;
@@ -5085,7 +5235,7 @@ function renderBlog(){
   // 시도를 하지 않고, 관리자가 로그인된 상태에서만 자동으로 시도한다. 관리자는 언제든 관리자
   // 패널의 "새로고침" 버튼(refreshBlogMeta)으로 수동 재시도할 수 있다
   if (adminSession){
-    list.forEach((b,i) => {
+    manualList.forEach((b,i) => {
       if (b.url && (!b.title || !b.image) && !_blogMetaAttempted.has(b.url)) fetchBlogMeta(b.url, i);
     });
   }
@@ -6843,6 +6993,7 @@ function renderAdminImages(){
       ${imageOverrides[c.id]?`<button class="file-btn danger" onclick="resetImageOverride('${c.id}')">삭제</button>`:''}
     </div>`).join('');
   renderAdminBlog();
+  renderAdminChannels();
   renderAdminReviews();
 }
 async function handleImageUpload(key,inputEl){
@@ -7090,8 +7241,8 @@ function resetAllOverrides(){
   ].join('\n');
   if (!confirm(`전체 초기화 시 다음 항목이 모두 기본값으로 되돌아갑니다:\n\n${itemList}\n\n계속하시겠습니까?`)) return;
   if (!confirm('되돌릴 수 없는 작업입니다. 정말로 전체 초기화하시겠습니까?')) return;
-  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;
-  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
+  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;
+  localStorage.removeItem(IMG_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(CHANNELS_KEY);localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 
@@ -8689,6 +8840,9 @@ const siteStatePulled = waitForSupabaseLib(3000)
   .then(()=>pullSiteState())
   .then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); } return ok; })
   .catch(()=>false);
+// [Phase] 등록된 채널(블로그·유튜브)의 RSS를 백그라운드에서 가져와 "여행 이야기"에 자동 반영.
+// 다른 기기에서 등록한 채널 목록이 pullSiteState로 막 동기화된 뒤에 시도해야 하므로 그 뒤에 이어서 실행.
+siteStatePulled.finally(()=>{ refreshChannelFeeds().then(renderBlog).catch(()=>{}); });
 
 // 홈 진입 시 팝업 최대 3개 표시 (세션당 1회)
 // 반환값: 이번 호출에서 실제로 팝업을 노출했는지 여부 — EDITOR'S PICK 팝업과 동시에 겹쳐 뜨지

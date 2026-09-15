@@ -5386,7 +5386,7 @@ function applySelectedGoogleReviews(){
 // ── 고객 후기: 직접 등록 · 관리 ────────────────────────────────────
 function addManualReview(){
   const list = getReviewsList();
-  list.push({ id:'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), text:'', author:'', rating:null, source:'manual', createdAt:new Date().toISOString() });
+  list.push({ id:'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), text:'', author:'', rating:null, source:'manual', productCat:'', productIdx:null, createdAt:new Date().toISOString() });
   saveReviewsList(list); renderAdminReviews();
 }
 function setReviewField(id, field, val){
@@ -5395,6 +5395,17 @@ function setReviewField(id, field, val){
   if (!r) return;
   r[field] = (field==='rating') ? (val?Number(val):null) : val;
   saveReviewsList(list); renderReviews();
+}
+// [Phase] 후기를 특정 상품에 연결(또는 연결 해제) — 연결되면 "여행 이야기"의 회사 전체 후기가
+// 아니라 해당 상품 상세 페이지에서만 노출된다. 구글 리뷰는 항상 회사 전체 후기로 취급하므로
+// 이 연결 기능은 직접 입력한(manual) 후기에만 제공한다.
+function setReviewProduct(id, catId, prodIdxStr){
+  const list = getReviewsList();
+  const r = list.find(x=>x.id===id);
+  if (!r) return;
+  r.productCat = catId || '';
+  r.productIdx = (catId && prodIdxStr!=='') ? Number(prodIdxStr) : null;
+  saveReviewsList(list); renderReviews(); renderAdminReviews();
 }
 function removeReview(id){
   if (!confirm('이 후기를 삭제하시겠습니까?')) return;
@@ -5427,6 +5438,28 @@ function renderAdminReviews(){
             <span class="file-hint" style="white-space:nowrap">${r.source==='google'?'출처: Google 리뷰':'출처: 직접 입력'}</span>
           </div>
         </div>
+        ${r.source!=='google' ? `
+        <!-- [Phase] 후기를 특정 상품에 연결하면 "여행 이야기"가 아니라 그 상품 상세 페이지에
+             노출된다. 연결하지 않으면(기본값) 지금처럼 회사 전체 후기로 노출된다. 구글 리뷰는
+             항상 회사 전체 후기이므로 이 연결 UI는 직접 입력 후기에만 제공한다 -->
+        <div class="abc-field-row">
+          <label class="abc-label">연결 상품 <em>선택 시 해당 상품 상세페이지에만 노출</em></label>
+          <div class="abc-url-row">
+            <select class="abc-select" onchange="setReviewProduct('${r.id}',this.value,'')">
+              <option value="">-- 회사 전체 후기(여행 이야기) --</option>
+              <optgroup label="국내">
+                ${CATEGORIES.domestic.map(c=>`<option value="${c.id}" ${r.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
+              </optgroup>
+              <optgroup label="해외">
+                ${CATEGORIES.overseas.map(c=>`<option value="${c.id}" ${r.productCat===c.id?'selected':''}>${escapeAttr(c.ko)}</option>`).join('')}
+              </optgroup>
+            </select>
+            <select class="abc-select" onchange="setReviewProduct('${r.id}','${escapeAttr(r.productCat||'')}',this.value)" ${!r.productCat?'disabled':''}>
+              <option value="">-- 상품 선택 --</option>
+              ${r.productCat ? (getProducts(r.productCat)||[]).map((p,pi)=>`<option value="${pi}" ${r.productIdx===pi?'selected':''}>${escapeAttr(p.title||'(제목 없음)')}</option>`).join('') : ''}
+            </select>
+          </div>
+        </div>` : ''}
         <div class="abc-actions"><button class="file-btn danger" onclick="removeReview('${r.id}')">삭제</button></div>
       </div>`).join('');
   }
@@ -5440,20 +5473,30 @@ function pickRandomReviews(list, min, max){
   const shuffled = list.slice().sort(()=>Math.random()-0.5);
   return shuffled.slice(0, n);
 }
+// 상품에 연결되지 않은(=회사 전체) 후기만 "여행 이야기"에 노출한다. 구글 리뷰는 상품 연결
+// 필드 자체가 없으므로(productCat 미설정) 항상 이 목록에 포함된다.
+function getCompanyReviews(){
+  return getReviewsList().filter(r => !(r.productCat && r.productIdx!=null));
+}
+// 특정 상품에 연결된 후기만 골라 상품 상세 페이지에서 노출한다.
+function getProductReviews(catId, idx){
+  return getReviewsList().filter(r => r.productCat===catId && r.productIdx===idx);
+}
 function renderReviews(){
   const section = document.getElementById('reviewsSection');
   const grid = document.getElementById('reviewsGrid');
   if (!grid || !section) return;
-  const picked = pickRandomReviews(getReviewsList());
+  const picked = pickRandomReviews(getCompanyReviews());
   section.style.display = picked.length ? '' : 'none';
-  grid.innerHTML = picked.map(r=>{
-    const stars = r.rating ? '★'.repeat(r.rating)+'☆'.repeat(5-r.rating) : '';
-    return `<article class="review-card">
-      ${stars?`<div class="review-stars">${stars}</div>`:''}
-      <p class="review-text">"${escapeAttr(r.text)}"</p>
-      <div class="review-author">${escapeAttr(r.author||'익명')}${r.source==='google'?' <span class="review-src">· Google 리뷰</span>':''}</div>
-    </article>`;
-  }).join('');
+  grid.innerHTML = picked.map(reviewCardHTML).join('');
+}
+function reviewCardHTML(r){
+  const stars = r.rating ? '★'.repeat(r.rating)+'☆'.repeat(5-r.rating) : '';
+  return `<article class="review-card">
+    ${stars?`<div class="review-stars">${stars}</div>`:''}
+    <p class="review-text">"${escapeAttr(r.text)}"</p>
+    <div class="review-author">${escapeAttr(r.author||'익명')}${r.source==='google'?' <span class="review-src">· Google 리뷰</span>':''}</div>
+  </article>`;
 }
 
 function renderAdminBlog(){
@@ -5682,7 +5725,7 @@ function pdRenderAt(catId, idx, opts){
   const p=products[idx]; if (!p) return;
   const cat=findCat(catId);
   pauseGridVideosForModal(); // 모달에 가려지는 배경 카드 동영상은 정지해 동시 디코딩 부담을 줄임
-  renderProductDetail(p,cat);
+  renderProductDetail(p,cat,idx);
   updatePdNav(cat);
   const overlay=document.getElementById('pdOverlay');
   if (overlay) overlay.scrollTop=0; // 새 상품은 항상 맨 위에서부터 보여준다
@@ -5914,7 +5957,7 @@ function detectLinkBrand(url){
   return { icon:'🔗', label:'홈페이지에서 보기' };
 }
 
-function renderProductDetail(p,cat){
+function renderProductDetail(p,cat,idx){
   const c=document.getElementById('pdContent');
   const hasTitleMedia = p.titleMedia && p.titleMedia.url;
   const titleBg = hasTitleMedia ? '' : getCatBgStyle(cat);
@@ -6155,6 +6198,14 @@ function renderProductDetail(p,cat){
   if (p.calendarMode && p.calendarMode!=='none'){
     const label = p.calendarMode==='daily' ? '캘린더 일별 가격표 활성' : '레이블 자동 적용 캘린더';
     html += `<div class="pd-calendar-note"><span class="icon">📅</span><div>${label} — 실시간 시세는 상담을 통해 확정됩니다.</div></div>`;
+  }
+
+  // [Phase] 이 상품에 연결된(회사 전체가 아닌) 후기만 골라 상세 페이지에 노출
+  const productReviews = idx!=null ? getProductReviews(cat.id, idx) : [];
+  if (productReviews.length){
+    html += `<div class="pd-slot"><div class="pd-section-title">⭐ 이 상품 후기</div>
+      <div class="review-grid">${productReviews.map(reviewCardHTML).join('')}</div>
+    </div>`;
   }
 
   // Contact buttons — 상품별 값이 없으면 (주)더골프트렌드 대표 채널로 자동 폴백

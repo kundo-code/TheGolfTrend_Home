@@ -1671,13 +1671,24 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* ── 전체 공지 관리자 UI ──────────────────────────────────────────── */
 .notice-add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
-.notice-admin-item{padding:12px 14px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px}
+.notice-admin-item{padding:12px 14px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px;transition:box-shadow .2s}
+.notice-admin-item.dragging{opacity:.4;transform:scale(.98)}
+.notice-admin-item.drag-over{box-shadow:0 0 0 2px var(--nm-blue),0 8px 20px rgba(10,23,48,.12)}
+/* 펼쳐진 항목은 파란 강조 테두리로 접힌 항목과 시각적으로 구분되게 한다 */
+.notice-admin-item-open{box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .notice-admin-item-off{opacity:.55}
-.notice-admin-item-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.notice-drag-handle{font-size:1.1rem;color:var(--nm-text-soft);cursor:grab;user-select:none;line-height:1;flex-shrink:0;padding-top:2px}
+/* 하위 요소(손잡이·타이틀 영역·버튼 영역) 높이가 서로 달라도 모두 위쪽 기준으로 나란히 정렬 */
+.notice-admin-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.notice-admin-item-titlecol{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .notice-admin-item-titlewrap{display:flex;align-items:center;gap:6px;min-width:0}
 .notice-admin-item-title{font-size:1rem;font-weight:800;color:var(--nm-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.notice-admin-item-schedule{font-size:.7rem;color:var(--nm-text-soft)}
 .notice-reserved-icon{font-size:.85rem;flex-shrink:0}
 .notice-admin-item-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+/* 펼침/접힘 상태를 텍스트뿐 아니라 화살표 회전으로도 알 수 있게 한다 */
+.notice-toggle-chev{display:inline-block;margin-right:3px;font-size:.65rem;transition:transform .2s}
+.notice-toggle-btn.open .notice-toggle-chev{transform:rotate(180deg)}
 .notice-admin-item-body{margin-top:12px;padding-top:12px;border-top:1px solid rgba(10,23,48,.08)}
 .notice-regen-row{margin:4px 0 12px;text-align:right}
 .notice-schedule-row{margin-top:8px}
@@ -3146,6 +3157,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
+    <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
   </div>
   <div class="admin-body">
@@ -4207,11 +4219,11 @@ function noticeIsReserved(n){
   return new Date() < start;
 }
 const NOTICE_POPUP_MAX = 5;
+// 공지 노출 순서는 관리자가 직접 드래그로 바꾼 목록 순서를 그대로 따른다(등록일 기준 자동 정렬 아님)
 function getVisibleNotices(){
   const now = new Date();
   return getNoticesList()
     .filter(n=>n.active && noticeWithinSchedule(n, now))
-    .sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, NOTICE_POPUP_MAX);
 }
 // **bold** → <b>, 줄바꿈 → <br> (관리자가 입력한 일반 텍스트를 안전하게 이스케이프한 뒤 변환)
@@ -4226,7 +4238,7 @@ function addNotice(type){
   const built = NOTICE_TYPES[type].build({});
   const now = new Date().toISOString();
   const n = { id: genNoticeId(), type, fields: {}, title: built.title, body: built.body, active: true, createdAt: now, updatedAt: now, schedule: {startDate:'', startTime:'', endDate:'', endTime:''} };
-  list.push(n);
+  list.unshift(n); // 새 공지는 목록 맨 위에 추가
   saveNoticesList(list);
   _noticeItemsOpen.add(n.id); // 새로 추가한 항목은 바로 편집할 수 있도록 펼친 상태로 시작
   renderAdminNotices();
@@ -4308,7 +4320,7 @@ function duplicateNotice(id){
   clone.active = false; // 복제본이 원본과 함께 중복 노출되지 않도록 기본적으로 꺼둔다
   const now = new Date().toISOString();
   clone.createdAt = now; clone.updatedAt = now;
-  list.push(clone);
+  list.splice(idx+1, 0, clone); // 복제본은 원본 바로 아래에 삽입
   saveNoticesList(list);
   _noticeItemsOpen.add(clone.id);
   renderAdminNotices();
@@ -4318,6 +4330,31 @@ function removeNotice(id){
   const list = getNoticesList().filter(n=>n.id!==id);
   saveNoticesList(list);
   _noticeItemsOpen.delete(id);
+  renderAdminNotices();
+}
+// ── 전체 공지 순서 변경(드래그 앤 드롭) ─────────────────────────────
+// 상품 목록 드래그 정렬(productDragStart 등)과 동일한 방식 — 손잡이(⠿)에만 draggable을 지정
+let noticeDragIdx = null;
+function noticeDragStart(e, idx){
+  noticeDragIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  const row = e.currentTarget.closest('.notice-admin-item');
+  if (row) row.classList.add('dragging');
+}
+function noticeDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
+function noticeDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function noticeDragEnd(e){
+  document.querySelectorAll('.notice-admin-item').forEach(r=>{ r.classList.remove('dragging'); r.classList.remove('drag-over'); });
+  noticeDragIdx = null;
+}
+function noticeDrop(e, targetIdx){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (noticeDragIdx === null || noticeDragIdx === targetIdx) return;
+  const list = getNoticesList();
+  const item = list.splice(noticeDragIdx, 1)[0];
+  list.splice(targetIdx, 0, item);
+  saveNoticesList(list);
   renderAdminNotices();
 }
 
@@ -4379,18 +4416,35 @@ function noticeEditFormHTML(n){
       <textarea class="abc-input" data-notice-body rows="8" oninput="setNoticeField('${n.id}','body',this.value)">${escapeAttr(n.body||'')}</textarea>
     </div>`;
 }
-function noticeAdminItemHTML(n){
+// 공지 목록 헤더에 "언제 노출되는지" 한눈에 보이도록 노출 기간을 짧은 문구로 요약
+function noticeScheduleSummary(n){
+  const s = n.schedule || {};
+  const fmt = (d,t) => d ? `${d}${t?' '+t:''}` : '';
+  if (!s.startDate && !s.endDate) return '상시 노출';
+  if (s.startDate && s.endDate) return `${fmt(s.startDate,s.startTime)} ~ ${fmt(s.endDate,s.endTime)}`;
+  if (s.startDate) return `${fmt(s.startDate,s.startTime)}부터 노출`;
+  return `${fmt(s.endDate,s.endTime)}까지 노출`;
+}
+function noticeAdminItemHTML(n, idx){
   const isOpen = _noticeItemsOpen.has(n.id);
   const reserved = noticeIsReserved(n);
   const s = n.schedule || {};
-  return `<div class="notice-admin-item${n.active?'':' notice-admin-item-off'}" data-id="${n.id}">
+  const dragAttrs = `draggable="true" ondragstart="noticeDragStart(event,${idx})" ondragend="noticeDragEnd(event)"`;
+  const dropAttrs = `ondragover="noticeDragOver(event)" ondragleave="noticeDragLeave(event)" ondrop="noticeDrop(event,${idx})"`;
+  return `<div class="notice-admin-item${n.active?'':' notice-admin-item-off'}${isOpen?' notice-admin-item-open':''}" data-id="${n.id}" ${dropAttrs}>
     <div class="notice-admin-item-head">
-      <div class="notice-admin-item-titlewrap">
-        <span class="notice-admin-item-title">${escapeAttr(n.title||'(제목 없음)')}</span>
-        ${reserved?`<span class="notice-reserved-icon" title="예약됨: ${escapeAttr(s.startDate||'')} ${escapeAttr(s.startTime||'')}부터 노출">🕒</span>`:''}
+      <span class="notice-drag-handle" title="드래그하여 순서 변경" ${dragAttrs}>⠿</span>
+      <div class="notice-admin-item-titlecol">
+        <div class="notice-admin-item-titlewrap">
+          <span class="notice-admin-item-title">${escapeAttr(n.title||'(제목 없음)')}</span>
+          ${reserved?`<span class="notice-reserved-icon" title="예약됨: ${escapeAttr(s.startDate||'')} ${escapeAttr(s.startTime||'')}부터 노출">🕒</span>`:''}
+        </div>
+        <div class="notice-admin-item-schedule">${escapeAttr(noticeScheduleSummary(n))}</div>
       </div>
       <div class="notice-admin-item-actions">
-        <button type="button" class="abc-img-btn" onclick="toggleNoticeItemsOpen('${n.id}')">${isOpen?'접기':'✏️ 편집'}</button>
+        <button type="button" class="abc-img-btn notice-toggle-btn${isOpen?' open':''}" onclick="toggleNoticeItemsOpen('${n.id}')">
+          <span class="notice-toggle-chev">▾</span>${isOpen?'접기':'✏️ 편집'}
+        </button>
         <button type="button" class="abc-img-btn" onclick="duplicateNotice('${n.id}')">복제</button>
         <button type="button" class="abc-img-btn danger" onclick="removeNotice('${n.id}')">삭제</button>
         <label class="popup-toggle" title="ON이면 설정된 기간·시간에 고객 화면에 노출됩니다">
@@ -4405,8 +4459,8 @@ function noticeAdminItemHTML(n){
 function renderAdminNotices(){
   const el = document.getElementById('adminNoticesList');
   if (!el) return;
-  const list = getNoticesList().slice().sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt));
-  el.innerHTML = list.length ? list.map(noticeAdminItemHTML).join('') : '<div class="notice-empty">등록된 공지가 없습니다. 위에서 공지 성격을 선택하고 "+ 공지 추가"를 눌러 시작해보세요.</div>';
+  const list = getNoticesList();
+  el.innerHTML = list.length ? list.map((n,i)=>noticeAdminItemHTML(n,i)).join('') : '<div class="notice-empty">등록된 공지가 없습니다. 위에서 공지 성격을 선택하고 "+ 공지 추가"를 눌러 시작해보세요.</div>';
 }
 
 // ── 전체 공지 고객 팝업 ────────────────────────────────────────────

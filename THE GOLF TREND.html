@@ -1603,6 +1603,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .abc-fields{display:flex;flex-direction:column;gap:10px;min-width:0}
 .abc-field-row{display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center}
 .abc-field-row-gap24{margin-top:24px}
+/* 라벨을 값 위쪽 한 줄로 올리고, 값 영역이 전체 너비를 쓰도록 하는 변형(긴 텍스트 입력에 사용) */
+.abc-field-row-stack{grid-template-columns:1fr;align-items:start;gap:4px}
 .abc-label{font-size:.75rem;color:var(--nm-text-soft);font-weight:600;white-space:nowrap}
 .abc-label em{font-style:normal;color:var(--nm-text-soft);opacity:.7;font-size:.68rem;display:block}
 .abc-input{
@@ -1678,8 +1680,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .notice-admin-item-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
 .notice-admin-item-body{margin-top:12px;padding-top:12px;border-top:1px solid rgba(10,23,48,.08)}
 .notice-regen-row{margin:4px 0 12px;text-align:right}
-.notice-schedule-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
-@media(max-width:640px){ .notice-schedule-row{grid-template-columns:1fr} }
+.notice-schedule-row{margin-top:8px}
+.notice-schedule-row .abc-field-row{margin-bottom:12px}
+.notice-schedule-row .abc-field-row:last-child{margin-bottom:0}
 .notice-empty{padding:24px;text-align:center;color:var(--nm-text-soft);font-size:.85rem}
 
 /* ── 전체 공지 고객 팝업 ──────────────────────────────────────────── */
@@ -3137,11 +3140,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
   <div id="adminAuthedArea">
   <div class="admin-tabs">
+    <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button class="active" data-tab="images" onclick="switchTab('images')">이미지</button>
     <button data-tab="products" onclick="switchTab('products')">상품</button>
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
-    <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
   </div>
@@ -4327,7 +4330,8 @@ function toggleNoticeItemsOpen(id){
 function noticeFieldInputHTML(n, f){
   const val = (n.fields && n.fields[f.key]) || '';
   if (f.type==='textarea'){
-    return `<div class="abc-field-row"><label class="abc-label">${escapeAttr(f.label)}</label><textarea class="abc-input" rows="3" placeholder="${escapeAttr(f.placeholder||'')}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)">${escapeAttr(val)}</textarea></div>`;
+    // 라벨을 값 위 한 줄로 올리고, 약 40줄 분량이 들어가는 넉넉한 높이의 전체 너비 입력창으로 노출
+    return `<div class="abc-field-row abc-field-row-stack"><label class="abc-label">${escapeAttr(f.label)}</label><textarea class="abc-input" rows="40" placeholder="${escapeAttr(f.placeholder||'')}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)">${escapeAttr(val)}</textarea></div>`;
   }
   return `<div class="abc-field-row"><label class="abc-label">${escapeAttr(f.label)}</label><input type="text" class="abc-input" placeholder="${escapeAttr(f.placeholder||'')}" value="${escapeAttr(val)}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)"></div>`;
 }
@@ -4341,16 +4345,9 @@ function noticeEditFormHTML(n){
         ${Object.keys(NOTICE_TYPES).map(k=>`<option value="${k}" ${n.type===k?'selected':''}>${escapeAttr(NOTICE_TYPES[k].label)}</option>`).join('')}
       </select>
     </div>
-    <div class="admin-info-box">💡 아래 항목을 입력하면 "${escapeAttr(typeInfo.label)}" 성격에 맞는 공지 제목·본문이 자동으로 채워집니다. 생성된 내용은 자유롭게 다시 수정할 수 있습니다.</div>
-    ${typeInfo.fields.map(f=>noticeFieldInputHTML(n,f)).join('')}
-    <div class="notice-regen-row"><button type="button" class="abc-btn-sm" onclick="regenerateNoticeContent('${n.id}')">🪄 템플릿으로 다시 생성</button></div>
     <div class="abc-field-row">
       <label class="abc-label">공지 제목</label>
       <input type="text" class="abc-input" data-notice-title value="${escapeAttr(n.title||'')}" oninput="setNoticeField('${n.id}','title',this.value)">
-    </div>
-    <div class="abc-field-row">
-      <label class="abc-label">공지 본문</label>
-      <textarea class="abc-input" data-notice-body rows="8" oninput="setNoticeField('${n.id}','body',this.value)">${escapeAttr(n.body||'')}</textarea>
     </div>
     <div class="notice-schedule-row">
       <div class="abc-field-row">
@@ -4373,6 +4370,13 @@ function noticeEditFormHTML(n){
           <span class="file-hint">비워두면 종료일 없이 계속 노출</span>
         </div>
       </div>
+    </div>
+    <div class="admin-info-box">💡 아래 항목을 입력하면 "${escapeAttr(typeInfo.label)}" 성격에 맞는 공지 제목·본문이 자동으로 채워집니다. 생성된 내용은 자유롭게 다시 수정할 수 있습니다.</div>
+    ${typeInfo.fields.map(f=>noticeFieldInputHTML(n,f)).join('')}
+    <div class="notice-regen-row"><button type="button" class="abc-btn-sm" onclick="regenerateNoticeContent('${n.id}')">🪄 템플릿으로 다시 생성</button></div>
+    <div class="abc-field-row">
+      <label class="abc-label">공지 본문</label>
+      <textarea class="abc-input" data-notice-body rows="8" oninput="setNoticeField('${n.id}','body',this.value)">${escapeAttr(n.body||'')}</textarea>
     </div>`;
 }
 function noticeAdminItemHTML(n){

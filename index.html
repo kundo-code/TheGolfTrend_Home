@@ -1602,6 +1602,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .abc-img-btn.danger:hover{box-shadow:var(--nm-shadow-hover)}
 .abc-fields{display:flex;flex-direction:column;gap:10px;min-width:0}
 .abc-field-row{display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center}
+.abc-field-row-gap24{margin-top:24px}
 .abc-label{font-size:.75rem;color:var(--nm-text-soft);font-weight:600;white-space:nowrap}
 .abc-label em{font-style:normal;color:var(--nm-text-soft);opacity:.7;font-size:.68rem;display:block}
 .abc-input{
@@ -1663,6 +1664,39 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [Phase] 화면에서 숨긴 글/영상은 관리자 목록에서도 흐리게 표시해 한눈에 구분되게 한다 */
 .admin-channel-item-hidden{opacity:.55}
 .admin-channel-hidden-badge{display:inline-block;padding:2px 8px;background:var(--nm-danger);color:#fff;border-radius:var(--nm-r-pill);font-size:.65rem;font-weight:700;vertical-align:middle}
+.admin-item-hidden{opacity:.55}
+.admin-item-hidden-badge{display:inline-block;padding:2px 8px;background:var(--nm-danger);color:#fff;border-radius:var(--nm-r-pill);font-size:.65rem;font-weight:700;vertical-align:middle}
+
+/* ── 전체 공지 관리자 UI ──────────────────────────────────────────── */
+.notice-add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+.notice-admin-item{padding:12px 14px;background:var(--nm-white);border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);margin-bottom:8px}
+.notice-admin-item-off{opacity:.55}
+.notice-admin-item-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.notice-admin-item-titlewrap{display:flex;align-items:center;gap:6px;min-width:0}
+.notice-admin-item-title{font-size:1rem;font-weight:800;color:var(--nm-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.notice-reserved-icon{font-size:.85rem;flex-shrink:0}
+.notice-admin-item-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.notice-admin-item-body{margin-top:12px;padding-top:12px;border-top:1px solid rgba(10,23,48,.08)}
+.notice-regen-row{margin:4px 0 12px;text-align:right}
+.notice-schedule-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+@media(max-width:640px){ .notice-schedule-row{grid-template-columns:1fr} }
+.notice-empty{padding:24px;text-align:center;color:var(--nm-text-soft);font-size:.85rem}
+
+/* ── 전체 공지 고객 팝업 ──────────────────────────────────────────── */
+.notice-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2100;display:none;align-items:center;justify-content:center;padding:40px 20px}
+.notice-popup-overlay.show{display:flex}
+.notice-popup-box{width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;background:rgba(255,255,255,.98);border-radius:20px;overflow:hidden;box-shadow:0 40px 90px rgba(10,23,48,.4);animation:popupIn .3s cubic-bezier(.22,1,.36,1) both}
+.notice-popup-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(10,23,48,.08);flex-shrink:0}
+.notice-popup-head h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.15rem;color:var(--pine-deep);font-weight:600}
+.notice-popup-close{background:transparent;border:none;font-size:1.5rem;color:rgba(10,23,48,.45);cursor:pointer;line-height:1}
+.notice-popup-close:hover{color:var(--pine-deep)}
+.notice-popup-list{overflow-y:auto;padding:8px 0}
+.notice-popup-item{border-bottom:1px solid rgba(10,23,48,.08)}
+.notice-popup-item:last-child{border-bottom:none}
+.notice-popup-item-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;background:transparent;border:none;cursor:pointer;text-align:left}
+.notice-popup-item-title{font-size:.92rem;font-weight:700;color:var(--pine-deep)}
+.notice-popup-item-chev{font-size:.7rem;color:rgba(10,23,48,.4);flex-shrink:0}
+.notice-popup-item-body{padding:0 24px 18px;font-size:.85rem;line-height:1.8;color:rgba(10,23,48,.75);white-space:normal}
 /* 항목 헤더(썸네일+원본 제목+이미지 업로드 버튼)는 한 줄로, 편집 필드들은 그 아래 전체 너비로 */
 .admin-channel-item-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
 /* [수정] "블로그 대표 이미지"(.abc-thumb)와 출력 비율을 16:9로 통일 — 정사각형(64px)이던 것을
@@ -2468,6 +2502,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
 </nav>
 
+<!-- [Phase] 전체 공지 팝업 — 활성화되고 노출 기간/시간에 해당하는 공지를 최신순 최대 5개까지
+     홈 진입 시 가장 먼저 노출. 다른 팝업(요금 항목·EDITOR'S PICK)과는 별개의 독립 스테이지 -->
+<div class="notice-popup-overlay" id="noticePopupStage" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeNoticePopup)"></div>
 <!-- POPUP OVERLAY (홈 진입 시 활성 요금 항목 최대 3개까지 순차 노출) -->
 <div class="popup-stage" id="popupStage" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closePopupStage)"></div>
 <!-- [수정] EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업으로 노출.
@@ -3104,6 +3141,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <button data-tab="products" onclick="switchTab('products')">상품</button>
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
+    <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
   </div>
@@ -3204,6 +3242,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
     <div id="tabLegal" style="display:none">
       <div id="adminLegal"></div>
+    </div>
+    <div id="tabNotices" style="display:none">
+      <div class="admin-info-box">💡 공지 성격을 선택하면 그에 맞는 입력 양식이 제공되며, 항목을 채우면 공지 제목·본문이 자동으로 완성됩니다(직접 수정도 가능). 노출 시작/종료 일시를 설정해두면 예약 공지로 동작합니다. 고객 화면에는 활성화된 공지 중 최신순 최대 5개까지 노출됩니다.</div>
+      <div class="notice-add-row">
+        <select id="newNoticeType" class="abc-input" style="flex:0 0 auto;width:auto">
+          <option value="general">일반 안내</option>
+          <option value="maintenance">긴급 시스템 점검</option>
+          <option value="refund">골프 상품 변경 및 취소/환불 규정 안내</option>
+          <option value="launch">신규 골프 패키지 출시 및 얼리버드 이벤트</option>
+          <option value="peak_closure">성수기 예약 조기 마감 및 대기 접수 안내</option>
+          <option value="weather">기상 악화 및 현지 천재지변 라운딩 긴급 안내</option>
+          <option value="passport">여권 만료일 및 해외 출입국 서류 사전 확인 안내</option>
+        </select>
+        <button type="button" class="abc-btn-sm" onclick="addNotice(document.getElementById('newNoticeType').value)">+ 공지 추가</button>
+      </div>
+      <div id="adminNoticesList" style="margin-top:10px"></div>
     </div>
 
   <div class="admin-foot">
@@ -3793,7 +3847,7 @@ function renderAdminChannels(){
                   <span class="file-hint cp-connected-link">연결된 링크: ${escapeAttr(resolvedUrl||'(없음)')}</span>
                 </div>
               </div>
-              <div class="abc-field-row">
+              <div class="abc-field-row abc-field-row-gap24">
                 <label class="abc-label">직접 링크 입력 <em>비워두면 위 연결 상품(또는 원본 글) 링크를 자동 사용</em></label>
                 <input type="text" class="abc-input" placeholder="https://..." value="${escapeAttr(ov.manualUrl||'')}" oninput="setChannelPostField('${escapeAttr(item.link)}','manualUrl',this.value)">
               </div>
@@ -3984,6 +4038,423 @@ function saveGoogleReviewsCfgField(field, val){
   try{ localStorage.setItem(GOOGLE_REVIEWS_CFG_KEY, JSON.stringify(cfg)); }catch(e){}
 }
 
+// ── 전체 공지 (사이트 전역 안내 팝업) ──────────────────────────────
+// [Phase] 관리자가 "공지 성격"을 고르면 그 성격에 맞는 입력 양식을 제공하고, 입력한 값으로
+// 정중한 톤의 공지 제목/본문을 자동 완성한다. 생성된 내용은 admin이 직접 다시 수정할 수 있다.
+const NOTICES_KEY = 'kundo_notices_v1';
+let noticesOverride = null;
+try{ noticesOverride = JSON.parse(localStorage.getItem(NOTICES_KEY)||'null'); }catch(e){}
+function getNoticesList(){ return noticesOverride || []; }
+function saveNoticesList(list){
+  noticesOverride = list;
+  try{ localStorage.setItem(NOTICES_KEY, JSON.stringify(list)); }catch(e){ alert('저장 공간 부족'); }
+  queueSiteStateSync();
+}
+function genNoticeId(){ return 'notice_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+function findNoticeIdx(list, id){ return list.findIndex(n=>n.id===id); }
+
+const NOTICE_TYPES = {
+  general: {
+    label: '일반 안내',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'noticeTitle', label:'공지 제목', placeholder:'예: 홈페이지 개편 안내'},
+      {key:'purpose', label:'공지 목적/상세 내용', type:'textarea', placeholder:'공지의 목적과 상세 내용을 입력하세요'},
+      {key:'period', label:'적용 일시/기간', placeholder:'예: 2025년 1월 1일부터'},
+      {key:'target', label:'대상', placeholder:'예: 전체 고객'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      return {
+        title: `📢 ${f.noticeTitle || '공지 안내'}`,
+        body: `안녕하세요, ${site}입니다.\n\n${f.purpose || ''}\n\n**- 적용 일시/기간:** ${f.period || '-'}\n**- 대상:** ${f.target || '-'}\n\n항상 ${site}를 이용해주셔서 감사합니다. 궁금하신 사항은 고객센터(1:1 문의)로 언제든지 연락 주시기 바랍니다.`,
+      };
+    },
+  },
+  maintenance: {
+    label: '긴급 시스템 점검',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'maintenanceTime', label:'점검 일시', placeholder:'예: 2025년 1월 10일 새벽 2시~4시'},
+      {key:'impact', label:'점검 영향', placeholder:'예: 결제 및 예약 신청 불가'},
+      {key:'duration', label:'예상 소요 시간', placeholder:'예: 약 2시간'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      return {
+        title: `🛠️ [긴급] 시스템 점검 안내`,
+        body: `안녕하세요, ${site}입니다.\n\n보다 안정적인 서비스 제공을 위해 아래와 같이 시스템 점검을 진행할 예정입니다. 점검 전 예약을 미리 완료해주시기 바랍니다.\n\n**- 점검 일시:** ${f.maintenanceTime || '-'}\n**- 점검 영향:** ${f.impact || '-'}\n**- 예상 소요 시간:** ${f.duration || '-'}\n\n점검 시간 동안 이용에 불편을 드려 죄송합니다. 양해 부탁드리며, 빠르고 안전하게 점검을 마치도록 하겠습니다. 문의사항은 고객센터로 연락 주시기 바랍니다.`,
+      };
+    },
+  },
+  refund: {
+    label: '골프 상품 변경 및 취소/환불 규정 안내',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'productRegion', label:'해당 상품/지역명', placeholder:'예: 제주 골프 패키지'},
+      {key:'reason', label:'변경 원인', placeholder:'예: 현지 항공/골프장 사정 변경'},
+      {key:'oldPolicy', label:'기존 규정', type:'textarea', placeholder:'변경 전 취소/환불 규정'},
+      {key:'newPolicy', label:'변경 규정', type:'textarea', placeholder:'변경 후 취소/환불 규정'},
+      {key:'effectiveDate', label:'적용 시점', placeholder:'예: 2025년 2월 1일 예약 건부터'},
+      {key:'deadline', label:'취소/변경 가능 기한 및 수수료 면제 여부', placeholder:'예: 출발 7일 전까지 수수료 없이 취소 가능'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      const region = f.productRegion || '일부 상품';
+      return {
+        title: `⚠️ [${region}] 상품 이용 규정 변경 안내`,
+        body: `안녕하세요, ${site}입니다.\n\n${region} 상품과 관련하여 부득이하게 아래와 같이 이용 규정이 변경됨을 안내드립니다.\n\n**- 변경 사유:** ${f.reason || '-'}\n**- 기존 규정:** ${f.oldPolicy || '-'}\n**- 변경 규정:** ${f.newPolicy || '-'}\n**- 적용 시점:** ${f.effectiveDate || '-'}\n**- 취소/변경 가능 기한 및 수수료 안내:** ${f.deadline || '-'}\n\n이용에 참고하시어 해당 기한 내 필요한 조치를 완료해주시기 바랍니다. 자세한 사항은 고객센터(1:1 문의)로 문의해주시면 친절히 안내해드리겠습니다. 감사합니다.`,
+      };
+    },
+  },
+  launch: {
+    label: '신규 골프 패키지 출시 및 얼리버드 이벤트',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'destination', label:'지역/골프장명', placeholder:'예: 베트남 다낭'},
+      {key:'features', label:'패키지 특징', type:'textarea', placeholder:'예: 명문 코스 3라운드 + 5성급 호텔'},
+      {key:'eventPeriod', label:'이벤트 기간/조건', placeholder:'예: ~2월 말까지, 선착순 20명'},
+      {key:'benefit', label:'회원 특별 혜택', placeholder:'예: 전 상품 10% 할인'},
+      {key:'link', label:'이동 링크', placeholder:'https://...'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      const dest = f.destination || '이번 신규 여행지';
+      return {
+        title: `✈️ [${dest}] 신규 패키지 출시 & 얼리버드 이벤트`,
+        body: `${site}가 엄선한 ${dest} 명문 코스, 지금 가장 먼저 만나보세요!\n\n**- 패키지 특징:** ${f.features || '-'}\n**- 얼리버드 이벤트 기간/조건:** ${f.eventPeriod || '-'}\n**- 회원 특별 혜택:** ${f.benefit || '-'}\n\n한정된 좌석으로 조기 마감될 수 있으니, 지금 바로 확인해보세요${f.link ? ` 👉 ${f.link}` : ''}\n\n더 궁금하신 사항은 고객센터로 문의해주시기 바랍니다. 감사합니다.`,
+      };
+    },
+  },
+  peak_closure: {
+    label: '성수기 예약 조기 마감 및 대기 접수 안내',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'season', label:'마감된 시즌/월', placeholder:'예: 3~4월 벚꽃 시즌'},
+      {key:'product', label:'지역/상품명', placeholder:'예: 제주 골프 패키지'},
+      {key:'waitMethod', label:'대기 접수 방법', type:'textarea', placeholder:'예: 1:1 문의로 대기 신청'},
+      {key:'waitLimit', label:'대기자 알림 및 결제 제한 시간', placeholder:'예: 알림 후 24시간 이내 결제'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      return {
+        title: `📢 [${f.product || '인기 상품'}] ${f.season || '성수기'} 예약 조기 마감 및 대기 접수 안내`,
+        body: `${site}를 사랑해주시는 고객 여러분께 진심으로 감사드립니다.\n\n많은 성원에 힘입어 ${f.season || '해당 시즌'} ${f.product || '상품'} 예약이 조기 마감되었습니다.\n\n**- 대기 접수 방법:** ${f.waitMethod || '-'}\n**- 대기자 알림 및 결제 제한 시간:** ${f.waitLimit || '-'}\n\n취소분 발생 시 대기 순서대로 즉시 안내드리오니, 조금만 기다려주시기 바랍니다. 문의사항은 고객센터로 연락 주시기 바랍니다.`,
+      };
+    },
+  },
+  weather: {
+    label: '기상 악화 및 현지 천재지변 라운딩 긴급 안내',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'region', label:'지역명', placeholder:'예: 필리핀 세부'},
+      {key:'cause', label:'기상 악화 원인', placeholder:'예: 태풍 북상'},
+      {key:'targetDate', label:'적용 대상자 출발일', placeholder:'예: 1월 15일~1월 20일 출발자'},
+      {key:'courseAction', label:'골프장 조치 사항', type:'textarea', placeholder:'예: 티타임 전면 변경, 전액 환불 가능'},
+      {key:'altPlan', label:'대체 일정 안내', type:'textarea', placeholder:'예: 익일 오전으로 순연'},
+      {key:'emergencyContact', label:'비상대응처', placeholder:'예: 긴급상황실 010-0000-0000'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      const region = f.region || '현지';
+      return {
+        title: `⚠️ [긴급] ${region} 기상 악화로 인한 라운딩 안내`,
+        body: `안녕하세요, ${site}입니다.\n\n${region} 지역의 ${f.cause || '기상 악화'}로 인해 고객님의 안전을 최우선으로 고려하여 아래와 같이 긴급 안내드립니다.\n\n**- 적용 대상 출발일:** ${f.targetDate || '-'}\n**- 골프장 조치 사항:** ${f.courseAction || '-'}\n**- 대체 일정 안내:** ${f.altPlan || '-'}\n\n현재 현지 상황을 실시간으로 모니터링하고 있으며, 확인되는 즉시 신속하게 안내드리겠습니다. 긴급 문의는 ${f.emergencyContact || '고객센터'}로 연락 주시기 바랍니다. 고객님의 안전한 여행을 위해 최선을 다하겠습니다.`,
+      };
+    },
+  },
+  passport: {
+    label: '여권 만료일 및 해외 출입국 서류 사전 확인 안내',
+    fields: [
+      {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
+      {key:'countries', label:'주요 방문국가', placeholder:'예: 태국, 베트남'},
+      {key:'passportValidity', label:'여권 잔여기간 기준', placeholder:'예: 6개월'},
+      {key:'docsGuide', label:'작성 필요 서류/앱 가이드', type:'textarea', placeholder:'예: 전자입국신고서(Q-Code) 앱 사전 등록'},
+      {key:'baggageNote', label:'골프백 수하물 주의사항', placeholder:'예: 위탁수하물 1개 무료, 초과 시 추가 요금'},
+      {key:'checkDeadline', label:'확인 권장 기한', placeholder:'예: 출발 7일 전까지'},
+    ],
+    build(f){
+      const site = f.siteName || '저희 웹사이트';
+      const countries = f.countries || '방문국가';
+      return {
+        title: `✈️ [${countries}] 출국 전 필수 체크리스트 안내`,
+        body: `안녕하세요, ${site}입니다. 안전하고 즐거운 해외 골프 여행을 위해 출발 전 아래 사항을 반드시 확인해주시기 바랍니다.\n\n**- 여권 잔여 유효기간:** ${countries} 입국 기준 ${f.passportValidity || '6개월'} 이상 필요\n**- 작성 필요 서류/앱 가이드:** ${f.docsGuide || '-'}\n**- 골프백 수하물 주의사항:** ${f.baggageNote || '-'}\n\n⚠️ 위 사항 미확인 시 출국이 제한될 수 있으니, 늦어도 ${f.checkDeadline || '출발 전'}까지 반드시 확인해주시기 바랍니다. 문의사항은 고객센터로 연락 주시기 바랍니다.`,
+      };
+    },
+  },
+};
+
+// 노출 기간/시간(예약) 판단 — 시작/종료 중 비워둔 값은 제한 없음으로 취급
+function noticeWithinSchedule(n, now){
+  const s = n.schedule || {};
+  if (s.startDate){
+    const start = new Date(s.startDate + 'T' + (s.startTime || '00:00'));
+    if (now < start) return false;
+  }
+  if (s.endDate){
+    const end = new Date(s.endDate + 'T' + (s.endTime || '23:59'));
+    if (now > end) return false;
+  }
+  return true;
+}
+function noticeIsReserved(n){
+  const s = n.schedule || {};
+  if (!s.startDate) return false;
+  const start = new Date(s.startDate + 'T' + (s.startTime || '00:00'));
+  return new Date() < start;
+}
+const NOTICE_POPUP_MAX = 5;
+function getVisibleNotices(){
+  const now = new Date();
+  return getNoticesList()
+    .filter(n=>n.active && noticeWithinSchedule(n, now))
+    .sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, NOTICE_POPUP_MAX);
+}
+// **bold** → <b>, 줄바꿈 → <br> (관리자가 입력한 일반 텍스트를 안전하게 이스케이프한 뒤 변환)
+function renderNoticeBodyHTML(text){
+  return escapeAttr(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+}
+
+// ── 전체 공지 관리자 CRUD ──────────────────────────────────────────
+function addNotice(type){
+  type = NOTICE_TYPES[type] ? type : 'general';
+  const list = getNoticesList();
+  const built = NOTICE_TYPES[type].build({});
+  const now = new Date().toISOString();
+  const n = { id: genNoticeId(), type, fields: {}, title: built.title, body: built.body, active: true, createdAt: now, updatedAt: now, schedule: {startDate:'', startTime:'', endDate:'', endTime:''} };
+  list.push(n);
+  saveNoticesList(list);
+  _noticeItemsOpen.add(n.id); // 새로 추가한 항목은 바로 편집할 수 있도록 펼친 상태로 시작
+  renderAdminNotices();
+}
+function setNoticeField(id, key, val){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  list[idx][key] = val;
+  list[idx].updatedAt = new Date().toISOString();
+  saveNoticesList(list);
+  // 제목/본문 직접 수정 입력창 자체이므로 다시 렌더링하지 않는다(포커스 유지)
+}
+// 입력 폼(성격별 필드) 값 변경 시 제목/본문을 템플릿으로 즉시 재생성한다. 타이핑 중 전체를
+// 다시 그리면 포커스가 끊기므로, 목록 전체를 다시 그리지 않고 제목/본문 미리보기 입력창의
+// 값만 직접 갱신한다(수집글 편집기에서 이미 검증된 방식과 동일)
+function setNoticeFormField(id, fieldKey, val){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  list[idx].fields = list[idx].fields || {};
+  list[idx].fields[fieldKey] = val;
+  const built = NOTICE_TYPES[list[idx].type].build(list[idx].fields);
+  list[idx].title = built.title;
+  list[idx].body = built.body;
+  list[idx].updatedAt = new Date().toISOString();
+  saveNoticesList(list);
+  const item = document.querySelector(`.notice-admin-item[data-id="${id}"]`);
+  if (item){
+    const titleInput = item.querySelector('[data-notice-title]');
+    const bodyInput = item.querySelector('[data-notice-body]');
+    if (titleInput) titleInput.value = list[idx].title;
+    if (bodyInput) bodyInput.value = list[idx].body;
+  }
+}
+function setNoticeType(id, newType){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  list[idx].type = NOTICE_TYPES[newType] ? newType : 'general';
+  list[idx].fields = {};
+  const built = NOTICE_TYPES[list[idx].type].build({});
+  list[idx].title = built.title;
+  list[idx].body = built.body;
+  list[idx].updatedAt = new Date().toISOString();
+  saveNoticesList(list);
+  renderAdminNotices();
+}
+function regenerateNoticeContent(id){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  const built = NOTICE_TYPES[list[idx].type].build(list[idx].fields || {});
+  list[idx].title = built.title;
+  list[idx].body = built.body;
+  list[idx].updatedAt = new Date().toISOString();
+  saveNoticesList(list);
+  renderAdminNotices();
+}
+function setNoticeSchedule(id, key, val){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  list[idx].schedule = list[idx].schedule || {};
+  list[idx].schedule[key] = val;
+  list[idx].updatedAt = new Date().toISOString();
+  saveNoticesList(list);
+  renderAdminNotices(); // 예약 아이콘 표시 여부가 바뀔 수 있으므로 다시 그림
+}
+function toggleNoticeActive(id){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  list[idx].active = !list[idx].active;
+  list[idx].updatedAt = new Date().toISOString();
+  saveNoticesList(list);
+  renderAdminNotices();
+}
+function duplicateNotice(id){
+  const list = getNoticesList();
+  const idx = findNoticeIdx(list, id); if (idx<0) return;
+  const clone = JSON.parse(JSON.stringify(list[idx]));
+  clone.id = genNoticeId();
+  clone.title = (clone.title || '') + ' (복제)';
+  clone.active = false; // 복제본이 원본과 함께 중복 노출되지 않도록 기본적으로 꺼둔다
+  const now = new Date().toISOString();
+  clone.createdAt = now; clone.updatedAt = now;
+  list.push(clone);
+  saveNoticesList(list);
+  _noticeItemsOpen.add(clone.id);
+  renderAdminNotices();
+}
+function removeNotice(id){
+  if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+  const list = getNoticesList().filter(n=>n.id!==id);
+  saveNoticesList(list);
+  _noticeItemsOpen.delete(id);
+  renderAdminNotices();
+}
+
+// ── 전체 공지 관리자 화면 렌더 ──────────────────────────────────────
+let _noticeItemsOpen = new Set();
+function toggleNoticeItemsOpen(id){
+  if (_noticeItemsOpen.has(id)) _noticeItemsOpen.delete(id); else _noticeItemsOpen.add(id);
+  renderAdminNotices();
+}
+function noticeFieldInputHTML(n, f){
+  const val = (n.fields && n.fields[f.key]) || '';
+  if (f.type==='textarea'){
+    return `<div class="abc-field-row"><label class="abc-label">${escapeAttr(f.label)}</label><textarea class="abc-input" rows="3" placeholder="${escapeAttr(f.placeholder||'')}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)">${escapeAttr(val)}</textarea></div>`;
+  }
+  return `<div class="abc-field-row"><label class="abc-label">${escapeAttr(f.label)}</label><input type="text" class="abc-input" placeholder="${escapeAttr(f.placeholder||'')}" value="${escapeAttr(val)}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)"></div>`;
+}
+function noticeEditFormHTML(n){
+  const typeInfo = NOTICE_TYPES[n.type] || NOTICE_TYPES.general;
+  const s = n.schedule || {};
+  return `
+    <div class="abc-field-row">
+      <label class="abc-label">공지 성격</label>
+      <select class="abc-select" onchange="setNoticeType('${n.id}', this.value)">
+        ${Object.keys(NOTICE_TYPES).map(k=>`<option value="${k}" ${n.type===k?'selected':''}>${escapeAttr(NOTICE_TYPES[k].label)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="admin-info-box">💡 아래 항목을 입력하면 "${escapeAttr(typeInfo.label)}" 성격에 맞는 공지 제목·본문이 자동으로 채워집니다. 생성된 내용은 자유롭게 다시 수정할 수 있습니다.</div>
+    ${typeInfo.fields.map(f=>noticeFieldInputHTML(n,f)).join('')}
+    <div class="notice-regen-row"><button type="button" class="abc-btn-sm" onclick="regenerateNoticeContent('${n.id}')">🪄 템플릿으로 다시 생성</button></div>
+    <div class="abc-field-row">
+      <label class="abc-label">공지 제목</label>
+      <input type="text" class="abc-input" data-notice-title value="${escapeAttr(n.title||'')}" oninput="setNoticeField('${n.id}','title',this.value)">
+    </div>
+    <div class="abc-field-row">
+      <label class="abc-label">공지 본문</label>
+      <textarea class="abc-input" data-notice-body rows="8" oninput="setNoticeField('${n.id}','body',this.value)">${escapeAttr(n.body||'')}</textarea>
+    </div>
+    <div class="notice-schedule-row">
+      <div class="abc-field-row">
+        <label class="abc-label">노출 시작</label>
+        <div class="abc-field-value-stack">
+          <div class="abc-url-row">
+            <input type="date" class="abc-input" value="${escapeAttr(s.startDate||'')}" onchange="setNoticeSchedule('${n.id}','startDate',this.value)">
+            <input type="time" class="abc-input" value="${escapeAttr(s.startTime||'')}" onchange="setNoticeSchedule('${n.id}','startTime',this.value)">
+          </div>
+          <span class="file-hint">비워두면 등록 즉시부터 노출(예약 없음)</span>
+        </div>
+      </div>
+      <div class="abc-field-row">
+        <label class="abc-label">노출 종료</label>
+        <div class="abc-field-value-stack">
+          <div class="abc-url-row">
+            <input type="date" class="abc-input" value="${escapeAttr(s.endDate||'')}" onchange="setNoticeSchedule('${n.id}','endDate',this.value)">
+            <input type="time" class="abc-input" value="${escapeAttr(s.endTime||'')}" onchange="setNoticeSchedule('${n.id}','endTime',this.value)">
+          </div>
+          <span class="file-hint">비워두면 종료일 없이 계속 노출</span>
+        </div>
+      </div>
+    </div>`;
+}
+function noticeAdminItemHTML(n){
+  const isOpen = _noticeItemsOpen.has(n.id);
+  const reserved = noticeIsReserved(n);
+  const s = n.schedule || {};
+  return `<div class="notice-admin-item${n.active?'':' notice-admin-item-off'}" data-id="${n.id}">
+    <div class="notice-admin-item-head">
+      <div class="notice-admin-item-titlewrap">
+        <span class="notice-admin-item-title">${escapeAttr(n.title||'(제목 없음)')}</span>
+        ${reserved?`<span class="notice-reserved-icon" title="예약됨: ${escapeAttr(s.startDate||'')} ${escapeAttr(s.startTime||'')}부터 노출">🕒</span>`:''}
+      </div>
+      <div class="notice-admin-item-actions">
+        <button type="button" class="abc-img-btn" onclick="toggleNoticeItemsOpen('${n.id}')">${isOpen?'접기':'✏️ 편집'}</button>
+        <button type="button" class="abc-img-btn" onclick="duplicateNotice('${n.id}')">복제</button>
+        <button type="button" class="abc-img-btn danger" onclick="removeNotice('${n.id}')">삭제</button>
+        <label class="popup-toggle" title="ON이면 설정된 기간·시간에 고객 화면에 노출됩니다">
+          <input type="checkbox" ${n.active?'checked':''} onchange="toggleNoticeActive('${n.id}')">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    ${isOpen?`<div class="notice-admin-item-body">${noticeEditFormHTML(n)}</div>`:''}
+  </div>`;
+}
+function renderAdminNotices(){
+  const el = document.getElementById('adminNoticesList');
+  if (!el) return;
+  const list = getNoticesList().slice().sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt));
+  el.innerHTML = list.length ? list.map(noticeAdminItemHTML).join('') : '<div class="notice-empty">등록된 공지가 없습니다. 위에서 공지 성격을 선택하고 "+ 공지 추가"를 눌러 시작해보세요.</div>';
+}
+
+// ── 전체 공지 고객 팝업 ────────────────────────────────────────────
+let _noticePopupOpen = new Set();
+function toggleNoticePopupItem(id){
+  if (_noticePopupOpen.has(id)) _noticePopupOpen.delete(id); else _noticePopupOpen.add(id);
+  renderNoticePopup(getVisibleNotices());
+}
+function noticePopupItemHTML(n){
+  const isOpen = _noticePopupOpen.has(n.id);
+  return `<div class="notice-popup-item">
+    <button type="button" class="notice-popup-item-head" onclick="toggleNoticePopupItem('${n.id}')" aria-expanded="${isOpen}">
+      <span class="notice-popup-item-title">${escapeAttr(n.title||'(제목 없음)')}</span>
+      <span class="notice-popup-item-chev">${isOpen?'▲':'▼'}</span>
+    </button>
+    ${isOpen?`<div class="notice-popup-item-body">${renderNoticeBodyHTML(n.body||'')}</div>`:''}
+  </div>`;
+}
+function renderNoticePopup(notices){
+  const stage = document.getElementById('noticePopupStage');
+  if (!stage) return;
+  stage.innerHTML = `
+    <div class="notice-popup-box" onclick="event.stopPropagation()">
+      <div class="notice-popup-head">
+        <h3>📢 전체 공지</h3>
+        <button class="notice-popup-close" onclick="closeNoticePopup()" aria-label="닫기">×</button>
+      </div>
+      <div class="notice-popup-list">${notices.map(noticePopupItemHTML).join('')}</div>
+    </div>`;
+}
+// 반환값: 이번 호출에서 실제로 팝업을 노출했는지 여부 — 노출되지 않았을 때만 다음 팝업(항목별
+// 요금표 → EDITOR'S PICK)으로 이어간다
+function showNoticePopup(){
+  if (sessionStorage.getItem('noticePopupShown')) return false;
+  const notices = getVisibleNotices();
+  if (!notices.length) return false;
+  _noticePopupOpen = new Set([notices[0].id]); // 가장 최신 공지 1개는 기본으로 펼쳐서 보여준다
+  renderNoticePopup(notices);
+  const stage = document.getElementById('noticePopupStage');
+  stage.classList.add('show');
+  document.body.style.overflow='hidden';
+  sessionStorage.setItem('noticePopupShown','1');
+  return true;
+}
+function closeNoticePopup(){
+  const stage = document.getElementById('noticePopupStage');
+  stage.classList.remove('show');
+  stage.innerHTML='';
+  document.body.style.overflow='';
+  if (!showEntryPopups()) showEditorsPickPopup();
+}
+
 // Editor's Pick: 상단(해외)/하단(국내)에 각각 노출할 실제 상품 (catId, idx) 큐레이션.
 // 자세히 → 클릭 시 해당 실제 상품의 상세 정보(openProductDetail)로 이동.
 // [Phase 3 상품등록 개선] 관리자 패널 상품 고급편집에서 "EDITOR'S PICK 등록"을 체크한 상품들로
@@ -4106,6 +4577,7 @@ function collectSiteState(){
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides,
+    noticesOverride,
   };
 }
 function applySiteState(state){
@@ -4131,6 +4603,7 @@ function applySiteState(state){
   if (state.reviewsOverride !== undefined) reviewsOverride = state.reviewsOverride;
   if (state.channelsOverride !== undefined) channelsOverride = state.channelsOverride;
   if (state.channelPostOverrides !== undefined) channelPostOverrides = state.channelPostOverrides;
+  if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(IMG_HIDDEN_KEY, JSON.stringify(imageHiddenOverrides));
@@ -4146,6 +4619,7 @@ function applySiteState(state){
     if (reviewsOverride!=null) localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviewsOverride));
     if (channelsOverride!=null) localStorage.setItem(CHANNELS_KEY, JSON.stringify(channelsOverride));
     if (channelPostOverrides!=null) localStorage.setItem(CHANNEL_POST_OV_KEY, JSON.stringify(channelPostOverrides));
+    if (noticesOverride!=null) localStorage.setItem(NOTICES_KEY, JSON.stringify(noticesOverride));
     if (logoOverride!=null) localStorage.setItem(LOGO_KEY, logoOverride);
     if (taglineOverride!=null) localStorage.setItem(TAGLINE_KEY, taglineOverride);
     localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides));
@@ -4937,10 +5411,21 @@ function categoryPanelHTML(regionKey){
     <div class="product-grid" id="${gridId}"></div>
   </div>`;
 }
+// [Phase] 관리자가 "화면에서 숨기기"로 감춘 국가/권역 카드는 홈페이지 목적지 그리드에서 완전히
+// 제외한다(데이터는 그대로 보존, 언제든 다시 노출 가능)
+function visibleCategories(regionKey){
+  return CATEGORIES[regionKey].filter(c=>!imageHiddenOverrides[c.id]);
+}
 function renderRegionGrid(regionKey){
   const gridEl=document.getElementById(regionKey==='overseas'?'catGridOverseas':'catGridDomestic');
-  const selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
-  gridEl.innerHTML=CATEGORIES[regionKey].map(c=>catCardHTML(c, c.id===selectedId)).join('');
+  let selectedId=regionKey==='overseas'?selectedOverseasId:selectedDomesticId;
+  const visible=visibleCategories(regionKey);
+  // 이미 열려있던 카드가 숨김 처리되면 더 이상 클릭할 트리거(카드 자체)가 없으므로 선택도 함께 해제
+  if (selectedId && imageHiddenOverrides[selectedId]){
+    selectedId=null;
+    if (regionKey==='overseas') selectedOverseasId=null; else selectedDomesticId=null;
+  }
+  gridEl.innerHTML=visible.map(c=>catCardHTML(c, c.id===selectedId)).join('');
   const panelHost=document.getElementById(regionKey==='overseas'?'catPanelHostOverseas':'catPanelHostDomestic');
   panelHost.innerHTML=categoryPanelHTML(regionKey);
   if (selectedId) refreshCategoryProducts(regionKey);
@@ -4948,8 +5433,8 @@ function renderRegionGrid(regionKey){
 function renderCategoryGrid(){
   renderRegionGrid('overseas');
   renderRegionGrid('domestic');
-  document.getElementById('destCountOverseas').textContent=`${CATEGORIES.overseas.length}개국`;
-  document.getElementById('destCountDomestic').textContent=`${CATEGORIES.domestic.length}개 권역`;
+  document.getElementById('destCountOverseas').textContent=`${visibleCategories('overseas').length}개국`;
+  document.getElementById('destCountDomestic').textContent=`${visibleCategories('domestic').length}개 권역`;
 }
 
 // [수정] 지역(해외/국내) 안에서만 아코디언처럼 여닫힌다 — 다른 지역에서 이미 열려있는 카드는 그대로
@@ -7288,7 +7773,7 @@ function closePkgLightbox(){
 function switchTab(tab){
   activeAdminTab=tab;
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads'].forEach(id=>{
+  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads','tabNotices'].forEach(id=>{
     document.getElementById(id).style.display=(id==='tab'+tab[0].toUpperCase()+tab.slice(1))?'block':'none';
   });
   refreshCurrentAdminTab();
@@ -7299,6 +7784,7 @@ function refreshCurrentAdminTab(){
   else if (activeAdminTab==='links') renderAdminLinks();
   else if (activeAdminTab==='legal') renderAdminLegal();
   else if (activeAdminTab==='leads') fetchLeads();
+  else if (activeAdminTab==='notices') renderAdminNotices();
   if (activeAdminTab==='images') { renderAdminAbout(); }
 }
 
@@ -7333,16 +7819,16 @@ function renderAdminImages(){
   const dom=document.getElementById('adminDomestic');
   const ov=document.getElementById('adminOverseas');
   const bl=document.getElementById('adminBlog');
-  // [Phase] "교체" 버튼 오른쪽에 "화면에서 숨기기" 토글을 추가 — 업로드한 이미지를 삭제하지 않고도
-  // 화면에서만 잠시 감췄다가(기본 이미지로 자동 대체) 언제든 다시 보이게 할 수 있다. 업로드한
-  // 이미지가 없으면 감출 대상이 없으므로(이미 기본 이미지 상태) 버튼을 노출하지 않는다
+  // [Phase] "교체" 버튼 오른쪽에 "화면에서 숨기기" 토글을 추가 — 켜면 해당 국가/권역 카드 자체를
+  // 홈페이지 목적지 그리드(및 AI 추천 후보군)에서 완전히 감춘다(업로드 이미지 삭제 아님, 데이터는
+  // 보존되며 언제든 다시 노출 가능)
   const regionItemHTML = c => `
-    <div class="admin-item">
+    <div class="admin-item${imageHiddenOverrides[c.id]?' admin-item-hidden':''}">
       <div class="admin-thumb" style="background-image:url('${getImage(c.id)}')"></div>
-      <div class="admin-item-info"><div class="n">${c.ko}${c.koFull?` <span style="color:var(--gold);font-size:.72rem">${imageOverrides[c.id]?'· 사용자 업로드':'· 기본'}</span>`:''}</div><div class="k">${c.koFull?c.koFull+' · ':''}${c.en}</div></div>
+      <div class="admin-item-info"><div class="n">${imageHiddenOverrides[c.id]?'<span class="admin-item-hidden-badge">숨김</span> ':''}${c.ko}${c.koFull?` <span style="color:var(--gold);font-size:.72rem">${imageOverrides[c.id]?'· 사용자 업로드':'· 기본'}</span>`:''}</div><div class="k">${c.koFull?c.koFull+' · ':''}${c.en}</div></div>
       <div class="admin-item-actions">
         <label class="file-btn">교체<input type="file" accept="image/*" onchange="handleImageUpload('${c.id}',this)"></label>
-        ${imageOverrides[c.id]?`<button class="file-btn" onclick="toggleImageHidden('${c.id}')">${imageHiddenOverrides[c.id]?'다시 노출':'화면에서 숨기기'}</button>`:''}
+        <button class="file-btn" onclick="toggleImageHidden('${c.id}')">${imageHiddenOverrides[c.id]?'👁️ 다시 노출':'🙈 화면에서 숨기기'}</button>
         ${imageOverrides[c.id]?`<button class="file-btn danger" onclick="resetImageOverride('${c.id}')">삭제</button>`:''}
       </div>
     </div>`;
@@ -7594,11 +8080,12 @@ function resetAllOverrides(){
     '· 요금 포스터(국내/해외 패키지 캐러셀)',
     '· 출입국신고서 안내 국가 목록',
     '· 법적고지 문서 연결 URL',
+    '· 전체 공지 목록',
   ].join('\n');
   if (!confirm(`전체 초기화 시 다음 항목이 모두 기본값으로 되돌아갑니다:\n\n${itemList}\n\n계속하시겠습니까?`)) return;
   if (!confirm('되돌릴 수 없는 작업입니다. 정말로 전체 초기화하시겠습니까?')) return;
-  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;channelPostOverrides=null;imageHiddenOverrides={};
-  localStorage.removeItem(IMG_KEY);localStorage.removeItem(IMG_HIDDEN_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(CHANNELS_KEY);localStorage.removeItem(CHANNEL_POST_OV_KEY);localStorage.removeItem('kundo_channel_img_overrides_v1');localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
+  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;channelPostOverrides=null;imageHiddenOverrides={};noticesOverride=null;
+  localStorage.removeItem(IMG_KEY);localStorage.removeItem(IMG_HIDDEN_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(CHANNELS_KEY);localStorage.removeItem(CHANNEL_POST_OV_KEY);localStorage.removeItem('kundo_channel_img_overrides_v1');localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);localStorage.removeItem(NOTICES_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
 
@@ -8992,9 +9479,10 @@ function aiBudgetScore(price, pref){
   return Math.max(0, 30-(price-cap)/50000);
 }
 function computeAiRecommendations(criteria){
-  const regionIds = criteria.region==='domestic' ? CATEGORIES.domestic.map(c=>c.id)
-                   : criteria.region==='overseas' ? CATEGORIES.overseas.map(c=>c.id)
-                   : CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>c.id);
+  // 화면에서 숨긴 국가/권역은 AI 추천 후보에서도 제외한다
+  const regionIds = criteria.region==='domestic' ? visibleCategories('domestic').map(c=>c.id)
+                   : criteria.region==='overseas' ? visibleCategories('overseas').map(c=>c.id)
+                   : visibleCategories('domestic').concat(visibleCategories('overseas')).map(c=>c.id);
   const results=[];
   regionIds.forEach(catId=>{
     const cat=findCat(catId);
@@ -9157,6 +9645,7 @@ document.addEventListener('keydown',e=>{
     else if (document.getElementById('legalModalOverlay').classList.contains('show')) closeLegalModal();
     else if (document.getElementById('popupStage').classList.contains('show')) closePopupStage();
     else if (document.getElementById('epPopupStage').classList.contains('show')) closeEpPopup();
+    else if (document.getElementById('noticePopupStage').classList.contains('show')) closeNoticePopup();
   }
 });
 
@@ -9267,7 +9756,8 @@ Promise.race([
   siteStatePulled,
   new Promise(resolve=>setTimeout(()=>resolve(false), 4000)),
 ]).then(()=>{
-  setTimeout(()=>{ if (!showEntryPopups()) showEditorsPickPopup(); }, 300);
+  // [Phase] 전체 공지 팝업(긴급 안내 등 최우선 안내) → 항목별 요금표 팝업 → EDITOR'S PICK 팝업 순으로 시도
+  setTimeout(()=>{ if (!showNoticePopup()){ if (!showEntryPopups()) showEditorsPickPopup(); } }, 300);
 });
 
 // ══ EDITOR'S PICK 팝업 — 히어로 "이번 주 추천"에 노출 중인 상품 카드를 홈 진입 시 중앙 팝업(캐러셀)으로 노출 ══

@@ -192,7 +192,11 @@ header{padding-top:var(--topbar-h,108px)}
 .spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
-.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow)}
+/* [Phase] touch-action:pan-y — 카드 위에서 가로로 스와이프할 때 브라우저가 이를 페이지 전체의
+   가로 러버밴드(elastic overscroll)로 오인해 헤드라인·내비게이션·히어로 섹션 전체가 함께 옆으로
+   밀려 보이던 문제를 막는다. 세로 스크롤(pan-y)만 네이티브로 허용하고, 가로 제스처는 JS
+   (initSpotlightSwipe)가 전담해 이 카드 안에서만 전환이 일어나게 한다 */
+.spotlight{flex:1;display:flex;flex-direction:column;padding:20px;background:var(--glass-bg-strong);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:24px;box-shadow:var(--glass-shadow);touch-action:pan-y}
 .spot-stack{position:relative;flex:1;display:grid;min-height:220px}
 .spot-content{grid-area:1/1;display:flex;flex-direction:column;opacity:1;transition:opacity var(--spot-fade-ms,900ms) ease}
 .spot-content.spot-back{opacity:0;pointer-events:none}
@@ -1519,15 +1523,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   max-width:640px;
 }
 @media(max-width:780px){
-  /* [Phase] 모바일에서는 로고·타이틀·태그라인을 가로 배치 대신 위쪽 기준으로 세로로 쌓는다 —
-     로고 → "THE GOLF TREND｜..." 타이틀 → 태그라인 순으로, 태그라인은 한 줄로 노출(내용이
-     넘치면 줄바꿈 대신 가로 스크롤되도록 해 텍스트가 잘리지 않게 함) */
-  .top-bar{padding:14px 18px;gap:8px;flex-direction:column;align-items:flex-start}
-  .top-bar-logo{height:44px}
-  .top-bar-text{gap:3px;width:100%;min-width:0}
-  .top-bar-title{font-size:1rem;white-space:normal}
-  .top-bar-tagline{font-size:.68rem;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:1px;scrollbar-width:none;-ms-overflow-style:none}
-  .top-bar-tagline::-webkit-scrollbar{display:none}
+  /* [Phase] 모바일에서도 데스크톱과 동일하게 로고와 텍스트(타이틀+태그라인)를 가로로 나란히 배치 —
+     로고 왼쪽, 그 오른쪽에 타이틀·태그라인을 위아래로 쌓은 텍스트 블록. 태그라인의 기본 크기는
+     여기서 정하되, 화면이 좁거나 문구가 길어 그래도 넘칠 경우 JS(fitTopBarTagline)가 실측
+     폭 기준으로 한 번 더 줄여 항상 가로 스크롤 없이 한 줄 안에 온전히 들어가게 한다 */
+  .top-bar{padding:10px 14px;gap:8px;flex-direction:row;align-items:center}
+  .top-bar-logo{height:30px}
+  .top-bar-text{gap:2px;flex:1;min-width:0}
+  .top-bar-title{font-size:.92rem;white-space:normal;line-height:1.2}
+  .top-bar-tagline{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;letter-spacing:0}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다 */
   .top-bar{transition:transform .3s ease}
@@ -5073,7 +5077,25 @@ function renderTopBar(){
   const tl=document.getElementById('topBarTagline');
   if(tl)tl.textContent=getTagline();
   syncTopBarHeight();
+  requestAnimationFrame(fitTopBarTagline);
 }
+// [Phase] 모바일에서는 로고 폭·문구 길이가 관리자 설정에 따라 달라질 수 있어, 고정된 clamp 값만으로는
+// 태그라인이 가로로 넘쳐 잘려 보일 수 있다 — 실제 렌더링된 가용 폭(clientWidth)과 줄바꿈 없는
+// 내용의 실제 폭(scrollWidth)을 비교해, 넘치는 만큼만 글자 크기를 줄여 항상 한 줄 안에 온전히
+// 들어가도록 런타임에 자동으로 맞춘다(데스크톱은 태그라인에 이미 여유 폭이 있어 건드리지 않음)
+function fitTopBarTagline(){
+  const tl=document.getElementById('topBarTagline');
+  if(!tl) return;
+  tl.style.fontSize='';
+  if (window.innerWidth>780) return;
+  const natural = tl.scrollWidth;
+  const available = tl.clientWidth;
+  if (natural>available && available>0){
+    const current=parseFloat(getComputedStyle(tl).fontSize);
+    tl.style.fontSize=(current*(available/natural)*0.98)+'px';
+  }
+}
+window.addEventListener('resize', fitTopBarTagline);
 // [Phase 3] topbar만 스크롤 내내 화면 상단에 고정(position:fixed)되고, 헤드라인 배너·내비게이션바는
 // 일반 흐름으로 그 바로 아래에서 시작해 함께 스크롤된다. 실제 렌더링된 topbar 높이를 --topbar-h로
 // 반영해 <header>의 padding-top(= topbar가 차지하던 자리)과 앵커 스크롤 여백 계산에 사용한다.
@@ -6175,14 +6197,31 @@ function spotSwipeSlot(slot, dir){
     spotFront[slot]=backLayer;
   });
 }
+// [Phase] pdTouchMove(상품 상세 모달)와 동일한 방향 판정(directional lock) 방식 — 처음 이동량으로
+// 가로/세로를 먼저 판정한 뒤, 가로 제스처로 확정된 경우에만 touchmove에서 preventDefault()를 호출해
+// 브라우저 기본 동작(페이지 전체 가로 러버밴드 스크롤)을 막는다. 세로로 판정되면 그대로 두어 페이지
+// 스크롤을 방해하지 않는다. 이전에는 touchstart/touchend만 있어 이 preventDefault가 없었고, 그 결과
+// 카드 위 가로 스와이프가 헤드라인·내비게이션·히어로 섹션 전체를 옆으로 끌고 다니는 것처럼 보였다
 (function initSpotlightSwipe(){
   const spots = document.querySelectorAll('.spotlight');
   spots.forEach((el, slot) => {
-    let startX = 0, startY = 0, tracking = false;
+    let startX = 0, startY = 0, tracking = false, locked = false, horizontal = false;
     el.addEventListener('touchstart', e => {
       if (e.touches.length !== 1) return;
-      startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true;
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+      tracking = true; locked = false; horizontal = false;
     }, { passive: true });
+    el.addEventListener('touchmove', e => {
+      if (!tracking) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      if (!locked){
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        locked = true;
+        horizontal = Math.abs(dx) > Math.abs(dy) * 1.3;
+      }
+      if (horizontal) e.preventDefault();
+    }, { passive: false });
     el.addEventListener('touchend', e => {
       if (!tracking) return;
       tracking = false;
@@ -6193,6 +6232,7 @@ function spotSwipeSlot(slot, dir){
         spotSwipeSlot(slot, dx < 0 ? 1 : -1); // 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전
       }
     }, { passive: true });
+    el.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
   });
 })();
 

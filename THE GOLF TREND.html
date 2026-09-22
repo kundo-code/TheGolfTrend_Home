@@ -2463,7 +2463,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         "addressCountry": "KR"
       },
       "telephone": "+82-10-9405-6842",
-      "email": "edgar.meshugas@gmail.com",
+      "email": "thegolftrend@gmail.com",
       "taxID": "707-81-03126",
       "areaServed": [
         { "@type": "Country", "name": "대한민국" },
@@ -3116,7 +3116,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <div class="barcode" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>edgar.meshugas@gmail.com</b></p>
+      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>thegolftrend@gmail.com</b></p>
     </div>
   </div>
 </section>
@@ -4550,8 +4550,11 @@ function renderNoticePopup(notices){
 }
 // 반환값: 이번 호출에서 실제로 팝업을 노출했는지 여부 — 노출되지 않았을 때만 다음 팝업(항목별
 // 요금표 → EDITOR'S PICK)으로 이어간다
+// [수정] sessionStorage로 "세션당 1회"만 노출하던 것을 제거 — 새로고침(재방문)해도 매번 같은
+// sessionStorage 값이 남아있어 두 번째 새로고침부터는 활성 공지가 있어도 계속 노출되지 않는
+// 버그가 있었다. EDITOR'S PICK 팝업과 동일하게, 페이지를 열 때마다(세션·새로고침과 무관하게)
+// 활성·노출기간 조건만 만족하면 항상 노출되도록 한다
 function showNoticePopup(){
-  if (sessionStorage.getItem('noticePopupShown')) return false;
   const notices = getVisibleNotices();
   if (!notices.length) return false;
   _noticePopupOpen = new Set([notices[0].id]); // 가장 최신 공지 1개는 기본으로 펼쳐서 보여준다
@@ -4559,7 +4562,6 @@ function showNoticePopup(){
   const stage = document.getElementById('noticePopupStage');
   stage.classList.add('show');
   document.body.style.overflow='hidden';
-  sessionStorage.setItem('noticePopupShown','1');
   return true;
 }
 function closeNoticePopup(){
@@ -5221,7 +5223,7 @@ const SITE_CONTACT = {
   kakaoChannel:'http://pf.kakao.com/_SSxgFG',
   kakaoFriend:'',
   kakaoChat:'http://pf.kakao.com/_SSxgFG/chat',
-  email:'edgar.meshugas@gmail.com'
+  email:'thegolftrend@gmail.com'
 };
 
 // [Phase 3 GEO/AEO 강화] 상품별 독립 URL(예: /japan/shizuoka/xxx-cc)이 생기면
@@ -9744,7 +9746,7 @@ ${fd.get('details')||'-'}
 ※ THE GOLF TREND 홈페이지 상담 신청 폼에서 자동 발송된 메시지입니다.
 `;
   const subject = `[THE GOLF TREND] 상담 신청 - ${fd.get('name')||''} ${fd.get('destination')||''}`;
-  const mailto = `mailto:edgar.meshugas@gmail.com,kitty2yamyam@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const mailto = `mailto:thegolftrend@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   // 이메일 발송과 별개로 Supabase에도 리드 저장 (실패해도 상담 신청 흐름에는 영향 없음).
   // mailto: 이동이 (Outlook on the web 등) 브라우저 탭 자체를 이동시켜버리는 환경에서는
   // 저장 요청이 끝나기 전에 페이지가 넘어가 리드가 유실될 수 있어, 완료되거나 일정 시간(2.5초)이

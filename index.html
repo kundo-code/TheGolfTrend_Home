@@ -634,13 +634,17 @@ section.block{padding:100px 24px;position:relative}
    진한 색으로 바꿔 가독성을 높인다(다른 곳에서 공용으로 쓰는 .pd-check-list 기본색은 그대로 둠) */
 .pd-pe-notes-group{display:flex;flex-direction:column;gap:18px;padding:16px 14px;margin:2px 0;background:rgba(10,23,48,.025);border-top:1px solid rgba(10,23,48,.12);border-bottom:1px solid rgba(10,23,48,.12)}
 .pd-pe-notes-group .pd-check-list .row{color:rgba(10,23,48,.92)}
-/* [수정] "포함사항" 미리보기는 하이드하고, 놓치기 쉬운 "불포함사항"을 상세보기를 펼치지 않아도
-   보이도록 가격 정보 바로 아래에 미리보기로 노출 — 주의를 끌도록 옅은 빨간 톤 배경을 준다 */
+/* [수정] "포함사항"·"불포함사항" 모두 상세보기를 펼치지 않아도 바로 보이도록 가격 정보 바로 아래에
+   나란히 미리보기 노출 — 포함사항은 옅은 초록, 불포함사항은 옅은 빨간 톤 배경으로 구분해 가독성을 높인다 */
+.pd-pe-included-preview{padding:12px 14px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.2);border-radius:10px}
+.pd-pe-included-preview .t{font-size:.82rem;font-weight:700;color:#15803d;letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-included-preview .pd-check-list{padding:0}
+.pd-pe-included-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
 .pd-pe-notincluded-preview{padding:12px 14px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-radius:10px}
 .pd-pe-notincluded-preview .t{font-size:.82rem;font-weight:700;color:#b91c1c;letter-spacing:.02em;margin-bottom:8px}
 .pd-pe-notincluded-preview .pd-check-list{padding:0}
 .pd-pe-notincluded-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
-/* [수정] "출발 요일" 선택 내용 — 상세보기 안에서 포함사항 바로 위에 작은 레이블로 노출 */
+/* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 */
 .pd-pe-departure-day-label{font-size:.78rem;font-weight:700;color:var(--gold-deep);letter-spacing:.02em}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "여행 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
@@ -7548,15 +7552,15 @@ function renderProductDetail(p,cat,idx){
           const includedRows = bulletRows(pe.included||'','✓');
           const notIncludedRows = bulletRows(pe.notIncluded||'','✕');
           const precautionsRows = bulletRows(pe.precautions||'','•');
-          // [수정] "출발 요일"에서 선택한 내용을 포함사항 바로 위에 작은 레이블로 노출 — 항공 포함
-          // 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
+          // [수정] "출발 요일"에서 선택한 내용을 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 —
+          // 항공 포함 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
           const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
           const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label">📅 출발 요일 ${escapeAttr(peDepartureDay)}</div>` : '';
           // [수정] 포함/불포함/참고사항 세 가지를 하나의 묶음(.pd-pe-notes-group)으로 감싸 위아래
           // 구분선과 배경을 줘 가독성을 높이고, "일정 요약 타임라인"보다 위쪽에 오도록 moreBody
           // 순서를 조정한다(레이블 → 포함/불포함/참고사항 묶음 → 일정 요약 타임라인)
           const peNotesHTML = (includedRows||notIncludedRows||precautionsRows) ? `<div class="pd-pe-notes-group">${[
-            includedRows?`${departureDayLabelHTML}<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
+            includedRows?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
             notIncludedRows?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'',
             precautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>`:''
           ].join('')}</div>` : '';
@@ -7565,9 +7569,9 @@ function renderProductDetail(p,cat,idx){
             peNotesHTML,
             hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:''
           ].join('');
-          // [수정] "포함사항" 미리보기는 하이드하고, 대신 "불포함사항"을 가격 정보 바로 아래에 옅은
-          // 빨간색 박스로 미리보기 노출 — 주로 놓치기 쉬운 "포함되지 않은 항목"이 먼저 눈에 띄도록 하기 위함.
-          // 포함사항 자체는 상세보기를 펼치면(.pd-pe-notes-group) 여전히 확인할 수 있다
+          // [수정] "포함사항"은 옅은 초록색 박스, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로
+          // 아래에 나란히 미리보기 노출 — 상세보기를 펼치지 않아도 둘 다 한눈에 비교하며 볼 수 있다
+          const includedPreviewHTML = includedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'';
           const notIncludedPreviewHTML = notIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'';
           // [수정] "항공 포함 여부"·"체류일" 선택 내용을 "2인 이상" 레이블 오른쪽에 배지로 함께 노출
           const peAirfareTxt = (pe.labels && pe.labels.airfare && pe.labels.airfare!=='none') ? (AIRFARE_TXT[pe.labels.airfare]||pe.labels.airfare) : '';
@@ -7623,6 +7627,8 @@ function renderProductDetail(p,cat,idx){
             ${peMetaItems?`<div class="pd-pe-meta">${peMetaItems}</div>`:''}
             ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             ${holidayPriceRow}
+            ${departureDayLabelHTML}
+            ${includedPreviewHTML}
             ${notIncludedPreviewHTML}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
                  값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저, 공통 링크가 그 다음.
@@ -9505,6 +9511,15 @@ function priceEntryHTML(pe, i, popupCount){
       </div>
     </div>
 
+    <!-- [수정] 관리자 입력 순서를 "공통 레이블(항공·공항·항공편·티오프 등) → 출발 요일별·공휴일 요금
+         → 포함/불포함/참고사항 → 일정 요약 타임라인" 순으로 재배치 — 항공 관련 기본 정보를 먼저 입력한
+         뒤 요금·포함사항을 입력하는 흐름이 더 자연스럽다 -->
+    <!-- 이 요금표 항목에 종속된 레이블 -->
+    <details class="pe-labels ${isDomestic?'pe-disabled':''}" ${isDomestic?'':'open'}>
+      <summary>✈️ 항공정보${isDomestic?' <span class="pe-disabled-note">(국내 상품은 입력이 필요하지 않아 비활성화됨)</span>':''}</summary>
+      <fieldset ${isDomestic?'disabled':''} style="border:none;margin:0;padding:0">${labelsHTML(pe, i)}</fieldset>
+    </details>
+
     <!-- [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 특정 요일(구간)·날짜의 금액을 함께 안내.
          상세페이지 요금표 하단에 "월~목 출발 / 금 출발 / 토 출발 / 일 출발" 식의 표로 노출된다 -->
     <details class="pe-labels" open>
@@ -9550,12 +9565,6 @@ function priceEntryHTML(pe, i, popupCount){
         <label>불포함사항</label><textarea class="auto-grow" style="min-height:100px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(pe.notIncluded||'')}</textarea>
         <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:80px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updatePriceEntry(${i},'precautions',this.value);autoGrowTextarea(this)">${escapeAttr(pe.precautions||'')}</textarea>
       </div>
-    </details>
-
-    <!-- 이 요금표 항목에 종속된 레이블 -->
-    <details class="pe-labels ${isDomestic?'pe-disabled':''}" ${isDomestic?'':'open'}>
-      <summary>✈️ 항공정보${isDomestic?' <span class="pe-disabled-note">(국내 상품은 입력이 필요하지 않아 비활성화됨)</span>':''}</summary>
-      <fieldset ${isDomestic?'disabled':''} style="border:none;margin:0;padding:0">${labelsHTML(pe, i)}</fieldset>
     </details>
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->

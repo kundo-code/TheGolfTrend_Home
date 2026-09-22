@@ -885,6 +885,21 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-login .al-submit:hover{box-shadow:0 6px 20px rgba(221,179,103,.35)}
 .admin-login .al-submit:disabled{opacity:.6;cursor:not-allowed}
 .admin-login .al-error{font-size:.8rem;color:var(--nm-danger);min-height:1.2em}
+.al-forgot-link{align-self:flex-start;background:none;border:none;padding:0;font-size:.78rem;color:var(--nm-blue);text-decoration:underline;cursor:pointer}
+.al-forgot-link:hover{color:var(--nm-blue-deep)}
+.al-forgot-msg{font-size:.78rem;min-height:1.2em;color:var(--nm-text-soft)}
+.al-forgot-msg.is-error{color:var(--nm-danger)}
+.al-forgot-msg.is-ok{color:#2e8b57}
+.admin-pwchange-toggle{flex-shrink:0;margin-left:8px;background:var(--nm-surface);border:none;color:var(--nm-text-soft);font-size:.76rem;font-weight:600;padding:8px 14px;border-radius:var(--nm-r-pill);cursor:pointer;box-shadow:var(--nm-shadow-raised-sm)}
+.admin-pwchange-toggle:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
+.admin-pwchange-form{flex-direction:column;gap:10px;padding:14px 16px;background:var(--nm-surface-light);border-bottom:1px solid var(--nm-border)}
+.admin-pwchange-form input{padding:10px 12px;background:var(--nm-white);border:none;border-radius:var(--nm-r-md);color:var(--nm-text);font-size:.86rem;font-family:'Pretendard','Noto Sans KR',sans-serif;box-shadow:var(--nm-shadow-inset)}
+.admin-pwchange-form input:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
+.admin-pwchange-form .pwc-submit{padding:10px;background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);border:none;border-radius:var(--nm-r-md);color:#fff;font-size:.86rem;font-weight:700;cursor:pointer;box-shadow:var(--nm-shadow-blue)}
+.admin-pwchange-form .pwc-submit:disabled{opacity:.6;cursor:not-allowed}
+.pwc-msg{font-size:.78rem;min-height:1.2em;color:var(--nm-text-soft)}
+.pwc-msg.is-error{color:var(--nm-danger)}
+.pwc-msg.is-ok{color:#2e8b57}
 #adminAuthedArea{display:flex;flex-direction:column;flex:1;min-height:0}
 .admin-tabs{display:flex;padding:8px 12px;gap:4px;background:var(--nm-surface-light);border-bottom:1px solid var(--nm-border);overflow-x:auto;flex-shrink:0;min-height:48px}
 .admin-tabs button{padding:9px 16px;background:transparent;border:none;border-radius:var(--nm-r-pill);color:var(--nm-text-soft);font-size:.86rem;font-weight:600;cursor:pointer;position:relative;transition:all .2s;white-space:nowrap}
@@ -1520,6 +1535,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .foot-grid>div:nth-child(1),.foot-grid>div:nth-child(4){grid-column:1/-1}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
+  /* [버그 수정] 모바일(주로 iOS Safari)에서 input의 font-size가 16px 미만이면 포커스 시 브라우저가
+     자동으로 화면을 확대(zoom)한다 — 관리자 로그인 폼의 이메일/비밀번호 입력칸이 .9rem(약 14.4px)
+     이었던 탓에, 입력칸을 탭하는 순간 화면이 확대되며 로그인 버튼이 화면 밖으로 밀려나거나 다음
+     입력칸으로 포커스를 옮기기 어려워져 "로그인이 안 된다"처럼 보이는 증상으로 이어졌다. 모바일에서만
+     16px로 키워 확대를 원천 차단한다 */
+  .admin-login input,.admin-pwchange-form input{font-size:16px}
   .apc-fields,.adv-body .grid-2,.card-label-grid{grid-template-columns:1fr}
   .pd-container{margin:16px auto;padding:0 12px 20px}
   .adv-editor{margin:16px 12px}
@@ -1597,10 +1618,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      fitTopBarTagline)가 실측 폭 기준으로 한 번 더 줄여 항상 가로 스크롤/줄바꿈 없이 데스크톱처럼
      한 줄 안에 온전히 들어가게 한다 */
   .top-bar{padding:10px 14px;gap:8px;flex-direction:row;align-items:center}
-  .top-bar-logo{height:30px}
+  .top-bar-logo{height:34.5px}
   .top-bar-text{gap:1px;flex:1;min-width:0}
-  .top-bar-title{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
-  .top-bar-slogan{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
+  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
+  .top-bar-slogan{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
   .top-bar-tagline{font-size:.62rem;white-space:nowrap;overflow:hidden;max-width:100%;letter-spacing:0;margin-top:0}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
@@ -3414,6 +3435,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <input type="password" id="alPassword" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleAdminLoginClick(event)">
     <button class="al-submit" onclick="handleAdminLoginClick(event)">로그인</button>
     <p class="al-error" id="alError"></p>
+    <button type="button" class="al-forgot-link" onclick="handleForgotPasswordClick(event)">비밀번호를 잊으셨나요?</button>
+    <p class="al-forgot-msg" id="alForgotMsg"></p>
   </div>
   <div id="adminAuthedArea">
   <div class="admin-tabs">
@@ -3423,7 +3446,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
     <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
+    <button class="admin-pwchange-toggle" id="adminPwChangeToggle" onclick="togglePwChangeForm()" style="display:none">비밀번호 변경</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
+  </div>
+  <div class="admin-pwchange-form" id="adminPwChangeForm" style="display:none">
+    <input type="password" id="pwcNew" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password">
+    <input type="password" id="pwcConfirm" placeholder="새 비밀번호 확인" autocomplete="new-password" onkeydown="if(event.key==='Enter')handleChangePasswordClick(event)">
+    <button class="pwc-submit" onclick="handleChangePasswordClick(event)">변경하기</button>
+    <p class="pwc-msg" id="pwcMsg"></p>
   </div>
   <div class="admin-body">
     <div id="tabImages">
@@ -4867,6 +4897,24 @@ async function adminLogout(){
   if (client) await client.auth.signOut();
   adminSession = null;
   renderAdminAuthGate();
+}
+// [Phase] 관리자 로그인 아이디/비밀번호를 잊었을 때 스스로 재설정할 수 있는 기능이 전혀 없어
+// 계정이 잠기면 코드를 직접 고치는 수밖에 없었다 — Supabase Auth가 기본 제공하는 이메일 기반
+// 비밀번호 재설정(resetPasswordForEmail)과, 로그인된 상태에서의 비밀번호 변경(updateUser)을
+// 연결해 관리자 스스로 계정을 복구·변경할 수 있게 한다
+async function adminResetPassword(email){
+  const client=getSupabaseClient();
+  if (!client) return {ok:false, message:'Supabase 클라이언트를 불러오지 못했습니다 (인터넷 연결을 확인하세요).'};
+  const { error } = await client.auth.resetPasswordForEmail(email);
+  if (error) return {ok:false, message:error.message};
+  return {ok:true};
+}
+async function adminChangePassword(newPassword){
+  const client=getSupabaseClient();
+  if (!client) return {ok:false, message:'Supabase 클라이언트를 불러오지 못했습니다 (인터넷 연결을 확인하세요).'};
+  const { error } = await client.auth.updateUser({password:newPassword});
+  if (error) return {ok:false, message:error.message};
+  return {ok:true};
 }
 function storagePath(prefix, file){
   // 리사이즈된 canvas.toBlob() 결과처럼 .name이 없는 순수 Blob도 대비해 확장자 기본값을 둠
@@ -7647,6 +7695,33 @@ function renderProductDetail(p,cat,idx){
   setTimeout(updateGalleryDisplay,50);
 }
 
+// [버그 수정] html2canvas는 일정 요약 타임라인의 원형/알약 배지(.pd-sch-day-num, .pd-sch-opt .tag,
+// .pd-sch-meals span) 안의 텍스트를 실제 라이브 화면과 달리 박스 아래쪽에 치우치게(거의 바닥에
+// 붙어 잘리도록) 그린다 — 배경 박스 자체의 크기/위치는 정확하지만 텍스트만 어긋나는, 해당 배지들에
+// 국한된 html2canvas 자체의 텍스트 세로 위치 계산 버그다. 실측 결과 텍스트는 항상 "그 요소 자신의
+// 전체 높이" 바닥 부근에 그려지므로, 캡처용 클론에서만 각 배지를 (보이는 높이만큼 overflow:hidden
+// 처리한 바깥 박스) + (바깥 높이의 절반 높이로, 위쪽부터 배치한 안쪽 텍스트 div)로 감싸면 그 안쪽
+// div 바닥 부근에 그려지는 텍스트가 결과적으로 바깥 박스의 정중앙에 오게 된다. 라이브 화면은 원래
+// CSS(flex 중앙 정렬)로 이미 정확히 중앙 정렬되어 있으므로 그대로 두고, 이 보정은 onclone으로 캡처
+// 시점의 복제 DOM에만 적용해 라이브 화면에는 영향을 주지 않는다
+function fixScheduleBadgesForCapture(clonedDoc){
+  function halfHeightFix(el,H){
+    const text=el.textContent;
+    el.textContent='';
+    el.style.overflow='hidden';
+    el.style.height=H+'px';
+    el.style.display='inline-block';
+    el.style.alignItems='';
+    el.style.justifyContent='';
+    const inner=document.createElement('div');
+    inner.textContent=text;
+    inner.style.cssText=`height:${H/2}px;line-height:${H/2}px;text-align:center;white-space:nowrap;`;
+    el.appendChild(inner);
+  }
+  clonedDoc.querySelectorAll('.pd-sch-day-num').forEach(el=>halfHeightFix(el,24));
+  clonedDoc.querySelectorAll('.pd-sch-opt .tag').forEach(el=>halfHeightFix(el,19));
+  clonedDoc.querySelectorAll('.pd-sch-meals span').forEach(el=>halfHeightFix(el,22));
+}
 function shareProductImage(btn){
   if (!currentPd || typeof html2canvas==='undefined') return;
   const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
@@ -7655,7 +7730,7 @@ function shareProductImage(btn){
   const origLabel=btn.textContent;
   btn.disabled=true; btn.textContent='이미지 생성 중...';
   if (shareBar) shareBar.style.display='none';
-  html2canvas(target,{backgroundColor:'#030D26',scale:2,useCORS:true,imageTimeout:8000}).then(canvas=>{
+  html2canvas(target,{backgroundColor:'#030D26',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture}).then(canvas=>{
     if (shareBar) shareBar.style.display='';
     btn.disabled=false; btn.textContent=origLabel;
     canvas.toBlob(blob=>{
@@ -7691,7 +7766,7 @@ function sharePriceEntryImage(btn){
   const origLabel=btn.textContent;
   btn.disabled=true; btn.textContent='이미지 생성 중...';
   btn.style.visibility='hidden';
-  html2canvas(target,{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000}).then(canvas=>{
+  html2canvas(target,{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture}).then(canvas=>{
     btn.style.visibility='';
     btn.disabled=false; btn.textContent=origLabel;
     canvas.toBlob(blob=>{
@@ -7743,11 +7818,18 @@ function renderAdminAuthGate(){
   const gate=document.getElementById('adminLoginGate');
   const area=document.getElementById('adminAuthedArea');
   const logoutBtn=document.getElementById('adminLogoutBtn');
+  const pwToggleBtn=document.getElementById('adminPwChangeToggle');
   if (!gate||!area) return;
   const loggedIn=!!adminSession;
   gate.style.display=loggedIn?'none':'flex';
   area.style.display=loggedIn?'flex':'none';
   if (logoutBtn) logoutBtn.style.display=loggedIn?'inline-block':'none';
+  if (pwToggleBtn) pwToggleBtn.style.display=loggedIn?'inline-block':'none';
+  if (!loggedIn){
+    // 로그인 화면으로 돌아왔을 때 비밀번호 변경 폼이 열려있던 상태로 남지 않도록 초기화
+    const pwForm=document.getElementById('adminPwChangeForm');
+    if (pwForm) pwForm.style.display='none';
+  }
 }
 async function handleAdminLoginClick(e){
   if (e) e.preventDefault();
@@ -7765,6 +7847,52 @@ async function handleAdminLoginClick(e){
   passEl.value='';
   renderAdminAuthGate();
   refreshCurrentAdminTab();
+}
+async function handleForgotPasswordClick(e){
+  if (e) e.preventDefault();
+  const emailEl=document.getElementById('alEmail');
+  const msgEl=document.getElementById('alForgotMsg');
+  const btn=e&&e.target;
+  const email=emailEl.value.trim();
+  msgEl.className='al-forgot-msg';
+  if (!email){ msgEl.textContent='재설정 링크를 받을 이메일을 먼저 입력하세요.'; msgEl.classList.add('is-error'); return; }
+  if (btn) btn.disabled=true;
+  const origTxt=msgEl.textContent; msgEl.textContent='전송 중...';
+  const result=await adminResetPassword(email);
+  if (btn) btn.disabled=false;
+  if (!result.ok){ msgEl.textContent=result.message||'재설정 링크 전송에 실패했습니다.'; msgEl.classList.add('is-error'); return; }
+  msgEl.textContent='재설정 링크를 이메일로 보냈습니다. 메일함을 확인하세요.';
+  msgEl.classList.add('is-ok');
+}
+function togglePwChangeForm(){
+  const form=document.getElementById('adminPwChangeForm');
+  if (!form) return;
+  const showing=form.style.display!=='none';
+  form.style.display=showing?'none':'flex';
+  if (!showing){
+    document.getElementById('pwcNew').value='';
+    document.getElementById('pwcConfirm').value='';
+    document.getElementById('pwcMsg').textContent='';
+    document.getElementById('pwcMsg').className='pwc-msg';
+  }
+}
+async function handleChangePasswordClick(e){
+  if (e) e.preventDefault();
+  const newEl=document.getElementById('pwcNew');
+  const confirmEl=document.getElementById('pwcConfirm');
+  const msgEl=document.getElementById('pwcMsg');
+  const btn=document.querySelector('.pwc-submit');
+  const newPassword=newEl.value, confirmPassword=confirmEl.value;
+  msgEl.className='pwc-msg';
+  if (!newPassword||newPassword.length<6){ msgEl.textContent='비밀번호는 6자 이상이어야 합니다.'; msgEl.classList.add('is-error'); return; }
+  if (newPassword!==confirmPassword){ msgEl.textContent='비밀번호 확인이 일치하지 않습니다.'; msgEl.classList.add('is-error'); return; }
+  btn.disabled=true; const origTxt=btn.textContent; btn.textContent='변경 중...';
+  const result=await adminChangePassword(newPassword);
+  btn.disabled=false; btn.textContent=origTxt;
+  if (!result.ok){ msgEl.textContent=result.message||'비밀번호 변경에 실패했습니다.'; msgEl.classList.add('is-error'); return; }
+  newEl.value=''; confirmEl.value='';
+  msgEl.textContent='비밀번호가 변경되었습니다.';
+  msgEl.classList.add('is-ok');
 }
 
 // 관리자 패널 너비 드래그 조절

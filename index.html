@@ -270,18 +270,17 @@ section.block{padding:100px 24px;position:relative}
 .cat-card .divider::before,.cat-card .divider::after{content:'';height:1px;background:var(--gold);flex:1;max-width:60px;opacity:.7}
 .cat-card .name-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,3.6vw,3rem);color:#fff;line-height:1.05;letter-spacing:.02em;text-shadow:0 4px 20px rgba(0,0,0,.4);word-break:keep-all}
 .cat-card .name-en{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:500;color:var(--gold);font-size:.95rem;letter-spacing:.25em;margin-top:6px;text-transform:uppercase}
-/* [Phase] 모바일에서는 국가별/권역별 선택 카드를 작은 아이콘형 타일로 축소해 2줄 안에 모두 들어가게
-   배치한다 — 국내 6개는 3열×2줄, 해외 9개는 5열×2줄로 정확히 2줄에 맞아떨어진다. 자세한 문구(태그라인·
-   상품 수 배지·구분선)는 공간이 부족하므로 감추고 지역명만 작게 남긴다 */
+/* [Phase] 모바일에서는 국가별/권역별 선택 카드를 한 줄에 3개씩 고정으로 배치한다 — 국내 6개는
+   3열×2줄, 해외 9개는 3열×3줄(열 개수 자체는 아래 RESPONSIVE 섹션에서 지정 — 1024px 구간
+   규칙보다 뒤에 있어야 우선 적용되므로 그쪽으로 모아둠). 자세한 문구(태그라인·상품 수 배지·
+   구분선)는 공간이 부족하므로 감추고 지역명만 작게 남긴다 */
 @media(max-width:780px){
   .cat-grid{gap:8px}
-  #catGridDomestic{grid-template-columns:repeat(3,1fr)}
-  #catGridOverseas{grid-template-columns:repeat(5,1fr)}
   .cat-card{aspect-ratio:1;border-radius:12px}
-  .cat-card .content{padding:6px}
+  .cat-card .content{padding:8px}
   .cat-card .top,.cat-card .divider{display:none}
-  .cat-card .name-ko{font-size:.6rem;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
-  .cat-card .name-en{font-size:.4rem;margin-top:2px;letter-spacing:.06em}
+  .cat-card .name-ko{font-size:.78rem;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+  .cat-card .name-en{font-size:.5rem;margin-top:2px;letter-spacing:.06em}
 }
 
 /* CATEGORY VIEW + PRODUCT GRID */
@@ -313,7 +312,8 @@ section.block{padding:100px 24px;position:relative}
 /* [Phase] 상품이 3개 이하라 캐러셀(.pc-carousel)로 전환되지 않는 경우에도, 모바일에서는 좌/우로
    슬라이딩해서 넘겨볼 수 있도록 그리드 대신 가로 스크롤 트랙으로 바꾼다(네이티브 scroll-snap) */
 @media(max-width:780px){
-  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none;-ms-overflow-style:none}
+  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-y;cursor:grab;padding-bottom:6px;scrollbar-width:none;-ms-overflow-style:none}
+  .product-grid.dragging{cursor:grabbing;scroll-behavior:auto}
   .product-grid::-webkit-scrollbar{display:none}
   .product-grid>.product{flex:0 0 86%;scroll-snap-align:center}
   .product-grid>.empty-state{flex:0 0 100%}
@@ -732,13 +732,18 @@ section.block{padding:100px 24px;position:relative}
 /* BOOKING */
 .booking-wrap{padding:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border:1px solid var(--glass-border);border-radius:32px;box-shadow:var(--glass-shadow)}
 .pass{display:grid;grid-template-columns:1fr 240px;gap:0;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid var(--glass-border-soft)}
-.pass-main{padding:36px 40px}
-.pass-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:18px;margin-bottom:24px;border-bottom:1px dashed rgba(255,255,255,.25)}
+/* [Phase] 그리드/플렉스 아이템은 기본적으로 min-width:auto라서, 안의 텍스트(예: pass-head의
+   브랜드명+코드)가 줄바꿈되지 않으면 트랙 폭보다 넓게 밀려나 부모의 overflow:hidden에 잘려 보일
+   수 있다 — min-width:0으로 내용에 맞춰 정상적으로 줄어들(필요시 줄바꿈될) 수 있게 한다 */
+.pass-main{padding:36px 40px;min-width:0}
+.pass-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 12px;padding-bottom:18px;margin-bottom:24px;border-bottom:1px dashed rgba(255,255,255,.25)}
 .pass-head .brand{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:#fff;font-size:1.1rem;font-weight:500;letter-spacing:.05em}
 .pass-head .brand small{color:var(--gold);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;font-family:'Pretendard','Noto Sans KR',sans-serif;margin-left:8px}
 .pass-head .code{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.85rem;color:rgba(247,245,240,.6);letter-spacing:.15em}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.field{display:flex;flex-direction:column;gap:6px}
+/* min-width:0 — .form-grid의 그리드 아이템(기본값 min-width:auto)이라 내용(placeholder 텍스트 등)의
+   최소 폭 때문에 트랙이 부모보다 넓어지며 우측이 잘려 보이던 문제를 함께 방지 */
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field.full{grid-column:1/-1}
 .field label{font-size:.7rem;font-weight:600;letter-spacing:.18em;color:rgba(247,245,240,.6);text-transform:uppercase}
 .field input,.field select,.field textarea{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;color:#fff;font-size:.95rem;font-family:'Pretendard','Noto Sans KR',sans-serif;transition:border-color .2s,background .2s}
@@ -763,7 +768,7 @@ section.block{padding:100px 24px;position:relative}
 .style-picker .sp-group-title{font-size:.78rem;font-weight:700;color:var(--gold);letter-spacing:.05em;margin-bottom:2px}
 @media(max-width:780px){.style-picker{grid-template-columns:1fr}}
 .submit-btn:hover{background:var(--gold);color:#fff;transform:translateY(-1px);box-shadow:0 10px 30px rgba(221,179,103,.35)}
-.pass-stub{border-left:1px dashed rgba(255,255,255,.25);padding:36px 28px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;background:rgba(255,255,255,.04);position:relative}
+.pass-stub{border-left:1px dashed rgba(255,255,255,.25);padding:36px 28px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;background:rgba(255,255,255,.04);position:relative;min-width:0}
 .pass-stub .row .k{font-size:.68rem;letter-spacing:.18em;color:rgba(247,245,240,.5);text-transform:uppercase;display:block;margin-bottom:4px}
 .pass-stub .row .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.3rem;color:#fff;font-weight:500}
 .barcode{height:44px;background:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 5px,#fff 5px 7px,transparent 7px 11px);opacity:.85;border-radius:2px}
@@ -1426,17 +1431,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .core-values{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:780px){
-  header{top:12px;width:calc(100% - 24px)}
   .hero{padding:40px 16px 60px}
   .headline{padding-top:0}
   .headline-frame{padding:0}
   .headline-img{border-radius:0}
   .hero-main{padding:32px 24px}
+  /* [Phase] 데스크톱 clamp의 최솟값(2.6rem)이 좁은 모바일 화면에는 여전히 커서 "필드에서
+     시작되는," 한 줄이 폭을 넘겨 중간에 줄바꿈되던 문제 — 모바일 전용으로 더 작은 최솟값을 둔다 */
+  .hero h1{font-size:clamp(1.6rem,7.8vw,2.4rem)}
   .hero-values{grid-template-columns:repeat(2,1fr);row-gap:20px}
   .hv-item:nth-child(3)::before{display:none}
   section.block{padding:70px 16px}
-  /* cat-grid·product-grid·blog-grid는 모바일 전용 가로 슬라이딩 레이아웃(각 전용 규칙)을 따로 쓰므로
-     여기서는 더 이상 1열 그리드로 강제하지 않는다 */
+  /* product-grid·blog-grid는 모바일 전용 가로 슬라이딩 레이아웃(각 전용 규칙)을 따로 쓰므로
+     여기서는 더 이상 1열 그리드로 강제하지 않는다. cat-grid는 항상 3열 고정 — 위쪽의 1024px
+     구간 규칙(repeat(2,1fr))이 이 780px 구간에서도 적용되지만, 더 뒤(아래)에 있는 이 규칙이
+     같은 선택자·우선순위에서 나중에 선언되어 최종적으로 이긴다(문서 순서 우선) */
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
   .link-groups{grid-template-columns:1fr}
   .category-view{padding:24px 20px}
   .link-hub-inner{padding:24px 20px}
@@ -5721,6 +5731,10 @@ function refreshCategoryProducts(regionKey){
     grid.className='product-grid';
     grid.innerHTML=filtered.map(({p,i})=>productCardHTML(p,selectedId,i)).join('');
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
+    // [Phase] 상품이 3개 이하라 캐러셀(.pc-track)로 전환되지 않아도, 모바일에서 손가락으로 화면을
+    // 댄 채 빠르게 밀어 넘기는 드래그 스크롤이 항상 되도록 캐러셀과 동일한 방식을 적용한다.
+    // 데스크톱(가로 스크롤이 없는 그리드)에서는 스크롤할 내용이 없어 사실상 아무 효과가 없다
+    initCarouselDrag(grid);
   }
 }
 
@@ -6072,6 +6086,50 @@ function cycleSpot(){
     });
   });
 }
+// [Phase] EDITOR'S PICK 카드를 손가락으로 좌/우로 스와이프하면 그 슬롯(해외/국내)만 수동으로
+// 다음/이전 상품으로 즉시 전환한다 — 8초마다 두 슬롯을 함께 넘기는 자동 cycleSpot()과는 별개로,
+// 사용자가 직접 트리거하는 단일 슬롯 전환. 기존 크로스페이드 전환 로직을 그대로 재사용한다
+function spotSwipeSlot(slot, dir){
+  const listKey = slot===0 ? 'overseas' : 'domestic';
+  const list = getSpotlightList(listKey);
+  if (!list.length) return;
+  const curIdx = slot===0 ? spotOverseasIdx : spotDomesticIdx;
+  const nextIdx = ((curIdx + dir) % list.length + list.length) % list.length;
+  const nextEntry = list[nextIdx];
+  preloadImage(spotlightVisualUrl(nextEntry)).then(()=>{
+    if (slot===0) spotOverseasIdx = nextIdx; else spotDomesticIdx = nextIdx;
+    const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
+    renderSpotlightSlot(slot, backLayer, nextEntry);
+    const frontEl=document.getElementById('spotLayer'+slot+spotFront[slot]);
+    const backEl=document.getElementById('spotLayer'+slot+backLayer);
+    requestAnimationFrame(()=>{
+      frontEl.classList.add('spot-back');
+      backEl.classList.remove('spot-back');
+    });
+    setTimeout(()=>{ const v=frontEl.querySelector('video'); if (v) v.pause(); }, SPOT_FADE_MS);
+    spotFront[slot]=backLayer;
+  });
+}
+(function initSpotlightSwipe(){
+  const spots = document.querySelectorAll('.spotlight');
+  spots.forEach((el, slot) => {
+    let startX = 0, startY = 0, tracking = false;
+    el.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true;
+    }, { passive: true });
+    el.addEventListener('touchend', e => {
+      if (!tracking) return;
+      tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      // 가로로 충분히(40px 이상) 움직였고, 세로 움직임보다 뚜렷하게 클 때만 스와이프로 인정
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        spotSwipeSlot(slot, dx < 0 ? 1 : -1); // 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전
+      }
+    }, { passive: true });
+  });
+})();
 
 // BLOG
 // [Phase] 여행 이야기 카드의 링크 URL을 직접 입력하지 않고, 연결된 상품의 "🔗 연결 링크 · URL"

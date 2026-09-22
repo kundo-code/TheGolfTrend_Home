@@ -1448,13 +1448,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .headline-media video.headline-img,.headline-media img.headline-img{height:360px}
 }
 @media(max-width:780px){
-  /* [Phase] object-fit:cover는 고정 높이에 맞춰 영상의 위/아래(또는 좌/우)를 잘라내 중요한 장면이
-     잘려 보일 수 있다 — 모바일에서는 contain으로 바꿔 영상 전체가 잘리지 않고 중앙에 온전히
-     보이도록 한다(배경이 어두운 남색이라 레터박스가 생겨도 자연스럽게 어울림) */
-  .headline-media video.headline-img,.headline-media img.headline-img{height:260px;object-fit:contain;object-position:center}
+  /* [수정] contain으로 두면 영상 비율이 컨테이너와 다를 때 좌우에 여백(레터박스)이 남아 화면을
+     꽉 채우지 못했다 — 데스크톱과 동일하게 cover로 바꿔 가로 폭을 항상 꽉 채우도록 하고, 대신
+     위/아래가 필요한 만큼 잘리도록 한다(좌우 여백보다 상하 크롭이 배너 목적에 더 알맞다) */
+  .headline-media video.headline-img,.headline-media img.headline-img{height:260px;object-fit:cover;object-position:center}
 }
 @media(max-width:480px){
-  .headline-media video.headline-img,.headline-media img.headline-img{height:200px;object-fit:contain;object-position:center}
+  .headline-media video.headline-img,.headline-media img.headline-img{height:200px;object-fit:cover;object-position:center}
 }
 /* Admin headline preview */
 .admin-headline-item{padding:14px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);box-shadow:var(--nm-shadow-raised-sm)}

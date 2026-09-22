@@ -299,7 +299,10 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 펼쳐진 상품 목록 안에서 같은 지역의 다른 국가/지역으로 바로 이동할 수 있는 네비게이션 바 */
 /* [수정] overflow-x:auto가 있으면 overflow-y가 auto로 바뀌어(스펙상 강제 스왑) 버튼의 그림자·hover
    이동이 위아래로 잘려 보였다 — flex-wrap으로 이미 줄바꿈 처리되므로 overflow는 제거 */
-.cv-nav{display:flex;gap:10px;flex-wrap:wrap;padding:10px 0 24px;margin-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10)}
+.cv-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 24px;margin-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10)}
+/* [Phase] 월별/시즌별 필터(.period-filter-label)와 동일한 구조 — 권역별/국가별 이동 버튼 좌측에도
+   "📍 권역별/국가별 보기" 제목을 두어 두 가로 스크롤 바의 구조를 통일한다 */
+.cv-nav-label{flex-shrink:0;font-size:.78rem;color:rgba(10,23,48,.5);font-weight:600;letter-spacing:.02em;margin-right:4px}
 .cv-nav-item{flex-shrink:0;padding:8px 18px;border-radius:100px;border:1px solid rgba(10,23,48,.12);background:rgba(10,23,48,.03);color:rgba(10,23,48,.65);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit;box-shadow:var(--btn-elevate),var(--btn-shine)}
 .cv-nav-item:hover{background:rgba(10,23,48,.08);color:var(--pine-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .cv-nav-item:active{transform:translateY(1px);box-shadow:var(--btn-press)}
@@ -2413,6 +2416,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* ── AI 추천 (Phase 3) ──────────────────────────────────────────── */
 .ai-recommend-section .wrap{max-width:1280px}
 .ai-quiz{padding:40px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border:1px solid var(--glass-border);border-radius:28px;box-shadow:var(--glass-shadow);display:grid;gap:24px}
+/* [Phase] .ai-q-group는 .ai-quiz(grid)의 grid item이라 기본값이 min-width:auto — 안의
+   .ai-chip-group을 가로 스크롤(overflow-x:auto)+줄바꿈 없음(flex-shrink:0)으로 바꾼 뒤로는, 칩
+   전체를 한 줄로 늘어놓은 min-content 폭이 그대로 grid item의 최소 폭이 되어 grid 트랙과 페이지
+   전체가 그 폭만큼 가로로 넘치던 문제(모바일에서 화면이 반으로 잘려 보이는 원인) — min-width:0으로
+   트랙 폭에 맞춰 정상적으로 줄어들 수 있게 한다 */
+.ai-q-group{min-width:0}
 .ai-q-group.full{grid-column:1/-1}
 .ai-q-label{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-bottom:10px}
 .ai-q-label em{font-style:normal;font-weight:500;color:rgba(10,23,48,.5);font-size:.8rem}
@@ -2480,10 +2489,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .ai-chip-group::-webkit-scrollbar,.cv-nav::-webkit-scrollbar,.period-filter-row::-webkit-scrollbar{display:none}
   .ai-chip-group.dragging,.cv-nav.dragging,.period-filter-row.dragging{cursor:grabbing}
   .ai-chip-group .ai-chip,.cv-nav .cv-nav-item,.period-filter-row .period-filter-btn,.period-filter-row .period-filter-label{flex-shrink:0}
-  /* [Phase] "🗓 월별 보기"/"🗓 시즌별 보기" 제목이 버튼들과 함께 스크롤되어 사라지면 지금 무슨
-     기준으로 필터링 중인지 알기 어렵다 — 제목만 왼쪽에 고정(sticky)해 버튼만 그 옆에서 스크롤되게
-     하고, 버튼이 제목 밑으로 스크롤돼 겹칠 때 가려지도록 배경을 함께 채운다 */
-  .period-filter-row .period-filter-label{position:sticky;left:0;z-index:2;background:rgba(255,255,255,.92);padding-right:8px}
+  /* [Phase] "📍 권역별/국가별 보기"·"🗓 월별/시즌별 보기" 제목이 버튼들과 함께 스크롤되어 사라지면
+     지금 무슨 기준으로 보고 있는지 알기 어렵다 — 제목만 왼쪽에 고정(sticky)해 버튼만 그 옆에서
+     스크롤되게 하고, 버튼이 제목 밑으로 스크롤돼 겹칠 때 가려지도록 배경을 함께 채운다. 제목과
+     버튼 사이에는 세로 구분선을 둬서, 버튼이 스크롤돼 제목 바로 옆까지 와도 서로 겹쳐 보이지
+     않고 명확히 구분되게 한다 */
+  .cv-nav .cv-nav-label,.period-filter-row .period-filter-label{
+    position:sticky;left:0;z-index:2;background:rgba(255,255,255,.92);
+    padding-right:10px;margin-right:2px;border-right:1px solid rgba(10,23,48,.15);
+  }
 }
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
@@ -5569,9 +5583,11 @@ function catCardHTML(c, isOpen){
 }
 // [수정] 패널 안에서 같은 지역의 다른 국가/지역으로 바로 이동할 수 있는 네비게이션 바
 function regionNavHTML(regionKey, selectedId){
-  return CATEGORIES[regionKey].map(c=>
+  const label = `<span class="cv-nav-label">📍 ${regionKey==='overseas'?'국가별':'권역별'} 보기</span>`;
+  const items = CATEGORIES[regionKey].map(c=>
     `<button type="button" class="cv-nav-item ${c.id===selectedId?'active':''}" onclick="selectCategory('${c.id}',{scroll:false})">${c.ko}</button>`
   ).join('');
+  return label+items;
 }
 // [Phase] 국가별(해외)=시즌, 권역별(국내)=월 단위 기간별 소팅 버튼 — 국가/지역 선택 버튼 바로 아래 배치
 function periodFilterHTML(regionKey){
@@ -5800,6 +5816,7 @@ function refreshCategoryProducts(regionKey){
     grid.innerHTML=productCarouselHTML(filtered.map(x=>x.p), selectedId, regionKey, filtered.map(x=>x.i));
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
     initProductCarousel(regionKey);
+    fitProductCardsToScreen(grid);
   } else {
     grid.className='product-grid';
     grid.innerHTML=filtered.map(({p,i})=>productCardHTML(p,selectedId,i)).join('');
@@ -5808,6 +5825,7 @@ function refreshCategoryProducts(regionKey){
     // 댄 채 빠르게 밀어 넘기는 드래그 스크롤이 항상 되도록 캐러셀과 동일한 방식을 적용한다.
     // 데스크톱(가로 스크롤이 없는 그리드)에서는 스크롤할 내용이 없어 사실상 아무 효과가 없다
     initCarouselDrag(grid);
+    fitProductCardsToScreen(grid);
   }
 }
 
@@ -5914,6 +5932,29 @@ function pcUpdateDots(regionKey){
   const counter = document.getElementById('pcCounter_'+regionKey);
   if (counter) counter.textContent = `${idx+1} / ${total}`;
 }
+// [Phase] 모바일에서 상품 카드(이미지+제목+메타+가격) 전체가 한 화면 안에 다 들어오도록, 실제
+// 렌더링된 카드 높이가 화면 높이 예산을 넘으면 zoom으로 축소한다 — transform:scale과 달리 zoom은
+// 레이아웃 자체를 줄여주므로(주변 빈 공간이 남지 않음) 캐러셀 행의 높이도 함께 줄어든다. 지나치게
+// 작아져 읽기 힘들어지는 것은 최소 배율(minScale)로 막는다
+function fitProductCardsToScreen(grid){
+  if (!grid || window.innerWidth>780) return;
+  const cards = grid.querySelectorAll('.product');
+  if (!cards.length) return;
+  // 화면 높이에서 카드 위에 놓이는 고정 요소(내비게이션·지역/국가 선택 바·기간별 필터 등)와
+  // 아래쪽 여백을 위한 예산을 뺀 나머지가 카드에 배정할 수 있는 높이다
+  const available = window.innerHeight - 320;
+  const minScale = 0.72;
+  cards.forEach(card=>{
+    card.style.zoom = '';
+    const natural = card.getBoundingClientRect().height;
+    if (available>0 && natural>available){
+      card.style.zoom = Math.max(minScale, available/natural);
+    }
+  });
+}
+window.addEventListener('resize', ()=>{
+  document.querySelectorAll('.product-grid, .pc-track').forEach(fitProductCardsToScreen);
+});
 // [수정] PC 마우스 드래그로 트랙을 직접 밀 수 있게 한다(요금 포스터 캐러셀과 동일한 방식) — 실제로
 // 드래그가 발생했을 때만 뒤따르는 click을 한 번 차단해, 카드 클릭으로 상세페이지가 열리는 동작
 // (openProductDetail)과 드래그 넘기기가 서로 방해하지 않도록 한다.

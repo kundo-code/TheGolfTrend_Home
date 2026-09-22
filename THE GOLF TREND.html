@@ -270,6 +270,19 @@ section.block{padding:100px 24px;position:relative}
 .cat-card .divider::before,.cat-card .divider::after{content:'';height:1px;background:var(--gold);flex:1;max-width:60px;opacity:.7}
 .cat-card .name-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,3.6vw,3rem);color:#fff;line-height:1.05;letter-spacing:.02em;text-shadow:0 4px 20px rgba(0,0,0,.4);word-break:keep-all}
 .cat-card .name-en{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:500;color:var(--gold);font-size:.95rem;letter-spacing:.25em;margin-top:6px;text-transform:uppercase}
+/* [Phase] 모바일에서는 국가별/권역별 선택 카드를 작은 아이콘형 타일로 축소해 2줄 안에 모두 들어가게
+   배치한다 — 국내 6개는 3열×2줄, 해외 9개는 5열×2줄로 정확히 2줄에 맞아떨어진다. 자세한 문구(태그라인·
+   상품 수 배지·구분선)는 공간이 부족하므로 감추고 지역명만 작게 남긴다 */
+@media(max-width:780px){
+  .cat-grid{gap:8px}
+  #catGridDomestic{grid-template-columns:repeat(3,1fr)}
+  #catGridOverseas{grid-template-columns:repeat(5,1fr)}
+  .cat-card{aspect-ratio:1;border-radius:12px}
+  .cat-card .content{padding:6px}
+  .cat-card .top,.cat-card .divider{display:none}
+  .cat-card .name-ko{font-size:.6rem;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+  .cat-card .name-en{font-size:.4rem;margin-top:2px;letter-spacing:.06em}
+}
 
 /* CATEGORY VIEW + PRODUCT GRID */
 /* [수정] 카드 바로 아래가 아닌, 해외/국내 카드 그룹 하단에 상품 목록 패널이 펼쳐진다 */
@@ -297,6 +310,14 @@ section.block{padding:100px 24px;position:relative}
 .period-filter-btn:hover{background:rgba(10,23,48,.08);color:var(--pine-deep)}
 .period-filter-btn.active{background:var(--fairway);border-color:var(--fairway);color:#fff;font-weight:600}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+/* [Phase] 상품이 3개 이하라 캐러셀(.pc-carousel)로 전환되지 않는 경우에도, 모바일에서는 좌/우로
+   슬라이딩해서 넘겨볼 수 있도록 그리드 대신 가로 스크롤 트랙으로 바꾼다(네이티브 scroll-snap) */
+@media(max-width:780px){
+  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none;-ms-overflow-style:none}
+  .product-grid::-webkit-scrollbar{display:none}
+  .product-grid>.product{flex:0 0 86%;scroll-snap-align:center}
+  .product-grid>.empty-state{flex:0 0 100%}
+}
 /* [수정] 상품이 4개 이상(3개 초과)이면 위 .product-grid 대신 이 캐러셀로 전환 — 카드(.product)
    마크업은 동일하게 재사용하고, 배치를 grid에서 가로 스크롤 flex 트랙으로 바꿔 좌우로 넘겨볼 수
    있게 한다. 네이티브 overflow-x 스크롤(+scroll-snap)을 기반으로 하므로 모바일 스와이프는 그대로
@@ -634,6 +655,13 @@ section.block{padding:100px 24px;position:relative}
 
 /* BLOG */
 .blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+/* [Phase] 모바일에서는 여행 이야기 카드도 좌/우로 슬라이딩해서 넘겨볼 수 있게 한다. 컨테이너
+   좌우에 여백을 줘서 첫/마지막 카드도 다음/이전 카드가 옆에서 살짝 보이는("peek") 캐러셀 형태로 노출 */
+@media(max-width:780px){
+  .blog-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px 8% 10px;scrollbar-width:none;-ms-overflow-style:none}
+  .blog-grid::-webkit-scrollbar{display:none}
+  .blog-grid>.post{flex:0 0 84%;scroll-snap-align:center}
+}
 /* [수정] .product와 동일한 이유(backdrop-filter+hover transform 겹침으로 인한 화면 깜빡임 방지) */
 .post{padding:0;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;overflow:hidden;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(10,23,48,.16),0 2px 6px rgba(10,23,48,.08);transform:translateZ(0);will-change:transform}
 .post:hover{transform:translateY(-6px) translateZ(0);border-color:var(--gold);background:#fff;box-shadow:0 26px 54px rgba(10,23,48,.26),0 8px 18px rgba(10,23,48,.16)}
@@ -1321,10 +1349,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .headline-media video.headline-img,.headline-media img.headline-img{height:360px}
 }
 @media(max-width:780px){
-  .headline-media video.headline-img,.headline-media img.headline-img{height:260px}
+  /* [Phase] object-fit:cover는 고정 높이에 맞춰 영상의 위/아래(또는 좌/우)를 잘라내 중요한 장면이
+     잘려 보일 수 있다 — 모바일에서는 contain으로 바꿔 영상 전체가 잘리지 않고 중앙에 온전히
+     보이도록 한다(배경이 어두운 남색이라 레터박스가 생겨도 자연스럽게 어울림) */
+  .headline-media video.headline-img,.headline-media img.headline-img{height:260px;object-fit:contain;object-position:center}
 }
 @media(max-width:480px){
-  .headline-media video.headline-img,.headline-media img.headline-img{height:200px}
+  .headline-media video.headline-img,.headline-media img.headline-img{height:200px;object-fit:contain;object-position:center}
 }
 /* Admin headline preview */
 .admin-headline-item{padding:14px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);box-shadow:var(--nm-shadow-raised-sm)}
@@ -1396,10 +1427,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 @media(max-width:780px){
   header{top:12px;width:calc(100% - 24px)}
-  .nav{padding:12px 20px}
-  .nav ul{display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;background:rgba(0,0,0,.95);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:24px;padding:20px;flex-direction:column;gap:16px}
-  .nav ul.open{display:flex}
-  .menu-btn{display:block}
   .hero{padding:40px 16px 60px}
   .headline{padding-top:0}
   .headline-frame{padding:0}
@@ -1408,12 +1435,19 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .hero-values{grid-template-columns:repeat(2,1fr);row-gap:20px}
   .hv-item:nth-child(3)::before{display:none}
   section.block{padding:70px 16px}
-  .cat-grid,.product-grid,.blog-grid,.link-groups{grid-template-columns:1fr}
+  /* cat-grid·product-grid·blog-grid는 모바일 전용 가로 슬라이딩 레이아웃(각 전용 규칙)을 따로 쓰므로
+     여기서는 더 이상 1열 그리드로 강제하지 않는다 */
+  .link-groups{grid-template-columns:1fr}
   .category-view{padding:24px 20px}
   .link-hub-inner{padding:24px 20px}
   .pass{grid-template-columns:1fr}
   .pass-main{padding:28px 24px}
-  .pass-stub{border-left:none;border-top:1px dashed rgba(255,255,255,.25);flex-direction:row;flex-wrap:wrap;padding:24px}
+  /* [Phase] From/To/Gate 행과 바코드가 명시적 너비 없이 flex-wrap되면서 바코드가 거의 0 너비로
+     찌그러져(내용이 잘려) 보이던 문제 — 행들은 유연하게 나눠 갖고, 바코드는 항상 자기 줄 전체를
+     차지하도록 고정해 잘리지 않게 한다 */
+  .pass-stub{border-left:none;border-top:1px dashed rgba(255,255,255,.25);flex-direction:row;flex-wrap:wrap;padding:24px;gap:18px 24px}
+  .pass-stub .row{flex:1 1 auto;min-width:80px}
+  .pass-stub .barcode{flex:1 1 100%;width:100%}
   .booking-wrap{padding:28px 20px}
   .form-grid{grid-template-columns:1fr}
   .foot-grid{grid-template-columns:1fr}
@@ -1470,10 +1504,23 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   max-width:640px;
 }
 @media(max-width:780px){
-  .top-bar{padding:14px 18px;gap:14px}
-  .top-bar-logo{height:52px}
-  .top-bar-title{font-size:1.1rem;white-space:normal}
-  .top-bar-tagline{font-size:.75rem}
+  /* [Phase] 모바일에서는 로고·타이틀·태그라인을 가로 배치 대신 위쪽 기준으로 세로로 쌓는다 —
+     로고 → "THE GOLF TREND｜..." 타이틀 → 태그라인 순으로, 태그라인은 한 줄로 노출(내용이
+     넘치면 줄바꿈 대신 가로 스크롤되도록 해 텍스트가 잘리지 않게 함) */
+  .top-bar{padding:14px 18px;gap:8px;flex-direction:column;align-items:flex-start}
+  .top-bar-logo{height:44px}
+  .top-bar-text{gap:3px;width:100%;min-width:0}
+  .top-bar-title{font-size:1rem;white-space:normal}
+  .top-bar-tagline{font-size:.68rem;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;padding-bottom:1px;scrollbar-width:none;-ms-overflow-style:none}
+  .top-bar-tagline::-webkit-scrollbar{display:none}
+  /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
+     다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다 */
+  .top-bar{transition:transform .3s ease}
+  body.mobile-topbar-hidden .top-bar{transform:translateY(-100%)}
+  /* nav의 top(sticky 기준값)에는 transition을 주지 않는다 — position:sticky는 스크롤마다 계속
+     재계산되는데, top에 transition이 걸려 있으면 그 재계산마다 애니메이션이 겹쳐 스크롤 중 nav가
+     엉뚱한 위치에 붕 떠 보이는 문제가 생긴다. topbar 숨김에 맞춰 값만 즉시 전환한다 */
+  body.mobile-topbar-hidden .nav{top:0}
 }
 
 /* ═══════════════ NAV BAR (헤드라인 하단) ═══════════════ */
@@ -1501,21 +1548,30 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .nav ul li a:active{color:var(--pine-deep);background:var(--gold);box-shadow:var(--btn-press)}
 .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .nav .cta{
+  display:inline-flex;align-items:center;gap:6px;
   padding:8px 18px;background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
   border-radius:100px;font-size:.82rem;font-weight:700;letter-spacing:.04em;
   transition:all .2s;white-space:nowrap;box-shadow:var(--btn-elevate),var(--btn-shine);
 }
 .nav .cta:hover{background:var(--btn-highlight),#CA8E3F;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .nav .cta:active{background:#CA8E3F;transform:translateY(1px);box-shadow:var(--btn-press)}
+.nav .cta-icon{font-size:1em;line-height:1}
 .nav .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
 @media(max-width:780px){
-  .nav ul{display:none;position:absolute;top:54px;left:0;right:0;
-    background:rgba(0,0,0,.98);border-bottom:1px solid rgba(221,179,103,.2);
-    flex-direction:column;padding:12px 0;gap:0;z-index:300}
-  .nav ul.open{display:flex}
-  .nav ul li a{padding:12px 24px;border-radius:0;width:100%}
-  .nav .menu-btn{display:block}
-  .nav .cta{font-size:.78rem;padding:6px 12px}
+  /* [Phase] 햄버거로 접지 않고 메뉴 항목을 바에 그대로(가로 스크롤 가능하게) 노출 — 다 안 들어가면
+     좌우로 살짝 스크롤해서 볼 수 있다. "티타임 상담"은 텍스트를 감추고 아이콘만 남긴 원형 버튼으로 축소 */
+  .nav{padding:0 10px;justify-content:flex-start;gap:6px}
+  .nav ul{display:flex;position:static;background:none;border:none;
+    flex-direction:row;justify-content:flex-start;padding:0;gap:2px;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+  .nav ul::-webkit-scrollbar{display:none}
+  .nav ul li{flex-shrink:0}
+  .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
+  .nav-right{flex-shrink:0}
+  .nav .menu-btn{display:none}
+  .nav .cta{width:34px;height:34px;padding:0;border-radius:50%;justify-content:center;gap:0}
+  .nav .cta-label{display:none}
+  .nav .cta-icon{font-size:1.15rem}
 }
 
 /* ═══════════════ ABOUT BANNER ═══════════════ */
@@ -1694,6 +1750,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .notice-schedule-row{margin-top:8px}
 .notice-schedule-row .abc-field-row{margin-bottom:12px}
 .notice-schedule-row .abc-field-row:last-child{margin-bottom:0}
+/* [Phase] "전체 공지" 탭의 모든 필드 행은 라벨을 값의 세로 중앙이 아닌 맨 위 기준으로 맞춘다 —
+   2줄 이상인 값(날짜/시간 + 안내문구 등)일 때 라벨이 아래로 처져 보이던 문제 수정 */
+#tabNotices .abc-field-row{align-items:start}
 .notice-empty{padding:24px;text-align:center;color:var(--nm-text-soft);font-size:.85rem}
 
 /* ── 전체 공지 고객 팝업 ──────────────────────────────────────────── */
@@ -2511,8 +2570,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <li><a href="#booking">예약 문의</a></li>
   </ul>
   <div class="nav-right">
-    <a href="#booking" class="cta">티타임 상담</a>
-    <button class="menu-btn" id="navMenuBtn" aria-label="메뉴" aria-expanded="false" aria-controls="navMenu" onclick="toggleNavMenu()">☰</button>
+    <a href="#booking" class="cta" aria-label="티타임 상담"><span class="cta-icon" aria-hidden="true">⛳</span><span class="cta-label">티타임 상담</span></a>
   </div>
 </nav>
 
@@ -3151,7 +3209,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
   <div id="adminAuthedArea">
   <div class="admin-tabs">
-    <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button class="active" data-tab="images" onclick="switchTab('images')">이미지</button>
     <button data-tab="products" onclick="switchTab('products')">상품</button>
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
@@ -4972,6 +5029,28 @@ function syncTopBarHeight(){
   if(el) document.documentElement.style.setProperty('--topbar-h', el.offsetHeight+'px');
 }
 window.addEventListener('resize', syncTopBarHeight);
+// [Phase] 모바일에서 헤드라인 배너를 지나 아래로 스크롤하면 topbar를 위로 숨기고 nav만 상단에
+// 남긴다. 위로 스크롤하거나(방향 무관하게 위로 스크롤 시 바로 복귀) 헤드라인 배너 영역 안으로
+// 돌아오면 topbar가 다시 나타난다. 데스크톱(780px 초과)에서는 항상 원래대로 topbar를 보여준다
+(function initMobileTopbarScroll(){
+  let lastY = window.scrollY;
+  window.addEventListener('scroll', () => {
+    if (window.innerWidth > 780){
+      document.body.classList.remove('mobile-topbar-hidden');
+      lastY = window.scrollY;
+      return;
+    }
+    const y = window.scrollY;
+    const headline = document.querySelector('.headline');
+    const headlineBottom = headline ? headline.getBoundingClientRect().bottom + y : 0;
+    if (y <= headlineBottom || y < lastY){
+      document.body.classList.remove('mobile-topbar-hidden');
+    } else if (y > headlineBottom && y > lastY){
+      document.body.classList.add('mobile-topbar-hidden');
+    }
+    lastY = y;
+  }, { passive: true });
+})();
 let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;

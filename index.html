@@ -284,8 +284,8 @@ section.block{padding:100px 24px;position:relative}
   .cat-card{aspect-ratio:1;border-radius:12px}
   .cat-card .content{padding:8px}
   .cat-card .top,.cat-card .divider{display:none}
-  .cat-card .name-ko{font-size:.78rem;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
-  .cat-card .name-en{font-size:.5rem;margin-top:2px;letter-spacing:.06em}
+  .cat-card .name-ko{font-size:1.17rem;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+  .cat-card .name-en{font-size:.75rem;margin-top:2px;letter-spacing:.06em}
 }
 
 /* CATEGORY VIEW + PRODUCT GRID */
@@ -1024,6 +1024,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-dup{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm)}
 .apc-dup:hover{box-shadow:var(--nm-shadow-hover)}
 .apc-delete:hover{box-shadow:var(--nm-shadow-hover)}
+/* [추가] "이동" — 상품을 다른 국가/권역으로 옮기는 드롭다운. 버튼들과 나란히 놓이도록 다른 apc-btn-sm과
+   동일한 크기·모양으로 맞추되, select 특유의 기본 화살표 UI가 남도록 appearance는 건드리지 않는다 */
+.apc-move-select{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);color:var(--nm-text)}
+.apc-move-select:hover{box-shadow:var(--nm-shadow-hover)}
 /* [버그 수정] 모바일에서 관리자 패널 상품 리스트 각 항목 줄(.apc-head)이 손잡이·번호·제목·배지·
    화살표에 이어 팝업노출 토글·고급편집·복제·삭제 버튼까지 한 줄에 모두 욱여넣으려다 보니, 좁은
    화면 폭에서 오른쪽 버튼들(특히 "고급 편집")이 화면 밖으로 밀려 잘려 보였다 — 모바일에서만
@@ -3317,8 +3321,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
                 <label>희망 여행지 · Destination</label>
                 <select id="bookDest" name="destination">
                   <option>선택해 주세요</option>
-                  <optgroup label="국내"><option>강원권</option><option>충청권 (충북·충남·대전·세종)</option><option>호남권 (전북·전남·광주)</option><option>영남권 (경북·대구·경남·부산·울산)</option><option>수도권</option><option>제주</option></optgroup>
                   <optgroup label="해외"><option>일본</option><option>중국</option><option>몽골</option><option>베트남</option><option>태국</option><option>필리핀</option><option>말레이시아</option><option>인도네시아</option><option>미국령-괌/사이판</option></optgroup>
+                  <optgroup label="국내"><option>강원권</option><option>충청권 (충북·충남·대전·세종)</option><option>호남권 (전북·전남·광주)</option><option>영남권 (경북·대구·경남·부산·울산)</option><option>수도권</option><option>제주</option></optgroup>
                 </select>
               </div>
               <div class="field"><label>출발일 · Departure</label><input type="date" name="departureDate"></div>
@@ -8808,6 +8812,29 @@ function renderProductCatSelect(){
   const ov=CATEGORIES.overseas.map(c=>`<option value="${c.id}"${c.id===activeProductCat?' selected':''}>${c.ko}</option>`).join('');
   sel.innerHTML=`<optgroup label="국내 권역">${dom}</optgroup><optgroup label="해외 국가">${ov}</optgroup>`;
 }
+// [추가] 상품 리스트의 "이동" 드롭다운에 채울 국내 권역/해외 국가 옵션 — 현재 카테고리(excludeCatId)는
+// 이동할 필요가 없으므로 목록에서 제외한다
+function productMoveOptionsHTML(excludeCatId){
+  const dom=CATEGORIES.domestic.filter(c=>c.id!==excludeCatId).map(c=>`<option value="${c.id}">${c.koFull||c.ko}</option>`).join('');
+  const ov=CATEGORIES.overseas.filter(c=>c.id!==excludeCatId).map(c=>`<option value="${c.id}">${c.ko}</option>`).join('');
+  return `<option value="" selected disabled>🔀 이동</option><optgroup label="국내 권역">${dom}</optgroup><optgroup label="해외 국가">${ov}</optgroup>`;
+}
+// [추가] 상품을 다른 국가/권역 카테고리로 옮긴다 — 현재 카테고리 배열에서 빼서 대상 카테고리 배열
+// 맨 끝에 추가. 이동한 상품은 대상 카테고리 기준으로는 새 항목이므로 override 배열에 들어간다
+function moveProduct(idx, targetCatId){
+  if (!targetCatId || targetCatId===activeProductCat) return;
+  if (productOverrides[activeProductCat]===undefined){
+    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+  }
+  const targetCat=findCat(targetCatId);
+  if (!targetCat || !confirm(`이 상품을 "${targetCat.koFull||targetCat.ko}"(으)로 이동하시겠습니까?`)) return;
+  const [item] = productOverrides[activeProductCat].splice(idx,1);
+  if (productOverrides[targetCatId]===undefined){
+    productOverrides[targetCatId]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[targetCatId]||[])).map(ensureExtended);
+  }
+  productOverrides[targetCatId].push(item);
+  saveProducts();renderProductAdmin();renderCategoryGrid();
+}
 function renderProductAdmin(catId){
   if (catId) activeProductCat=catId;
   const list=document.getElementById('productList');
@@ -8844,6 +8871,7 @@ function renderProductAdmin(catId){
           </label>
           <button class="apc-btn-sm apc-edit-btn" onclick="openAdvEditor('${activeProductCat}',${i})">고급 편집</button>
           <button class="apc-btn-sm apc-dup" onclick="duplicateProduct(${i})">복제</button>
+          <select class="apc-btn-sm apc-move-select" title="다른 국가/권역으로 이동" onchange="if(this.value){moveProduct(${i},this.value);} this.value='';">${productMoveOptionsHTML(activeProductCat)}</select>
           <button class="apc-btn-sm apc-delete" onclick="deleteProduct(${i})">삭제</button>
         </div>
       </summary>

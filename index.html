@@ -1407,6 +1407,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .about-hero h2 em{font-style:italic;color:var(--gold)}
 .about-hero .lead{color:rgba(247,245,240,.8);font-size:1.05rem}
 .about-hero .company-line{display:inline-flex;align-items:center;gap:10px;margin-top:24px;padding:8px 18px;border-radius:100px;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.28);font-size:.82rem;color:var(--gold);font-weight:500}
+@media(max-width:780px){
+  /* [Phase] "🏢 (주)더골프트렌드 · 대표이사 오선영 · Since 2023"가 좁은 화면에서 여러 줄로
+     줄바꿈되던 것을, 배지 폭에 맞춰 JS(fitCompanyLine)가 실측 기준으로 글자 크기를 줄여
+     항상 한 줄 안에 들어가게 한다 */
+  .about-hero .company-line{white-space:nowrap;overflow:hidden;max-width:100%}
+}
 .core-values{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:64px}
 .cv-card{padding:30px 22px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border-soft);border-radius:20px;transition:all .3s;text-align:center;transform:translateZ(0);will-change:transform}
 .cv-card:hover{transform:translateY(-4px) translateZ(0);border-color:var(--glass-border);background:var(--glass-bg-strong)}
@@ -1426,7 +1432,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-company .fc-line b{color:var(--pine-deep);font-weight:600}
 
 /* FOOTER TERMS/POLICY LINKS (상단부) */
-.foot-terms{max-width:1280px;margin:24px auto 0;padding:20px 0;border-top:1px solid rgba(10,23,48,.08);display:flex;flex-wrap:wrap;gap:6px}
+.foot-terms{max-width:1280px;margin:24px auto 0;padding:20px 0;border-top:1px solid rgba(10,23,48,.08);display:flex;flex-wrap:wrap;gap:12px 14px}
 .foot-terms a{display:inline-flex;align-items:center;padding:7px 14px;font-size:.82rem;color:rgba(10,23,48,.65);border-radius:100px;background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.08);transition:all .2s;cursor:pointer}
 .foot-terms a:hover{background:rgba(221,179,103,.15);border-color:var(--gold);color:var(--pine-deep);transform:translateY(-1px)}
 .foot-terms a.hi{background:rgba(221,179,103,.14);color:var(--gold-deep);border-color:rgba(221,179,103,.35);font-weight:600}
@@ -1477,7 +1483,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pass-stub .barcode{flex:1 1 100%;width:100%}
   .booking-wrap{padding:28px 20px}
   .form-grid{grid-template-columns:1fr}
-  .foot-grid{grid-template-columns:1fr}
+  /* [Phase] 모바일에서도 "국내 권역"(2번째 칸)과 "해외 국가"(3번째 칸)만 좌우로 나란히 보이도록
+     2열 그리드로 바꾸고, 브랜드 소개(1번째)와 Support(4번째)는 그대로 한 줄 전체를 차지하게 한다 */
+  .foot-grid{grid-template-columns:1fr 1fr;gap:24px 20px}
+  .foot-grid>div:nth-child(1),.foot-grid>div:nth-child(4){grid-column:1/-1}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
   .apc-fields,.adv-body .grid-2,.card-label-grid{grid-template-columns:1fr}
@@ -1485,8 +1494,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .adv-editor{margin:16px 12px}
   .core-values{grid-template-columns:1fr}
   .hero-slogan{margin:-8px 0 20px}
-  .foot-terms{gap:5px}
-  .foot-terms a{padding:6px 11px;font-size:.76rem}
+  /* [Phase] "통합이용약관" 등 약관 버튼들이 모바일에서 한 줄에 3개씩 배치되도록 grid로 전환하고,
+     버튼 사이즈(패딩/글자크기)를 조금 줄인다. 버튼들은 #footerLegal span 안에 렌더링되므로
+     span을 display:contents로 두어 a 태그들이 .foot-terms의 grid item으로 직접 참여하게 한다 */
+  .foot-terms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px}
+  .foot-terms #footerLegal{display:contents}
+  .foot-terms a{padding:6px 8px;font-size:.72rem;justify-content:center;text-align:center}
   .foot-bottom .fbo-insurance{font-size:.78rem;padding:12px 14px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
@@ -1532,13 +1545,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 @media(max-width:780px){
   /* [Phase] 모바일에서도 데스크톱과 동일하게 로고와 텍스트(타이틀+태그라인)를 가로로 나란히 배치 —
-     로고 왼쪽, 그 오른쪽에 타이틀·태그라인을 위아래로 쌓은 텍스트 블록. 태그라인의 기본 크기는
-     여기서 정하되, 화면이 좁거나 문구가 길어 그래도 넘칠 경우 JS(fitTopBarTagline)가 실측
-     폭 기준으로 한 번 더 줄여 항상 가로 스크롤 없이 한 줄 안에 온전히 들어가게 한다 */
+     로고 왼쪽, 그 오른쪽에 타이틀·태그라인을 위아래로 쌓은 텍스트 블록. 타이틀·태그라인 둘 다
+     기본 크기는 여기서 정하되, 화면이 좁거나 문구가 길어 그래도 넘칠 경우 JS(fitTopBarTitle·
+     fitTopBarTagline)가 실측 폭 기준으로 한 번 더 줄여 항상 가로 스크롤/줄바꿈 없이 데스크톱처럼
+     한 줄 안에 온전히 들어가게 한다 */
   .top-bar{padding:10px 14px;gap:8px;flex-direction:row;align-items:center}
   .top-bar-logo{height:30px}
   .top-bar-text{gap:2px;flex:1;min-width:0}
-  .top-bar-title{font-size:.92rem;white-space:normal;line-height:1.2}
+  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
   .top-bar-tagline{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;letter-spacing:0}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다 */
@@ -1601,15 +1615,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
   .nav-right{display:none}
   .nav .menu-btn{display:none}
-  /* [Phase] .admin-fab(width/height:56px, bottom:30px;right:30px)과 같은 크기로, 그 바로 위에
-     16px 간격을 두고 쌓는다: bottom = 30(admin-fab bottom) + 56(admin-fab height) + 16(간격) */
+  /* [Phase] .admin-fab(width/height:56px, bottom:30px;right:30px) 왼쪽에 나란히 배치한다.
+     사이즈는 원래(56px)의 80%를 줄여 20%(11.2px)로, 투명도는 70%로 적용.
+     admin-fab과 세로 중심을 맞추기 위해 bottom을 admin-fab 중심(30+28=58px)에서
+     tt-fab 높이의 절반(5.6px)을 뺀 값으로 조정하고, right는 admin-fab 우측 여백(30)
+     + admin-fab 너비(56) + 간격(12)으로 admin-fab 좌측에 위치시킨다 */
   .mobile-tt-fab{
     display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:102px;right:30px;z-index:99;
-    width:56px;height:56px;border-radius:50%;
+    position:fixed;bottom:52.4px;right:98px;z-index:99;
+    width:11.2px;height:11.2px;border-radius:50%;
     background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
-    font-size:1.5rem;box-shadow:var(--btn-elevate),0 8px 24px rgba(221,179,103,.35);
-    transition:transform .2s;
+    font-size:.3rem;box-shadow:var(--btn-elevate),0 8px 24px rgba(221,179,103,.35);
+    transition:transform .2s;opacity:.7;
   }
   .mobile-tt-fab:hover,.mobile-tt-fab:active{transform:scale(1.08)}
 }
@@ -2368,7 +2385,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      이미지 위아래에 불필요한 여백으로 남는다. 최소 여백만 남겨 이미지와 위(제목·버튼)/아래(도트)
      텍스트 사이 간격을 좁힌다 */
   .pkg-track-wrap{padding:10px 0}
-  .pkg-dots-row{margin-top:8px}
+  /* [Phase] 도트(●●●●)와 "N / 전체" 카운터가 한 줄에 나란히 있던 것을, 도트 줄 아래에 카운터를
+     별도 줄로 두는 2단 구성으로 바꾼다 */
+  .pkg-dots-row{flex-direction:column;gap:6px;margin-top:8px}
   /* [Phase] 카드가 화면을 거의 채우는 크기로 나란히 붙어 있어, 그림자가 카드 경계를 흐릿하게
      만들고 옆에 살짝 보이는 카드를 가린다 — 그림자를 없애고 테두리만으로 카드를 구분한다.
      호버 확대 전환도 터치에는 의미가 없으므로 함께 끈다. .pkg-poster-section .pkg-card(위쪽)
@@ -2634,7 +2653,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <img id="topBarLogo" src="" alt="THE GOLF TREND 로고" class="top-bar-logo">
   </a>
   <div class="top-bar-text">
-    <div class="top-bar-title">THE GOLF TREND<span class="top-bar-divider">｜</span>골프를 넘어, 삶의 경험으로.</div>
+    <div class="top-bar-title" id="topBarTitle">THE GOLF TREND<span class="top-bar-divider">｜</span>골프를 넘어, 삶의 경험으로.</div>
     <div class="top-bar-tagline" id="topBarTagline"></div>
   </div>
 </div>
@@ -2987,7 +3006,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <span class="tag" style="display:inline-block;font-size:.72rem;letter-spacing:.22em;color:var(--gold);font-weight:700;text-transform:uppercase">About Us · 회사 소개</span>
       <h2>Beyond Golf,<br><em>Into Life.</em></h2>
       <p class="lead">20년 이상의 해외 골프 운영 경험을 가진 (주)더골프트렌드. 필드 위의 한 라운드부터 그 후의 저녁 식사까지, 잊지 못할 여행을 큐레이션합니다.</p>
-      <span class="company-line">🏢 (주)더골프트렌드 · 대표이사 오선영 · Since 2023</span>
+      <span class="company-line" id="companyLine">🏢 (주)더골프트렌드 · 대표이사 오선영 · Since 2023</span>
     </div>
 
     <div class="cv-section-header">
@@ -5123,12 +5142,25 @@ function renderTopBar(){
   const tl=document.getElementById('topBarTagline');
   if(tl)tl.textContent=getTagline();
   syncTopBarHeight();
-  requestAnimationFrame(fitTopBarTagline);
+  requestAnimationFrame(()=>{ fitTopBarTitle(); fitTopBarTagline(); });
 }
-// [Phase] 모바일에서는 로고 폭·문구 길이가 관리자 설정에 따라 달라질 수 있어, 고정된 clamp 값만으로는
-// 태그라인이 가로로 넘쳐 잘려 보일 수 있다 — 실제 렌더링된 가용 폭(clientWidth)과 줄바꿈 없는
-// 내용의 실제 폭(scrollWidth)을 비교해, 넘치는 만큼만 글자 크기를 줄여 항상 한 줄 안에 온전히
-// 들어가도록 런타임에 자동으로 맞춘다(데스크톱은 태그라인에 이미 여유 폭이 있어 건드리지 않음)
+// [Phase] 모바일에서는 로고 폭·문구 길이가 관리자 설정에 따라 달라질 수 있어, 고정된 clamp/font-size
+// 값만으로는 타이틀·태그라인이 가로로 넘치거나(태그라인) 줄바꿈되어(타이틀) 데스크톱과 다르게 보일 수
+// 있다 — 실제 렌더링된 가용 폭(clientWidth)과 줄바꿈 없는 내용의 실제 폭(scrollWidth)을 비교해,
+// 넘치는 만큼만 글자 크기를 줄여 항상 한 줄 안에 온전히 들어가도록 런타임에 자동으로 맞춘다
+// (데스크톱은 이미 여유 폭이 있어 건드리지 않음)
+function fitTopBarTitle(){
+  const title=document.getElementById('topBarTitle');
+  if(!title) return;
+  title.style.fontSize='';
+  if (window.innerWidth>780) return;
+  const natural = title.scrollWidth;
+  const available = title.clientWidth;
+  if (natural>available && available>0){
+    const current=parseFloat(getComputedStyle(title).fontSize);
+    title.style.fontSize=(current*(available/natural)*0.98)+'px';
+  }
+}
 function fitTopBarTagline(){
   const tl=document.getElementById('topBarTagline');
   if(!tl) return;
@@ -5141,7 +5173,24 @@ function fitTopBarTagline(){
     tl.style.fontSize=(current*(available/natural)*0.98)+'px';
   }
 }
-window.addEventListener('resize', fitTopBarTagline);
+window.addEventListener('resize', ()=>{ fitTopBarTitle(); fitTopBarTagline(); });
+// [Phase] 회사소개의 "🏢 (주)더골프트렌드 · 대표이사 오선영 · Since 2023" 배지도 위와 동일한 방식으로
+// 좁은 화면에서 줄바꿈되지 않고 한 줄 안에 들어가도록 자동으로 맞춘다(고정 문구라 관리자 설정에
+// 따라 달라지지 않지만, 화면 폭에 따른 실측 기준 축소는 동일하게 필요)
+function fitCompanyLine(){
+  const el=document.getElementById('companyLine');
+  if(!el) return;
+  el.style.fontSize='';
+  if (window.innerWidth>780) return;
+  const natural = el.scrollWidth;
+  const available = el.clientWidth;
+  if (natural>available && available>0){
+    const current=parseFloat(getComputedStyle(el).fontSize);
+    el.style.fontSize=(current*(available/natural)*0.98)+'px';
+  }
+}
+window.addEventListener('resize', fitCompanyLine);
+requestAnimationFrame(fitCompanyLine);
 // [Phase 3] topbar만 스크롤 내내 화면 상단에 고정(position:fixed)되고, 헤드라인 배너·내비게이션바는
 // 일반 흐름으로 그 바로 아래에서 시작해 함께 스크롤된다. 실제 렌더링된 topbar 높이를 --topbar-h로
 // 반영해 <header>의 padding-top(= topbar가 차지하던 자리)과 앵커 스크롤 여백 계산에 사용한다.

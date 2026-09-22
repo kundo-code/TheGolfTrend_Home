@@ -1013,6 +1013,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-dup{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm)}
 .apc-dup:hover{box-shadow:var(--nm-shadow-hover)}
 .apc-delete:hover{box-shadow:var(--nm-shadow-hover)}
+/* [버그 수정] 모바일에서 관리자 패널 상품 리스트 각 항목 줄(.apc-head)이 손잡이·번호·제목·배지·
+   화살표에 이어 팝업노출 토글·고급편집·복제·삭제 버튼까지 한 줄에 모두 욱여넣으려다 보니, 좁은
+   화면 폭에서 오른쪽 버튼들(특히 "고급 편집")이 화면 밖으로 밀려 잘려 보였다 — 모바일에서만
+   .apc-head가 줄바꿈되게 하고, 버튼 묶음(.apc-actions)은 그 아래 한 줄 전체를 새로 차지하도록 해
+   항상 화면 안에 온전히 보이게 한다 */
+@media(max-width:780px){
+  .apc-head{flex-wrap:wrap}
+  .apc-actions{flex-basis:100%;justify-content:flex-start;margin-top:6px}
+}
 .apc-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .apc-fields .full{grid-column:1/-1}
 .apc-fields label{display:block;font-size:.64rem;font-weight:600;letter-spacing:.13em;color:var(--nm-text-soft);text-transform:uppercase;margin-bottom:3px}

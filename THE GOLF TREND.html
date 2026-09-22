@@ -569,7 +569,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.75rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
-.pd-price-entry .min-people{font-size:.72rem;color:var(--gold-deep);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px;margin-left:auto}
+/* [수정] "2인 이상" 배지 오른쪽에 "항공 포함 여부"·"체류일" 배지를 함께 두기 위해, 오른쪽 정렬은
+   개별 배지가 아니라 이 배지들을 담는 래퍼(.pd-pe-badges)에 준다 */
+.pd-pe-badges{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pd-price-entry .min-people,.pd-price-entry .pe-flag-badge{font-size:.72rem;color:var(--gold-deep);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px}
 /* [수정] 요금 항목별 라운드·숙박·식사 — 금액·최소 인원(.prices) 바로 아래 구분선을 두고 노출 */
 .pd-pe-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px;font-size:.82rem;color:rgba(10,23,48,.72)}
 .pd-pe-meta span{display:inline-flex;align-items:center;gap:4px}
@@ -629,12 +632,14 @@ section.block{padding:100px 24px;position:relative}
    진한 색으로 바꿔 가독성을 높인다(다른 곳에서 공용으로 쓰는 .pd-check-list 기본색은 그대로 둠) */
 .pd-pe-notes-group{display:flex;flex-direction:column;gap:18px;padding:16px 14px;margin:2px 0;background:rgba(10,23,48,.025);border-top:1px solid rgba(10,23,48,.12);border-bottom:1px solid rgba(10,23,48,.12)}
 .pd-pe-notes-group .pd-check-list .row{color:rgba(10,23,48,.92)}
-/* [Phase] "포함사항"은 상세보기를 펼치지 않아도 보이도록 카드 본문에 미리보기로 한 번 더 노출 —
-   위 묶음(.pd-pe-notes-group)과 구별되도록 옅은 초록 톤 배경을 준다 */
-.pd-pe-included-preview{padding:12px 14px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.18);border-radius:10px}
-.pd-pe-included-preview .t{font-size:.82rem;font-weight:700;color:#15803d;letter-spacing:.02em;margin-bottom:8px}
-.pd-pe-included-preview .pd-check-list{padding:0}
-.pd-pe-included-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
+/* [수정] "포함사항" 미리보기는 하이드하고, 놓치기 쉬운 "불포함사항"을 상세보기를 펼치지 않아도
+   보이도록 가격 정보 바로 아래에 미리보기로 노출 — 주의를 끌도록 옅은 빨간 톤 배경을 준다 */
+.pd-pe-notincluded-preview{padding:12px 14px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-radius:10px}
+.pd-pe-notincluded-preview .t{font-size:.82rem;font-weight:700;color:#b91c1c;letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-notincluded-preview .pd-check-list{padding:0}
+.pd-pe-notincluded-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
+/* [수정] "출발 요일" 선택 내용 — 상세보기 안에서 포함사항 바로 위에 작은 레이블로 노출 */
+.pd-pe-departure-day-label{font-size:.78rem;font-weight:700;color:var(--gold-deep);letter-spacing:.02em}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "여행 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
@@ -7243,12 +7248,44 @@ function showPdRegionTransition(cat, onDone){
 // [수정] 모바일 좌/우 스와이프로 이전/다음 상품 넘기기 — 세로 스크롤과 구분하기 위해 처음 이동량으로
 // 방향을 판정(directional lock)한 뒤, 가로 스와이프일 때만 페이지 스크롤을 막고 손가락을 따라 움직인다
 let pdTouch=null;
+// [버그 수정] 이미지 갤러리(.pd-gallery-main) 안에서 좌/우로 스와이프하면, 갤러리 전용 스와이프
+// 처리가 없어 이 손짓이 그대로 아래(#pdContent)의 "이전/다음 상품" 스와이프로 버블링되어 상품
+// 카드 전체가 옆으로 끌려 움직였다 — 터치가 갤러리 안에서 시작되면 상품 전환용 pdTouch는 아예
+// 잡지 않고, 대신 갤러리 이미지끼리만 넘기는(pdGalleryNext) 별도 상태(pdGalleryTouch)로 처리한다
+let pdGalleryTouch=null;
+function pdGalleryTouchStart(e){
+  if (e.touches.length!==1) return;
+  const t=e.touches[0];
+  pdGalleryTouch={startX:t.clientX, startY:t.clientY, dx:0, locked:false, horizontal:false};
+}
+function pdGalleryTouchMove(e){
+  if (!pdGalleryTouch) return;
+  const t=e.touches[0];
+  const dx=t.clientX-pdGalleryTouch.startX, dy=t.clientY-pdGalleryTouch.startY;
+  if (!pdGalleryTouch.locked){
+    if (Math.abs(dx)<10 && Math.abs(dy)<10) return;
+    pdGalleryTouch.locked=true;
+    pdGalleryTouch.horizontal = Math.abs(dx) > Math.abs(dy)*1.3;
+    if (!pdGalleryTouch.horizontal) return;
+  }
+  if (!pdGalleryTouch.horizontal) return;
+  e.preventDefault();
+  pdGalleryTouch.dx=dx;
+}
+function pdGalleryTouchEnd(){
+  if (!pdGalleryTouch) return;
+  const {horizontal,dx}=pdGalleryTouch;
+  if (horizontal && Math.abs(dx)>40) pdGalleryNext(dx<0?1:-1);
+  pdGalleryTouch=null;
+}
 function pdTouchStart(e){
   if (e.touches.length!==1) return;
+  if (e.target.closest && e.target.closest('.pd-gallery-main')){ pdGalleryTouchStart(e); return; }
   const t=e.touches[0];
   pdTouch={startX:t.clientX, startY:t.clientY, dx:0, locked:false, horizontal:false};
 }
 function pdTouchMove(e){
+  if (pdGalleryTouch){ pdGalleryTouchMove(e); return; }
   if (!pdTouch) return;
   const t=e.touches[0];
   const dx=t.clientX-pdTouch.startX, dy=t.clientY-pdTouch.startY;
@@ -7270,6 +7307,7 @@ function pdTouchMove(e){
   }
 }
 function pdTouchEnd(){
+  if (pdGalleryTouch){ pdGalleryTouchEnd(); return; }
   if (!pdTouch) return;
   const wasHorizontal=pdTouch.horizontal, dx=pdTouch.dx;
   const content=document.getElementById('pdContent');
@@ -7339,16 +7377,15 @@ function updateGalleryDisplay(){
 const AIRFARE_TXT={included:'항공 포함',excluded:'항공 불포함',none:''};
 // 요금 항목(또는 상품 공통) 레이블(L)을 상품 상세페이지에 노출할 [라벨, 값] 행 목록으로 변환.
 // 값이 채워진 항목만 반환 — 비어있는 필드는 상세페이지에 노출하지 않는다.
+// [수정] "항공 포함 여부"·"체류일"은 가격 정보 옆 배지로, "출발 요일"은 포함사항 바로 위 레이블로
+// 각각 더 눈에 띄는 자리로 옮겨 노출하므로, 중복되지 않도록 이 목록(이 요금 항목의 레이블)에서는 제외한다
 function peLabelRows(L){
   if (!L) return [];
   const rows=[];
-  if (L.airfare && L.airfare!=='none') rows.push(['✈️ 항공', AIRFARE_TXT[L.airfare]||L.airfare]);
   if (L.airPattern && L.airPattern.length) rows.push(['🕐 항공 패턴', L.airPattern.join(', ')]);
   if (L.departureAirport && L.departureAirport.length) rows.push(['🛫 출발 공항', L.departureAirport.join(', ')]);
   if (L.arrAirport) rows.push(['🛬 도착 공항', L.arrAirport]);
   if (L.flightNo) rows.push(['🎫 항공편', L.flightNo]);
-  if (L.stayDuration && L.stayDuration!=='none') rows.push(['🏨 체류일', L.stayDuration]);
-  if (L.departureDay && L.departureDay.length) rows.push(['📅 출발 요일', L.departureDay.join(', ')]);
   return rows;
 }
 function labelRowsHTML(L){
@@ -7509,11 +7546,15 @@ function renderProductDetail(p,cat,idx){
           const includedRows = bulletRows(pe.included||'','✓');
           const notIncludedRows = bulletRows(pe.notIncluded||'','✕');
           const precautionsRows = bulletRows(pe.precautions||'','•');
+          // [수정] "출발 요일"에서 선택한 내용을 포함사항 바로 위에 작은 레이블로 노출 — 항공 포함
+          // 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
+          const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
+          const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label">📅 출발 요일 ${escapeAttr(peDepartureDay)}</div>` : '';
           // [수정] 포함/불포함/참고사항 세 가지를 하나의 묶음(.pd-pe-notes-group)으로 감싸 위아래
           // 구분선과 배경을 줘 가독성을 높이고, "일정 요약 타임라인"보다 위쪽에 오도록 moreBody
           // 순서를 조정한다(레이블 → 포함/불포함/참고사항 묶음 → 일정 요약 타임라인)
           const peNotesHTML = (includedRows||notIncludedRows||precautionsRows) ? `<div class="pd-pe-notes-group">${[
-            includedRows?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
+            includedRows?`${departureDayLabelHTML}<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
             notIncludedRows?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'',
             precautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>`:''
           ].join('')}</div>` : '';
@@ -7522,9 +7563,13 @@ function renderProductDetail(p,cat,idx){
             peNotesHTML,
             hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:''
           ].join('');
-          // [Phase] "포함사항"만은 "상세보기"를 펼치지 않아도 바로 보이도록, 접힘 영역 밖(가격 정보
-          // 바로 아래)에도 같은 내용을 미리보기로 한 번 더 노출한다
-          const includedPreviewHTML = includedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'';
+          // [수정] "포함사항" 미리보기는 하이드하고, 대신 "불포함사항"을 가격 정보 바로 아래에 옅은
+          // 빨간색 박스로 미리보기 노출 — 주로 놓치기 쉬운 "포함되지 않은 항목"이 먼저 눈에 띄도록 하기 위함.
+          // 포함사항 자체는 상세보기를 펼치면(.pd-pe-notes-group) 여전히 확인할 수 있다
+          const notIncludedPreviewHTML = notIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'';
+          // [수정] "항공 포함 여부"·"체류일" 선택 내용을 "2인 이상" 레이블 오른쪽에 배지로 함께 노출
+          const peAirfareTxt = (pe.labels && pe.labels.airfare && pe.labels.airfare!=='none') ? (AIRFARE_TXT[pe.labels.airfare]||pe.labels.airfare) : '';
+          const peStayTxt = (pe.labels && pe.labels.stayDuration && pe.labels.stayDuration!=='none') ? pe.labels.stayDuration : '';
           // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 변경 — 외부 링크(🔗)로 바로
           // 이동하던 카드 전체 클릭 동작은 제거하고, 외부 링크는 별도 버튼으로만 이동하게 분리한다.
           // 첫 번째 항목(idx===0)은 기본으로 펼쳐서 노출한다.
@@ -7567,12 +7612,16 @@ function renderProductDetail(p,cat,idx){
               ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:''}
               ${orig&&orig>sale?`<span class="price-original">${fmtPrice(orig)}${origSym}${origFrom}</span>`:''}
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
-              ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
+              ${(pe.minPeople||peAirfareTxt||peStayTxt)?`<div class="pd-pe-badges">
+                ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
+                ${peAirfareTxt?`<span class="pe-flag-badge">✈️ ${escapeAttr(peAirfareTxt)}</span>`:''}
+                ${peStayTxt?`<span class="pe-flag-badge">🏨 ${escapeAttr(peStayTxt)}</span>`:''}
+              </div>`:''}
             </div>
             ${peMetaItems?`<div class="pd-pe-meta">${peMetaItems}</div>`:''}
             ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             ${holidayPriceRow}
-            ${includedPreviewHTML}
+            ${notIncludedPreviewHTML}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
                  값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저, 공통 링크가 그 다음.
                  옅은 회색 카드와 구분되도록 로고색 음영 버튼으로 스타일링하고, "상세보기" 토글 아래

@@ -605,7 +605,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .go:hover{background:var(--gold-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .pd-price-entry .go:active{transform:translateY(1px);box-shadow:var(--btn-press)}
 /* [수정] 요금 항목별 "자세히 →" 토글 — 이 항목의 레이블·일정 및 공통 포함/불포함/참고사항을 펼쳐서 보여준다.
-   링크 버튼(.pd-pe-links)은 "상세보기" 토글 아래에 별도 배치한다 */
+   링크·공유 버튼(.pd-pe-bottom-row)은 "상세보기" 토글 아래에 별도 배치한다 */
 .pd-pe-actions{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:4px}
 .pd-pe-more{margin-top:2px}
 .pd-pe-more summary{color:var(--gold-deep);font-size:.82rem;font-weight:600;cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px}
@@ -613,12 +613,28 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-more summary::after{content:'→';transition:transform .2s}
 .pd-pe-more[open] summary::after{transform:rotate(90deg)}
 .pd-pe-more-body{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.14);display:flex;flex-direction:column;gap:20px}
-/* [수정] 상품 공통·항목별 링크 버튼을 카드 우측 끝으로 정렬 — 버튼 사이 간격(gap)은 그대로 유지 */
-.pd-pe-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:14px;width:100%}
+/* [수정] 상품 공통·항목별 링크 버튼 + 공유 버튼을 카드 우측 끝으로 정렬 — 버튼 사이 간격(gap)은
+   그대로 유지. 외부 링크가 없어도 공유 버튼은 항상 노출되므로 이 행 자체는 항상 렌더링된다 */
+.pd-pe-bottom-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:14px;width:100%}
+/* [수정] 링크 버튼(.go)과 톤을 맞추되 중립색으로 구분되는 "공유" 버튼 */
+.pd-pe-share-btn{display:flex;align-items:center;gap:5px;background:rgba(10,23,48,.06);color:rgba(10,23,48,.75);font-size:.8rem;font-weight:700;padding:9px 16px;border:1px solid rgba(10,23,48,.14);border-radius:100px;cursor:pointer;transition:all .2s;font-family:inherit}
+.pd-pe-share-btn:hover{background:rgba(10,23,48,.1);color:var(--pine-deep)}
+.pd-pe-share-btn:disabled{opacity:.6;cursor:default}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
 .pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:10px}
 .pd-pe-more-sub .pd-check-list{padding:0}
 .pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:10px}
+/* [Phase] 포함/불포함/참고사항 세 항목을 하나의 묶음으로 시각적으로 구분 — 위아래 구분선과 옅은
+   배경을 줘서 카드의 다른 정보(레이블·일정)와 명확히 나뉘어 보이게 하고, 본문 폰트도 검정에 가까운
+   진한 색으로 바꿔 가독성을 높인다(다른 곳에서 공용으로 쓰는 .pd-check-list 기본색은 그대로 둠) */
+.pd-pe-notes-group{display:flex;flex-direction:column;gap:18px;padding:16px 14px;margin:2px 0;background:rgba(10,23,48,.025);border-top:1px solid rgba(10,23,48,.12);border-bottom:1px solid rgba(10,23,48,.12)}
+.pd-pe-notes-group .pd-check-list .row{color:rgba(10,23,48,.92)}
+/* [Phase] "포함사항"은 상세보기를 펼치지 않아도 보이도록 카드 본문에 미리보기로 한 번 더 노출 —
+   위 묶음(.pd-pe-notes-group)과 구별되도록 옅은 초록 톤 배경을 준다 */
+.pd-pe-included-preview{padding:12px 14px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.18);border-radius:10px}
+.pd-pe-included-preview .t{font-size:.82rem;font-weight:700;color:#15803d;letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-included-preview .pd-check-list{padding:0}
+.pd-pe-included-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "여행 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
@@ -7445,16 +7461,22 @@ function renderProductDetail(p,cat,idx){
           const includedRows = bulletRows(pe.included||'','✓');
           const notIncludedRows = bulletRows(pe.notIncluded||'','✕');
           const precautionsRows = bulletRows(pe.precautions||'','•');
-          const peNotesHTML = [
+          // [수정] 포함/불포함/참고사항 세 가지를 하나의 묶음(.pd-pe-notes-group)으로 감싸 위아래
+          // 구분선과 배경을 줘 가독성을 높이고, "일정 요약 타임라인"보다 위쪽에 오도록 moreBody
+          // 순서를 조정한다(레이블 → 포함/불포함/참고사항 묶음 → 일정 요약 타임라인)
+          const peNotesHTML = (includedRows||notIncludedRows||precautionsRows) ? `<div class="pd-pe-notes-group">${[
             includedRows?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
             notIncludedRows?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'',
             precautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>`:''
-          ].join('');
+          ].join('')}</div>` : '';
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ 이 요금 항목의 레이블</div>${labelRows}</div>`:'',
-            hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:'',
-            peNotesHTML
+            peNotesHTML,
+            hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:''
           ].join('');
+          // [Phase] "포함사항"만은 "상세보기"를 펼치지 않아도 바로 보이도록, 접힘 영역 밖(가격 정보
+          // 바로 아래)에도 같은 내용을 미리보기로 한 번 더 노출한다
+          const includedPreviewHTML = includedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'';
           // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 변경 — 외부 링크(🔗)로 바로
           // 이동하던 카드 전체 클릭 동작은 제거하고, 외부 링크는 별도 버튼으로만 이동하게 분리한다.
           // 첫 번째 항목(idx===0)은 기본으로 펼쳐서 노출한다.
@@ -7502,16 +7524,19 @@ function renderProductDetail(p,cat,idx){
             ${peMetaItems?`<div class="pd-pe-meta">${peMetaItems}</div>`:''}
             ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
             ${holidayPriceRow}
+            ${includedPreviewHTML}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
                  값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저, 공통 링크가 그 다음.
                  옅은 회색 카드와 구분되도록 로고색 음영 버튼으로 스타일링하고, "상세보기" 토글 아래
-                 카드 우측 끝에 정렬해 배치(.pd-pe-links) -->
+                 카드 우측 끝에 정렬해 배치. "📤 공유" 버튼은 이 요금 항목(.pd-price-entry) 카드만
+                 이미지로 캡처해 공유/저장할 수 있게 한다(sharePriceEntryImage) -->
             <div class="pd-pe-actions">
               ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
-              ${(linkVisible||linkBrand)?`<div class="pd-pe-links" onclick="event.stopPropagation()">
+              <div class="pd-pe-bottom-row" onclick="event.stopPropagation()">
                 ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener">💬 밴드에서 보기 →</a>`:''}
                 ${linkBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">💬 블로그에서 보기 →</a>`:''}
-              </div>`:''}
+                <button type="button" class="pd-pe-share-btn" onclick="sharePriceEntryImage(this)">📤 공유</button>
+              </div>
             </div>
           </div>`;
         }).join('')}
@@ -7649,6 +7674,42 @@ function shareProductImage(btn){
     },'image/png');
   }).catch(()=>{
     if (shareBar) shareBar.style.display='';
+    btn.disabled=false; btn.textContent=origLabel;
+    alert('이미지 생성에 실패했습니다.');
+  });
+}
+// [Phase] 요금표의 각 요금 항목(.pd-price-entry)만 따로 이미지로 캡처해 공유/저장할 수 있게 한다 —
+// shareProductImage()와 동일한 html2canvas→Blob→navigator.share(파일 공유 시트에서 기기별로
+// "이미지 저장"도 선택 가능)→(미지원 시) 다운로드 링크 패턴이지만, 캡처 대상을 상품 상세 전체가
+// 아니라 버튼이 속한 요금 항목 카드 하나로 좁힌다. 캡처 중에는 이 버튼 자신만 잠깐 숨겨(상세보기·
+// 링크 버튼은 그대로 캡처에 포함되도록) 버튼이 이미지에 함께 찍히지 않게 한다
+function sharePriceEntryImage(btn){
+  if (typeof html2canvas==='undefined') return;
+  const target=btn.closest('.pd-price-entry'); if (!target) return;
+  const headline=target.querySelector('.pe-headline');
+  const title=(headline?headline.textContent:'') || (currentPd?getProducts(currentPd.catId)[currentPd.idx]?.title:'') || '요금 항목';
+  const origLabel=btn.textContent;
+  btn.disabled=true; btn.textContent='이미지 생성 중...';
+  btn.style.visibility='hidden';
+  html2canvas(target,{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000}).then(canvas=>{
+    btn.style.visibility='';
+    btn.disabled=false; btn.textContent=origLabel;
+    canvas.toBlob(blob=>{
+      if (!blob){ alert('이미지 생성에 실패했습니다.'); return; }
+      const fileName=`${title.replace(/[\\/:*?"<>|]/g,'')}_요금표.png`;
+      const file=new File([blob], fileName, {type:'image/png'});
+      if (navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title, text:title}).catch(()=>{});
+      } else {
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url; a.download=fileName;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url),4000);
+      }
+    },'image/png');
+  }).catch(()=>{
+    btn.style.visibility='';
     btn.disabled=false; btn.textContent=origLabel;
     alert('이미지 생성에 실패했습니다.');
   });

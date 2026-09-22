@@ -2138,12 +2138,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pkg-group{ margin-bottom:64px; }
 .pkg-group:last-child{ margin-bottom:0; }
 
-/* 그룹 헤더 */
+/* 그룹 헤더 — pkg-tag(Domestic/Overseas)는 header의 직속 자식, 제목+내비게이션 버튼은
+   title-area 안에 함께 묶여 태그 옆 나머지 공간을 채운다(제목 왼쪽·버튼 오른쪽) */
 .pkg-group-header{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;gap:14px;
   margin-bottom:24px;
 }
-.pkg-group-title-area{ display:flex;align-items:center;gap:14px; }
+.pkg-group-title-area{ display:flex;align-items:center;justify-content:space-between;gap:14px;flex:1;min-width:0; }
 .pkg-tag{
   display:inline-block;padding:4px 14px;font-size:.68rem;font-weight:700;
   letter-spacing:.15em;text-transform:uppercase;
@@ -2326,7 +2327,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pkg-group-title{ font-size:1.1rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
-  .pkg-card{ max-width:72vw; } /* [Phase 3] 모바일에서 카드 폭도 화면을 거의 채우지 않고 옆 카드가 살짝 보이도록 제한 */
+  .pkg-card{ max-width:88vw; } /* [Phase] 카드 실제 폭은 JS(pkgTargetHeight)가 계산하는 값을 따르고, 이 상한은 극단적으로 가로로 넓은 이미지가 화면을 벗어나지 않도록 막는 안전장치 역할만 한다 */
 }
 
 
@@ -2355,6 +2356,26 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-poster-section .pkg-nav-btn:hover{
   background:rgba(10,23,48,.15);border-color:var(--pine);color:var(--pine);
+}
+
+@media(max-width:640px){
+  /* [Phase] 태그(Domestic/Overseas)는 첫 줄에 단독으로 좌측 정렬, 제목+이동 버튼은 그 아래 줄에
+     나란히(제목 왼쪽, 버튼 오른쪽) 배치 */
+  .pkg-group-header{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:14px}
+  .pkg-group-title-area{width:100%}
+  /* [Phase] .pkg-track-wrap의 위아래 56px 패딩은 데스크톱 전용 호버 확대(.pkg-card:hover, 120%
+     scale) 시 카드가 잘리지 않도록 확보한 여유 공간이다 — 터치 기기에는 호버가 없어 그만큼이
+     이미지 위아래에 불필요한 여백으로 남는다. 최소 여백만 남겨 이미지와 위(제목·버튼)/아래(도트)
+     텍스트 사이 간격을 좁힌다 */
+  .pkg-track-wrap{padding:10px 0}
+  .pkg-dots-row{margin-top:8px}
+  /* [Phase] 카드가 화면을 거의 채우는 크기로 나란히 붙어 있어, 그림자가 카드 경계를 흐릿하게
+     만들고 옆에 살짝 보이는 카드를 가린다 — 그림자를 없애고 테두리만으로 카드를 구분한다.
+     호버 확대 전환도 터치에는 의미가 없으므로 함께 끈다. .pkg-poster-section .pkg-card(위쪽)
+     보다 반드시 나중에 와야 이긴다(문서 순서 우선) */
+  .pkg-card,.pkg-card:hover,.pkg-poster-section .pkg-card,.pkg-poster-section .pkg-card:hover{
+    box-shadow:none;transform:none;
+  }
 }
 
 
@@ -2890,15 +2911,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <div class="pkg-wrap">
 
     <!-- 국내 -->
+    <!-- [Phase] pkg-tag(Domestic)를 pkg-group-title-area 밖으로 꺼내 header의 직속 자식으로 두고,
+         title-area는 제목+내비게이션 버튼만 묶는다 — 모바일에서 태그를 첫 줄에 단독으로, 그 아래
+         줄에 제목+버튼을 나란히 배치할 수 있도록(데스크톱은 기존과 동일하게 한 줄에 모두 보임) -->
     <div class="pkg-group" id="pgDomestic">
       <div class="pkg-group-header">
+        <span class="pkg-tag">Domestic</span>
         <div class="pkg-group-title-area">
-          <span class="pkg-tag">Domestic</span>
           <h3 class="pkg-group-title">국내 골프 패키지 요금표</h3>
-        </div>
-        <div class="pkg-nav">
-          <button class="pkg-nav-btn" onclick="pkgScroll('domestic',-1)" aria-label="이전">‹</button>
-          <button class="pkg-nav-btn" onclick="pkgScroll('domestic',1)" aria-label="다음">›</button>
+          <div class="pkg-nav">
+            <button class="pkg-nav-btn" onclick="pkgScroll('domestic',-1)" aria-label="이전">‹</button>
+            <button class="pkg-nav-btn" onclick="pkgScroll('domestic',1)" aria-label="다음">›</button>
+          </div>
         </div>
       </div>
       <div class="pkg-track-wrap">
@@ -2913,13 +2937,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <!-- 해외 -->
     <div class="pkg-group" id="pgOverseas">
       <div class="pkg-group-header">
+        <span class="pkg-tag">Overseas</span>
         <div class="pkg-group-title-area">
-          <span class="pkg-tag">Overseas</span>
           <h3 class="pkg-group-title">해외 골프 패키지 요금표</h3>
-        </div>
-        <div class="pkg-nav">
-          <button class="pkg-nav-btn" onclick="pkgScroll('overseas',-1)" aria-label="이전">‹</button>
-          <button class="pkg-nav-btn" onclick="pkgScroll('overseas',1)" aria-label="다음">›</button>
+          <div class="pkg-nav">
+            <button class="pkg-nav-btn" onclick="pkgScroll('overseas',-1)" aria-label="이전">‹</button>
+            <button class="pkg-nav-btn" onclick="pkgScroll('overseas',1)" aria-label="다음">›</button>
+          </div>
         </div>
       </div>
       <div class="pkg-track-wrap">
@@ -7833,7 +7857,10 @@ function renderPkgAll(){
 // [Phase 3] 높이를 기준으로 이미지 전체가 보이도록 하고, 폭은 각 이미지 원본 비율에 맞춰 가변적으로 계산
 function pkgTargetHeight(){
   const isMobile = window.innerWidth <= 640;
-  return isMobile ? Math.min(window.innerHeight*0.30, 260) : Math.min(window.innerHeight*0.48, 480);
+  // [Phase] 모바일 카드가 화면 폭 대비 너무 작아(이전 0.30·260px 상한 기준 세로형 포스터 폭이
+  // 화면의 절반 정도) 옆 카드가 지나치게 많이 보이던 것을, 데스크톱과 동일한 화면 높이 비율
+  // (0.48)로 키워 메인 카드가 화면 폭의 대부분을 차지하고 양옆 카드는 일부만 살짝 보이게 한다
+  return isMobile ? Math.min(window.innerHeight*0.48, 420) : Math.min(window.innerHeight*0.48, 480);
 }
 function pkgMeasure(type){
   const track = document.getElementById('pkgTrack_'+type);

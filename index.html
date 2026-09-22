@@ -2445,6 +2445,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .lead-styles{margin-top:4px;font-size:.78rem;color:var(--nm-text-soft)}
 .lead-details{margin-top:6px;font-size:.82rem;color:var(--nm-text);white-space:pre-wrap}
 
+/* [Phase] AI 추천 선택 옵션(.ai-chip-group), 권역별/국가별 이동 버튼(.cv-nav), 월별/시즌별 필터
+   (.period-filter-row)는 항목 수가 많아 모바일 폭에서 줄바꿈되면 세로로 길어진다 — 항상 한 줄로
+   유지하고 가로 스크롤/스와이프로 넘기도록 전환한다(상품 캐러셀과 동일하게 JS의
+   initCarouselDrag()로 포인터 드래그도 지원). 스타일 시트 맨 끝에 두어, 앞쪽의 flex-wrap:wrap
+   기본 규칙보다 항상 나중에 선언되어 이긴다(문서 순서 우선) */
+@media(max-width:780px){
+  .ai-chip-group,.cv-nav,.period-filter-row{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;cursor:grab;scrollbar-width:none;-ms-overflow-style:none}
+  .ai-chip-group::-webkit-scrollbar,.cv-nav::-webkit-scrollbar,.period-filter-row::-webkit-scrollbar{display:none}
+  .ai-chip-group.dragging,.cv-nav.dragging,.period-filter-row.dragging{cursor:grabbing}
+  .ai-chip-group .ai-chip,.cv-nav .cv-nav-item,.period-filter-row .period-filter-btn,.period-filter-row .period-filter-label{flex-shrink:0}
+}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.
@@ -5577,7 +5588,17 @@ function renderRegionGrid(regionKey){
   gridEl.innerHTML=visible.map(c=>catCardHTML(c, c.id===selectedId)).join('');
   const panelHost=document.getElementById(regionKey==='overseas'?'catPanelHostOverseas':'catPanelHostDomestic');
   panelHost.innerHTML=categoryPanelHTML(regionKey);
-  if (selectedId) refreshCategoryProducts(regionKey);
+  if (selectedId){
+    refreshCategoryProducts(regionKey);
+    // [Phase] 패널이 새로 그려질 때마다(카드 선택/전환) 권역·국가 이동 버튼(.cv-nav)과 월별/시즌별
+    // 필터(.period-filter-row)에도 모바일 손가락 드래그 스와이프를 적용 — .period-filter-row는
+    // id가 있는 컨테이너 자체는 그대로 두고 안쪽 버튼만 매번 innerHTML로 갈아끼우므로(setPeriodFilter),
+    // 여기서 한 번만 걸어두면 계속 유지된다
+    const navEl = panelHost.querySelector('.cv-nav');
+    if (navEl) initCarouselDrag(navEl);
+    const filterEl = panelHost.querySelector('.period-filter-row');
+    if (filterEl) initCarouselDrag(filterEl);
+  }
 }
 function renderCategoryGrid(){
   renderRegionGrid('overseas');
@@ -9768,6 +9789,10 @@ function selectAiProduct(catId, idx){
       if (group.dataset.field==='style'){ btn.classList.toggle('active'); }
       else { group.querySelectorAll('.ai-chip').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
     });
+    // [Phase] 모바일에서 한 줄로 늘어선 칩들을 손가락으로 밀어 넘길 수 있도록 캐러셀과 동일한
+    // 포인터 드래그 스크롤을 적용 — initCarouselDrag는 드래그 발생 시 뒤이은 click을 삼켜주므로
+    // 드래그로 살짝 움직였다가 놓아도 밑에 있던 칩이 실수로 선택되지 않는다
+    initCarouselDrag(group);
   });
 })();
 

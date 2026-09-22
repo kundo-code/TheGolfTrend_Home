@@ -1588,12 +1588,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .top-bar-tagline{font-size:.62rem;white-space:nowrap;overflow:hidden;max-width:100%;letter-spacing:0;margin-top:0}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
-     nav의 top(sticky 기준값)도 topbar의 transform과 같은 .3s ease로 함께 전환시켜, topbar가
-     밀려나는 동안 nav가 먼저 제자리로 순간이동해 topbar와 nav 사이에 빈 틈이 보이거나 겹쳐 보이던
-     문제를 없애고 두 요소가 한 덩어리처럼 같이 움직이게 한다. (스크롤 시 클래스가 수시로 토글되며
-     트랜지션이 겹치던 문제는 JS의 히스테리시스로 별도 해결) */
+     [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서
+     둘을 동시에 움직이게 한 적이 있었다 — 그런데 position:sticky 요소는 스크롤마다 브라우저가
+     계속 위치를 재계산하는데, 여기에 top transition까지 겹치면 "스크롤할 때마다 화면이 튀는"
+     심한 버벅임이 발생한다(스크롤 중 내내 발생 — 방향이 바뀌는 순간만의 문제가 아니다). topbar는
+     position:fixed라 transform 트랜지션을 줘도 안전하지만, nav(sticky)의 top은 절대 트랜지션을
+     주지 않고 즉시 전환한다 — topbar가 밀려나는 동안 nav와 짧게 어긋나 보이는 것은, 스크롤 내내
+     버벅이는 것보다 훨씬 덜 거슬리는 트레이드오프다 */
   .top-bar{transition:transform .3s ease}
-  .nav{transition:top .3s ease}
   body.mobile-topbar-hidden .top-bar{transform:translateY(-100%)}
   body.mobile-topbar-hidden .nav{top:0}
 }
@@ -5289,11 +5291,18 @@ window.addEventListener('resize', syncTopBarHeight);
 // 클래스가 수시로 토글되며(트랜지션이 매번 재시작) 어색하게 튀는 원인이었다. 같은 방향으로
 // 일정량(THRESHOLD) 이상 누적 스크롤될 때만 토글하는 히스테리시스를 둬서 미세한 흔들림에는
 // 반응하지 않고, 실제로 아래/위로 스크롤할 때만 한 번씩 매끄럽게 전환되게 한다
+// [버그 수정] getBoundingClientRect()(강제 레이아웃 계산)를 매 scroll 이벤트마다(초당 수십 회)
+// 동기적으로 실행하던 것도 스크롤 버벅임의 원인 중 하나였다 — rAF로 프레임당 1회로 묶어(ticking
+// 플래그) 스크롤 중 반복 계산을 줄이고, .headline 요소도 매번 다시 querySelector하지 않고
+// 한 번만 찾아 캐시해둔다(헤드라인 배너는 페이지 로드 후 구조가 바뀌지 않음)
 (function initMobileTopbarScroll(){
   const THRESHOLD = 10;
+  const headlineEl = document.querySelector('.headline');
   let lastY = window.scrollY;
   let dirAccum = 0;
-  window.addEventListener('scroll', () => {
+  let ticking = false;
+  function update(){
+    ticking = false;
     if (window.innerWidth > 780){
       document.body.classList.remove('mobile-topbar-hidden');
       lastY = window.scrollY;
@@ -5302,8 +5311,7 @@ window.addEventListener('resize', syncTopBarHeight);
     }
     const y = window.scrollY;
     const delta = y - lastY;
-    const headline = document.querySelector('.headline');
-    const headlineBottom = headline ? headline.getBoundingClientRect().bottom + y : 0;
+    const headlineBottom = headlineEl ? headlineEl.getBoundingClientRect().bottom + y : 0;
     if (y <= headlineBottom){
       document.body.classList.remove('mobile-topbar-hidden');
       dirAccum = 0;
@@ -5318,6 +5326,11 @@ window.addEventListener('resize', syncTopBarHeight);
       }
     }
     lastY = y;
+  }
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
   }, { passive: true });
 })();
 let aboutBannerVideoObjectUrl=null;
@@ -7642,12 +7655,23 @@ function shareProductImage(btn){
 }
 
 // ========== ADMIN ==========
+// [버그 수정] 관리자 패널(.admin-panel)과 그 위에 겹쳐 뜨는 고급편집(.adv-editor-overlay)은 배경
+// 페이지의 스크롤을 막지 않고 있었다 — 그래서 관리자 패널/고급편집 안에서 스크롤(또는 내용이 긴
+// textarea 근처에서 스크롤)하면 그 제스처가 뒤에 가려진 배경 페이지까지 이어져(스크롤 체이닝)
+// 배경의 헤드라인/네비게이션이 함께 흔들리며 "화면이 튀는" 것처럼 보였다. 관리자 패널과 고급편집은
+// 서로 겹쳐 뜰 수 있어(고급편집이 관리자 패널 위에 추가로 열림) 단순히 열 때 hidden, 닫을 때 ''로
+// 되돌리면 고급편집만 닫아도 관리자 패널이 아직 열려있는데 스크롤이 풀려버린다 — 몇 개가 열려
+// 있는지 세어(lockBodyScroll/unlockBodyScroll) 모두 닫혔을 때만 스크롤을 되돌린다
+let _bodyScrollLockCount = 0;
+function lockBodyScroll(){ _bodyScrollLockCount++; document.body.style.overflow='hidden'; }
+function unlockBodyScroll(){ _bodyScrollLockCount=Math.max(0,_bodyScrollLockCount-1); if (_bodyScrollLockCount===0) document.body.style.overflow=''; }
 async function toggleAdmin(){
   const panel=document.getElementById('adminPanel');
   const overlay=document.getElementById('overlay');
   const isOpen=panel.classList.toggle('open');
   overlay.classList.toggle('show',isOpen);
   panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true'); // [Phase 3 접근성/SEO 강화] 닫혀있을 때 스크린리더·크롤러에 노출되지 않도록
+  if (isOpen) lockBodyScroll(); else unlockBodyScroll();
   if (isOpen){
     await refreshAdminSession();
     renderAdminAuthGate();
@@ -8789,12 +8813,14 @@ function openAdvEditor(catId, idx){
   document.querySelectorAll('.adv-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.atab==='basic'));
   renderAdvBody();
   document.getElementById('advOverlay').classList.add('show');
+  lockBodyScroll();
 }
 function closeAdvEditor(){
   document.getElementById('advOverlay').classList.remove('show');
   currentAdv=null;
   renderProductAdmin();
   renderCategoryGrid();
+  unlockBodyScroll();
 }
 function switchAdvTab(tab){
   activeAdvTab=tab;

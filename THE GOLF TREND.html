@@ -494,13 +494,15 @@ section.block{padding:100px 24px;position:relative}
 .pd-overlay{position:fixed;inset:0;z-index:205;background:rgba(247,244,236,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
 .pd-overlay.show{display:block;opacity:1}
 .pd-container{max-width:560px;margin:40px auto;padding:0 16px 40px;position:relative}
-/* [수정] 상단 고정 내비게이션 바 — 이전/다음 상품 버튼(데스크톱), 현재 권역명·순번, 닫기 버튼을 한 줄에 배치 */
-.pd-nav-bar{position:sticky;top:20px;z-index:10;display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:6px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(10,23,48,.1);border-radius:100px;box-shadow:0 6px 20px rgba(10,23,48,.14)}
+/* [수정] 상단 고정 내비게이션 바 — 이전/다음 상품 버튼(데스크톱), 현재 권역명·순번, 닫기 버튼을 한 줄에 배치.
+   [수정] 국가별/권역별 이름(.pd-nav-region) 글자 크기를 2배로 키우고, "N / 전체" 카운터(.pd-nav-count)를
+   그 아래가 아니라 오른쪽에 나란히 배치 — 어두운 박스(dark navy) + 흰색 텍스트로 바꿔 가독성을 높인다 */
+.pd-nav-bar{position:sticky;top:20px;z-index:10;display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--pine-deep);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(10,23,48,.1);border-radius:100px;box-shadow:0 6px 20px rgba(10,23,48,.14)}
 .pd-nav-arrow{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-nav-arrow:hover{background:var(--gold);color:#fff;transform:scale(1.06)}
-.pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:column;line-height:1.25;pointer-events:none}
-.pd-nav-region{font-size:.82rem;font-weight:700;color:var(--pine-deep);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pd-nav-count{font-size:.68rem;color:rgba(10,23,48,.5);letter-spacing:.04em}
+.pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;line-height:1.25;pointer-events:none}
+.pd-nav-region{font-size:1.64rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-nav-count{font-size:.68rem;color:rgba(255,255,255,.7);letter-spacing:.04em}
 .pd-nav-bar.single .pd-nav-arrow{visibility:hidden}
 .pd-close{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-close:hover{background:var(--gold);color:#fff}
@@ -514,7 +516,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(2.2rem,7vw,3.6rem);letter-spacing:.04em;text-shadow:0 4px 20px rgba(0,0,0,.5)}
 @media(max-width:780px){
   .pd-nav-arrow{display:none}
-  .pd-nav-info{text-align:left;padding-left:8px}
+  .pd-nav-info{text-align:left;justify-content:flex-start;padding-left:8px}
 }
 .pd-slot{margin-bottom:16px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);box-shadow:0 8px 24px rgba(10,23,48,.1)}
 /* [수정] 제목을 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단 별도 박스로 분리 */

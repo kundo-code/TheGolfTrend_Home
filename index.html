@@ -502,8 +502,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-nav-arrow{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-nav-arrow:hover{background:var(--gold);color:#fff;transform:scale(1.06)}
 .pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;line-height:1.25;pointer-events:none}
-.pd-nav-region{font-size:1.64rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pd-nav-count{font-size:.68rem;color:rgba(255,255,255,.7);letter-spacing:.04em}
+.pd-nav-region{font-size:1.722rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em}
+.pd-nav-count{font-size:.714rem;color:rgba(255,255,255,.7);letter-spacing:.08em}
 .pd-nav-bar.single .pd-nav-arrow{visibility:hidden}
 /* FIX: 36px → 44px로 키워 터치 표준(최소 44x44px) 충족 */
 .pd-close{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
@@ -515,7 +515,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-region-trans{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .pd-region-trans::before{content:'';position:absolute;inset:0;background:rgba(10,23,48,.45)}
 .pd-region-trans.show{opacity:1}
-.pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(2.2rem,7vw,3.6rem);letter-spacing:.04em;text-shadow:0 4px 20px rgba(0,0,0,.5)}
+.pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(4.4rem,14vw,7.2rem);letter-spacing:.08em;text-shadow:0 4px 20px rgba(0,0,0,.5)}
 @media(max-width:780px){
   .pd-nav-arrow{display:none}
   .pd-nav-info{text-align:left;justify-content:flex-start;padding-left:8px}
@@ -692,7 +692,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-sch-opt{margin-top:4px;font-size:.78rem;line-height:1.55;color:rgba(10,23,48,.75)}
 .pd-sch-opt .tag{display:inline-flex;align-items:center;justify-content:center;min-width:18px;padding:1px 5px;margin-right:6px;border-radius:5px;background:rgba(221,179,103,.22);color:var(--gold-deep);font-size:.68rem;font-weight:700}
 .pd-sch-meals{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
-.pd-sch-meals span{font-size:.68rem;padding:3px 9px;border-radius:100px;background:rgba(10,23,48,.05);color:rgba(10,23,48,.65)}
+.pd-sch-meals span{font-size:.68rem;padding:3px 9px;border-radius:100px;background:rgba(249,115,22,.14);color:#c2410c}
 /* [수정] Tee Off Time — 항공정보에서 이 일자의 "일정 내용" 바로 아래로 이동 */
 .pd-sch-tee{margin-top:6px;font-size:.78rem;font-weight:600;color:var(--pine-deep)}
 .pd-contact{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
@@ -5814,6 +5814,13 @@ function fmtHolidayDate(s){
   return `${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}(${wd})`;
 }
 function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+// [추가] hex 색상을 옅은 배경용 rgba로 변환 — 요금 항목별 accent 색상(PE_ACCENT_COLORS)을
+// "일정과 요금 표시 영역" 박스 배경 등에 옅게 반영할 때 사용
+function hexToRgba(hex, alpha){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 // [수정] 배경(오버레이) 클릭 시 팝업/모달을 닫는 "onclick=if(event.target===this)" 방식의 버그 —
 // 입력창/텍스트를 드래그로 선택하다 마우스를 오버레이 위에서 떼면(mousedown은 input, mouseup은
 // 오버레이), 브라우저가 합성하는 click 이벤트의 target이 두 지점의 공통 조상인 오버레이 자신으로
@@ -7326,7 +7333,7 @@ function pdMove(dir){
     setTimeout(finish, 220);
   }
 }
-// [수정] 권역 전환 화면 — 그 권역의 카드 배경 이미지를 잠깐(550ms) 띄워 "다음 지역으로 넘어갔다"는 것을 알려준다
+// [수정] 권역 전환 화면 — 그 권역의 카드 배경 이미지를 잠깐(1050ms) 띄워 "다음 지역으로 넘어갔다"는 것을 알려준다
 function showPdRegionTransition(cat, onDone){
   const trans=document.getElementById('pdRegionTrans');
   const label=document.getElementById('pdRegionTransLabel');
@@ -7337,7 +7344,7 @@ function showPdRegionTransition(cat, onDone){
   setTimeout(()=>{
     onDone();
     setTimeout(()=>trans.classList.remove('show'), 60);
-  }, 550);
+  }, 1050);
 }
 // [수정] 모바일 좌/우 스와이프로 이전/다음 상품 넘기기 — 세로 스크롤과 구분하기 위해 처음 이동량으로
 // 방향을 판정(directional lock)한 뒤, 가로 스와이프일 때만 페이지 스크롤을 막고 손가락을 따라 움직인다
@@ -7787,7 +7794,9 @@ function renderProductDetail(p,cat,idx){
 
   // [수정] 일정 요약 타임라인을 예약·결제·취소 규정 바로 위로 이동.
   // 요금 항목별 일정 + 요금 항목과 무관한 "공통 일정"(항목을 추가하지 않은 상품도 입력 가능)을 함께 노출
-  const scheduledEntries = (p.priceEntries||[]).filter(pe=>pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length);
+  // [수정] 원래 요금 항목 순서(i)를 유지해야 관리자 패널에서 그 항목에 지정된 accent 색상과
+  // 같은 색을 "일정과 요금 표시 영역" 박스에 반영할 수 있다
+  const scheduledEntries = (p.priceEntries||[]).map((pe,i)=>({pe,i})).filter(({pe})=>pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length);
   const hasCommonSchedule = p.schedule && p.schedule.enabled && p.schedule.days && p.schedule.days.length;
   if (scheduledEntries.length || hasCommonSchedule){
     html += `<div class="pd-slot"><div class="pd-section-title">🗓️ 일정 요약 타임라인</div>
@@ -7798,9 +7807,9 @@ function renderProductDetail(p,cat,idx){
           <div class="pd-sch-group-head"><div class="t">공통 일정</div><div class="h"></div></div>
           <div class="pd-sch-days">${scheduleDaysHTML(p.schedule.days, p.labels.teeOffTimes)}</div>
         </div>`:''}
-        ${scheduledEntries.map(pe=>`
+        ${scheduledEntries.map(({pe,i})=>`
         <div class="pd-sch-group">
-          <div class="pd-sch-group-head">
+          <div class="pd-sch-group-head" style="background:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .16)}">
             <div class="t">${escapeAttr(pe.headline||'일정')}</div>
             <div class="h">${pe.salePrice?`${fmtPrice(Number(pe.salePrice)||0)}${CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원'}/인`:''}</div>
           </div>

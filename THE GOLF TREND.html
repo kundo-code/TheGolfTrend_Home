@@ -4135,8 +4135,7 @@ function removeChannel(id){
   renderBlog();
 }
 function refreshChannelNow(id){
-  delete _rssCache[id];
-  refreshChannelFeeds().then(()=>{ renderBlog(); renderAdminChannels(); });
+  refreshChannelFeeds({force:[id]}).then(()=>{ renderBlog(); renderAdminChannels(); });
 }
 function renderAdminChannels(){
   const c = document.getElementById('adminChannelsList');
@@ -4273,12 +4272,19 @@ function saveRssCache(){ try{ localStorage.setItem(RSS_CACHE_KEY, JSON.stringify
 // [수정] 수집 실패 사유를 관리자 화면에 보여주기 위한 메모리 전용 상태 — 실패해도 캐시(_rssCache)는
 // 건드리지 않아 다음 새로고침 때 계속 재시도되고, 실패 사유만 renderAdminChannels()의 상태 문구로 노출한다
 let _rssLastError = {};
-async function refreshChannelFeeds(){
+async function refreshChannelFeeds(opts){
+  // [수정] "지금 새로고침" 버튼이 재수집 실패 시 기존에 정상 노출되던 글/영상을 모두 사라지게
+  // 만들던 문제 수정 — 예전에는 refreshChannelNow()가 재수집 전에 캐시를 먼저 지웠는데, 그
+  // 재수집이 실패(예: 프록시·YouTube 일시 오류)하면 캐시가 빈 채로 남아 "여행 이야기"에서
+  // 그 채널의 항목이 전부 사라졌다. 이제는 강제 재수집(opts.force)이라도 "성공"했을 때만
+  // 캐시를 덮어쓰고, 실패하면 기존 캐시를 그대로 유지한다
+  const forceIds = (opts && opts.force) ? new Set(opts.force) : null;
   const channels = getChannelsList();
   let changed = false;
   for (const ch of channels){
     const cached = _rssCache[ch.id];
-    if (cached && (Date.now()-cached.fetchedAt) < RSS_CACHE_TTL) continue;
+    const forceThis = forceIds && forceIds.has(ch.id);
+    if (!forceThis && cached && (Date.now()-cached.fetchedAt) < RSS_CACHE_TTL) continue;
     try{
       const feedUrl = buildChannelFeedUrl(ch);
       const res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
@@ -4291,6 +4297,13 @@ async function refreshChannelFeeds(){
       const items = (data.items||[]).slice(0,5);
       if (!items.length){
         console.warn(`[채널 수집 결과 0건] ${ch.label||ch.handle} (${ch.type}) — 채널 ID를 확인해주세요: ${feedUrl}`);
+        // [수정] 이번 응답이 비어있어도, 기존에 정상 수집해둔 항목이 있으면 그 항목을 빈 결과로
+        // 덮어쓰지 않고 그대로 유지한다 — 일시적인 빈 응답 때문에 이미 노출 중인 글/영상이
+        // 갑자기 사라지는 것을 막는다
+        if (cached && cached.items && cached.items.length){
+          _rssLastError[ch.id] = '이번 수집 결과가 비어 있어 이전 수집 결과를 유지함';
+          continue;
+        }
       }
       delete _rssLastError[ch.id];
       _rssCache[ch.id] = { items, fetchedAt: Date.now() };

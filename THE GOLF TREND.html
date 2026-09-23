@@ -647,6 +647,11 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-notincluded-preview .t{font-size:.82rem;font-weight:700;color:#b91c1c;letter-spacing:.02em;margin-bottom:8px}
 .pd-pe-notincluded-preview .pd-check-list{padding:0}
 .pd-pe-notincluded-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
+/* [추가] 참고사항 — 포함/불포함사항과 같은 박스 서식이되, 옅은 회색 톤으로 구분 */
+.pd-pe-precautions-box{padding:12px 14px;background:rgba(10,23,48,.045);border:1px solid rgba(10,23,48,.14);border-radius:10px}
+.pd-pe-precautions-box .t{font-size:.82rem;font-weight:700;color:rgba(10,23,48,.6);letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-precautions-box .pd-check-list{padding:0}
+.pd-pe-precautions-box .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 */
 .pd-pe-departure-day-label{font-size:.78rem;font-weight:700;color:var(--gold-deep);letter-spacing:.02em}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "여행 정보" 섹션에서 공용 */
@@ -7639,14 +7644,12 @@ function renderProductDetail(p,cat,idx){
           // 항공 포함 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
           const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
           const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label">📅 출발 요일 ${escapeAttr(peDepartureDay)}</div>` : '';
-          // [수정] 포함/불포함/참고사항 세 가지를 하나의 묶음(.pd-pe-notes-group)으로 감싸 위아래
-          // 구분선과 배경을 줘 가독성을 높이고, "일정 요약 타임라인"보다 위쪽에 오도록 moreBody
-          // 순서를 조정한다(레이블 → 포함/불포함/참고사항 묶음 → 일정 요약 타임라인)
-          const peNotesHTML = (includedRows||notIncludedRows||precautionsRows) ? `<div class="pd-pe-notes-group">${[
-            includedRows?`<div class="pd-pe-more-sub"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'',
-            notIncludedRows?`<div class="pd-pe-more-sub"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'',
-            precautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>`:''
-          ].join('')}</div>` : '';
+          // [수정] 포함사항·불포함사항은 이미 가격 정보 바로 아래 미리보기 박스(includedPreviewHTML/
+          // notIncludedPreviewHTML)로 항상 노출되므로, "상세보기"를 펼쳤을 때 같은 내용이 다시
+          // 보이지 않도록 여기(moreBody)에는 참고사항만 남긴다 — 참고사항은 옅은 회색 박스로 구분
+          const peNotesHTML = precautionsRows ? `<div class="pd-pe-notes-group">
+            <div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>
+          </div>` : '';
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ 이 요금 항목의 레이블</div>${labelRows}</div>`:'',
             peNotesHTML,
@@ -7762,7 +7765,7 @@ function renderProductDetail(p,cat,idx){
       <div style="padding:0 20px 18px;display:flex;flex-direction:column;gap:10px">
         ${commonIncludedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${commonIncludedRows}</div></div>`:''}
         ${commonNotIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${commonNotIncludedRows}</div></div>`:''}
-        ${commonPrecautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${commonPrecautionsRows}</div></div>`:''}
+        ${commonPrecautionsRows?`<div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${commonPrecautionsRows}</div></div>`:''}
       </div>
     </div>`;
   }

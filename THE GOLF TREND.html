@@ -652,9 +652,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-precautions-box .t{font-size:.82rem;font-weight:700;color:rgba(10,23,48,.6);letter-spacing:.02em;margin-bottom:8px}
 .pd-pe-precautions-box .pd-check-list{padding:0}
 .pd-pe-precautions-box .pd-check-list .row{color:rgba(10,23,48,.92)}
-/* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 */
-.pd-pe-departure-day-label{font-size:.78rem;font-weight:700;color:var(--gold-deep);letter-spacing:.02em}
-/* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "여행 정보" 섹션에서 공용 */
+/* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
+.pd-pe-departure-day-label{display:inline-block;font-size:.78rem;font-weight:700;color:#1d4ed8;letter-spacing:.02em;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
+/* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
 .pd-label-row{display:flex;gap:10px;font-size:.85rem;line-height:1.5}
@@ -7613,6 +7613,17 @@ function renderProductDetail(p,cat,idx){
   const bulletRows = (txt, icon) => txt.split('\n').map(s=>s.trim()).filter(Boolean)
     .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${escapeAttr(line)}</span></div>`).join('');
 
+  // [수정] "공통 안내"·"항공/이동 정보"(구 "여행 정보")를 상품기본정보 바로 아래로 이동 —
+  // 요금표보다 먼저 노출되도록 순서를 옮긴다
+  const notesRows = bulletRows(p.notes||'','•');
+  if (notesRows){
+    html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
+  }
+  const commonLabelRows = labelRowsHTML(p.labels);
+  if (commonLabelRows){
+    html += `<div class="pd-slot"><div class="pd-section-title">🏷️ 항공/이동 정보</div>${commonLabelRows}</div>`;
+  }
+
   // [수정] 요금표를 갤러리 아래로 이동
   if (p.priceEntries && p.priceEntries.length){
     const linkBrand = p.linkUrl ? detectLinkBrand(p.linkUrl) : null;
@@ -7650,10 +7661,11 @@ function renderProductDetail(p,cat,idx){
           const peNotesHTML = precautionsRows ? `<div class="pd-pe-notes-group">
             <div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>
           </div>` : '';
+          const peItemNo = String(idx+1).padStart(2,'0');
           const moreBody = [
-            labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ 이 요금 항목의 레이블</div>${labelRows}</div>`:'',
-            peNotesHTML,
-            hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:''
+            labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ [항목 ${peItemNo}] 항공/이동 정보</div>${labelRows}</div>`:'',
+            hasPeSchedule?`<div class="pd-pe-more-sub"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:'',
+            peNotesHTML
           ].join('');
           // [수정] "포함사항"은 옅은 초록색 박스, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로
           // 아래에 나란히 미리보기 노출 — 상세보기를 펼치지 않아도 둘 다 한눈에 비교하며 볼 수 있다
@@ -7769,21 +7781,9 @@ function renderProductDetail(p,cat,idx){
       </div>
     </div>`;
   }
-  // [수정] 공통 안내 — 공백/줄바꿈만 입력된 경우 bulletRows()가 모든 줄을 걸러내 빈 문자열을
-  // 반환하므로, 원본 문자열이 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다
-  // (그렇지 않으면 내용은 없이 "✳️ 공통 안내" 제목만 빈 섹션으로 노출되는 문제가 있었다)
-  const notesRows = bulletRows(p.notes||'','•');
-  if (notesRows){
-    html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
-  }
   // [수정] 포함사항 · 불포함사항 · 참고사항은 더 이상 상품 공통으로 항상 노출하지 않는다 — 요금 항목별로
   // 개별 입력하며, 요금표의 각 항목 "상세보기 →"를 클릭했을 때만 노출된다 (위 pd-price-entries 참고)
-
-  // [수정] 요금 항목과 무관하게 상시 입력 가능한 공통 레이블 — 값이 있으면 상품 정보 성격으로 노출
-  const commonLabelRows = labelRowsHTML(p.labels);
-  if (commonLabelRows){
-    html += `<div class="pd-slot"><div class="pd-section-title">🏷️ 여행 정보</div>${commonLabelRows}</div>`;
-  }
+  // ("공통 안내"·"항공/이동 정보"는 상품기본정보 바로 아래로 이동됨 — 위쪽 참고)
 
   // [수정] 일정 요약 타임라인을 예약·결제·취소 규정 바로 위로 이동.
   // 요금 항목별 일정 + 요금 항목과 무관한 "공통 일정"(항목을 추가하지 않은 상품도 입력 가능)을 함께 노출
@@ -9504,7 +9504,7 @@ function advBasicHTML(p){
          특정 요금 항목에 종속되지 않는 "공통" 레이블·일정 입력 영역을 상시 노출한다.
          요금 항목을 이후에 추가해도 이 공통 값은 그대로 유지되며, 상세페이지에는 요금 항목별 정보와 함께 노출된다 -->
     <details class="pe-labels" ${isDomestic?'':'open'}>
-      <summary>🏷 공통 레이블 (항공·공항·항공편·티오프 등 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <summary>🏷 항공/이동 정보 (항공·공항·항공편·티오프 등 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
       ${labelsHTML(p, -1, false)}
     </details>
     <!-- [수정] "출발 요일"을 공통 레이블에서 완전히 분리해 별도 섹션으로 — 공통 레이블·공통 일정

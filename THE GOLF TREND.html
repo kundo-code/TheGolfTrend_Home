@@ -472,13 +472,15 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 라운드·항공포함여부·숙박·식사·소요시간·비행시간 내용 가독성 강화 — 볼드 + 파란색 계열
    (상품 상세 항목별 요금표의 동일 항목과 같은 톤) */
 .product .meta .meta-value{font-weight:700;color:#333333}
+/* [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트 자체는 볼드 해제(값만 내부 <b>로 볼드 유지) */
+.product .meta .meta-value.meta-value-plain{font-weight:400}
 .product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
 .product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
-/* [수정] "항공 포함 여부"는 불포함일 때 빨간색, 그 외(포함)는 검정색으로 강조 — 카드/배지/상세페이지 전체 공통 */
+/* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
 .airfare-excluded{color:#D6293E !important}
-.airfare-normal{color:#000000 !important}
+.airfare-normal{color:#1d4ed8 !important}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
 /* [수정] 체크포인트2는 상품 카드에서 빨간색 텍스트로 강조 노출 */
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
@@ -688,9 +690,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
 .pd-schedule-note{padding:12px 14px;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:10px;font-size:.76rem;line-height:1.6;color:rgba(10,23,48,.72)}
 .pd-sch-group{border:1px solid rgba(10,23,48,.08);border-radius:14px;overflow:hidden;background:rgba(10,23,48,.02)}
-.pd-sch-group-head{padding:12px 16px;background:rgba(221,179,103,.18)}
-.pd-sch-group-head .t{font-size:.7rem;color:rgba(10,23,48,.55);letter-spacing:.04em}
-.pd-sch-group-head .h{font-size:.95rem;font-weight:700;color:var(--pine-deep);margin-top:2px}
+.pd-sch-group-head{padding:12px 16px;background:rgba(221,179,103,.18);display:flex;align-items:center;justify-content:space-between;gap:10px}
+/* [수정] 타이틀은 검정색 볼드 + 1.2배 크기로 강조, 요금은 1.2배 크기 + 프레임 우측 끝으로 정렬 */
+.pd-sch-group-head .t{font-size:.84rem;color:#000000;font-weight:700;letter-spacing:.04em;min-width:0;flex:1}
+.pd-sch-group-head .h{font-size:1.14rem;font-weight:700;color:var(--pine-deep);text-align:right;flex-shrink:0}
 .pd-sch-days{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
 .pd-sch-day{display:flex;gap:10px}
 .pd-sch-day-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--pine-deep);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -6147,9 +6150,10 @@ function productCardHTML(p, catId, idx){
     ...(p.stay ? [{full: !!mw.stay, html: `🏨 <b class="meta-value">${p.stay}</b>`}] : []),
     ...(p.meals ? [{full: !!mw.meals, html: `🍽 <b class="meta-value">${p.meals}</b>`}] : []),
     ...(airfareText ? [{full: !!mw.airfare, html: `✈️ <b class="meta-value ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">${airfareText}</b>`}] : []),
-    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <b class="meta-value">비행시간 ${escapeAttr(p.flightTime)}</b>`}] : []),
-    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <b class="meta-value">호텔→골프장 ${escapeAttr(p.hotelToGolfTime)}</b>`}] : []),
-    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <b class="meta-value">${transferLabel} ${escapeAttr(p.transferTime)}</b>`}] : []),
+    // [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트는 볼드 해제하고, 입력한 값만 볼드 처리
+    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <span class="meta-value meta-value-plain">비행시간 <b>${escapeAttr(p.flightTime)}</b></span>`}] : []),
+    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <span class="meta-value meta-value-plain">호텔→골프장 <b>${escapeAttr(p.hotelToGolfTime)}</b></span>`}] : []),
+    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <span class="meta-value meta-value-plain">${transferLabel} <b>${escapeAttr(p.transferTime)}</b></span>`}] : []),
   ];
   let metaCol = 0;
   const metaHTML = metaItems.map((item,i)=>{
@@ -7518,8 +7522,8 @@ const AIRFARE_TXT={included:'항공 포함',excluded:'항공 불포함',none:''}
 function peLabelRows(L){
   if (!L) return [];
   const rows=[];
-  if (L.airPattern && L.airPattern.length) rows.push(['🕐 항공 패턴', L.airPattern.join(', ')]);
   if (L.departureAirport && L.departureAirport.length) rows.push(['🛫 출발 공항', L.departureAirport.join(', ')]);
+  if (L.airPattern && L.airPattern.length) rows.push(['🕐 항공 패턴', L.airPattern.join(', ')]);
   if (L.arrAirport) rows.push(['🛬 도착 공항', L.arrAirport]);
   if (L.flightNo) rows.push(['🎫 항공편', L.flightNo]);
   return rows;
@@ -7720,7 +7724,8 @@ function renderProductDetail(p,cat,idx){
           const peStayTxt = (pe.labels && pe.labels.stayDuration && pe.labels.stayDuration!=='none') ? pe.labels.stayDuration : '';
           // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 변경 — 외부 링크(🔗)로 바로
           // 이동하던 카드 전체 클릭 동작은 제거하고, 외부 링크는 별도 버튼으로만 이동하게 분리한다.
-          // 첫 번째 항목(idx===0)은 기본으로 펼쳐서 노출한다.
+          // [수정] 요금 항목의 "상세보기"는 항목 수가 많을 때 화면을 너무 길게 만들어, 이제는
+          // 모든 항목을 기본으로 접어둔다(클릭해서 펼쳐야 상세 내용이 보임).
           const clickAttr = moreBody ? `onclick="togglePeMore(this)"` : '';
           // [수정] 판매가와 별도인 출발 요일별 요금 — 요금표(.prices) 바로 아래에 노출.
           // 토요일은 파란색, 일요일은 빨간색으로 요일명과 금액을 함께 강조한다
@@ -7778,7 +7783,7 @@ function renderProductDetail(p,cat,idx){
                  카드 우측 끝에 정렬해 배치. "📤 공유" 버튼은 이 요금 항목(.pd-price-entry) 카드만
                  이미지로 캡처해 공유/저장할 수 있게 한다(sharePriceEntryImage) -->
             <div class="pd-pe-actions">
-              ${moreBody?`<details class="pd-pe-more" ${idx===0?'open':''} onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
+              ${moreBody?`<details class="pd-pe-more" onclick="event.stopPropagation()"><summary>상세보기</summary><div class="pd-pe-more-body">${moreBody}</div></details>`:''}
               <div class="pd-pe-bottom-row" onclick="event.stopPropagation()">
                 ${linkVisible?`<a class="go" href="${escapeAttr(pe.link)}" target="_blank" rel="noopener">💬 밴드에서 보기 →</a>`:''}
                 ${linkBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">💬 블로그에서 보기 →</a>`:''}

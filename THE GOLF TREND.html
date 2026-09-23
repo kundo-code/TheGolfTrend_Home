@@ -639,10 +639,14 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-share-btn:disabled{opacity:.6;cursor:default}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
 .pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:10px}
-/* [추가] 요금 항목별 일정 요약 타임라인 — "+요금 항목 추가"에서 그 항목에 지정된 accent 색상과 같은 색으로 왼쪽 라인 표시 */
-.pd-pe-more-sub.pd-pe-sch-accent{border-left:3px solid var(--pe-accent, #2F6FED);padding-left:12px}
+/* [수정] 요금 항목별 일정 요약 타임라인 — "+요금 항목 추가"에서 그 항목에 지정된 accent 색상과 같은
+   색을 반영하되, 더 이상 블록 전체를 왼쪽 테두리로 감싸 들여쓰지 않는다(타이틀·일정 내용이 위 "출발
+   공항" 레이블 줄과 같은 왼쪽 기준선에 맞춰지도록, 그리고 가로 폭을 더 넓게 쓸 수 있도록). 대신 옅은
+   accent 색상의 세로선을 일자 번호(pd-sch-day-num) 뒤로 지나가는 타임라인 형태로 그린다 */
 .pd-pe-more-sub .pd-check-list{padding:0}
-.pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:10px}
+.pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:10px;padding:0}
+.pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days{position:relative;z-index:0}
+.pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:12px;top:12px;bottom:12px;width:2px;border-radius:1px;background:var(--pe-accent-pale, rgba(47,111,237,.25))}
 /* [Phase] 포함/불포함/참고사항 세 항목을 하나의 묶음으로 시각적으로 구분 — 위아래 구분선과 옅은
    배경을 줘서 카드의 다른 정보(레이블·일정)와 명확히 나뉘어 보이게 하고, 본문 폰트도 검정에 가까운
    진한 색으로 바꿔 가독성을 높인다(다른 곳에서 공용으로 쓰는 .pd-check-list 기본색은 그대로 둠) */
@@ -8082,7 +8086,7 @@ function renderProductDetail(p,cat,idx){
             // [수정] "+요금 항목 추가"에서 이 항목에 지정된 accent 색상(PE_ACCENT_COLORS)과 같은
             // 색으로 왼쪽에 라인을 그어, 상세보기의 일정 요약 타임라인이 어느 요금 항목의 일정인지
             // 한눈에 구분되도록 함
-            hasPeSchedule?`<div class="pd-pe-more-sub pd-pe-sch-accent" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:'',
+            hasPeSchedule?`<div class="pd-pe-more-sub pd-pe-sch-accent" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]};--pe-accent-pale:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .28)}"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:'',
             peNotesHTML
           ].join('');
           // [수정] "포함사항"은 옅은 초록색 박스, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로

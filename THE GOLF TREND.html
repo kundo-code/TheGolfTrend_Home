@@ -488,10 +488,10 @@ section.block{padding:100px 24px;position:relative}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
 /* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
 .product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
-.product-tag-row .tag-inline{display:inline-block;background:rgba(37,99,235,.1);color:#1d4ed8;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(37,99,235,.3);letter-spacing:.05em}
+.product-tag-row .tag-inline{display:inline-block;background:rgba(22,163,74,.12);color:#4B5563;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(22,163,74,.3);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.869rem;color:var(--pine-deep);font-weight:500}
-.product-foot .price .unit{font-size:.792rem;color:inherit}
+.product-foot .price .unit{font-size:.792rem;color:inherit;margin-left:4px}
 .product-foot .price .from{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.792rem;color:var(--gold-deep);font-weight:600;margin-left:4px;letter-spacing:.05em}
 .product-foot .details{color:var(--gold-deep);font-size:.85rem;font-weight:600;text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 3px rgba(10,23,48,.2)}
 .empty-state{text-align:center;padding:60px 20px;color:rgba(10,23,48,.5)}
@@ -638,7 +638,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-share-btn:hover{background:rgba(10,23,48,.1);color:var(--pine-deep)}
 .pd-pe-share-btn:disabled{opacity:.6;cursor:default}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
-.pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:#4B5563;letter-spacing:.04em;margin-bottom:10px}
+.pd-pe-more-sub .t{font-size:.82rem;font-weight:700;color:#4B5563;letter-spacing:.04em;margin-bottom:10px}
 /* [수정] 요금 항목별 일정 요약 타임라인 — "+요금 항목 추가"에서 그 항목에 지정된 accent 색상과 같은
    색을 반영하되, 더 이상 블록 전체를 왼쪽 테두리로 감싸 들여쓰지 않는다(타이틀·일정 내용이 위 "출발
    공항" 레이블 줄과 같은 왼쪽 기준선에 맞춰지도록, 그리고 가로 폭을 더 넓게 쓸 수 있도록). 대신 옅은
@@ -670,7 +670,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
 .pd-pe-departure-day-label{display:inline-flex;align-items:center;gap:14px;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:#ffffff;border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
 /* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
-.pd-pe-departure-day-label .dd-label{color:#000000}
+.pd-pe-departure-day-label .dd-label{color:#000000;font-size:1.2em}
 .pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:1.2em}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
@@ -1206,11 +1206,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .rtf-toolbar select.rtf-size-sel,.rtf-toolbar select.rtf-font-sel,.rtf-toolbar select.rtf-lh-sel{width:auto;flex:0 0 auto;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.68rem;padding:0 3px;box-shadow:var(--nm-shadow-raised-sm)}
 /* [수정] 색상 아이콘 높이를 다른 아이콘(32px)과 정확히 맞춤 — 확대 후 잘라내는 방식 대신
    input[type=color] 내부의 브라우저 기본 여백(swatch-wrapper padding)을 직접 제거해 32px를 꽉 채움 */
-.rtf-toolbar label.rtf-color{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;height:32px;margin:0;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer;text-transform:none}
+/* [수정] 색상 아이콘을 툴바 맨 우측 끝으로 고정 배치하고, 스와치 위에 흰색 "T" 글자를 올려
+   글자 색상 변경 버튼임을 한눈에 알 수 있게 함 */
+.rtf-toolbar label.rtf-color{position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;height:32px;margin:0 0 0 auto;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer;text-transform:none}
 .rtf-color input[type=color]{display:block;width:100%;height:100%;padding:0;border:none;cursor:pointer;background:none}
 .rtf-color input[type=color]::-webkit-color-swatch-wrapper{padding:0}
 .rtf-color input[type=color]::-webkit-color-swatch{border:none;border-radius:8px}
 .rtf-color input[type=color]::-moz-color-swatch{border:none;border-radius:8px}
+.rtf-color-t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.55)}
 .rtf-editable{padding:12px 14px;min-height:150px;font-family:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);outline:none;white-space:pre-wrap;overflow-wrap:break-word}
 .rtf-editable:empty:before{content:attr(data-placeholder);color:var(--nm-text-soft);white-space:pre-line}
 .rtf-editable.included-field{background:#E6F6EA}
@@ -6094,9 +6097,9 @@ function richTextFieldHTML(value, onchangeAttr, opts){
       <button type="button" class="rtf-btn" title="굵게" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'bold')"><b>B</b></button>
       <button type="button" class="rtf-btn" title="기울임" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'italic')"><i>I</i></button>
       <button type="button" class="rtf-btn" title="밑줄" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'underline')"><u>U</u></button>
-      <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"></label>
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
+      <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"><span class="rtf-color-t">T</span></label>
     </div>
     <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
   </div>`;
@@ -8072,7 +8075,7 @@ function renderProductDetail(p,cat,idx){
           const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
           // [수정] 공백/줄바꿈만 입력된 경우 bulletRows()가 빈 문자열을 반환하므로, 원본 값이
           // 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다(빈 제목만 노출되는 문제 방지)
-          const includedRows = bulletRowsRich(pe.included||'','✅');
+          const includedRows = bulletRowsRich(pe.included||'','✓');
           const notIncludedRows = bulletRowsRich(pe.notIncluded||'','✕');
           const precautionsRows = bulletRowsRich(pe.precautions||'','•');
           // [수정] "출발 요일"에서 선택한 내용을 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 —
@@ -8088,6 +8091,8 @@ function renderProductDetail(p,cat,idx){
           const peItemNo = String(idx+1).padStart(2,'0');
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ [항목 ${peItemNo}] 항공/이동 정보</div>${labelRows}</div>`:'',
+            // [수정] "항공/이동 정보"와 "일정 요약 타임라인" 사이에 구분선을 넣어 두 섹션을 시각적으로 분리
+            (labelRows && hasPeSchedule)?`<div class="pd-section-divider"></div>`:'',
             // [수정] "+요금 항목 추가"에서 이 항목에 지정된 accent 색상(PE_ACCENT_COLORS)과 같은
             // 색으로 왼쪽에 라인을 그어, 상세보기의 일정 요약 타임라인이 어느 요금 항목의 일정인지
             // 한눈에 구분되도록 함
@@ -8197,7 +8202,7 @@ function renderProductDetail(p,cat,idx){
   }
   // [추가] 공통(요금 항목과 무관) 포함 · 불포함 · 참고사항 — "공통 안내" 바로 위에 노출.
   // 포함사항은 옅은 초록색, 불포함사항은 옅은 빨간색 박스로(요금 항목별 미리보기와 동일한 스타일)
-  const commonIncludedRows = bulletRowsRich(p.commonIncluded||'','✅');
+  const commonIncludedRows = bulletRowsRich(p.commonIncluded||'','✓');
   const commonNotIncludedRows = bulletRowsRich(p.commonNotIncluded||'','✕');
   // [수정] "체크포인트2(참고사항)"와 값을 서로 동기화하는 필드라, 체크포인트2가 일반 텍스트로
   // 노출되는 것과 맞춰 이 필드는 리치 텍스트로 전환하지 않고 그대로 유지한다

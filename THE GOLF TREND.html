@@ -4147,7 +4147,10 @@ function renderAdminChannels(){
     const cached = _rssCache[ch.id];
     const items = cached ? cached.items : [];
     const lastErr = _rssLastError[ch.id];
-    const statusText = lastErr ? `⚠️ 수집 실패 (${lastErr})` : (cached ? `최근 수집: ${items.length}개 글/영상` : '아직 수집 전');
+    // [수정] 502/503/504는 채널 ID 문제가 아니라 프록시 서버(Cloudflare Worker) 또는 YouTube
+    // 쪽의 일시적/지속적 오류일 가능성이 높으므로, 그 방향으로 확인해볼 수 있게 힌트를 덧붙인다
+    const isGatewayErr = lastErr && /HTTP 50[234]/.test(lastErr);
+    const statusText = lastErr ? `⚠️ 수집 실패 (${lastErr})${isGatewayErr?' — 프록시 서버 상태를 확인해주세요':''}` : (cached ? `최근 수집: ${items.length}개 글/영상` : '아직 수집 전');
     const isOpen = _channelItemsOpen.has(ch.id);
     // [Phase] 채널별로 실제 수집된 글/영상 목록을 펼쳐 보여주고, 수동 블로그 카드와 동일한
     // 필드(태그·타이틀1·타이틀2·이미지·연결 상품)를 글 URL 단위로 직접 덮어쓸 수 있게 한다.
@@ -4287,7 +4290,14 @@ async function refreshChannelFeeds(opts){
     if (!forceThis && cached && (Date.now()-cached.fetchedAt) < RSS_CACHE_TTL) continue;
     try{
       const feedUrl = buildChannelFeedUrl(ch);
-      const res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
+      // [수정] 502/503/504는 프록시(Cloudflare Worker)·YouTube 쪽의 일시적인 게이트웨이 오류인
+      // 경우가 많아, 곧바로 실패 처리하지 않고 잠깐 기다렸다가 한 번 더 시도해본다 — 일시적인
+      // 순단으로 인한 "수집 실패" 노출 빈도를 줄인다
+      let res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
+      if (!res.ok && [502,503,504].includes(res.status)){
+        await new Promise(r=>setTimeout(r, 1200));
+        res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
+      }
       if (!res.ok){
         _rssLastError[ch.id] = `HTTP ${res.status}`;
         console.error(`[채널 수집 실패] ${ch.label||ch.handle} (${ch.type}): HTTP ${res.status} — ${feedUrl}`);

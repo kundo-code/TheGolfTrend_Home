@@ -481,7 +481,7 @@ section.block{padding:100px 24px;position:relative}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
 /* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
 .product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
-.product-tag-row .tag-inline{display:inline-block;background:rgba(221,179,103,.14);color:var(--gold-deep);font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(221,179,103,.35);letter-spacing:.05em}
+.product-tag-row .tag-inline{display:inline-block;background:rgba(37,99,235,.1);color:#1d4ed8;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(37,99,235,.3);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.869rem;color:var(--pine-deep);font-weight:500}
 .product-foot .price .unit{font-size:.792rem;color:inherit}
@@ -1165,6 +1165,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    양쪽 모두에 동일하게 적용 */
 .adv-body textarea.cp1-field,.apc-fields textarea.cp1-field{background:#FDE7EE}
 .adv-body textarea.cp2-field,.apc-fields textarea.cp2-field{color:#D6293E}
+/* [추가] 포함사항 입력란은 옅은 초록색, 불포함사항 입력란은 옅은 빨간색 바탕으로 가독성을 높인다 */
+.adv-body textarea.included-field{background:#E6F6EA}
+.adv-body textarea.notincluded-field{background:#FDECEC}
 /* [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 구분 */
 .cardprice-box{background:var(--nm-surface-light);border-radius:var(--nm-r-md);padding:12px 16px 14px;box-shadow:var(--nm-shadow-inset);margin-top:18px}
 .cardprice-box>label{margin-top:0}
@@ -3925,6 +3928,8 @@ function ensureExtended(p){
   // [수정] 비행시간 · 이동 소요시간 — 국내는 "숙소→골프장", 해외는 "공항→호텔"로 레이블만 다르게 표시
   if (p.flightTime===undefined) p.flightTime = '';
   if (p.transferTime===undefined) p.transferTime = '';
+  // [추가] 호텔→골프장 이동시간 — 비행시간 바로 아래에 별도 항목으로 노출
+  if (p.hotelToGolfTime===undefined) p.hotelToGolfTime = '';
   // [수정] meta 정보(라운드/숙박/식사/항공포함여부/비행시간/소요시간) 개별 항목을 상품 카드에서
   // 한 줄 전체 폭으로 표시할지 여부 — 관리자 패널의 각 항목 "한 줄로" 토글로 설정
   if (!p.metaWide) p.metaWide = {};
@@ -3933,6 +3938,10 @@ function ensureExtended(p){
   if (p.commonIncluded===undefined) p.commonIncluded = '';
   if (p.commonNotIncluded===undefined) p.commonNotIncluded = '';
   if (p.commonPrecautions===undefined) p.commonPrecautions = '';
+  // [수정] 체크포인트2(참고사항)는 참고사항(공통)과 동일한 값으로 취급 — 기존에 체크포인트2만
+  // 입력되어 있던 상품은 참고사항 쪽에도 그대로 복사해 두어, 값 손실 없이 노출 위치가 바뀌어도
+  // 내용이 그대로 보이게 한다
+  if (p.checkpoint2 && !p.commonPrecautions) p.commonPrecautions = p.checkpoint2;
   if (!Array.isArray(p.commonDayPrices)) p.commonDayPrices = [];
   p.commonDayPrices.forEach(d=>{ if (d.day===undefined) d.day=''; if (d.price===undefined) d.price=0; });
   if (!Array.isArray(p.commonHolidayPrices)) p.commonHolidayPrices = [];
@@ -6092,6 +6101,7 @@ function productCardHTML(p, catId, idx){
     ...(p.meals ? [{full: !!mw.meals, html: `🍽 <b class="meta-value">${p.meals}</b>`}] : []),
     ...(airfareText ? [{full: !!mw.airfare, html: `✈️ <b class="meta-value">${airfareText}</b>`}] : []),
     ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <b class="meta-value">비행시간 ${escapeAttr(p.flightTime)}</b>`}] : []),
+    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <b class="meta-value">호텔→골프장 ${escapeAttr(p.hotelToGolfTime)}</b>`}] : []),
     ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <b class="meta-value">${transferLabel} ${escapeAttr(p.transferTime)}</b>`}] : []),
   ];
   let metaCol = 0;
@@ -6127,7 +6137,6 @@ function productCardHTML(p, catId, idx){
       ${airfareText?`<span class="product-minpeople-box">✈️ ${escapeAttr(airfareText)}</span>`:''}
       ${cardStayText?`<span class="product-minpeople-box">🏨 ${escapeAttr(cardStayText)}</span>`:''}
     </div>`:''}
-    ${p.checkpoint2?`<div class="product-divider"></div><div class="product-checkpoint">${escapeAttr(p.checkpoint2)}</div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
     <div class="product-foot">
       <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
@@ -8947,16 +8956,17 @@ function renderProductAdmin(catId){
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
         <div><label>기간 · Nights</label><input type="text" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
         <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateProduct(${i},'nightsCount',this.value)"></div>
-        <div><div class="mw-label-row"><label>라운드 · Rounds</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),`toggleMetaWide(${i},'rounds',this.checked)`)}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
-        <div><div class="mw-label-row"><label>숙박 · Stay</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),`toggleMetaWide(${i},'stay',this.checked)`)}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
-        <div><div class="mw-label-row"><label>식사 · Meals</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),`toggleMetaWide(${i},'meals',this.checked)`)}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
-        <div><div class="mw-label-row"><label>비행시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),`toggleMetaWide(${i},'flightTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
-        <div><div class="mw-label-row"><label>${transferFieldLabel}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
+        <div><div class="mw-label-row"><label>라운드 · Rounds <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),`toggleMetaWide(${i},'rounds',this.checked)`)}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
+        <div><div class="mw-label-row"><label>숙박 · Stay <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),`toggleMetaWide(${i},'stay',this.checked)`)}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
+        <div><div class="mw-label-row"><label>식사 · Meals <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),`toggleMetaWide(${i},'meals',this.checked)`)}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
+        <div><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),`toggleMetaWide(${i},'flightTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
+        <div><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
+        <div><div class="mw-label-row"><label>${transferFieldLabel} <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
         <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4는 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
         <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
         <div class="full"><label>체크포인트1(주의사항) (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
-        <div class="full"><label>체크포인트2(참고사항) (상품 카드에 노출)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
+        <div class="full"><label>체크포인트2(참고사항) (자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
     </details>`).join('');
 }
@@ -8967,6 +8977,9 @@ function updateProduct(idx,field,value){
   }
   if (field==='from') value=parseInt(value)||0;
   productOverrides[activeProductCat][idx][field]=value;
+  // [추가] "체크포인트2(참고사항)"과 공통 "참고사항"은 같은 값으로 취급 — 고급편집의 참고사항
+  // 입력란과 자동으로 맞춰진다
+  if (field==='checkpoint2') productOverrides[activeProductCat][idx].commonPrecautions = value;
   saveProducts();
   renderCategoryGrid();
   updateProductCountLabel();
@@ -9257,6 +9270,10 @@ function updateAdvField(field, value, type){
   let obj=p;
   for (let i=0;i<parts.length-1;i++){ if (!obj[parts[i]]) obj[parts[i]]={}; obj=obj[parts[i]]; }
   obj[parts[parts.length-1]]=value;
+  // [추가] "체크포인트2(참고사항)"과 공통 "참고사항"은 같은 값으로 취급 — 둘 중 어느 입력란에
+  // 입력해도 서로 자동으로 맞춰진다(다음에 폼을 다시 그릴 때 두 입력란 모두 같은 값을 보여준다)
+  if (field==='checkpoint2') p.commonPrecautions = value;
+  else if (field==='commonPrecautions') p.checkpoint2 = value;
   saveAdvChange();
 }
 // [수정] EDITOR'S PICK 해제 시, 함께 노출되던 "팝업 노출" 설정도 자동으로 해제 —
@@ -9370,16 +9387,17 @@ function advBasicHTML(p){
       <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
       <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
       <div class="full"><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>항공 포함 여부</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
+      <div class="full"><div class="mw-label-row"><label>라운드 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>항공 포함 여부 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역 및 "2인 이상" 옆에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
         <select onchange="updateAdvField('airfareIncluded',this.value)">
           ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
         </select>
       </div>
-      <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
+      <div class="full"><div class="mw-label-row"><label>숙박 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>식사 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span> ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
+      <div class="full"><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'} <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
     </div>
     <label>추천 판매 시기 <span style="color:var(--nm-text-soft);font-weight:400;font-size:.7rem">(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>
     ${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsMulti(${val})`)}
@@ -9388,7 +9406,7 @@ function advBasicHTML(p){
     <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
     <label>체크포인트1(주의사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
     <textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
-    <label>체크포인트2(참고사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 아래에 노출)</span></label>
+    <label>체크포인트2(참고사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</span></label>
     <textarea class="cp2-field" style="min-height:225px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
 
     <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
@@ -9451,8 +9469,8 @@ function advBasicHTML(p){
     <details class="pe-labels" open>
       <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('commonIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonIncluded||'')}</textarea>
-        <label>불포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('commonNotIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonNotIncluded||'')}</textarea>
+        <label>💰 포함사항</label><textarea class="auto-grow included-field" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('commonIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonIncluded||'')}</textarea>
+        <label>불포함사항</label><textarea class="auto-grow notincluded-field" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('commonNotIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonNotIncluded||'')}</textarea>
         <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 ..." oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
       </div>
     </details>
@@ -9463,7 +9481,7 @@ function advBasicHTML(p){
     <details class="adv-collapsible" data-ck="common-notes" open>
       <summary>공통사항 — 공통 안내 · 추가 요금</summary>
       <div class="adv-collapsible-body">
-        <label>✳️ 공통 안내</label><textarea class="auto-grow" style="min-height:140px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value);autoGrowTextarea(this)">${escapeAttr(p.notes||'')}</textarea>
+        <label>✳️ 공통 안내</label><textarea class="auto-grow" style="min-height:210px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value);autoGrowTextarea(this)">${escapeAttr(p.notes||'')}</textarea>
         <label>💰 추가 요금 안내 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(항목 · 금액을 나눠 입력 — 자세히 화면에서 표 형식으로 노출)</span></label>
         ${extraFeesHTML(p)}
       </div>
@@ -9739,8 +9757,8 @@ function priceEntryHTML(pe, i, popupCount){
     <details class="pe-labels" open>
       <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'included',this.value);autoGrowTextarea(this)">${escapeAttr(pe.included||'')}</textarea>
-        <label>불포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(pe.notIncluded||'')}</textarea>
+        <label>💰 포함사항</label><textarea class="auto-grow included-field" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'included',this.value);autoGrowTextarea(this)">${escapeAttr(pe.included||'')}</textarea>
+        <label>불포함사항</label><textarea class="auto-grow notincluded-field" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(pe.notIncluded||'')}</textarea>
         <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updatePriceEntry(${i},'precautions',this.value);autoGrowTextarea(this)">${escapeAttr(pe.precautions||'')}</textarea>
       </div>
     </details>

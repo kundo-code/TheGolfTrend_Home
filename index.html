@@ -1191,17 +1191,23 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [추가] 장문 텍스트 필드(포함/불포함/참고사항·공통 안내·예약정책)용 서식 편집기 —
    폰트 크기·볼드·기울임·밑줄·색상 지정 가능한 리치 텍스트 입력란 */
 .rtf-wrap{border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);overflow:hidden;background:var(--nm-surface-light)}
-.rtf-toolbar{display:flex;align-items:center;gap:4px;padding:6px 8px;background:var(--nm-surface);border-bottom:1px solid rgba(163,177,198,.35);flex-wrap:wrap}
-.rtf-btn{width:28px;height:28px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);cursor:pointer;font-size:.8rem;box-shadow:var(--nm-shadow-raised-sm)}
+.rtf-toolbar{display:flex;flex-direction:column;gap:6px;padding:6px 8px;background:var(--nm-surface);border-bottom:1px solid rgba(163,177,198,.35)}
+.rtf-toolbar-selects{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rtf-toolbar-tools{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.rtf-btn{width:32px;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);cursor:pointer;font-size:.8rem;box-shadow:var(--nm-shadow-raised-sm)}
 .rtf-btn:hover{box-shadow:var(--nm-shadow-hover)}
 .rtf-btn.rtf-clear{width:auto;padding:0 8px;font-size:.68rem}
-.rtf-size-sel{height:28px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.72rem;padding:0 4px;box-shadow:var(--nm-shadow-raised-sm)}
-.rtf-color{display:inline-flex;align-items:center;width:28px;height:28px;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer}
-.rtf-color input[type=color]{width:36px;height:36px;border:none;margin:-4px;cursor:pointer;background:none}
+.rtf-toolbar-selects select.rtf-size-sel,.rtf-toolbar-selects select.rtf-font-sel,.rtf-toolbar-selects select.rtf-lh-sel{width:auto;flex:1 1 76px;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.72rem;padding:0 4px;box-shadow:var(--nm-shadow-raised-sm)}
+.rtf-color{display:inline-flex;align-items:center;width:32px;height:32px;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer}
+.rtf-color input[type=color]{width:40px;height:40px;border:none;margin:-4px;cursor:pointer;background:none}
 .rtf-editable{padding:12px 14px;min-height:150px;font-family:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);outline:none;white-space:pre-wrap;overflow-wrap:break-word}
 .rtf-editable:empty:before{content:attr(data-placeholder);color:var(--nm-text-soft);white-space:pre-line}
 .rtf-editable.included-field{background:#E6F6EA}
 .rtf-editable.notincluded-field{background:#FDECEC}
+.rtf-table{border-collapse:collapse;margin:4px 0;width:100%}
+.rtf-table td,.rtf-table th{border:1px solid rgba(163,177,198,.6);padding:6px 8px;font-size:.85rem;min-width:32px}
+.row-table{display:block!important;padding:2px 0}
+.row-table .rtf-table{margin:0}
 /* [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 구분 */
 .cardprice-box{background:var(--nm-surface-light);border-radius:var(--nm-r-md);padding:12px 16px 14px;box-shadow:var(--nm-shadow-inset);margin-top:18px}
 .cardprice-box>label{margin-top:0}
@@ -5710,6 +5716,7 @@ function renderAdminTheme(){
       ${t[field]?`<button type="button" class="file-btn" onclick="updateTheme('${field}','')">기본값</button>`:''}
     </div>`;
   c.innerHTML=`
+    <details class="admin-info-collapse"><summary>🎨 테마 설정 보기</summary><div class="admin-collapse-body">
     <div class="admin-identity-section">
       <h5>탑바 색상 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(맨 위 로고·타이틀 바)</span></h5>
       ${colorRow('배경 색상','topBarBg','#0e1522')}
@@ -5740,6 +5747,7 @@ function renderAdminTheme(){
       <span class="file-hint">⚠️ 권장 해상도 1920×1080px 이상(가로:세로 = 16:9 권장) · 파일 용량 8MB 이하 · JPG/PNG 형식 · 화면 크기에 맞춰 전체 화면을 채우도록(꽉 차게 잘려서) 표시되니, 중요한 내용은 이미지 중앙에 배치해주세요.</span>`:''}
     </div>
     ${(t.topBarBg||t.topBarFont||t.navBg||t.navFont||bgMode!=='default')?`<button type="button" class="file-btn danger" onclick="resetTheme()" style="margin:4px 20px 16px">테마 전체 초기화</button>`:''}
+    </div></details>
   `;
 }
 
@@ -6001,7 +6009,7 @@ function sanitizeRichHTML(html){
   const div = document.createElement('div');
   div.innerHTML = html;
   div.querySelectorAll('script,style,iframe,object,embed,link,meta,form,input,button').forEach(el=>el.remove());
-  const allowedStyle = ['color','font-size','font-weight','text-decoration','font-style'];
+  const allowedStyle = ['color','font-size','font-weight','text-decoration','font-style','font-family','line-height'];
   div.querySelectorAll('*').forEach(el=>{
     Array.from(el.attributes).forEach(attr=>{
       const name = attr.name.toLowerCase();
@@ -6021,12 +6029,23 @@ function sanitizeRichHTML(html){
 function bulletRowsRich(html, icon){
   const clean = sanitizeRichHTML(html||'');
   if (!clean.replace(/<[^>]*>/g,'').trim()) return '';
-  const normalized = clean
+  // 표(<table>)는 여러 줄에 걸친 구조이므로, 줄바꿈 치환 전에 미리 떼어내
+  // 통째로 하나의 라인으로 보존한 뒤(불릿 아이콘 없이 렌더) 나머지만 줄 단위로 나눈다
+  const tables = [];
+  const withPlaceholders = clean.replace(/<table[\s\S]*?<\/table>/gi, m=>{
+    tables.push(m);
+    return `\u0000TBL${tables.length-1}\u0000`;
+  });
+  const normalized = withPlaceholders
     .replace(/<div>/gi,'').replace(/<\/div>/gi,'\n')
     .replace(/<p>/gi,'').replace(/<\/p>/gi,'\n')
     .replace(/<br\s*\/?>/gi,'\n');
   return normalized.split('\n').map(s=>s.trim()).filter(Boolean)
-    .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${line}</span></div>`).join('');
+    .map(line=>{
+      const tblMatch = line.match(/^\u0000TBL(\d+)\u0000$/);
+      if (tblMatch) return `<div class="row row-table">${tables[+tblMatch[1]]}</div>`;
+      return `<div class="row"><span class="ic">${icon}</span><span>${line}</span></div>`;
+    }).join('');
 }
 // 관리자 패널의 서식 지정 가능한 장문 텍스트 입력란(contenteditable) — 미니 툴바(크기·B·I·U·색상) +
 // 실제 편집 영역으로 구성. onchangeAttr에 담긴 "__HTML__" 자리표시자를 "this.innerHTML"로 치환해
@@ -6036,20 +6055,39 @@ function richTextFieldHTML(value, onchangeAttr, opts){
   const initial = plainToRichInit(value);
   const oninput = onchangeAttr.replace('__HTML__', 'this.innerHTML');
   return `<div class="rtf-wrap">
-    <div class="rtf-toolbar" onmousedown="event.preventDefault()">
-      <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
-        <option value="">크기</option>
-        <option value="1">작게</option>
-        <option value="2">보통</option>
-        <option value="3">약간 크게</option>
-        <option value="4">크게</option>
-        <option value="5">아주 크게</option>
-      </select>
-      <button type="button" class="rtf-btn" title="굵게" onclick="rtfCmd(this,'bold')"><b>B</b></button>
-      <button type="button" class="rtf-btn" title="기울임" onclick="rtfCmd(this,'italic')"><i>I</i></button>
-      <button type="button" class="rtf-btn" title="밑줄" onclick="rtfCmd(this,'underline')"><u>U</u></button>
-      <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"></label>
-      <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
+    <div class="rtf-toolbar" onmousedown="rtfSaveSelection()">
+      <div class="rtf-toolbar-selects">
+        <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
+          <option value="">크기</option>
+          <option value="1">작게</option>
+          <option value="2">보통</option>
+          <option value="3">약간 크게</option>
+          <option value="4">크게</option>
+          <option value="5">아주 크게</option>
+        </select>
+        <select class="rtf-font-sel" title="폰트 종류" onchange="rtfCmd(this,'fontName',this.value);this.value=''">
+          <option value="">글꼴</option>
+          <option value="'Pretendard','Noto Sans KR',sans-serif">기본</option>
+          <option value="'Noto Sans KR','Malgun Gothic',sans-serif">고딕</option>
+          <option value="'Noto Serif KR','Batang',serif">명조</option>
+          <option value="'Courier New',monospace">고정폭</option>
+        </select>
+        <select class="rtf-lh-sel" title="줄간격" onchange="rtfLineHeight(this,this.value);this.value=''">
+          <option value="">줄간격</option>
+          <option value="1">좁게</option>
+          <option value="1.5">보통</option>
+          <option value="2">넓게</option>
+          <option value="2.5">아주 넓게</option>
+        </select>
+      </div>
+      <div class="rtf-toolbar-tools">
+        <button type="button" class="rtf-btn" title="굵게" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'bold')"><b>B</b></button>
+        <button type="button" class="rtf-btn" title="기울임" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'italic')"><i>I</i></button>
+        <button type="button" class="rtf-btn" title="밑줄" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'underline')"><u>U</u></button>
+        <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"></label>
+        <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
+        <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
+      </div>
     </div>
     <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
   </div>`;
@@ -6058,10 +6096,32 @@ function richTextFieldHTML(value, onchangeAttr, opts){
 // 하므로, 버튼 클릭 시 같은 .rtf-wrap 안의 편집 영역을 찾아 포커스한 뒤 명령을 실행한다.
 // 폰트 크기는 구식 <font size> 태그 대신, 임시로 가장 큰 legacy 크기(7)를 적용해 표시한 뒤
 // 해당 <font> 태그를 찾아 <span style="font-size:...">로 치환하는 방식을 사용한다
+// 네이티브 <select>/<input type=color>를 클릭하면 브라우저가 포커스를 그쪽으로 옮기면서
+// contenteditable 안의 텍스트 선택영역(Range)이 사라진다. 이를 막기 위해 툴바 위에서
+// mousedown이 발생하는 즉시(포커스가 옮겨가기 전) 현재 선택영역을 저장해두고,
+// 이후 rtfCmd 실행 시 그 선택영역을 편집영역에 복원한 뒤 명령을 적용한다
+let _rtfSavedRange = null;
+function rtfSaveSelection(){
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0){
+    const r = sel.getRangeAt(0);
+    if (r.commonAncestorContainer && document.activeElement && document.activeElement.closest && document.activeElement.closest('.rtf-editable')){
+      _rtfSavedRange = r.cloneRange();
+    }
+  }
+}
+function rtfRestoreSelection(editable){
+  if (_rtfSavedRange && editable.contains(_rtfSavedRange.commonAncestorContainer)){
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_rtfSavedRange);
+  }
+}
 function rtfCmd(btnEl, cmd, val){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = wrap.querySelector('.rtf-editable');
   editable.focus();
+  rtfRestoreSelection(editable);
   if (cmd==='fontSize'){
     if (!val) return;
     const sizeMap = {'1':'.8em','2':'1em','3':'1.15em','4':'1.4em','5':'1.7em'};
@@ -6069,6 +6129,15 @@ function rtfCmd(btnEl, cmd, val){
     wrap.querySelectorAll('font[size="7"]').forEach(f=>{
       const span = document.createElement('span');
       span.style.fontSize = sizeMap[val] || '1em';
+      span.innerHTML = f.innerHTML;
+      f.replaceWith(span);
+    });
+  } else if (cmd==='fontName'){
+    if (!val) return;
+    document.execCommand('fontName', false, val);
+    wrap.querySelectorAll('font[face]').forEach(f=>{
+      const span = document.createElement('span');
+      span.style.fontFamily = f.getAttribute('face');
       span.innerHTML = f.innerHTML;
       f.replaceWith(span);
     });
@@ -6085,6 +6154,56 @@ function rtfCmd(btnEl, cmd, val){
   } else {
     document.execCommand(cmd, false, val);
   }
+  editable.dispatchEvent(new Event('input', {bubbles:true}));
+}
+// 줄간격 조절 — execCommand에 해당 기능이 없어 선택영역을 <span style="line-height:...">로 직접 감싼다.
+// 단, 선택영역이 <br>(줄바꿈)을 포함하면 bulletRowsRich()의 문자열 기반 줄 분리 로직이 깨질 수 있어
+// 그 경우엔 적용을 막고 안내한다(한 줄 내에서만 사용 가능)
+function rtfLineHeight(selEl, val){
+  if (!val) return;
+  const wrap = selEl.closest('.rtf-wrap');
+  const editable = wrap.querySelector('.rtf-editable');
+  editable.focus();
+  rtfRestoreSelection(editable);
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount===0 || sel.isCollapsed){
+    alert('줄간격을 적용할 텍스트를 먼저 선택해주세요.');
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  if (!editable.contains(range.commonAncestorContainer)) return;
+  if (range.cloneContents().querySelector('br')){
+    alert('줄간격은 한 줄 안에서만 적용할 수 있습니다. 여러 줄을 선택한 경우 한 줄씩 나눠서 적용해주세요.');
+    return;
+  }
+  const span = document.createElement('span');
+  span.style.lineHeight = val;
+  span.appendChild(range.extractContents());
+  range.insertNode(span);
+  sel.removeAllRanges();
+  editable.dispatchEvent(new Event('input', {bubbles:true}));
+}
+// 표 넣기 — 행/열 개수를 입력받아 기본 표(rtf-table)를 편집영역에 삽입한다.
+// 표 뒤에 <br>을 붙여 bulletRowsRich()가 표를 별도의 한 줄(불릿 없이)로 인식하게 한다
+function rtfInsertTable(btnEl){
+  const wrap = btnEl.closest('.rtf-wrap');
+  const editable = wrap.querySelector('.rtf-editable');
+  const rows = parseInt(prompt('행(줄) 개수를 입력하세요', '2'), 10);
+  const cols = parseInt(prompt('열(칸) 개수를 입력하세요', '2'), 10);
+  if (!rows || !cols || rows<1 || cols<1 || rows>20 || cols>10){
+    if (rows || cols) alert('행/열 개수를 올바르게 입력해주세요. (최대 20행 10열)');
+    return;
+  }
+  editable.focus();
+  rtfRestoreSelection(editable);
+  let html = '<table class="rtf-table"><tbody>';
+  for (let r=0;r<rows;r++){
+    html += '<tr>';
+    for (let c=0;c<cols;c++) html += '<td>&nbsp;</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table><br>';
+  document.execCommand('insertHTML', false, html);
   editable.dispatchEvent(new Event('input', {bubbles:true}));
 }
 // [추가] hex 색상을 옅은 배경용 rgba로 변환 — 요금 항목별 accent 색상(PE_ACCENT_COLORS)을

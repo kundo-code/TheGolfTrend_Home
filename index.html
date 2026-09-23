@@ -1188,6 +1188,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [추가] 포함사항 입력란은 옅은 초록색, 불포함사항 입력란은 옅은 빨간색 바탕으로 가독성을 높인다 */
 .adv-body textarea.included-field{background:#E6F6EA}
 .adv-body textarea.notincluded-field{background:#FDECEC}
+/* [추가] 장문 텍스트 필드(포함/불포함/참고사항·공통 안내·예약정책)용 서식 편집기 —
+   폰트 크기·볼드·기울임·밑줄·색상 지정 가능한 리치 텍스트 입력란 */
+.rtf-wrap{border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);overflow:hidden;background:var(--nm-surface-light)}
+.rtf-toolbar{display:flex;align-items:center;gap:4px;padding:6px 8px;background:var(--nm-surface);border-bottom:1px solid rgba(163,177,198,.35);flex-wrap:wrap}
+.rtf-btn{width:28px;height:28px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);cursor:pointer;font-size:.8rem;box-shadow:var(--nm-shadow-raised-sm)}
+.rtf-btn:hover{box-shadow:var(--nm-shadow-hover)}
+.rtf-btn.rtf-clear{width:auto;padding:0 8px;font-size:.68rem}
+.rtf-size-sel{height:28px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.72rem;padding:0 4px;box-shadow:var(--nm-shadow-raised-sm)}
+.rtf-color{display:inline-flex;align-items:center;width:28px;height:28px;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer}
+.rtf-color input[type=color]{width:36px;height:36px;border:none;margin:-4px;cursor:pointer;background:none}
+.rtf-editable{padding:12px 14px;min-height:150px;font-family:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);outline:none;white-space:pre-wrap;overflow-wrap:break-word}
+.rtf-editable:empty:before{content:attr(data-placeholder);color:var(--nm-text-soft);white-space:pre-line}
+.rtf-editable.included-field{background:#E6F6EA}
+.rtf-editable.notincluded-field{background:#FDECEC}
 /* [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 구분 */
 .cardprice-box{background:var(--nm-surface-light);border-radius:var(--nm-r-md);padding:12px 16px 14px;box-shadow:var(--nm-shadow-inset);margin-top:18px}
 .cardprice-box>label{margin-top:0}
@@ -5856,6 +5870,111 @@ function fmtHolidayDate(s){
   return `${String(m).padStart(2,'0')}.${String(d).padStart(2,'0')}(${wd})`;
 }
 function escapeAttr(s){return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+// [추가] 관리자 패널 장문 텍스트 필드(포함/불포함/참고사항·공통 안내·예약정책)의 서식(폰트 크기·
+// 볼드·기울임·밑줄·색상) 편집 기능 — 여기서부터 아래 리치 텍스트 관련 함수들이 시작된다.
+// 텍스트를 HTML(순수 텍스트 노드 기준 &<> 이스케이프)로 안전하게 변환
+function escapeHtmlText(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+// 기존에 저장된 값이 아직 일반 텍스트(HTML 태그 없음)라면 줄바꿈(\n)을 <br>로 바꿔 리치 텍스트
+// 편집기에 처음 열었을 때도 기존 줄 구성이 그대로 보이도록 한다. 이미 서식이 적용된(HTML 태그가
+// 있는) 값이면 그대로 사용
+function plainToRichInit(v){
+  v = v || '';
+  if (/<[a-z][\s\S]*>/i.test(v)) return v;
+  return escapeHtmlText(v).replace(/\n/g, '<br>');
+}
+// 관리자가 입력한 리치 텍스트를 고객 화면에 그대로 노출하기 전, 위험한 태그·속성을 제거한다.
+// (script/iframe 등 제거, on*= 이벤트 핸들러·href·src 속성 제거, style은 서식 관련 속성만 허용)
+function sanitizeRichHTML(html){
+  if (!html) return '';
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  div.querySelectorAll('script,style,iframe,object,embed,link,meta,form,input,button').forEach(el=>el.remove());
+  const allowedStyle = ['color','font-size','font-weight','text-decoration','font-style'];
+  div.querySelectorAll('*').forEach(el=>{
+    Array.from(el.attributes).forEach(attr=>{
+      const name = attr.name.toLowerCase();
+      if (name==='style'){
+        const kept = attr.value.split(';').map(s=>s.trim()).filter(Boolean)
+          .filter(decl=>allowedStyle.some(a=>decl.toLowerCase().startsWith(a+':')));
+        if (kept.length) el.setAttribute('style', kept.join(';')); else el.removeAttribute('style');
+      } else if (name.startsWith('on') || name==='href' || name==='src' || name==='xlink:href'){
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  return div.innerHTML;
+}
+// 리치 텍스트 필드용 줄 단위 체크리스트 렌더링 — bulletRows()와 같은 결과 형태를 내지만
+// 일반 텍스트(\n 구분) 대신 서식이 포함된 HTML(<br>/<div> 구분)을 다룬다
+function bulletRowsRich(html, icon){
+  const clean = sanitizeRichHTML(html||'');
+  if (!clean.replace(/<[^>]*>/g,'').trim()) return '';
+  const normalized = clean
+    .replace(/<div>/gi,'').replace(/<\/div>/gi,'\n')
+    .replace(/<p>/gi,'').replace(/<\/p>/gi,'\n')
+    .replace(/<br\s*\/?>/gi,'\n');
+  return normalized.split('\n').map(s=>s.trim()).filter(Boolean)
+    .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${line}</span></div>`).join('');
+}
+// 관리자 패널의 서식 지정 가능한 장문 텍스트 입력란(contenteditable) — 미니 툴바(크기·B·I·U·색상) +
+// 실제 편집 영역으로 구성. onchangeAttr에 담긴 "__HTML__" 자리표시자를 "this.innerHTML"로 치환해
+// 기존 updateAdvField/updatePriceEntry 등 필드별 저장 함수를 그대로 재사용한다
+function richTextFieldHTML(value, onchangeAttr, opts){
+  opts = opts || {};
+  const initial = plainToRichInit(value);
+  const oninput = onchangeAttr.replace('__HTML__', 'this.innerHTML');
+  return `<div class="rtf-wrap">
+    <div class="rtf-toolbar" onmousedown="event.preventDefault()">
+      <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
+        <option value="">크기</option>
+        <option value="1">작게</option>
+        <option value="2">보통</option>
+        <option value="3">약간 크게</option>
+        <option value="4">크게</option>
+        <option value="5">아주 크게</option>
+      </select>
+      <button type="button" class="rtf-btn" title="굵게" onclick="rtfCmd(this,'bold')"><b>B</b></button>
+      <button type="button" class="rtf-btn" title="기울임" onclick="rtfCmd(this,'italic')"><i>I</i></button>
+      <button type="button" class="rtf-btn" title="밑줄" onclick="rtfCmd(this,'underline')"><u>U</u></button>
+      <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"></label>
+      <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
+    </div>
+    <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
+  </div>`;
+}
+// 리치 텍스트 툴바 버튼 — execCommand는 실행 대상(contenteditable)에 포커스·선택영역이 있어야
+// 하므로, 버튼 클릭 시 같은 .rtf-wrap 안의 편집 영역을 찾아 포커스한 뒤 명령을 실행한다.
+// 폰트 크기는 구식 <font size> 태그 대신, 임시로 가장 큰 legacy 크기(7)를 적용해 표시한 뒤
+// 해당 <font> 태그를 찾아 <span style="font-size:...">로 치환하는 방식을 사용한다
+function rtfCmd(btnEl, cmd, val){
+  const wrap = btnEl.closest('.rtf-wrap');
+  const editable = wrap.querySelector('.rtf-editable');
+  editable.focus();
+  if (cmd==='fontSize'){
+    if (!val) return;
+    const sizeMap = {'1':'.8em','2':'1em','3':'1.15em','4':'1.4em','5':'1.7em'};
+    document.execCommand('fontSize', false, '7');
+    wrap.querySelectorAll('font[size="7"]').forEach(f=>{
+      const span = document.createElement('span');
+      span.style.fontSize = sizeMap[val] || '1em';
+      span.innerHTML = f.innerHTML;
+      f.replaceWith(span);
+    });
+  } else if (cmd==='foreColor'){
+    // execCommand('foreColor')는 <font color="..."> 같은 예전 방식 태그를 만들어서,
+    // <span style="color:..."> 로 바꿔 최신 방식으로 통일한다
+    document.execCommand('foreColor', false, val);
+    wrap.querySelectorAll('font[color]').forEach(f=>{
+      const span = document.createElement('span');
+      span.style.color = f.getAttribute('color');
+      span.innerHTML = f.innerHTML;
+      f.replaceWith(span);
+    });
+  } else {
+    document.execCommand(cmd, false, val);
+  }
+  editable.dispatchEvent(new Event('input', {bubbles:true}));
+}
 // [추가] hex 색상을 옅은 배경용 rgba로 변환 — 요금 항목별 accent 색상(PE_ACCENT_COLORS)을
 // "일정과 요금 표시 영역" 박스 배경 등에 옅게 반영할 때 사용
 function hexToRgba(hex, alpha){
@@ -7676,7 +7795,7 @@ function renderProductDetail(p,cat,idx){
 
   // [수정] "공통 안내"·"항공/이동 정보"(구 "여행 정보")를 상품기본정보 바로 아래로 이동 —
   // 요금표보다 먼저 노출되도록 순서를 옮긴다
-  const notesRows = bulletRows(p.notes||'','•');
+  const notesRows = bulletRowsRich(p.notes||'','•');
   if (notesRows){
     html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
   }
@@ -7713,9 +7832,9 @@ function renderProductDetail(p,cat,idx){
           const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
           // [수정] 공백/줄바꿈만 입력된 경우 bulletRows()가 빈 문자열을 반환하므로, 원본 값이
           // 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다(빈 제목만 노출되는 문제 방지)
-          const includedRows = bulletRows(pe.included||'','✓');
-          const notIncludedRows = bulletRows(pe.notIncluded||'','✕');
-          const precautionsRows = bulletRows(pe.precautions||'','•');
+          const includedRows = bulletRowsRich(pe.included||'','✓');
+          const notIncludedRows = bulletRowsRich(pe.notIncluded||'','✕');
+          const precautionsRows = bulletRowsRich(pe.precautions||'','•');
           // [수정] "출발 요일"에서 선택한 내용을 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 —
           // 항공 포함 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
           const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
@@ -7838,8 +7957,10 @@ function renderProductDetail(p,cat,idx){
   }
   // [추가] 공통(요금 항목과 무관) 포함 · 불포함 · 참고사항 — "공통 안내" 바로 위에 노출.
   // 포함사항은 옅은 초록색, 불포함사항은 옅은 빨간색 박스로(요금 항목별 미리보기와 동일한 스타일)
-  const commonIncludedRows = bulletRows(p.commonIncluded||'','✓');
-  const commonNotIncludedRows = bulletRows(p.commonNotIncluded||'','✕');
+  const commonIncludedRows = bulletRowsRich(p.commonIncluded||'','✓');
+  const commonNotIncludedRows = bulletRowsRich(p.commonNotIncluded||'','✕');
+  // [수정] "체크포인트2(참고사항)"와 값을 서로 동기화하는 필드라, 체크포인트2가 일반 텍스트로
+  // 노출되는 것과 맞춰 이 필드는 리치 텍스트로 전환하지 않고 그대로 유지한다
   const commonPrecautionsRows = bulletRows(p.commonPrecautions||'','•');
   if (commonIncludedRows || commonNotIncludedRows || commonPrecautionsRows){
     html += `<div class="pd-slot"><div class="pd-section-title">💰 포함 · 불포함 · 참고사항</div>
@@ -7886,7 +8007,7 @@ function renderProductDetail(p,cat,idx){
 
   // [수정] 공통 안내와 동일한 이유로, 공백/줄바꿈만 입력된 경우 빈 섹션이 노출되지 않도록
   // 실제 표시할 내용이 있는지로 판단한다
-  const bookingPolicyRows = bulletRows(p.bookingPolicy||'','•');
+  const bookingPolicyRows = bulletRowsRich(p.bookingPolicy||'','•');
   if (bookingPolicyRows){
     html += `<div class="pd-slot"><div class="pd-section-title">⏰ 예약 · 결제 · 취소 규정</div><div class="pd-check-list plain">${bookingPolicyRows}</div></div>`;
   }
@@ -9533,8 +9654,8 @@ function advBasicHTML(p){
     <details class="pe-labels" open>
       <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label><textarea class="auto-grow included-field" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('commonIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonIncluded||'')}</textarea>
-        <label>불포함사항</label><textarea class="auto-grow notincluded-field" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('commonNotIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonNotIncluded||'')}</textarea>
+        <label>💰 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
         <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 ..." oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
       </div>
     </details>
@@ -9545,7 +9666,7 @@ function advBasicHTML(p){
     <details class="adv-collapsible" data-ck="common-notes" open>
       <summary>공통사항 — 공통 안내 · 추가 요금</summary>
       <div class="adv-collapsible-body">
-        <label>✳️ 공통 안내</label><textarea class="auto-grow" style="min-height:210px" placeholder="${escapeAttr(NOTES_GUIDE)}" oninput="updateAdvField('notes',this.value);autoGrowTextarea(this)">${escapeAttr(p.notes||'')}</textarea>
+        <label>✳️ 공통 안내</label>${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'210px'})}
         <label>💰 추가 요금 안내 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(항목 · 금액을 나눠 입력 — 자세히 화면에서 표 형식으로 노출)</span></label>
         ${extraFeesHTML(p)}
       </div>
@@ -9553,7 +9674,7 @@ function advBasicHTML(p){
 
     <!-- [Phase 3 상품등록 개선] 예약·결제·취소 규정 -->
     <label>⏰ 예약 · 결제 · 취소 규정</label>
-    <textarea class="auto-grow" style="min-height:120px" placeholder="예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ..." oninput="updateAdvField('bookingPolicy',this.value);autoGrowTextarea(this)">${escapeAttr(p.bookingPolicy||'')}</textarea>
+    ${richTextFieldHTML(p.bookingPolicy, "updateAdvField('bookingPolicy',__HTML__)", {placeholder:'예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ...', minHeight:'120px'})}
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구 (요금 항목별 일정 그룹을 아우르는 문구) -->
     <label>일정 요약 타임라인 — 상단 개요 문구</label>
@@ -9822,9 +9943,9 @@ function priceEntryHTML(pe, i, popupCount){
     <details class="pe-labels" open>
       <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label><textarea class="auto-grow included-field" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'included',this.value);autoGrowTextarea(this)">${escapeAttr(pe.included||'')}</textarea>
-        <label>불포함사항</label><textarea class="auto-grow notincluded-field" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(pe.notIncluded||'')}</textarea>
-        <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updatePriceEntry(${i},'precautions',this.value);autoGrowTextarea(this)">${escapeAttr(pe.precautions||'')}</textarea>
+        <label>💰 포함사항</label>${richTextFieldHTML(pe.included, `updatePriceEntry(${i},'included',__HTML__)`, {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>불포함사항</label>${richTextFieldHTML(pe.notIncluded, `updatePriceEntry(${i},'notIncluded',__HTML__)`, {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>🌟 참고사항</label>${richTextFieldHTML(pe.precautions, `updatePriceEntry(${i},'precautions',__HTML__)`, {placeholder:'예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가', minHeight:'200px'})}
       </div>
     </details>
 

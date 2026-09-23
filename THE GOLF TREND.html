@@ -2831,12 +2831,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <!-- NAV BAR : 헤드라인 배너 하단에서 시작해, 스크롤 시 topbar 바로 아래에 고정되는 메뉴 -->
 <nav class="nav" id="mainNav">
   <ul id="navMenu">
-    <li><a href="#destinations">여행지</a></li>
-    <li><a href="#about">회사 소개</a></li>
     <li><a href="#aiRecommend">AI 추천</a></li>
-    <li><a href="#links">연계 채널</a></li>
+    <li><a href="#destinations">여행지</a></li>
     <li><a href="#blog">여행 이야기</a></li>
+    <li><a href="#links">연계 채널</a></li>
     <li><a href="#booking">예약 문의</a></li>
+    <li><a href="#about">회사 소개</a></li>
   </ul>
   <div class="nav-right">
     <a href="#booking" class="cta" aria-label="티타임 상담"><span class="cta-icon" aria-hidden="true">⛳</span><span class="cta-label">티타임 상담</span></a>
@@ -3928,6 +3928,15 @@ function ensureExtended(p){
   // [수정] meta 정보(라운드/숙박/식사/항공포함여부/비행시간/소요시간) 개별 항목을 상품 카드에서
   // 한 줄 전체 폭으로 표시할지 여부 — 관리자 패널의 각 항목 "한 줄로" 토글로 설정
   if (!p.metaWide) p.metaWide = {};
+  // [추가] "요금 항목 추가" 전에도 미리 입력해둘 수 있는 공통(요금 항목과 무관) 버전 — 상품
+  // 상세 페이지의 "공통 안내" 바로 위에 노출된다. 요금 항목별 값과는 별도로 보관한다
+  if (p.commonIncluded===undefined) p.commonIncluded = '';
+  if (p.commonNotIncluded===undefined) p.commonNotIncluded = '';
+  if (p.commonPrecautions===undefined) p.commonPrecautions = '';
+  if (!Array.isArray(p.commonDayPrices)) p.commonDayPrices = [];
+  p.commonDayPrices.forEach(d=>{ if (d.day===undefined) d.day=''; if (d.price===undefined) d.price=0; });
+  if (!Array.isArray(p.commonHolidayPrices)) p.commonHolidayPrices = [];
+  p.commonHolidayPrices.forEach(h=>{ if (h.date===undefined) h.date=''; if (h.price===undefined) h.price=0; if (h.type===undefined) h.type='single'; if (h.endDate===undefined) h.endDate=''; });
   return p;
 }
 // 전역 활성 팝업 카운트
@@ -6067,6 +6076,9 @@ function productCardHTML(p, catId, idx){
   const displayPrice = getDisplayPrice(p);
   const cardTags = [p.cardTag1, p.cardTag2, p.cardTag3, p.cardTag4].filter(t=>t && t.trim());
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
+  // [추가] "2인 이상" 배지 옆에 항공포함여부·체류일을 함께 노출 — 체류일은 요금 항목과 무관한
+  // 공통 레이블(p.labels.stayDuration)을 사용한다
+  const cardStayText = (p.labels && p.labels.stayDuration && p.labels.stayDuration!=='none') ? p.labels.stayDuration : '';
   const transferLabel = isDomesticCat(catId) ? '숙소→골프장' : '공항→호텔';
   const mw = p.metaWide || {};
   // [수정] meta 항목 중 일부가 "한 줄로"(전체 폭)로 표시되면, 이후 항목들의 시각적 좌/우 칸이
@@ -6110,8 +6122,10 @@ function productCardHTML(p, catId, idx){
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
     ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
-    ${p.minPeople?`<div class="product-period-row">
-      <span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>
+    ${(p.minPeople||airfareText||cardStayText)?`<div class="product-period-row">
+      ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
+      ${airfareText?`<span class="product-minpeople-box">✈️ ${escapeAttr(airfareText)}</span>`:''}
+      ${cardStayText?`<span class="product-minpeople-box">🏨 ${escapeAttr(cardStayText)}</span>`:''}
     </div>`:''}
     ${p.checkpoint2?`<div class="product-divider"></div><div class="product-checkpoint">${escapeAttr(p.checkpoint2)}</div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
@@ -7709,6 +7723,40 @@ function renderProductDetail(p,cat,idx){
     </div>`;
   }
 
+  // [추가] 공통(요금 항목과 무관) 출발 요일별 · 공휴일 요금 — "공통 안내" 바로 위에 노출.
+  // 요금 항목별 렌더링(위 dayPriceCells/holidayItems)과 동일한 방식이나, p.commonDayPrices/
+  // commonHolidayPrices를 사용한다
+  const commonDayPriceCells = (p.commonDayPrices||[]).filter(d=>d.day && d.price).map(d=>{
+    const cls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
+    return `<div class="pd-day-price-cell ${cls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
+  }).join('');
+  const commonHolidayItems = (p.commonHolidayPrices||[]).filter(h=>h.date && h.price).map(h=>{
+    const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
+    return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
+  });
+  const commonHolidayPriceRow = commonHolidayItems.length ? `<div class="pd-holiday-price-row">${commonHolidayItems.join('')}</div>` : '';
+  if (commonDayPriceCells || commonHolidayPriceRow){
+    html += `<div class="pd-slot"><div class="pd-section-title">🗓️ 출발 요일별 · 공휴일 요금</div>
+      <div style="padding:0 20px 18px">
+        ${commonDayPriceCells?`<div class="pd-day-price-table">${commonDayPriceCells}</div>`:''}
+        ${commonHolidayPriceRow}
+      </div>
+    </div>`;
+  }
+  // [추가] 공통(요금 항목과 무관) 포함 · 불포함 · 참고사항 — "공통 안내" 바로 위에 노출.
+  // 포함사항은 옅은 초록색, 불포함사항은 옅은 빨간색 박스로(요금 항목별 미리보기와 동일한 스타일)
+  const commonIncludedRows = bulletRows(p.commonIncluded||'','✓');
+  const commonNotIncludedRows = bulletRows(p.commonNotIncluded||'','✕');
+  const commonPrecautionsRows = bulletRows(p.commonPrecautions||'','•');
+  if (commonIncludedRows || commonNotIncludedRows || commonPrecautionsRows){
+    html += `<div class="pd-slot"><div class="pd-section-title">💰 포함 · 불포함 · 참고사항</div>
+      <div style="padding:0 20px 18px;display:flex;flex-direction:column;gap:10px">
+        ${commonIncludedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${commonIncludedRows}</div></div>`:''}
+        ${commonNotIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${commonNotIncludedRows}</div></div>`:''}
+        ${commonPrecautionsRows?`<div class="pd-pe-more-sub"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${commonPrecautionsRows}</div></div>`:''}
+      </div>
+    </div>`;
+  }
   // [수정] 공통 안내 — 공백/줄바꿈만 입력된 경우 bulletRows()가 모든 줄을 걸러내 빈 문자열을
   // 반환하므로, 원본 문자열이 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다
   // (그렇지 않으면 내용은 없이 "✳️ 공통 안내" 제목만 빈 섹션으로 노출되는 문제가 있었다)
@@ -8907,8 +8955,8 @@ function renderProductAdmin(catId){
         <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4는 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
         <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
-        <div class="full"><label>체크포인트1 (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
-        <div class="full"><label>체크포인트2 (상품 카드에 노출)</label><textarea class="cp2-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
+        <div class="full"><label>체크포인트1(주의사항) (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
+        <div class="full"><label>체크포인트2(참고사항) (상품 카드에 노출)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
     </details>`).join('');
 }
@@ -9338,10 +9386,10 @@ function advBasicHTML(p){
     <!-- [수정] 연결 링크·URL을 체크포인트1 위쪽으로 이동 -->
     <label>🔗 연결 링크 · URL</label>
     <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
-    <label>체크포인트1 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
-    <textarea class="cp1-field" style="min-height:70px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
-    <label>체크포인트2 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 아래에 노출)</span></label>
-    <textarea class="cp2-field" style="min-height:90px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
+    <label>체크포인트1(주의사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
+    <textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
+    <label>체크포인트2(참고사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 아래에 노출)</span></label>
+    <textarea class="cp2-field" style="min-height:225px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
 
     <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
     <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
@@ -9362,6 +9410,52 @@ function advBasicHTML(p){
       <div><input type="text" value="${escapeAttr(p.cardTag3||'')}" placeholder="카드태그3" oninput="updateAdvField('cardTag3',this.value)"></div>
       <div><input type="text" value="${escapeAttr(p.cardTag4||'')}" placeholder="카드태그4" oninput="updateAdvField('cardTag4',this.value)"></div>
     </div>
+
+    <!-- [추가] "출발 요일별 공휴일 요금"과 "포함·불포함·참고사항"의 공통(요금 항목과 무관) 버전 —
+         "+요금 항목 추가"를 하지 않아도 미리 입력해둘 수 있고, 요금 항목별 값과는 별도로 상품
+         상세 페이지의 "공통 안내" 바로 위에 노출된다 -->
+    <details class="pe-labels" open>
+      <summary>🗓️ 출발 요일별 · 공휴일 요금 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <div class="pe-labels-body">
+        <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
+        <div class="dp-list">
+          ${(p.commonDayPrices||[]).map((d,di)=>`
+          <div class="dp-row">
+            <select onchange="updateCommonDayPrice(${di},'day',this.value)">
+              <option value="">요일 선택</option>
+              ${DAY_OPTS.map(o=>`<option value="${o[0]}" ${d.day===o[0]?'selected':''}>${o[1]} 출발</option>`).join('')}
+            </select>
+            <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">
+            <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
+          </div>`).join('')}
+        </div>
+        <button class="apc-btn-sm" onclick="addCommonDayPrice()">+ 요일별 요금 추가</button>
+
+        <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
+        <div class="dp-list">
+          ${(p.commonHolidayPrices||[]).map((h,hi)=>`
+          <div class="dp-row dp-row-holiday">
+            <select onchange="updateCommonHolidayPrice(${hi},'type',this.value)">
+              <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
+              <option value="range" ${h.type==='range'?'selected':''}>기간 지정</option>
+            </select>
+            <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateCommonHolidayPrice(${hi},'date',this.value)">
+            <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateCommonHolidayPrice(${hi},'endDate',this.value)">
+            <input type="number" value="${h.price||''}" placeholder="890000" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">
+            <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
+          </div>`).join('')}
+        </div>
+        <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
+      </div>
+    </details>
+    <details class="pe-labels" open>
+      <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <div class="pe-labels-body">
+        <label>💰 포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updateAdvField('commonIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonIncluded||'')}</textarea>
+        <label>불포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updateAdvField('commonNotIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonNotIncluded||'')}</textarea>
+        <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 ..." oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
+      </div>
+    </details>
 
     <!-- [수정] 포함사항 · 불포함사항 · 참고사항은 상품 공통이 아니라 요금 항목(항목1/2...)별로
          개별 입력하도록 이관 — 아래 각 요금 항목 카드에서 입력한다. 여기(공통사항)에는 모든 요금
@@ -9645,9 +9739,9 @@ function priceEntryHTML(pe, i, popupCount){
     <details class="pe-labels" open>
       <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label><textarea class="auto-grow" style="min-height:100px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'included',this.value);autoGrowTextarea(this)">${escapeAttr(pe.included||'')}</textarea>
-        <label>불포함사항</label><textarea class="auto-grow" style="min-height:100px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(pe.notIncluded||'')}</textarea>
-        <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:80px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updatePriceEntry(${i},'precautions',this.value);autoGrowTextarea(this)">${escapeAttr(pe.precautions||'')}</textarea>
+        <label>💰 포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'included',this.value);autoGrowTextarea(this)">${escapeAttr(pe.included||'')}</textarea>
+        <label>불포함사항</label><textarea class="auto-grow" style="min-height:250px" placeholder="${escapeAttr(NOT_INCLUDED_GUIDE)}" oninput="updatePriceEntry(${i},'notIncluded',this.value);autoGrowTextarea(this)">${escapeAttr(pe.notIncluded||'')}</textarea>
+        <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가" oninput="updatePriceEntry(${i},'precautions',this.value);autoGrowTextarea(this)">${escapeAttr(pe.precautions||'')}</textarea>
       </div>
     </details>
 
@@ -9921,6 +10015,44 @@ function updateHolidayPrice(peIdx, i, field, val, vtype){
   if (field==='type' && val==='single') h.endDate='';
   saveAdvChange();
   // 유형(단일/기간) 변경 시에는 종료일 입력란 노출 여부가 바뀌므로 다시 그려야 한다
+  if (field==='type') renderAdvBody();
+}
+// [추가] 공통(요금 항목과 무관) 출발 요일별 · 공휴일 요금 — "+요금 항목 추가" 전에도 입력할 수
+// 있도록 요금 항목(pe.dayPrices/holidayPrices)과 별개로 상품 자신(p.commonDayPrices/
+// commonHolidayPrices)에 보관한다. CRUD 로직은 위 요금 항목별 버전과 동일하다
+function addCommonDayPrice(){
+  const p=getAdvProduct(); if (!p) return;
+  p.commonDayPrices.push({day:'', price:0});
+  saveAdvChange(); renderAdvBody();
+}
+function removeCommonDayPrice(i){
+  const p=getAdvProduct(); if (!p) return;
+  p.commonDayPrices.splice(i,1);
+  saveAdvChange(); renderAdvBody();
+}
+function updateCommonDayPrice(i, field, val, type){
+  const p=getAdvProduct(); if (!p) return;
+  if (type==='number') val=parseInt(val)||0;
+  p.commonDayPrices[i][field]=val;
+  saveAdvChange();
+}
+function addCommonHolidayPrice(){
+  const p=getAdvProduct(); if (!p) return;
+  p.commonHolidayPrices.push({type:'single', date:'', endDate:'', price:0});
+  saveAdvChange(); renderAdvBody();
+}
+function removeCommonHolidayPrice(i){
+  const p=getAdvProduct(); if (!p) return;
+  p.commonHolidayPrices.splice(i,1);
+  saveAdvChange(); renderAdvBody();
+}
+function updateCommonHolidayPrice(i, field, val, vtype){
+  const p=getAdvProduct(); if (!p) return;
+  if (vtype==='number') val=parseInt(val)||0;
+  const h = p.commonHolidayPrices[i];
+  h[field]=val;
+  if (field==='type' && val==='single') h.endDate='';
+  saveAdvChange();
   if (field==='type') renderAdvBody();
 }
 

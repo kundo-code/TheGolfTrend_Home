@@ -638,7 +638,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-share-btn:hover{background:rgba(10,23,48,.1);color:var(--pine-deep)}
 .pd-pe-share-btn:disabled{opacity:.6;cursor:default}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
-.pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:rgba(10,23,48,.55);letter-spacing:.04em;margin-bottom:10px}
+.pd-pe-more-sub .t{font-size:.86rem;font-weight:700;color:#4B5563;letter-spacing:.04em;margin-bottom:10px}
 /* [수정] 요금 항목별 일정 요약 타임라인 — "+요금 항목 추가"에서 그 항목에 지정된 accent 색상과 같은
    색을 반영하되, 더 이상 블록 전체를 왼쪽 테두리로 감싸 들여쓰지 않는다(타이틀·일정 내용이 위 "출발
    공항" 레이블 줄과 같은 왼쪽 기준선에 맞춰지도록, 그리고 가로 폭을 더 넓게 쓸 수 있도록). 대신 옅은
@@ -668,10 +668,12 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-precautions-box .pd-check-list{padding:0}
 .pd-pe-precautions-box .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
-.pd-pe-departure-day-label{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:#ffffff;border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
+.pd-pe-departure-day-label{display:inline-flex;align-items:center;gap:14px;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:#ffffff;border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
 /* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
 .pd-pe-departure-day-label .dd-label{color:#000000}
 .pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:1.2em}
+/* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
+.pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
@@ -1195,19 +1197,26 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [추가] 장문 텍스트 필드(포함/불포함/참고사항·공통 안내·예약정책)용 서식 편집기 —
    폰트 크기·볼드·기울임·밑줄·색상 지정 가능한 리치 텍스트 입력란 */
 .rtf-wrap{border-radius:var(--nm-r-sm);box-shadow:var(--nm-shadow-inset);overflow:hidden;background:var(--nm-surface-light)}
-.rtf-toolbar{display:flex;flex-direction:column;gap:6px;padding:6px 8px;background:var(--nm-surface);border-bottom:1px solid rgba(163,177,198,.35)}
-.rtf-toolbar-selects{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.rtf-toolbar-tools{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+/* [수정] 크기·글꼴·줄간격 select와 B/I/U/색상/표/서식지우기 버튼을 한 줄에 모두 배치 —
+   화면이 좁아 다 들어가지 않을 때만 줄바꿈되도록 flex-wrap은 유지 */
+.rtf-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px;background:var(--nm-surface);border-bottom:1px solid rgba(163,177,198,.35)}
 .rtf-btn{width:32px;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);cursor:pointer;font-size:.8rem;box-shadow:var(--nm-shadow-raised-sm)}
 .rtf-btn:hover{box-shadow:var(--nm-shadow-hover)}
 .rtf-btn.rtf-clear{width:auto;padding:0 8px;font-size:.68rem}
-.rtf-toolbar-selects select.rtf-size-sel,.rtf-toolbar-selects select.rtf-font-sel,.rtf-toolbar-selects select.rtf-lh-sel{width:auto;flex:1 1 76px;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.72rem;padding:0 4px;box-shadow:var(--nm-shadow-raised-sm)}
-.rtf-color{display:inline-flex;align-items:center;width:32px;height:32px;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer}
-.rtf-color input[type=color]{width:40px;height:40px;border:none;margin:-4px;cursor:pointer;background:none}
+.rtf-toolbar select.rtf-size-sel,.rtf-toolbar select.rtf-font-sel,.rtf-toolbar select.rtf-lh-sel{width:auto;flex:0 0 auto;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.68rem;padding:0 3px;box-shadow:var(--nm-shadow-raised-sm)}
+/* [수정] 색상 아이콘 높이를 다른 아이콘(32px)과 정확히 맞춤 — 확대 후 잘라내는 방식 대신
+   input[type=color] 내부의 브라우저 기본 여백(swatch-wrapper padding)을 직접 제거해 32px를 꽉 채움 */
+.rtf-toolbar label.rtf-color{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;height:32px;margin:0;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer;text-transform:none}
+.rtf-color input[type=color]{display:block;width:100%;height:100%;padding:0;border:none;cursor:pointer;background:none}
+.rtf-color input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.rtf-color input[type=color]::-webkit-color-swatch{border:none;border-radius:8px}
+.rtf-color input[type=color]::-moz-color-swatch{border:none;border-radius:8px}
 .rtf-editable{padding:12px 14px;min-height:150px;font-family:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);outline:none;white-space:pre-wrap;overflow-wrap:break-word}
 .rtf-editable:empty:before{content:attr(data-placeholder);color:var(--nm-text-soft);white-space:pre-line}
 .rtf-editable.included-field{background:#E6F6EA}
 .rtf-editable.notincluded-field{background:#FDECEC}
+/* [수정] 포함/불포함사항 입력란의 가이드(placeholder) 예시 문구는 연한 회색으로 통일 */
+.rtf-editable.included-field:empty:before,.rtf-editable.notincluded-field:empty:before{color:#B7BFCB}
 .rtf-table{border-collapse:collapse;margin:4px 0;width:100%}
 .rtf-table td,.rtf-table th{border:1px solid rgba(163,177,198,.6);padding:6px 8px;font-size:.85rem;min-width:32px}
 .row-table{display:block!important;padding:2px 0}
@@ -6060,38 +6069,34 @@ function richTextFieldHTML(value, onchangeAttr, opts){
   const oninput = onchangeAttr.replace('__HTML__', 'this.innerHTML');
   return `<div class="rtf-wrap">
     <div class="rtf-toolbar" onmousedown="rtfSaveSelection()">
-      <div class="rtf-toolbar-selects">
-        <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
-          <option value="">크기</option>
-          <option value="1">작게</option>
-          <option value="2">보통</option>
-          <option value="3">약간 크게</option>
-          <option value="4">크게</option>
-          <option value="5">아주 크게</option>
-        </select>
-        <select class="rtf-font-sel" title="폰트 종류" onchange="rtfCmd(this,'fontName',this.value);this.value=''">
-          <option value="">글꼴</option>
-          <option value="'Pretendard','Noto Sans KR',sans-serif">기본</option>
-          <option value="'Noto Sans KR','Malgun Gothic',sans-serif">고딕</option>
-          <option value="'Noto Serif KR','Batang',serif">명조</option>
-          <option value="'Courier New',monospace">고정폭</option>
-        </select>
-        <select class="rtf-lh-sel" title="줄간격" onchange="rtfLineHeight(this,this.value);this.value=''">
-          <option value="">줄간격</option>
-          <option value="1">좁게</option>
-          <option value="1.5">보통</option>
-          <option value="2">넓게</option>
-          <option value="2.5">아주 넓게</option>
-        </select>
-      </div>
-      <div class="rtf-toolbar-tools">
-        <button type="button" class="rtf-btn" title="굵게" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'bold')"><b>B</b></button>
-        <button type="button" class="rtf-btn" title="기울임" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'italic')"><i>I</i></button>
-        <button type="button" class="rtf-btn" title="밑줄" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'underline')"><u>U</u></button>
-        <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"></label>
-        <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
-        <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
-      </div>
+      <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
+        <option value="">크기</option>
+        <option value="1">작게</option>
+        <option value="2">보통</option>
+        <option value="3">약간 크게</option>
+        <option value="4">크게</option>
+        <option value="5">아주 크게</option>
+      </select>
+      <select class="rtf-font-sel" title="폰트 종류" onchange="rtfCmd(this,'fontName',this.value);this.value=''">
+        <option value="">글꼴</option>
+        <option value="'Pretendard','Noto Sans KR',sans-serif">기본</option>
+        <option value="'Noto Sans KR','Malgun Gothic',sans-serif">고딕</option>
+        <option value="'Noto Serif KR','Batang',serif">명조</option>
+        <option value="'Courier New',monospace">고정폭</option>
+      </select>
+      <select class="rtf-lh-sel" title="줄간격" onchange="rtfLineHeight(this,this.value);this.value=''">
+        <option value="">줄간격</option>
+        <option value="1">좁게</option>
+        <option value="1.5">보통</option>
+        <option value="2">넓게</option>
+        <option value="2.5">아주 넓게</option>
+      </select>
+      <button type="button" class="rtf-btn" title="굵게" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'bold')"><b>B</b></button>
+      <button type="button" class="rtf-btn" title="기울임" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'italic')"><i>I</i></button>
+      <button type="button" class="rtf-btn" title="밑줄" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'underline')"><u>U</u></button>
+      <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"></label>
+      <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
+      <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
     </div>
     <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
   </div>`;
@@ -8067,13 +8072,13 @@ function renderProductDetail(p,cat,idx){
           const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
           // [수정] 공백/줄바꿈만 입력된 경우 bulletRows()가 빈 문자열을 반환하므로, 원본 값이
           // 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다(빈 제목만 노출되는 문제 방지)
-          const includedRows = bulletRowsRich(pe.included||'','✓');
+          const includedRows = bulletRowsRich(pe.included||'','✅');
           const notIncludedRows = bulletRowsRich(pe.notIncluded||'','✕');
           const precautionsRows = bulletRowsRich(pe.precautions||'','•');
           // [수정] "출발 요일"에서 선택한 내용을 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 —
           // 항공 포함 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
           const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
-          const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label"><span class="dd-label">📅 출발 요일</span> <span class="dd-value">${escapeAttr(peDepartureDay)}</span></div>` : '';
+          const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(peDepartureDay)}</span></div>` : '';
           // [수정] 포함사항·불포함사항은 이미 가격 정보 바로 아래 미리보기 박스(includedPreviewHTML/
           // notIncludedPreviewHTML)로 항상 노출되므로, "상세보기"를 펼쳤을 때 같은 내용이 다시
           // 보이지 않도록 여기(moreBody)에는 참고사항만 남긴다 — 참고사항은 옅은 회색 박스로 구분
@@ -8091,7 +8096,7 @@ function renderProductDetail(p,cat,idx){
           ].join('');
           // [수정] "포함사항"은 옅은 초록색 박스, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로
           // 아래에 나란히 미리보기 노출 — 상세보기를 펼치지 않아도 둘 다 한눈에 비교하며 볼 수 있다
-          const includedPreviewHTML = includedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'';
+          const includedPreviewHTML = includedRows?`<div class="pd-pe-included-preview"><div class="t">✅ 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'';
           const notIncludedPreviewHTML = notIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'';
           // [수정] "항공 포함 여부"·"체류일" 선택 내용을 "2인 이상" 레이블 오른쪽에 배지로 함께 노출
           const peAirfareTxt = (pe.labels && pe.labels.airfare && pe.labels.airfare!=='none') ? (AIRFARE_TXT[pe.labels.airfare]||pe.labels.airfare) : '';
@@ -8192,7 +8197,7 @@ function renderProductDetail(p,cat,idx){
   }
   // [추가] 공통(요금 항목과 무관) 포함 · 불포함 · 참고사항 — "공통 안내" 바로 위에 노출.
   // 포함사항은 옅은 초록색, 불포함사항은 옅은 빨간색 박스로(요금 항목별 미리보기와 동일한 스타일)
-  const commonIncludedRows = bulletRowsRich(p.commonIncluded||'','✓');
+  const commonIncludedRows = bulletRowsRich(p.commonIncluded||'','✅');
   const commonNotIncludedRows = bulletRowsRich(p.commonNotIncluded||'','✕');
   // [수정] "체크포인트2(참고사항)"와 값을 서로 동기화하는 필드라, 체크포인트2가 일반 텍스트로
   // 노출되는 것과 맞춰 이 필드는 리치 텍스트로 전환하지 않고 그대로 유지한다
@@ -8200,7 +8205,7 @@ function renderProductDetail(p,cat,idx){
   if (commonIncludedRows || commonNotIncludedRows || commonPrecautionsRows){
     html += `<div class="pd-slot"><div class="pd-section-title">💰 포함 · 불포함 · 참고사항</div>
       <div style="padding:0 20px 18px;display:flex;flex-direction:column;gap:10px">
-        ${commonIncludedRows?`<div class="pd-pe-included-preview"><div class="t">💰 포함사항</div><div class="pd-check-list included">${commonIncludedRows}</div></div>`:''}
+        ${commonIncludedRows?`<div class="pd-pe-included-preview"><div class="t">✅ 포함사항</div><div class="pd-check-list included">${commonIncludedRows}</div></div>`:''}
         ${commonNotIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${commonNotIncludedRows}</div></div>`:''}
         ${commonPrecautionsRows?`<div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${commonPrecautionsRows}</div></div>`:''}
       </div>
@@ -9723,14 +9728,13 @@ const AIRLINES_BY_COUNTRY = {
 };
 
 // 포함사항 · 불포함사항 · 참고사항 입력 가이드 (placeholder 예시)
-const INCLUDED_GUIDE = `✅ 포함사항 (1박 기준)
+const INCLUDED_GUIDE = `(1박 기준)
 ▪️ ⛳️  그린피 + 🛺 카트비
 ▪️ 🏨  숙박(2인실)
 ▪️ 🥘  식사 (3회)
 ▪️ 🚐  호텔 ⇔ 골프장 이동
 ▪️ 💰  관광세`;
-const NOT_INCLUDED_GUIDE = `❌ 불포함사항
-▪️✈️  왕복 항공 요금
+const NOT_INCLUDED_GUIDE = `▪️✈️  왕복 항공 요금
 ▪️🚐  공항 ⇔ 호텔 왕복 송영비
 - 2인 (100$ / 인)
 - 3인 (70$ / 인)
@@ -9889,8 +9893,8 @@ function advBasicHTML(p){
     <details class="pe-labels" open>
       <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
-        <label>불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
         <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 ..." oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
       </div>
     </details>
@@ -10178,8 +10182,8 @@ function priceEntryHTML(pe, i, popupCount){
     <details class="pe-labels" open>
       <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항</summary>
       <div class="pe-labels-body">
-        <label>💰 포함사항</label>${richTextFieldHTML(pe.included, `updatePriceEntry(${i},'included',__HTML__)`, {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
-        <label>불포함사항</label>${richTextFieldHTML(pe.notIncluded, `updatePriceEntry(${i},'notIncluded',__HTML__)`, {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>✅ 포함사항</label>${richTextFieldHTML(pe.included, `updatePriceEntry(${i},'included',__HTML__)`, {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
+        <label>❌ 불포함사항</label>${richTextFieldHTML(pe.notIncluded, `updatePriceEntry(${i},'notIncluded',__HTML__)`, {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
         <label>🌟 참고사항</label>${richTextFieldHTML(pe.precautions, `updatePriceEntry(${i},'precautions',__HTML__)`, {placeholder:'예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가', minHeight:'200px'})}
       </div>
     </details>

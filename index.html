@@ -476,6 +476,9 @@ section.block{padding:100px 24px;position:relative}
 .product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
+/* [수정] "항공 포함 여부"는 불포함일 때 빨간색, 그 외(포함)는 검정색으로 강조 — 카드/배지/상세페이지 전체 공통 */
+.airfare-excluded{color:#D6293E !important}
+.airfare-normal{color:#000000 !important}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
 /* [수정] 체크포인트2는 상품 카드에서 빨간색 텍스트로 강조 노출 */
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
@@ -6136,7 +6139,7 @@ function productCardHTML(p, catId, idx){
     {full: !!mw.rounds, html: `⛳ <b class="meta-value">${p.rounds||'-'}</b>`},
     ...(p.stay ? [{full: !!mw.stay, html: `🏨 <b class="meta-value">${p.stay}</b>`}] : []),
     ...(p.meals ? [{full: !!mw.meals, html: `🍽 <b class="meta-value">${p.meals}</b>`}] : []),
-    ...(airfareText ? [{full: !!mw.airfare, html: `✈️ <b class="meta-value">${airfareText}</b>`}] : []),
+    ...(airfareText ? [{full: !!mw.airfare, html: `✈️ <b class="meta-value ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">${airfareText}</b>`}] : []),
     ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <b class="meta-value">비행시간 ${escapeAttr(p.flightTime)}</b>`}] : []),
     ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <b class="meta-value">호텔→골프장 ${escapeAttr(p.hotelToGolfTime)}</b>`}] : []),
     ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <b class="meta-value">${transferLabel} ${escapeAttr(p.transferTime)}</b>`}] : []),
@@ -6171,7 +6174,7 @@ function productCardHTML(p, catId, idx){
     ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
     ${(p.minPeople||airfareText||cardStayText)?`<div class="product-period-row">
       ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
-      ${airfareText?`<span class="product-minpeople-box">✈️ ${escapeAttr(airfareText)}</span>`:''}
+      ${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}
       ${cardStayText?`<span class="product-minpeople-box">🏨 ${escapeAttr(cardStayText)}</span>`:''}
     </div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
@@ -6542,7 +6545,7 @@ function renderSpotlightSlot(slot, layer, entry){
     p.rounds?`⛳ ${p.rounds}`:'',
     p.stay?`🏨 ${p.stay}`:'',
     p.meals?`🍽 ${p.meals}`:'',
-    (airfare && airfare!=='none')?`✈️ ${AIRFARE_TXT[airfare]||airfare}`:''
+    (airfare && airfare!=='none')?`✈️ <span class="${airfare==='excluded'?'airfare-excluded':'airfare-normal'}">${AIRFARE_TXT[airfare]||airfare}</span>`:''
   ].filter(Boolean);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   const displayPrice=getDisplayPrice(p);
@@ -7750,7 +7753,7 @@ function renderProductDetail(p,cat,idx){
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
               ${(pe.minPeople||peAirfareTxt||peStayTxt)?`<div class="pd-pe-badges">
                 ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
-                ${peAirfareTxt?`<span class="pe-flag-badge">✈️ ${escapeAttr(peAirfareTxt)}</span>`:''}
+                ${peAirfareTxt?`<span class="pe-flag-badge ${pe.labels.airfare==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(peAirfareTxt)}</span>`:''}
                 ${peStayTxt?`<span class="pe-flag-badge">🏨 ${escapeAttr(peStayTxt)}</span>`:''}
               </div>`:''}
             </div>

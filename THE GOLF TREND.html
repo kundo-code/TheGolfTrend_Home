@@ -656,7 +656,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-precautions-box .pd-check-list{padding:0}
 .pd-pe-precautions-box .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
-.pd-pe-departure-day-label{display:inline-block;font-size:.78rem;font-weight:700;color:#1d4ed8;letter-spacing:.02em;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
+.pd-pe-departure-day-label{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
+/* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
+.pd-pe-departure-day-label .dd-label{color:#000000}
+.pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:1.2em}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
@@ -7689,7 +7692,7 @@ function renderProductDetail(p,cat,idx){
           // [수정] "출발 요일"에서 선택한 내용을 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 —
           // 항공 포함 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
           const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
-          const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label">📅 출발 요일 ${escapeAttr(peDepartureDay)}</div>` : '';
+          const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label"><span class="dd-label">📅 출발 요일</span> <span class="dd-value">${escapeAttr(peDepartureDay)}</span></div>` : '';
           // [수정] 포함사항·불포함사항은 이미 가격 정보 바로 아래 미리보기 박스(includedPreviewHTML/
           // notIncludedPreviewHTML)로 항상 노출되므로, "상세보기"를 펼쳤을 때 같은 내용이 다시
           // 보이지 않도록 여기(moreBody)에는 참고사항만 남긴다 — 참고사항은 옅은 회색 박스로 구분

@@ -1847,6 +1847,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ai-no-banner{color:var(--nm-text-soft);font-size:.82rem;padding:14px 0;font-style:italic}
 .ai-herobg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
 .ai-herobg-item{position:relative;border-radius:8px;overflow:hidden;box-shadow:var(--nm-shadow-raised-sm)}
+/* [추가] 화면 테마(탑바·내비게이션바·배경) 관리자 UI — 색상 picker 행, 배경 모드 라디오 */
+.theme-color-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.theme-color-row:last-child{margin-bottom:0}
+.theme-color-row .tc-label{font-size:.82rem;color:var(--nm-text-soft);min-width:80px}
+.theme-color-row input[type=color]{width:44px;height:32px;border:none;border-radius:8px;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer;background:none;padding:2px}
+.theme-bgmode-row{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap}
+.theme-radio{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--nm-text);cursor:pointer}
+.theme-radio input{accent-color:var(--nm-blue)}
 .ai-herobg-preview{width:100%;height:90px;object-fit:cover;display:block;border-radius:8px}
 .ai-herobg-remove{position:absolute;bottom:6px;right:6px;padding:4px 10px;font-size:.72rem}
 
@@ -3548,6 +3556,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <div id="tabImages">
       <div class="admin-section"><h4 class="admin-h4-lg">헤드라인 배너</h4><div id="adminHeadline"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">사이트 아이덴티티 (로고·태그라인·회사소개 배너)</h4><div id="adminIdentity"></div></div>
+      <div class="admin-section"><h4 class="admin-h4-lg">🎨 화면 테마 (탑바·내비게이션바·배경)</h4><div id="adminTheme"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">회사소개 카드 이미지 (핵심가치 · 역량 및 강점)</h4><div id="adminAbout"></div></div>
       <details class="admin-group-collapse">
@@ -5097,7 +5106,7 @@ function collectSiteState(){
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides,
-    noticesOverride,
+    noticesOverride, themeOverride,
   };
 }
 function applySiteState(state){
@@ -5124,6 +5133,7 @@ function applySiteState(state){
   if (state.channelsOverride !== undefined) channelsOverride = state.channelsOverride;
   if (state.channelPostOverrides !== undefined) channelPostOverrides = state.channelPostOverrides;
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
+  if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(IMG_HIDDEN_KEY, JSON.stringify(imageHiddenOverrides));
@@ -5140,6 +5150,7 @@ function applySiteState(state){
     if (channelsOverride!=null) localStorage.setItem(CHANNELS_KEY, JSON.stringify(channelsOverride));
     if (channelPostOverrides!=null) localStorage.setItem(CHANNEL_POST_OV_KEY, JSON.stringify(channelPostOverrides));
     if (noticesOverride!=null) localStorage.setItem(NOTICES_KEY, JSON.stringify(noticesOverride));
+    if (themeOverride!=null) localStorage.setItem(THEME_KEY, JSON.stringify(themeOverride));
     if (logoOverride!=null) localStorage.setItem(LOGO_KEY, logoOverride);
     if (taglineOverride!=null) localStorage.setItem(TAGLINE_KEY, taglineOverride);
     localStorage.setItem(SEASON_STICKER_KEY, JSON.stringify(seasonStickerOverrides));
@@ -5307,6 +5318,10 @@ const DEFAULT_LOGO    = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAW4AAACQC
 const DEFAULT_TAGLINE = '정직 / 신속 / 공감 / 고객중심으로 믿고 맡길 수 있는 파트너, (주)더골프트렌드 입니다.';
 
 let logoOverride=null, taglineOverride=null, aboutBannerOverride=null;
+// [추가] 화면 테마(탑바·내비게이션바 배경/폰트 색상, 사이트 전체 배경 색상 또는 이미지) 커스터마이징
+const THEME_KEY = 'kundo_theme_v1';
+let themeOverride = null; // {topBarBg, topBarFont, navBg, navFont, bgMode:'default'|'color'|'image', bgColor, bgImage}
+try{ themeOverride = JSON.parse(localStorage.getItem(THEME_KEY)||'null'); }catch(e){}
 const HERO_BG_MAX = 4; // 히어로 배경 최대 등록 개수 — 이 값을 바꾸면 등록 가능 개수도 함께 바뀜
 let heroBgList = []; // {type:'image'|'video', url} 최대 HERO_BG_MAX개 — 2개 이상이면 자동 로테이션
 try{logoOverride=localStorage.getItem(LOGO_KEY)||null;}catch(e){}
@@ -5337,6 +5352,59 @@ function getEntryExitList(){return entryExitList;}
 
 function setLogo(url){logoOverride=url;try{localStorage.setItem(LOGO_KEY,url)}catch(e){alert('저장 공간 부족')}renderTopBar();renderAdminIdentity();queueSiteStateSync();}
 function setTagline(txt){taglineOverride=txt;try{localStorage.setItem(TAGLINE_KEY,txt)}catch(e){}renderTopBar();renderAdminIdentity();queueSiteStateSync();}
+// [추가] 화면 테마 — 탑바/내비게이션바 배경·폰트 색상, 사이트 전체 배경(색상 또는 이미지)
+function saveThemeOverride(){
+  try{ localStorage.setItem(THEME_KEY, JSON.stringify(themeOverride||{})); }catch(e){ alert('저장 공간 부족'); }
+  applyTheme(); renderAdminTheme(); queueSiteStateSync();
+}
+function updateTheme(field, value){
+  themeOverride = themeOverride || {};
+  if (value) themeOverride[field] = value; else delete themeOverride[field];
+  saveThemeOverride();
+}
+function setBgMode(mode){
+  themeOverride = themeOverride || {};
+  themeOverride.bgMode = mode;
+  saveThemeOverride();
+}
+async function handleBgImageUpload(inputEl){
+  const file = inputEl.files[0]; if (!file) return;
+  if (file.size > 8*1024*1024){ alert('배경 이미지는 8MB 이하로 업로드해주세요.'); inputEl.value=''; return; }
+  try{
+    const url = await uploadToStorage(file, 'sitebg');
+    themeOverride = themeOverride || {};
+    themeOverride.bgMode = 'image';
+    themeOverride.bgImage = url;
+    saveThemeOverride();
+  }catch(e){ alert('업로드 실패: '+(e.message||e)); }
+  inputEl.value='';
+}
+function resetTheme(){
+  if (!confirm('화면 테마를 기본값으로 되돌리시겠습니까?')) return;
+  themeOverride = null;
+  saveThemeOverride();
+}
+// 실제 화면(탑바·내비게이션바·전체 배경)에 저장된 테마 값을 반영 — .ambient가 실제로 보이는
+// 전체 배경 레이어(body 배경은 그 위에 가려져 보이지 않음)라 배경 커스터마이징은 .ambient에 적용
+function applyTheme(){
+  const t = themeOverride || {};
+  const topBarArea = document.getElementById('topBarArea');
+  if (topBarArea) topBarArea.style.background = t.topBarBg || '';
+  ['topBarTitle','topBarSlogan','topBarTagline'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.style.color = t.topBarFont || '';
+  });
+  const nav = document.getElementById('mainNav');
+  if (nav) nav.style.background = t.navBg || '';
+  const navMenu = document.getElementById('navMenu');
+  if (navMenu) navMenu.querySelectorAll('a').forEach(a=>{ a.style.color = t.navFont || ''; });
+  const ambientEl = document.querySelector('.ambient');
+  if (ambientEl){
+    if (t.bgMode==='image' && t.bgImage) ambientEl.style.background = `url('${t.bgImage}') center/cover no-repeat`;
+    else if (t.bgMode==='color' && t.bgColor) ambientEl.style.background = t.bgColor;
+    else ambientEl.style.background = '';
+  }
+}
 async function setAboutBanner(type,url){
   aboutBannerOverride={type,url};
   try{ await idbSet(ABOUT_BANNER_KEY, aboutBannerOverride); }catch(e){ alert('저장 공간 부족'); }
@@ -5629,6 +5697,50 @@ function renderAdminIdentity(){
       </div>
       <span class="file-hint">권장 이미지 1600×420px 이상 (와이드 배너) · 이미지 10MB / 동영상 50MB 이하</span>
     </div>`;
+}
+// [추가] 화면 테마(탑바·내비게이션바 배경/폰트 색상, 사이트 전체 배경) 관리자 UI
+function renderAdminTheme(){
+  const c=document.getElementById('adminTheme');if(!c)return;
+  const t=themeOverride||{};
+  const bgMode=t.bgMode||'default';
+  const colorRow=(label,field,fallback)=>`
+    <div class="theme-color-row">
+      <span class="tc-label">${label}</span>
+      <input type="color" value="${escapeAttr(t[field]||fallback)}" onchange="updateTheme('${field}',this.value)">
+      ${t[field]?`<button type="button" class="file-btn" onclick="updateTheme('${field}','')">기본값</button>`:''}
+    </div>`;
+  c.innerHTML=`
+    <div class="admin-identity-section">
+      <h5>탑바 색상 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(맨 위 로고·타이틀 바)</span></h5>
+      ${colorRow('배경 색상','topBarBg','#0e1522')}
+      ${colorRow('글자 색상','topBarFont','#F7F5F0')}
+    </div>
+    <div class="admin-identity-section">
+      <h5>내비게이션바 색상 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(AI추천·여행지 등 메뉴 바)</span></h5>
+      ${colorRow('배경 색상','navBg','#000000')}
+      ${colorRow('글자 색상','navFont','#f7f5f0')}
+    </div>
+    <div class="admin-identity-section">
+      <h5>화면 전체 배경</h5>
+      <div class="theme-bgmode-row">
+        <label class="theme-radio"><input type="radio" name="bgMode" value="default" ${bgMode==='default'?'checked':''} onchange="setBgMode('default')"><span>기본(그라데이션)</span></label>
+        <label class="theme-radio"><input type="radio" name="bgMode" value="color" ${bgMode==='color'?'checked':''} onchange="setBgMode('color')"><span>단색</span></label>
+        <label class="theme-radio"><input type="radio" name="bgMode" value="image" ${bgMode==='image'?'checked':''} onchange="setBgMode('image')"><span>이미지</span></label>
+      </div>
+      ${bgMode==='color'?`
+      <div class="theme-color-row">
+        <span class="tc-label">배경 색상</span>
+        <input type="color" value="${escapeAttr(t.bgColor||'#F7F2E8')}" onchange="updateTheme('bgColor',this.value)">
+      </div>`:''}
+      ${bgMode==='image'?`
+      <div class="ai-row">
+        ${t.bgImage?`<img src="${escapeAttr(t.bgImage)}" class="ai-logo-preview" alt="배경 이미지" style="width:120px;height:68px;object-fit:cover">`:''}
+        <label class="file-btn">${t.bgImage?'이미지 교체':'이미지 업로드'}<input type="file" accept="image/*" onchange="handleBgImageUpload(this)"></label>
+      </div>
+      <span class="file-hint">⚠️ 권장 해상도 1920×1080px 이상(가로:세로 = 16:9 권장) · 파일 용량 8MB 이하 · JPG/PNG 형식 · 화면 크기에 맞춰 전체 화면을 채우도록(꽉 차게 잘려서) 표시되니, 중요한 내용은 이미지 중앙에 배치해주세요.</span>`:''}
+    </div>
+    ${(t.topBarBg||t.topBarFont||t.navBg||t.navFont||bgMode!=='default')?`<button type="button" class="file-btn danger" onclick="resetTheme()" style="margin:4px 20px 16px">테마 전체 초기화</button>`:''}
+  `;
 }
 
 const HEADLINE_KEY = 'kundo_headline_v1';
@@ -8938,7 +9050,7 @@ function switchTab(tab){
   refreshCurrentAdminTab();
 }
 function refreshCurrentAdminTab(){
-  if (activeAdminTab==='images'){ renderAdminImages(); renderAdminIdentity(); renderAdminSeasonTheme(); }
+  if (activeAdminTab==='images'){ renderAdminImages(); renderAdminIdentity(); renderAdminTheme(); renderAdminSeasonTheme(); }
   else if (activeAdminTab==='products'){renderProductCatSelect();renderProductAdmin()}
   else if (activeAdminTab==='links') renderAdminLinks();
   else if (activeAdminTab==='legal') renderAdminLegal();
@@ -9271,7 +9383,7 @@ function resetAllOverrides(){
   ].join('\n');
   if (!confirm(`전체 초기화 시 다음 항목이 모두 기본값으로 되돌아갑니다:\n\n${itemList}\n\n계속하시겠습니까?`)) return;
   if (!confirm('되돌릴 수 없는 작업입니다. 정말로 전체 초기화하시겠습니까?')) return;
-  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;channelPostOverrides=null;imageHiddenOverrides={};noticesOverride=null;
+  imageOverrides={};productOverrides={};linkOverrides={};linkActiveOverrides={};headlineOverride=null;blogOverride=null;logoOverride=null;taglineOverride=null;aboutBannerOverride=null;heroBgList=[];entryExitList=[];reviewsOverride=null;channelsOverride=null;channelPostOverrides=null;imageHiddenOverrides={};noticesOverride=null;themeOverride=null;
   localStorage.removeItem(IMG_KEY);localStorage.removeItem(IMG_HIDDEN_KEY);localStorage.removeItem(PROD_KEY);localStorage.removeItem(LINK_KEY);localStorage.removeItem(LINK_ACTIVE_KEY);localStorage.removeItem(HEADLINE_KEY);localStorage.removeItem(BLOG_KEY);localStorage.removeItem(REVIEWS_KEY);localStorage.removeItem(CHANNELS_KEY);localStorage.removeItem(CHANNEL_POST_OV_KEY);localStorage.removeItem('kundo_channel_img_overrides_v1');localStorage.removeItem(LOGO_KEY);localStorage.removeItem(TAGLINE_KEY);localStorage.removeItem(ABOUT_BANNER_KEY);localStorage.removeItem(LEGAL_KEY);localStorage.removeItem(CV_IMG_KEY);localStorage.removeItem(STR_IMG_KEY);localStorage.removeItem(PKG_KEY);localStorage.removeItem(NOTICES_KEY);idbDelete(HEADLINE_KEY).catch(()=>{});idbDelete(ABOUT_BANNER_KEY).catch(()=>{});idbDelete(HERO_BG_KEY).catch(()=>{});idbDelete(ENTRY_EXIT_KEY).catch(()=>{});pkgPosters={domestic:[],overseas:[]};legalOverrides={};cvImageOverrides={};strImageOverrides={};blogOverride=null;
   renderAll();refreshCurrentAdminTab();queueSiteStateSync();
 }
@@ -10666,11 +10778,12 @@ function safeRender(fn){
 }
 function renderAll(){
   // renderCategoryGrid()가 두 지역을 모두 다시 그리며, 열려있는 카드의 상품 목록도 함께 갱신한다
-  [renderTopBar, renderHeadline, renderAboutBanner, renderFooterLegal, renderCvImages, renderStrImages, renderPkgAll, renderCategoryGrid, renderHeroBg, renderSpotlight, renderBlog, renderReviews, renderLinks, renderFootSocials].forEach(safeRender);
+  [renderTopBar, applyTheme, renderHeadline, renderAboutBanner, renderFooterLegal, renderCvImages, renderStrImages, renderPkgAll, renderCategoryGrid, renderHeroBg, renderSpotlight, renderBlog, renderReviews, renderLinks, renderFootSocials].forEach(safeRender);
 }
 
 // INIT
 applySeasonTheme(getSeasonTheme(), false);
+try{ applyTheme(); }catch(e){}
 
 // ══ 여행 스타일 드롭다운 다중선택 ════════════════════════════════
 function toggleStyleMenu(){

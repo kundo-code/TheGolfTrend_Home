@@ -7834,29 +7834,19 @@ function renderProductDetail(p,cat,idx){
   // 개별 입력하며, 요금표의 각 항목 "상세보기 →"를 클릭했을 때만 노출된다 (위 pd-price-entries 참고)
   // ("공통 안내"·"항공/이동 정보"는 상품기본정보 바로 아래로 이동됨 — 위쪽 참고)
 
-  // [수정] 일정 요약 타임라인을 예약·결제·취소 규정 바로 위로 이동.
-  // 요금 항목별 일정 + 요금 항목과 무관한 "공통 일정"(항목을 추가하지 않은 상품도 입력 가능)을 함께 노출
-  // [수정] 원래 요금 항목 순서(i)를 유지해야 관리자 패널에서 그 항목에 지정된 accent 색상과
-  // 같은 색을 "일정과 요금 표시 영역" 박스에 반영할 수 있다
-  const scheduledEntries = (p.priceEntries||[]).map((pe,i)=>({pe,i})).filter(({pe})=>pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length && !pe.hidden);
+  // [수정] 요금 항목별 일정("이 요금 항목의 일정 타임라인을 상세페이지 요금표에 노출")은 더 이상 이
+  // 별도 섹션에 노출하지 않고, 각 요금 항목 자신의 "상세보기" 안에서만 보여준다(위 pd-price-entries
+  // moreBody 참고). 이 "별도 일정 요약 타임라인" 섹션은 이제 관리자 패널의 "공통 일정 요약
+  // 타임라인"(요금 항목과 무관, p.schedule)을 켰을 때만 노출된다.
   const hasCommonSchedule = p.schedule && p.schedule.enabled && p.schedule.days && p.schedule.days.length;
-  if (scheduledEntries.length || hasCommonSchedule){
+  if (hasCommonSchedule){
     html += `<div class="pd-section-divider"></div><div class="pd-slot"><div class="pd-section-title">🗓️ 일정 요약 타임라인</div>
       <div class="pd-schedule">
         ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
-        ${hasCommonSchedule?`
         <div class="pd-sch-group">
           <div class="pd-sch-group-head"><div class="t">공통 일정</div><div class="h"></div></div>
           <div class="pd-sch-days">${scheduleDaysHTML(p.schedule.days, p.labels.teeOffTimes)}</div>
-        </div>`:''}
-        ${scheduledEntries.map(({pe,i})=>`
-        <div class="pd-sch-group">
-          <div class="pd-sch-group-head" style="background:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .16)}">
-            <div class="t">${escapeAttr(pe.headline||'일정')}</div>
-            <div class="h">${pe.salePrice?`${fmtPrice(Number(pe.salePrice)||0)}${CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원'}/인`:''}</div>
-          </div>
-          <div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div>
-        </div>`).join('')}
+        </div>
         ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
       </div>
     </div>`;

@@ -524,6 +524,8 @@ section.block{padding:100px 24px;position:relative}
   .pd-nav-info{text-align:left;justify-content:flex-start;padding-left:8px}
 }
 .pd-slot{margin-bottom:16px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);box-shadow:0 8px 24px rgba(10,23,48,.1)}
+/* [수정] "일정 요약 타임라인" 섹션 바로 위에 구분선을 두어 앞 섹션과의 경계를 명확히 함 */
+.pd-section-divider{border-top:1px dashed rgba(10,23,48,.16);margin:4px 0 16px}
 /* [수정] 제목을 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단 별도 박스로 분리 */
 .pd-top-title{padding:20px 20px 16px}
 .pd-top-title .cat{font-size:.72rem;letter-spacing:.18em;color:var(--gold-deep);font-weight:600;text-transform:uppercase;margin-bottom:6px}
@@ -573,8 +575,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .emph.special{background:rgba(255,107,74,.12);color:#D9502E;border:1px solid rgba(255,107,74,.35)}
 .pd-price-entry .pe-headline{color:var(--pine-deep);font-weight:600;font-size:.98rem;line-height:1.3}
 .pd-price-entry .prices{display:flex;align-items:baseline;gap:10px;margin-top:2px}
-.pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.82rem;font-weight:500;color:var(--pine-deep)}
-.pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.75rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
+.pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.184rem;font-weight:500;color:var(--pine-deep)}
+.pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.9rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
 /* [수정] "2인 이상" 배지 오른쪽에 "항공 포함 여부"·"체류일" 배지를 함께 두기 위해, 오른쪽 정렬은
@@ -656,7 +658,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-precautions-box .pd-check-list{padding:0}
 .pd-pe-precautions-box .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
-.pd-pe-departure-day-label{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
+.pd-pe-departure-day-label{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:#ffffff;border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
 /* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
 .pd-pe-departure-day-label .dd-label{color:#000000}
 .pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:1.2em}
@@ -7830,7 +7832,7 @@ function renderProductDetail(p,cat,idx){
   const scheduledEntries = (p.priceEntries||[]).map((pe,i)=>({pe,i})).filter(({pe})=>pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length);
   const hasCommonSchedule = p.schedule && p.schedule.enabled && p.schedule.days && p.schedule.days.length;
   if (scheduledEntries.length || hasCommonSchedule){
-    html += `<div class="pd-slot"><div class="pd-section-title">🗓️ 일정 요약 타임라인</div>
+    html += `<div class="pd-section-divider"></div><div class="pd-slot"><div class="pd-section-title">🗓️ 일정 요약 타임라인</div>
       <div class="pd-schedule">
         ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
         ${hasCommonSchedule?`

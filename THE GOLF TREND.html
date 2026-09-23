@@ -4291,12 +4291,14 @@ async function refreshChannelFeeds(opts){
     try{
       const feedUrl = buildChannelFeedUrl(ch);
       // [수정] 502/503/504는 프록시(Cloudflare Worker)·YouTube 쪽의 일시적인 게이트웨이 오류인
-      // 경우가 많아, 곧바로 실패 처리하지 않고 잠깐 기다렸다가 한 번 더 시도해본다 — 일시적인
-      // 순단으로 인한 "수집 실패" 노출 빈도를 줄인다
+      // 경우가 많아, 곧바로 실패 처리하지 않고 잠깐 기다렸다가 최대 2회 더 시도해본다(총 3회) —
+      // 일시적인 순단으로 인한 "수집 실패" 노출 빈도를 줄인다
       let res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
-      if (!res.ok && [502,503,504].includes(res.status)){
+      let retryCount = 0;
+      while (!res.ok && [502,503,504].includes(res.status) && retryCount < 2){
         await new Promise(r=>setTimeout(r, 1200));
         res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(feedUrl));
+        retryCount++;
       }
       if (!res.ok){
         _rssLastError[ch.id] = `HTTP ${res.status}`;

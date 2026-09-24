@@ -92,8 +92,12 @@
 .nm-btn-primary:hover{box-shadow:0 6px 22px rgba(221,179,103,.32),var(--nm-shadow-hover)}
 .nm-btn-primary:active{box-shadow:inset 3px 3px 8px rgba(0,0,0,.25)}
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:calc(var(--topbar-h,108px) + 54px)}
-body{font-family:'Pretendard','Noto Sans KR',sans-serif;color:var(--cream);line-height:1.6;overflow-x:hidden;min-height:100vh;background:var(--pine-deep)}
+/* [수정] body의 overflow-x:hidden만으로는 iOS Safari에서 칩 목록·캐러셀 등 가로 스크롤 요소가
+   스크롤 끝에 닿았을 때 제스처가 화면 전체의 좌우 고무줄(rubber-band) 튕김으로 새어나가는 것을
+   막지 못한다 — html에도 overflow-x:hidden을 주고, overscroll-behavior-x로 좌우 스크롤 체이닝
+   자체를 차단해 화면 전체가 좌/우로 움직이는 현상을 막는다 */
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--topbar-h,108px) + 54px);overflow-x:hidden;overscroll-behavior-x:none}
+body{font-family:'Pretendard','Noto Sans KR',sans-serif;color:var(--cream);line-height:1.6;overflow-x:hidden;overscroll-behavior-x:none;min-height:100vh;background:var(--pine-deep)}
 h1,.display{font-family:'Anton','Noto Sans KR',sans-serif;font-weight:400;line-height:1.1;letter-spacing:.01em}
 h2,h3,h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:400;line-height:1.2;letter-spacing:.02em}
 a{color:inherit;text-decoration:none}
@@ -295,7 +299,9 @@ section.block{padding:100px 24px;position:relative}
      더 이상 하단 정렬로 작동하지 않던 문제를 flex-end로 명시해 지역명이 항상 좌측 하단에 오도록 함 */
   .cat-card .content{padding:10px;justify-content:flex-end}
   .cat-card .top,.cat-card .divider{display:none}
-  .cat-card .name-ko{font-size:12vw;font-size:13cqw;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6);margin:0 2px;word-break:keep-all}
+  /* [수정] 320~430px 폭에서 가장 긴 "미국령-괌/사이판"(줄바꿈 포함 2줄) 카드가 3줄로 넘어가지
+     않는 한도 내에서 최대한 키움(13cqw→15cqw, 약 1.5자 분량) */
+  .cat-card .name-ko{font-size:13.8vw;font-size:15cqw;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6);margin:0 2px;word-break:keep-all}
   .cat-card .name-en{font-size:4.2vw;font-size:4.5cqw;margin-top:2px;letter-spacing:.06em;overflow-wrap:anywhere;word-break:break-word;margin-left:2px;margin-right:2px}
 }
 
@@ -520,8 +526,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-nav-arrow{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-nav-arrow:hover{background:var(--gold);color:#fff;transform:scale(1.06)}
 .pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;line-height:1.25;pointer-events:none}
-.pd-nav-region{font-size:1.722rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em}
-.pd-nav-count{font-size:.714rem;color:rgba(255,255,255,.7);letter-spacing:.08em}
+/* [수정] 상단 내비게이션 박스 텍스트를 95% 크기로 축소 */
+.pd-nav-region{font-size:1.636rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em}
+.pd-nav-count{font-size:.678rem;color:rgba(255,255,255,.7);letter-spacing:.08em}
 .pd-nav-bar.single .pd-nav-arrow{visibility:hidden}
 /* FIX: 36px → 44px로 키워 터치 표준(최소 44x44px) 충족 */
 .pd-close{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
@@ -533,10 +540,12 @@ section.block{padding:100px 24px;position:relative}
 .pd-region-trans{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .pd-region-trans::before{content:'';position:absolute;inset:0;background:rgba(10,23,48,.45)}
 .pd-region-trans.show{opacity:1}
-.pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(4.4rem,14vw,7.2rem);letter-spacing:.08em;text-shadow:0 4px 20px rgba(0,0,0,.5)}
+/* [수정] 지역 전환 라벨 텍스트를 80% 크기로 축소하고, 글자 크기의 절반만큼 좌우 여백을 확보 */
+.pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(3.52rem,11.2vw,5.76rem);letter-spacing:.08em;text-shadow:0 4px 20px rgba(0,0,0,.5);padding:0 .5em;text-align:center}
 @media(max-width:780px){
   .pd-nav-arrow{display:none}
-  .pd-nav-info{text-align:left;justify-content:flex-start;padding-left:8px}
+  /* [수정] 화살표가 숨겨져 남는 공간을 활용해 지역명·숫자를 중앙 정렬(요청 4) */
+  .pd-nav-info{text-align:center;justify-content:center}
 }
 .pd-slot{margin-bottom:16px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);box-shadow:0 8px 24px rgba(10,23,48,.1)}
 /* [수정] "일정 요약 타임라인" 섹션 바로 위에 구분선을 두어 앞 섹션과의 경계를 명확히 함 */
@@ -1610,7 +1619,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .core-values{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:780px){
-  .hero{padding:40px 16px 60px}
+  .hero{padding:32px 16px 44px}
   .headline{padding-top:0}
   .headline-frame{padding:0}
   .headline-img{border-radius:0}
@@ -1633,14 +1642,23 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .hv-ko{font-size:1.5rem}
   .hv-en{font-size:.82rem;margin-bottom:10px}
   .hv-desc{font-size:.95rem}
-  section.block{padding:70px 16px}
+  /* [수정] 섹션 상하 여백·섹션 내부 그룹 간격을 모바일에서 보기 좋게 줄여 전체 스크롤 길이를 단축 */
+  section.block{padding:56px 16px}
+  .sec-head{margin-bottom:32px}
+  .mini-stats{margin-bottom:36px}
+  .core-values{margin-bottom:44px}
+  .reviews-section{margin-top:40px}
+  .pkg-group{margin-bottom:44px}
+  .strengths-header{margin-bottom:28px}
+  .foot-grid{margin-bottom:32px}
+  .hero h1{margin-bottom:28px}
   /* product-grid·blog-grid는 모바일 전용 가로 슬라이딩 레이아웃(각 전용 규칙)을 따로 쓰므로
      여기서는 더 이상 1열 그리드로 강제하지 않는다. cat-grid는 항상 3열 고정 — 위쪽의 1024px
      구간 규칙(repeat(2,1fr))이 이 780px 구간에서도 적용되지만, 더 뒤(아래)에 있는 이 규칙이
      같은 선택자·우선순위에서 나중에 선언되어 최종적으로 이긴다(문서 순서 우선) */
   .cat-grid{grid-template-columns:repeat(3,1fr)}
   .link-groups{grid-template-columns:1fr}
-  .category-view{padding:24px 20px}
+  .category-view{margin-top:24px;padding:20px 18px}
   .link-hub-inner{padding:24px 20px}
   .pass{grid-template-columns:1fr}
   .pass-main{padding:28px 24px}
@@ -2540,9 +2558,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .plb-close:hover{ background:rgba(255,255,255,.25);transform:rotate(90deg); }
 /* [수정] 좌/우 이동 버튼을 화면 중앙이 아닌 하단으로 옮기고, 반투명은 유지하되 배경을
    밝은 흰색에서 어두운 색으로 바꿔 밝은 이미지 위에서도 잘 보이도록 가독성을 높임.
-   [추가 수정] 버튼을 원래 위치보다 버튼 크기(48px)의 5배만큼(240px) 더 위로 올리고,
-   카운터도 버튼과 같은 높이(48px)·같은 bottom 값을 써서 가로·세로 모두 버튼 행과
-   나란히 중앙 정렬되도록 함 */
+   [추가 수정] 버튼을 원래 위치보다 버튼 크기(48px)의 5배만큼(240px) 더 위로 올림.
+   카운터(숫자 영역)는 버튼과 같은 줄이 아니라, 버튼 줄 바로 위(48px 위)에 별도의 줄로 배치 */
 .plb-prev,.plb-next{
   position:fixed;bottom:260px;
   width:48px;height:48px;border-radius:50%;
@@ -2554,8 +2571,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .plb-next{ right:20px; }
 .plb-prev:hover,.plb-next:hover{ background:rgba(221,179,103,.4);border-color:var(--gold); }
 .plb-counter{
-  position:fixed;bottom:260px;left:50%;transform:translateX(-50%);
-  height:48px;display:flex;align-items:center;justify-content:center;
+  position:fixed;bottom:308px;left:50%;transform:translateX(-50%);
+  height:32px;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.65);font-size:.85rem;letter-spacing:.05em;
   background:rgba(0,0,0,.4);padding:0 16px;border-radius:100px;
   pointer-events:none;z-index:3100;
@@ -7793,15 +7810,13 @@ function pdRenderAt(catId, idx, opts){
   if (content && opts.dir){
     content.style.transition='none';
     content.style.transform=`translateX(${opts.dir>0?'40vw':'-40vw'})`;
-    content.style.opacity='0';
     void content.offsetWidth; // 강제 reflow — 위 스타일이 애니메이션 없이 즉시 반영되게 함
     requestAnimationFrame(()=>{
-      content.style.transition='transform .28s cubic-bezier(.22,.8,.36,1), opacity .28s ease';
+      content.style.transition='transform .28s cubic-bezier(.22,.8,.36,1)';
       content.style.transform='translateX(0)';
-      content.style.opacity='1';
     });
   } else if (content){
-    content.style.transition=''; content.style.transform=''; content.style.opacity='';
+    content.style.transition=''; content.style.transform='';
   }
 }
 // [수정] 상단 내비게이션 바의 현재 권역명·순번을 갱신. 같은 권역 내 상품이 1개뿐이면 화살표를 숨긴다
@@ -7825,9 +7840,8 @@ function pdMove(dir){
   const catChanged = prevCatId && next.catId!==prevCatId;
   const content=document.getElementById('pdContent');
   if (content){
-    content.style.transition='transform .22s ease, opacity .22s ease';
+    content.style.transition='transform .22s ease';
     content.style.transform=`translateX(${dir>0?'-40vw':'40vw'})`;
-    content.style.opacity='0';
   }
   const finish=()=>pdRenderAt(next.catId, next.idx, {dir});
   if (catChanged){
@@ -7907,7 +7921,6 @@ function pdTouchMove(e){
   if (content){
     content.style.transition='none';
     content.style.transform=`translateX(${dx}px)`;
-    content.style.opacity=String(Math.max(.4, 1-Math.abs(dx)/400));
   }
 }
 function pdTouchEnd(){
@@ -7918,8 +7931,8 @@ function pdTouchEnd(){
   if (wasHorizontal && Math.abs(dx)>70 && pdSequence && pdSequence.length>1){
     pdMove(dx<0?1:-1);
   } else if (content){
-    content.style.transition='transform .2s ease, opacity .2s ease';
-    content.style.transform='translateX(0)'; content.style.opacity='1';
+    content.style.transition='transform .2s ease';
+    content.style.transform='translateX(0)';
   }
   pdTouch=null;
 }

@@ -95,9 +95,16 @@
 /* [수정] body의 overflow-x:hidden만으로는 iOS Safari에서 칩 목록·캐러셀 등 가로 스크롤 요소가
    스크롤 끝에 닿았을 때 제스처가 화면 전체의 좌우 고무줄(rubber-band) 튕김으로 새어나가는 것을
    막지 못한다 — html에도 overflow-x:hidden을 주고, overscroll-behavior-x로 좌우 스크롤 체이닝
-   자체를 차단해 화면 전체가 좌/우로 움직이는 현상을 막는다 */
+   자체를 차단해 화면 전체가 좌/우로 움직이는 현상을 막는다.
+   [버그 수정] body에도 overflow-x:hidden을 주면(overflow-y를 별도로 지정하지 않는 한) CSS 스펙상
+   overflow-y가 암묵적으로 auto로 계산되어, body가 실제로는 스크롤되지 않음에도(실제 스크롤은
+   document.scrollingElement인 html에서 일어남) "스크롤 컨테이너"로 취급된다. body의 직계 자식인
+   .nav(메뉴바)는 position:sticky인데, 그 기준(가장 가까운 스크롤 컨테이너)이 실제로는 스크롤되지
+   않는 body가 되어버려 sticky가 전혀 동작하지 않고 메뉴바가 그냥 페이지와 함께 스크롤되어 사라지는
+   문제가 있었다 — 가로 스크롤 차단은 실제 스크롤 기준인 html 쪽 overflow-x:hidden만으로 충분하므로
+   body의 overflow-x:hidden은 제거해 sticky가 정상 동작하는 html을 기준으로 삼게 한다 */
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--topbar-h,108px) + 54px);overflow-x:hidden;overscroll-behavior-x:none}
-body{font-family:'Pretendard','Noto Sans KR',sans-serif;color:var(--cream);line-height:1.6;overflow-x:hidden;overscroll-behavior-x:none;min-height:100vh;background:var(--pine-deep)}
+body{font-family:'Pretendard','Noto Sans KR',sans-serif;color:var(--cream);line-height:1.6;overscroll-behavior-x:none;min-height:100vh;background:var(--pine-deep)}
 h1,.display{font-family:'Anton','Noto Sans KR',sans-serif;font-weight:400;line-height:1.1;letter-spacing:.01em}
 h2,h3,h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:400;line-height:1.2;letter-spacing:.02em}
 a{color:inherit;text-decoration:none}
@@ -290,7 +297,10 @@ section.block{padding:100px 24px;position:relative}
    규칙보다 뒤에 있어야 우선 적용되므로 그쪽으로 모아둠). 자세한 문구(태그라인·상품 수 배지·
    구분선)는 공간이 부족하므로 감추고 지역명만 작게 남긴다 */
 @media(max-width:780px){
-  .cat-grid{gap:8px}
+  /* [수정] 카드를 화면 가로폭 끝쪽에 더 가깝게 붙여, 카드 프레임 자체를 지금보다 크게 보이도록 함 —
+     섹션 좌우 여백(16px)을 이 섹션에서만 8px로 줄이고, 카드 사이 간격도 8px→6px로 살짝 좁힘 */
+  #destinations{padding-left:8px;padding-right:8px}
+  .cat-grid{gap:6px}
   /* [수정] 카드 폭이 화면 크기·열 개수에 따라 달라지므로, container query 단위(cqw)로 카드 자신의
      실제 가로폭에 비례해 글자 크기가 정해지도록 함(예전엔 고정 .35rem이라 카드가 커져도 글자가
      그대로라 너무 작아 보였음). cqw 미지원 브라우저를 위해 vw 기반 값을 폴백으로 먼저 선언 */
@@ -541,7 +551,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-region-trans::before{content:'';position:absolute;inset:0;background:rgba(10,23,48,.45)}
 .pd-region-trans.show{opacity:1}
 /* [수정] 지역 전환 라벨 텍스트를 80% 크기로 축소하고, 글자 크기의 절반만큼 좌우 여백을 확보 */
-.pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(3.52rem,11.2vw,5.76rem);letter-spacing:.08em;text-shadow:0 4px 20px rgba(0,0,0,.5);padding:0 .5em;text-align:center}
+/* [수정] 배경 이미지 위 텍스트 위치를 글자 크기(1em)만큼 위로 올림 */
+.pd-region-trans-label{position:relative;color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:clamp(3.52rem,11.2vw,5.76rem);letter-spacing:.08em;text-shadow:0 4px 20px rgba(0,0,0,.5);padding:0 .5em;text-align:center;transform:translateY(-1em)}
 @media(max-width:780px){
   .pd-nav-arrow{display:none}
   /* [수정] 화살표가 숨겨져 남는 공간을 활용해 지역명·숫자를 중앙 정렬(요청 4) */
@@ -6553,15 +6564,18 @@ function selectCategory(id, opts){
   renderRegionGrid(regionKey);
   if (next && opts.scroll!==false){
     setTimeout(()=>{
+      // [수정] 원터치 즉시 반응처럼 느껴지도록, 권역별/국가별 타이틀로는 애니메이션 없이 즉시
+      // 이동시켜 빠르게 최상단에 보여준 뒤, 곧바로 이어서 시즌별/월별 버튼 위치까지는
+      // 부드럽게(behavior:'smooth') 슬라이딩해 자연스럽게 연결한다.
+      // [버그 수정] behavior:'auto'는 html{scroll-behavior:smooth}(전역 CSS)를 그대로 물려받아
+      // 결국 부드럽게 스크롤되므로 "즉각" 이동이 되지 않는다 — CSS를 무시하고 정말 즉시 이동하는
+      // behavior:'instant'를 명시해야 한다
       const panel=document.getElementById(regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic');
-      if (panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
-      // [추가] 권역별/국가별 타이틀로 먼저 이동하는 기존 동작은 그대로 유지하되, 사용자가 화면
-      // 전환을 인지할 수 있을 정도의 텀(900ms)을 둔 뒤 시즌별/월별 보기 타이틀이 화면 상단에
-      // 오도록 한 번 더 부드럽게 스크롤한다
-      setTimeout(()=>{
+      if (panel) panel.scrollIntoView({behavior:'instant',block:'start'});
+      requestAnimationFrame(()=>{
         const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
         if (filterRow) filterRow.scrollIntoView({behavior:'smooth',block:'start'});
-      },900);
+      });
     },100);
   }
 }
@@ -7810,6 +7824,7 @@ function pdRenderAt(catId, idx, opts){
   const overlay=document.getElementById('pdOverlay');
   if (overlay) overlay.scrollTop=0; // 새 상품은 항상 맨 위에서부터 보여준다
   startGalleryAutoSlide(p);
+  preloadPdNeighbors();
   const content=document.getElementById('pdContent');
   if (content && opts.dir){
     content.style.transition='none';
@@ -7822,6 +7837,25 @@ function pdRenderAt(catId, idx, opts){
   } else if (content){
     content.style.transition=''; content.style.transform='';
   }
+}
+// [수정] 스와이프/버튼으로 다음·이전 상품으로 넘어갈 때 타이틀 이미지가 그제서야 새로 로딩되며
+// 체감 딜레이가 생기던 문제 — 현재 상품이 화면에 그려질 때마다 앞뒤(다음/이전) 상품의 타이틀
+// 이미지를 화면에 표시하지 않고 미리 fetch만 해서 브라우저 캐시에 올려둔다. 권역이 바뀌는
+// 지점이면 지역전환 화면의 배경 이미지도 함께 미리 로드해 전환 시 그 이미지도 즉시 뜨게 한다
+function preloadPdNeighbors(){
+  if (!pdSequence || pdSequence.length<2) return;
+  [pdSeqPos-1, pdSeqPos+1].forEach(rawPos=>{
+    const pos=(rawPos+pdSequence.length)%pdSequence.length;
+    const seq=pdSequence[pos];
+    if (!seq) return;
+    const p=getProducts(seq.catId)[seq.idx];
+    if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url){
+      new Image().src = p.titleMedia.url;
+    }
+    if (currentPd && seq.catId!==currentPd.catId){
+      new Image().src = getImage(seq.catId);
+    }
+  });
 }
 // [수정] 상단 내비게이션 바의 현재 권역명·순번을 갱신. 같은 권역 내 상품이 1개뿐이면 화살표를 숨긴다
 function updatePdNav(cat){
@@ -9246,6 +9280,16 @@ function openPkgLightbox(type, idx){
   document.body.style.overflow='hidden';
   plbRender();
 }
+// [수정] 좌/우로 넘길 때 이미지가 그제서야 로딩되며 생기는 딜레이를 없애기 위해 앞뒤 이미지를
+// 화면에 표시하지 않고 미리 fetch만 해서 브라우저 캐시에 올려둔다
+function preloadPlbNeighbors(list){
+  if (!list || list.length<2) return;
+  [lbIdx-1, lbIdx+1].forEach(rawPos=>{
+    const pos=(rawPos+list.length)%list.length;
+    const it=list[pos];
+    if (it && it.url) new Image().src = it.url;
+  });
+}
 function plbRender(){
   const list=getPkgList(lbType);
   const item=list[lbIdx];
@@ -9253,6 +9297,7 @@ function plbRender(){
   const ctr=document.getElementById('plbCounter');
   if(img) img.src=item?.url||'';
   if(ctr) ctr.textContent=`${lbIdx+1} / ${list.length}`;
+  preloadPlbNeighbors(list);
   const dl=document.getElementById('plbDetailLink');
   if(dl){
     // [수정] 외부 "연결 링크·URL"이 있어도 항상 연결된 상품카드의 "자세히 →"와 동일하게

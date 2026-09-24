@@ -346,7 +346,9 @@ section.block{padding:100px 24px;position:relative}
 /* [Phase] 국가별(시즌)/권역별(월) 기간별 소팅 버튼 — 국가/지역 선택 버튼(.cv-nav) 바로 아래 배치,
    구분을 위해 활성 색상을 골드(지역 선택)와 다른 남색 계열(--fairway)로 둔다. .cv-nav와 동일하게
    제목 줄(.period-filter-label) + 버튼 줄(.period-filter-track)의 2단 구조를 쓴다 */
-.period-filter-row{display:flex;flex-direction:column;gap:6px;padding:14px 0 24px;margin-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10)}
+/* [수정] 필터와 상품 카드 사이 간격을 50% 줄이고(24px+8px=32px → 8px+8px=16px), 이미 있던
+   구분선(border-bottom)이 그 줄어든 간격의 정중앙(위 8px, 아래 8px)에 오도록 재배치 */
+.period-filter-row{display:flex;flex-direction:column;gap:6px;padding:14px 0 8px;margin-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10)}
 /* [수정] 라벨과 칩 사이의 구분선을 제거하고, 그만큼 줄 간격도 좁힘 */
 .period-filter-label{font-size:.78rem;color:rgba(10,23,48,.5);font-weight:600;letter-spacing:.02em;padding-bottom:4px}
 .period-filter-track{display:flex;gap:8px;flex-wrap:wrap}
@@ -362,7 +364,12 @@ section.block{padding:100px 24px;position:relative}
   .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;cursor:grab;padding-bottom:6px;scrollbar-width:none;-ms-overflow-style:none}
   .product-grid.dragging{cursor:grabbing;scroll-behavior:auto}
   .product-grid::-webkit-scrollbar{display:none}
-  .product-grid>.product{flex:0 0 86%;scroll-snap-align:center}
+  /* [수정] 상품 카드 영역만 상위 패널(.category-view 8px + 섹션 14px)의 좌우 프레임 없이 화면
+     가로 폭에 꽉 차도록 바깥으로 확장한다. 넓어진 만큼 카드 사이 간격(16px→10px)을 함께 줄여
+     카드 자체는 더 커지면서(86%→80%) 이전/다음 카드 끝이 지금보다 조금 더 보이도록(peek) 한다.
+     위쪽 제목·필터 영역은 기존 프레임을 그대로 유지 */
+  .product-grid{margin-left:-22px;margin-right:-22px;width:calc(100% + 44px);gap:10px}
+  .product-grid>.product{flex:0 0 80%;scroll-snap-align:center}
   .product-grid>.empty-state{flex:0 0 100%}
 }
 /* [수정] 상품이 4개 이상(3개 초과)이면 위 .product-grid 대신 이 캐러셀로 전환 — 카드(.product)
@@ -428,8 +435,14 @@ section.block{padding:100px 24px;position:relative}
 @media(max-width:780px){
   /* [Phase] 100%(카드 하나 꽉 채움) 대신 86%로 줄이고 가운데 정렬(scroll-snap-align:center)해,
      지금 카드의 좌우로 다음/이전 카드가 살짝 걸쳐 보이게 한다 — .product-grid(3개 이하 경로)와
-     동일한 방식으로 통일 */
-  .pc-track>.product{flex:0 0 86%;scroll-snap-align:center}
+     동일한 방식으로 통일
+     [수정] 상품 카드 영역만 상위 패널(.category-view 8px + 섹션 14px)의 좌우 프레임 없이 화면
+     가로 폭에 꽉 차도록 .pc-carousel을 바깥으로 확장한다. 넓어진 만큼 카드 사이 간격(20px→10px)을
+     함께 줄여 카드 자체는 더 커지면서(86%→80%) 이전/다음 카드 끝이 지금보다 조금 더 보이도록
+     (peek) 한다 */
+  .pc-carousel{margin-left:-22px;margin-right:-22px;width:calc(100% + 44px)}
+  .pc-track{gap:10px}
+  .pc-track>.product{flex:0 0 80%;scroll-snap-align:center}
 }
 /* [수정] 글래스모피즘 통일 — 다른 카드(.post)와 동일하게 반투명+블러 적용 */
 /* [수정] backdrop-filter가 적용된 요소에서 hover 시 transform이 바뀌면 브라우저가 매번 블러
@@ -541,8 +554,11 @@ section.block{padding:100px 24px;position:relative}
    [수정] 국가별/권역별 이름(.pd-nav-region) 글자 크기를 2배로 키우고, "N / 전체" 카운터(.pd-nav-count)를
    그 아래가 아니라 오른쪽에 나란히 배치 — 어두운 박스(dark navy) + 흰색 텍스트로 바꿔 가독성을 높인다 */
 /* [수정] 텍스트를 95% 축소한 만큼 박스 높이도 텍스트에 맞춰 줄어들도록 세로 패딩을 8px→6px로 축소.
-   [수정] 박스 높이를 위아래 2px씩 추가로 줄임(6px→4px) */
-.pd-nav-bar{position:sticky;top:20px;z-index:10;display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:4px 10px;background:var(--pine-deep);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(10,23,48,.1);border-radius:100px;box-shadow:0 6px 20px rgba(10,23,48,.14)}
+   [수정] 박스 높이를 위아래 2px씩 추가로 줄임(6px→4px)
+   [수정] 닫기 버튼 우측 여백(10px)이 위/아래 여백(4px)보다 훨씬 넓어 둥근 우측 끝과의 간격이
+   불균형해 보이던 것을, 우측 패딩만 위/아래와 비슷하게 줄여 정렬한다(좌측은 이전/다음 버튼 정렬
+   기준이라 그대로 유지) */
+.pd-nav-bar{position:sticky;top:20px;z-index:10;display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:4px 4px 4px 10px;background:var(--pine-deep);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(10,23,48,.1);border-radius:100px;box-shadow:0 6px 20px rgba(10,23,48,.14)}
 .pd-nav-arrow{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-nav-arrow:hover{background:var(--gold);color:#fff;transform:scale(1.06)}
 .pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;line-height:1.25;pointer-events:none}
@@ -551,9 +567,9 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 숫자(카운터) 크기를 1pt(≈.083rem)만큼 키움(.644rem→.727rem) */
 .pd-nav-count{font-size:.727rem;color:rgba(255,255,255,.7);letter-spacing:.08em}
 .pd-nav-bar.single .pd-nav-arrow{visibility:hidden}
-/* [수정] 박스 높이 축소에 맞춰 닫기 버튼도 95% 크기로 축소(44px→42px)했던 것을, 다시 85% 크기로
-   추가 축소(42px→35.7px) */
-.pd-close{flex-shrink:0;width:35.7px;height:35.7px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.0115rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
+/* [수정] 박스 높이 축소에 맞춰 닫기 버튼도 95% 크기로 축소(44px→42px)했던 것을, 85% 크기로
+   추가 축소(42px→35.7px)했던 것을, 다시 90% 크기로 한 번 더 축소(35.7px→32.13px) */
+.pd-close{flex-shrink:0;width:32.13px;height:32.13px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:.91035rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-close:hover{background:var(--gold);color:#fff}
 /* [수정] #pdContent 슬라이드·페이드 전환 — 이전/다음 상품으로 넘어갈 때, 데스크톱 버튼 클릭과
    모바일 스와이프가 같은 로직(pdMove)을 타므로 전환 애니메이션도 동일하게 적용된다 */
@@ -1727,7 +1743,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      줄바꿈되고 하단이 잘리던 문제 — 폰트/패딩/여백을 줄여 텍스트가 한 줄에 들어가도록
      버튼 크기를 축소한다 */
   .admin-foot{padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));gap:8px}
-  .admin-foot button{padding:10px 6px;font-size:.8rem;white-space:nowrap}
+  /* [수정] 버튼 박스 높이를 3px 줄이고(44px→41px), 화면 하단에서 짤리지 않도록 버튼 줄 자체를
+     글자 1개반 정도(약 19px) 위로 올린다 — transform은 레이아웃 흐름에 영향을 주지 않으므로
+     그만큼 패널 맨 아래에 여유 공간이 남아 잘림을 막는다 */
+  .admin-foot{transform:translateY(-19px)}
+  .admin-foot button{padding:10px 6px;font-size:.8rem;white-space:nowrap;min-height:41px}
   /* [버그 수정] 모바일(주로 iOS Safari)에서 input의 font-size가 16px 미만이면 포커스 시 브라우저가
      자동으로 화면을 확대(zoom)한다 — 관리자 패널 곳곳의 입력 필드가 데스크톱 정보 밀도를 위해
      .8rem~.95rem(13~15px대)로 작게 잡혀 있어, 모바일에서 어느 필드를 탭하든 화면이 확대되며 다음
@@ -6630,23 +6650,22 @@ function selectCategory(id, opts){
   renderRegionGrid(regionKey);
   if (next && opts.scroll!==false){
     setTimeout(()=>{
-      // [수정] 원터치 즉시 반응처럼 느껴지도록, 권역별/국가별 타이틀로는 애니메이션 없이 즉시
-      // 이동시켜 빠르게 최상단에 보여준 뒤, 1초간 머물렀다가 곧바로 이어서 시즌별/월별 버튼
-      // 위치까지는 부드럽게 슬라이딩해 자연스럽게 연결한다.
-      // [버그 수정] behavior:'auto'는 html{scroll-behavior:smooth}(전역 CSS)를 그대로 물려받아
-      // 결국 부드럽게 스크롤되므로 "즉각" 이동이 되지 않는다 — CSS를 무시하고 정말 즉시 이동하는
-      // behavior:'instant'를 명시해야 한다
+      // [수정] 권역별/국가별 타이틀로는 약 0.5초간 부드럽게 슬라이딩해 이동시켜 빠르게 최상단에
+      // 보여준 뒤, 1초간 머물렀다가 곧바로 이어서 시즌별/월별 버튼 위치까지는 부드럽게 슬라이딩해
+      // 자연스럽게 연결한다. 브라우저 기본 smooth는 매 UA마다 속도가 제각각이라, 1단계도 2단계와
+      // 동일하게 smoothScrollToEl 커스텀 이징을 써서 정확히 0.5초로 맞춘다
       const panel=document.getElementById(regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic');
-      if (panel) panel.scrollIntoView({behavior:'instant',block:'start'});
-      // [수정] 1단계 즉시 이동 후 1초간 머문 뒤 2단계 스크롤을 시작한다
+      smoothScrollToEl(panel, 500, 0);
+      // [수정] 1단계 이동 후 1초간 머문 뒤 2단계 스크롤을 시작한다
       setTimeout(()=>{
         const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
-        // [수정] 두 번째 단계는 브라우저 기본 smooth 대신 약 2초간 이어지는 커스텀 이징 스크롤로 교체.
-        // 목표 위치도 시즌별 버튼 줄이 화면 맨 위에 딱 붙는 지점보다, 월별 박스(.period-filter-btn)
-        // 높이의 3배만큼 더 스크롤해(그 줄이 화면 위로 더 올라가도록) 상품 카드가 더 많이 보이게 한다
+        // [수정] 두 번째 단계는 브라우저 기본 smooth 대신 약 0.3초간 이어지는(기존 2초 대비 더 빠른)
+        // 커스텀 이징 스크롤로 교체. 목표 위치도 시즌별 버튼 줄이 화면 맨 위에 딱 붙는 지점보다,
+        // 월별 박스(.period-filter-btn) 높이의 3배만큼 더 스크롤해(그 줄이 화면 위로 더 올라가도록)
+        // 상품 카드가 더 많이 보이게 한다
         const chip=filterRow?filterRow.querySelector('.period-filter-btn'):null;
         const chipH=chip?chip.getBoundingClientRect().height:0;
-        smoothScrollToEl(filterRow, 2000, chipH*3);
+        smoothScrollToEl(filterRow, 300, chipH*3);
       }, 1000);
     },100);
   }
@@ -7987,6 +8006,12 @@ function pdRenderAt(catId, idx, opts){
 // 체감 딜레이가 생기던 문제 — 현재 상품이 화면에 그려질 때마다 앞뒤(다음/이전) 상품의 타이틀
 // 이미지를 화면에 표시하지 않고 미리 fetch만 해서 브라우저 캐시에 올려둔다. 권역이 바뀌는
 // 지점이면 지역전환 화면의 배경 이미지도 함께 미리 로드해 전환 시 그 이미지도 즉시 뜨게 한다
+// [수정] 타이틀 동영상은 <video> 엘리먼트가 새로 생성되는 순간에야 다운로드가 시작돼, 동영상이
+// 적용된 카드로 넘어갈 때만 유독 로딩 딜레이가 느껴졌다 — link rel=preload로 미리 네트워크(HTTP
+// 캐시)에 올려두면 실제 <video>가 그려질 때는 캐시에서 즉시 재생을 시작할 수 있다. preload는
+// 디코딩까지는 하지 않으므로 이미지 프리로드보다 부담이 크지 않다. 같은 URL을 반복해서 <head>에
+// 쌓지 않도록 한 번 추가한 URL은 기억해둔다
+const _pdVideoPreloaded = new Set();
 function preloadPdNeighbors(){
   if (!pdSequence || pdSequence.length<2) return;
   [pdSeqPos-1, pdSeqPos+1].forEach(rawPos=>{
@@ -7996,6 +8021,12 @@ function preloadPdNeighbors(){
     const p=getProducts(seq.catId)[seq.idx];
     if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url){
       new Image().src = p.titleMedia.url;
+    }
+    if (p && p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url && !_pdVideoPreloaded.has(p.titleMedia.url)){
+      _pdVideoPreloaded.add(p.titleMedia.url);
+      const link=document.createElement('link');
+      link.rel='preload'; link.as='video'; link.href=p.titleMedia.url;
+      document.head.appendChild(link);
     }
     if (currentPd && seq.catId!==currentPd.catId){
       new Image().src = getImage(seq.catId);

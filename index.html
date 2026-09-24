@@ -606,8 +606,47 @@ section.block{padding:100px 24px;position:relative}
   from{opacity:0;transform:translateY(-1em) scale(.6)}
   to{opacity:1;transform:translateY(-1em) scale(1.05)}
 }
+/* [버그 수정] OS 접근성 설정(prefers-reduced-motion:reduce)에서는 위쪽(956번째 줄 부근) 전역 규칙이
+   animation/transition을 모두 강제로 꺼버린다 — 그런데 이 화면은 키프레임 애니메이션이 "최종
+   상태(텍스트 opacity:1, 배경 scale(1))까지 도달시키는 역할"까지 겸하고 있어서, 애니메이션이
+   통째로 꺼지면 텍스트가 opacity:0로 남아 영원히 보이지 않고 배경도 확대된 채(scale(1.18)) 정지된
+   것처럼 보였다(캐시·브라우저와 무관하게 이 OS 설정을 켠 사용자에게는 항상 재현되는 진짜 버그였음).
+   모션 자체를 강제로 재생시키는 대신(그러면 접근성 설정을 무시하는 셈이 되므로) 애니메이션 없이
+   바로 최종 상태로 표시되도록 보정한다 */
+@media(prefers-reduced-motion:reduce){
+  .pd-region-trans.show .pd-region-trans-bg{transform:scale(1)}
+  .pd-region-trans.show .pd-region-trans-label{opacity:1;transform:translateY(-1em) scale(1.05)}
+}
+/* [수정] 웹 전용 대형 좌/우 이전/다음 버튼 — 상품 상세 페이지 영역 바깥, 화면 가장자리에 떠 있는
+   형태로 배치. 탑바와 같은 어두운 반투명 배경(--pine-deep)에 그림자를 주고, 마우스 오버 시 브랜드
+   골드 색상(--gold)으로 바뀌며, 클릭 시 눌리는 느낌의 축소 애니메이션을 준다. 모바일에서는 숨기고
+   기존 터치 스와이프로 대체한다(아래 @media(max-width:780px)) */
+.pd-side-nav{
+  position:fixed;top:50%;transform:translateY(-50%);
+  width:64px;height:64px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,23,48,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;font-size:2.2rem;font-weight:700;cursor:pointer;
+  box-shadow:0 8px 24px rgba(10,23,48,.35);
+  transition:background .2s,color .2s,transform .2s,box-shadow .2s;
+  z-index:15;
+}
+.pd-side-nav.prev{left:24px}
+.pd-side-nav.next{right:24px}
+/* [수정] 이 크기(64px 박스·2.2rem 글자)에서 실측한 결과 좌우는 이미 중앙이지만 위아래는 살짝
+   아래로 치우쳐 보여(캔버스 픽셀 잉크 영역 실측) 위로 소폭 보정한다 */
+.pd-side-nav .pd-nav-arrow-glyph{display:inline-block;transform:translateY(-1.75px)}
+.pd-side-nav:hover{background:var(--gold);color:var(--pine-deep);box-shadow:0 10px 28px rgba(221,179,103,.4)}
+.pd-side-nav:active{transform:translateY(-50%) scale(.9)}
+#pdOverlay.pd-single .pd-side-nav{visibility:hidden}
 @media(max-width:780px){
   .pd-nav-arrow{display:none}
+  .pd-side-nav{display:none}
+  /* [수정] "말레이시아"·"미국령-괌/사이판"은 글자 수가 많아 다른 국가명보다 유독 커 보이므로
+     모바일에서만 85% 크기로 축소(clamp 각 값에 0.85 적용) — showPdRegionTransition()이
+     해당 두 국가일 때만 .pd-rtl-long 클래스를 붙인다 */
+  .pd-region-trans-label.pd-rtl-long{font-size:clamp(2.992rem,9.52vw,4.896rem)}
   /* [수정] 중앙 정렬에서 좌측 정렬로 변경.
      [수정] 상품 타이틀(.pd-top-title h2, 자신의 padding-left 20px)의 텍스트 시작 위치와 줄을
      맞추기 위해, 이 박스 자신의 padding-left(10px)에 10px을 더해(총 20px) 정렬한다 */
@@ -3662,6 +3701,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <div class="pd-region-trans-bg" id="pdRegionTransBg"></div>
     <div class="pd-region-trans-label" id="pdRegionTransLabel"></div>
   </div>
+  <!-- [수정] 웹(데스크톱) 전용 — 상품 상세 페이지 영역 좌/우측 화면 가장자리에 큼직한 이전/다음
+       버튼을 추가로 배치. 상단 박스의 작은 화살표(.pd-nav-arrow)는 그대로 유지하고, 이 버튼들은
+       모바일에서는 표시하지 않는다(터치 스와이프로 대체) -->
+  <button type="button" class="pd-side-nav prev" onclick="pdMove(-1)" aria-label="이전 상품"><span class="pd-nav-arrow-glyph">‹</span></button>
+  <button type="button" class="pd-side-nav next" onclick="pdMove(1)" aria-label="다음 상품"><span class="pd-nav-arrow-glyph">›</span></button>
 </div>
 
 <!-- [Phase] 모바일 전용 "전화하기" 플로팅 버튼 — 화면 우측 끝(관리자 패널 아이콘과 같은 x축)에
@@ -8068,6 +8112,9 @@ function updatePdNav(cat){
   const total = pdSequence ? pdSequence.length : 0;
   countEl.textContent = total>1 ? `${pdSeqPos+1} / ${total}` : '';
   bar.classList.toggle('single', total<=1);
+  // [수정] 웹 전용 좌/우측 대형 버튼(.pd-side-nav)도 상품이 1개뿐일 때는 함께 숨긴다
+  const overlay=document.getElementById('pdOverlay');
+  if (overlay) overlay.classList.toggle('pd-single', total<=1);
 }
 // [수정] 이전(-1)/다음(1) 상품으로 이동 — 데스크톱 버튼 클릭과 모바일 스와이프가 공통으로 호출한다.
 // 권역이 바뀌는 순간에는 그 권역의 대표 이미지를 잠깐 띄워 전환을 인지시킨다
@@ -8104,7 +8151,12 @@ function showPdRegionTransition(cat, onDone){
   const label=document.getElementById('pdRegionTransLabel');
   if (!trans || !cat){ onDone(); return; }
   if (bg) bg.style.backgroundImage=`url('${getImage(cat.id)}')`;
-  if (label) label.textContent=cat.ko;
+  if (label){
+    label.textContent=cat.ko;
+    // [수정] "말레이시아"·"미국령-괌/사이판"은 글자 수가 많아 모바일 화면 폭에서 다른 국가명보다
+    // 유독 커 보이므로, 이 두 국가에 한해 모바일에서만 텍스트를 85% 크기로 축소한다
+    label.classList.toggle('pd-rtl-long', cat.id==='malaysia' || cat.id==='guam');
+  }
   const pdOverlay=document.getElementById('pdOverlay');
   if (pdOverlay) pdOverlay.style.overflow='hidden';
   trans.classList.add('show');

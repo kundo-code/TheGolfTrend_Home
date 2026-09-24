@@ -1779,6 +1779,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 
 /* ═══════════════ TOP BAR ═══════════════ */
+/* [수정] 로고·타이틀·슬로건·구분선·태그라인을 각각 따로 렌더링하던 방식에서, 디자인팀이 만든
+   완성된 브랜드 이미지(assets/topbar-brand.png) 한 장을 그대로 보여주는 방식으로 전환.
+   모바일/데스크톱 모두 이미지 높이만 다르게 주고 나머지는 동일하게 처리한다 */
 .top-bar{
   width:100%;
   background:#0e1522;
@@ -1788,73 +1791,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      topbar 실측 높이(offsetHeight)가 --topbar-h로 header padding-top·nav 고정 위치에 그대로
      반영되므로(JS, syncTopBarHeight 참고), 이 padding-top만 늘리면 나머지는 자동으로 맞춰진다 */
   padding-top:calc(20px + env(safe-area-inset-top));
-  display:flex;align-items:center;gap:28px;
+  display:flex;align-items:center;
   /* [Phase 3 수정] 스크롤 내내 topbar만 화면 상단에 고정되도록 sticky 대신 fixed 사용.
      (sticky는 부모(<header>)의 박스 높이 안에서만 붙어있고, 그 범위를 벗어나면 같이 스크롤되어 버림) */
   position:fixed;top:0;left:0;z-index:201;
 }
-.top-bar-logo-link{flex-shrink:0;display:block}
-.top-bar-logo{
-  height:72px;width:auto;
-}
-/* [Phase] 로고와 텍스트 블록 사이에 세로로 서는 구분선 — 이전에는 "THE GOLF TREND｜골프를 넘어..."
-   처럼 타이틀 한 줄 안의 인라인 글자였으나, 참고 이미지처럼 로고와 텍스트 블록을 나누는 별도의
-   얇은 세로 막대로 변경(텍스트 블록 높이에 맞춰 늘어난다) */
-.top-bar-divider{
-  align-self:stretch;
-  width:1px;
-  background:var(--gold);
-  opacity:.5;
-  flex-shrink:0;
-}
-.top-bar-text{display:flex;flex-direction:column;gap:4px}
-/* [Phase] "THE GOLF TREND"와 "골프를 넘어, 삶의 경험으로."를 참고 이미지처럼 한 줄에 이어 쓰지 않고
-   위아래 두 줄로 분리 — 위 줄(영문 타이틀)은 보조적으로 작게, 아래 줄(한글 슬로건)을 굵고 크게 */
-.top-bar-title{
-  font-family:'Bebas Neue','Noto Sans KR',sans-serif;
-  font-size:clamp(1.05rem,1.8vw,1.4rem);
-  font-weight:700;
-  color:var(--cream);
-  letter-spacing:.02em;
-  line-height:1.2;
-  white-space:nowrap;
-}
-.top-bar-slogan{
-  font-family:'Noto Sans KR',sans-serif;
-  font-size:clamp(1.32rem,2.6vw,1.95rem);
-  font-weight:800;
-  color:#fff;
-  letter-spacing:-.01em;
-  line-height:1.2;
-  white-space:nowrap;
-}
-.top-bar-tagline{
-  font-size:clamp(.78rem,1.1vw,.9rem);
-  color:rgba(247,245,240,.65);
-  line-height:1.5;
-  letter-spacing:.01em;
-  font-family:'Noto Sans KR',sans-serif;
-  max-width:640px;
-  margin-top:2px;
-}
+.top-bar-brand-link{display:block;flex-shrink:0}
+.top-bar-brand{height:88px;width:auto;display:block}
 @media(max-width:780px){
-  /* [Phase] 모바일에서도 데스크톱과 동일하게 로고와 텍스트(타이틀+태그라인)를 가로로 나란히 배치 —
-     로고 왼쪽, 그 오른쪽에 타이틀·태그라인을 위아래로 쌓은 텍스트 블록. 타이틀·태그라인 둘 다
-     기본 크기는 여기서 정하되, 화면이 좁거나 문구가 길어 그래도 넘칠 경우 JS(fitTopBarTitle·
-     fitTopBarTagline)가 실측 폭 기준으로 한 번 더 줄여 항상 가로 스크롤/줄바꿈 없이 데스크톱처럼
-     한 줄 안에 온전히 들어가게 한다 */
-  /* [수정] 로고는 좌측 끝이 고정되도록 120% 확대(transform:scale, origin:left)하고, 타이틀은
-     위쪽 끝이 고정되도록 120% 확대(origin:top)한다. 첨부 참고 이미지와 동일한 배치가 되도록
-     로고·타이틀·슬로건·구분선 묶음 전체를 top-bar 위쪽에서 일정 간격 아래로 내리고, 태그라인은
-     JS(positionTopBarTagline)가 묶음 바로 아래에 작은 고정 간격으로 붙여 배치한다.
-     태그라인(정직/신속/공감...)은 로고 좌측 끝 줄에 맞춰 정렬하기 위해 텍스트 블록 밖으로 빼서
-     .top-bar 자신을 기준으로 절대 위치시키고, 그만큼 아래쪽에 여유 공간을 확보한다 */
-  .top-bar{padding:10px 14px;padding-top:calc(37px + env(safe-area-inset-top));padding-bottom:34px;gap:8px;flex-direction:row;align-items:center}
-  .top-bar-logo{height:34.5px;transform:scale(1.2);transform-origin:left center}
-  .top-bar-text{gap:1px;flex:1;min-width:0}
-  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;transform:scale(1.20);transform-origin:left top}
-  .top-bar-slogan{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;letter-spacing:.02em}
-  .top-bar-tagline{font-size:.79rem;white-space:nowrap;overflow:hidden;letter-spacing:0;margin-top:0;position:absolute;left:14px;right:14px;top:0;max-width:none}
+  .top-bar{padding:14px;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
+  .top-bar-brand{height:62px}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
      [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서
@@ -3013,17 +2959,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 <!-- [Phase 3 Semantic HTML] 로고·헤드라인 배너·내비게이션을 <header>로 묶음 (class/id·JS 동작은 변경 없음) -->
 <header>
-<!-- TOP BAR : 로고 + 사이트 타이틀 + 태그라인 -->
+<!-- TOP BAR : 로고+타이틀+슬로건+구분선+태그라인을 하나로 합친 고정 브랜드 이미지
+     (관리자가 로고·태그라인을 개별로 바꾸던 방식에서, 디자인팀이 만든 완성된 브랜드 이미지
+     한 장을 그대로 쓰는 방식으로 전환 — 모바일/데스크톱 동일하게 이 이미지 하나만 표시) -->
 <div class="top-bar" id="topBarArea">
-  <a href="#top" class="top-bar-logo-link">
-    <img id="topBarLogo" src="" alt="THE GOLF TREND 로고" class="top-bar-logo">
+  <a href="#top" class="top-bar-brand-link">
+    <img src="assets/topbar-brand.png" alt="THE GOLF TREND — 골프를 넘어, 삶의 경험으로. 정직 / 신속 / 공감 / 고객중심으로 믿고 맡길 수 있는 파트너, (주)더골프트렌드 입니다." class="top-bar-brand">
   </a>
-  <span class="top-bar-divider" aria-hidden="true"></span>
-  <div class="top-bar-text">
-    <div class="top-bar-title" id="topBarTitle">THE GOLF TREND</div>
-    <div class="top-bar-slogan" id="topBarSlogan">골프를 넘어, 삶의 경험으로.</div>
-    <div class="top-bar-tagline" id="topBarTagline"></div>
-  </div>
 </div>
 
 <!-- HEADLINE BANNER -->
@@ -5561,10 +5503,6 @@ function applyTheme(){
   const t = themeOverride || {};
   const topBarArea = document.getElementById('topBarArea');
   if (topBarArea) topBarArea.style.background = t.topBarBg || '';
-  ['topBarTitle','topBarSlogan','topBarTagline'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (el) el.style.color = t.topBarFont || '';
-  });
   const nav = document.getElementById('mainNav');
   if (nav) nav.style.background = t.navBg || '';
   const navMenu = document.getElementById('navMenu');
@@ -5658,89 +5596,13 @@ async function handleEntryExitIconUpload(id, inputEl){
   }catch(e){ alert('업로드 실패: '+(e.message||e)); }
   inputEl.value='';
 }
+// [수정] 로고·타이틀·슬로건·구분선·태그라인을 관리자 설정(로고 업로드·태그라인 문구)에 맞춰
+// 실시간으로 조합하던 방식에서, 완성된 브랜드 이미지 한 장(assets/topbar-brand.png, HTML에
+// 고정 src로 삽입)을 그대로 보여주는 방식으로 전환했다. 이미지는 폭에 관계없이 CSS만으로
+// 크기가 정해지므로 폰트 자동 축소·태그라인 위치 계산 같은 JS가 더 이상 필요 없다
 function renderTopBar(){
-  const logo=document.getElementById('topBarLogo');
-  if(logo)logo.src=getLogo();
-  const tl=document.getElementById('topBarTagline');
-  if(tl)tl.textContent=getTagline();
-  syncTopBarHeight();
-  requestAnimationFrame(()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); positionTopBarTagline(); });
-}
-// [Phase] 모바일에서는 로고 폭·문구 길이가 관리자 설정에 따라 달라질 수 있어, 고정된 clamp/font-size
-// 값만으로는 타이틀·태그라인이 가로로 넘치거나(태그라인) 줄바꿈되어(타이틀) 데스크톱과 다르게 보일 수
-// 있다 — 실제 렌더링된 가용 폭(clientWidth)과 줄바꿈 없는 내용의 실제 폭(scrollWidth)을 비교해,
-// 넘치는 만큼만 글자 크기를 줄여 항상 한 줄 안에 온전히 들어가도록 런타임에 자동으로 맞춘다
-// (데스크톱은 이미 여유 폭이 있어 건드리지 않음)
-function fitTopBarTitle(){
-  const title=document.getElementById('topBarTitle');
-  if(!title) return;
-  title.style.fontSize='';
-  if (window.innerWidth>780) return;
-  const natural = title.scrollWidth;
-  const available = title.clientWidth;
-  if (natural>available && available>0){
-    const current=parseFloat(getComputedStyle(title).fontSize);
-    title.style.fontSize=(current*(available/natural)*0.98)+'px';
-  }
-}
-function fitTopBarSlogan(){
-  const sg=document.getElementById('topBarSlogan');
-  if(!sg) return;
-  sg.style.fontSize='';
-  if (window.innerWidth>780) return;
-  const natural = sg.scrollWidth;
-  const available = sg.clientWidth;
-  if (natural>available && available>0){
-    const current=parseFloat(getComputedStyle(sg).fontSize);
-    sg.style.fontSize=(current*(available/natural)*0.98)+'px';
-  }
-}
-function fitTopBarTagline(){
-  const tl=document.getElementById('topBarTagline');
-  if(!tl) return;
-  tl.style.fontSize='';
-  if (window.innerWidth>780) return;
-  const natural = tl.scrollWidth;
-  const available = tl.clientWidth;
-  if (natural>available && available>0){
-    const current=parseFloat(getComputedStyle(tl).fontSize);
-    tl.style.fontSize=(current*(available/natural)*0.98)+'px';
-  }
-}
-// 참고 이미지와 동일하게, 태그라인을 로고·타이틀·슬로건·구분선 묶음 바로 아래에 작은 고정
-// 간격(GAP)으로 붙여 배치한다. 묶음의 실측 아래쪽 끝을 기준으로 태그라인의 top 위치를 구하고,
-// top-bar의 padding-bottom을 태그라인이 다 들어갈 만큼 늘려 아래쪽 nav/본문과 겹치지 않게 한다.
-// top 계산은 매번 묶음의 실측값에서 새로 구하므로 반복 호출해도 값이 누적되지 않는다(멱등)
-function positionTopBarTagline(){
-  const GAP = 7;
-  const tagline=document.getElementById('topBarTagline');
-  const topBarEl=document.querySelector('.top-bar');
-  const title=document.getElementById('topBarTitle');
-  const slogan=document.getElementById('topBarSlogan');
-  if (!tagline||!topBarEl) return;
-  if (window.innerWidth>780){
-    tagline.style.top='';
-    topBarEl.style.paddingBottom='';
-    return;
-  }
-  // 로고는 transform:scale로 확대되면서 실제 보이는 그림보다 박스 아래쪽에 여백이 생겨, 이를
-  // 기준으로 삼으면 태그라인이 필요 이상으로 아래로 밀린다. 슬로건(텍스트 블록의 마지막 줄)을
-  // 기준으로 삼아야 참고 이미지처럼 묶음 바로 아래에 촘촘하게 붙는다
-  const anchor = slogan || title;
-  if (!anchor) return;
-  const topBarRect = topBarEl.getBoundingClientRect();
-  const groupBottom = anchor.getBoundingClientRect().bottom;
-  const top = groupBottom - topBarRect.top + GAP;
-  tagline.style.top = top + 'px';
-  void document.body.offsetWidth;
-  const taglineRect = tagline.getBoundingClientRect();
-  const curPaddingBottom = parseFloat(getComputedStyle(topBarEl).paddingBottom) || 0;
-  const contentBottomNoPadBottom = topBarRect.height - curPaddingBottom;
-  const neededPaddingBottom = (taglineRect.bottom - topBarRect.top) - contentBottomNoPadBottom + GAP;
-  topBarEl.style.paddingBottom = Math.max(neededPaddingBottom, curPaddingBottom) + 'px';
   syncTopBarHeight();
 }
-window.addEventListener('resize', ()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); positionTopBarTagline(); });
 // [Phase] 회사소개의 "🏢 (주)더골프트렌드 · 대표이사 오선영 · Since 2023" 배지도 위와 동일한 방식으로
 // 좁은 화면에서 줄바꿈되지 않고 한 줄 안에 들어가도록 자동으로 맞춘다(고정 문구라 관리자 설정에
 // 따라 달라지지 않지만, 화면 폭에 따른 실측 기준 축소는 동일하게 필요)
@@ -5908,7 +5770,6 @@ function renderAdminTheme(){
     <div class="admin-identity-section">
       <h5>탑바 색상 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(맨 위 로고·타이틀 바)</span></h5>
       ${colorRow('배경 색상','topBarBg','#0e1522')}
-      ${colorRow('글자 색상','topBarFont','#F7F5F0')}
     </div>
     <div class="admin-identity-section">
       <h5>내비게이션바 색상 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(AI추천·여행지 등 메뉴 바)</span></h5>

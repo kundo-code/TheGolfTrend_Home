@@ -1844,15 +1844,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      fitTopBarTagline)가 실측 폭 기준으로 한 번 더 줄여 항상 가로 스크롤/줄바꿈 없이 데스크톱처럼
      한 줄 안에 온전히 들어가게 한다 */
   /* [수정] 로고는 좌측 끝이 고정되도록 120% 확대(transform:scale, origin:left)하고, 타이틀은
-     위쪽 끝이 고정되도록 110% 확대(origin:top)한다. 로고·타이틀·슬로건·구분선 묶음 전체는 JS
-     (applyTopBarGroupOffset)가 태그라인 한 줄 높이만큼 아래로 내려 상단에 여유 공간을 만든다
-     — topbar 위쪽 padding을 그만큼 늘리는 방식이라 태그라인과의 기존 간격은 그대로 유지된다.
+     위쪽 끝이 고정되도록 120% 확대(origin:top)한다. 로고·타이틀·슬로건·구분선 묶음 전체는 위쪽에
+     최대한 붙이고(추가 padding-top 없음), 태그라인은 JS(applyTopBarGroupOffset)가 태그라인 두
+     줄 높이만큼 위로 당겨 묶음과의 간격을 좁힌다.
      태그라인(정직/신속/공감...)은 로고 좌측 끝 줄에 맞춰 정렬하기 위해 텍스트 블록 밖으로 빼서
      .top-bar 자신을 기준으로 절대 위치시키고, 그만큼 아래쪽에 여유 공간을 확보한다 */
   .top-bar{padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:34px;gap:8px;flex-direction:row;align-items:center}
   .top-bar-logo{height:34.5px;transform:scale(1.2);transform-origin:left center}
   .top-bar-text{gap:1px;flex:1;min-width:0}
-  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;transform:scale(1.10);transform-origin:left top}
+  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;transform:scale(1.20);transform-origin:left top}
   .top-bar-slogan{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;letter-spacing:.02em}
   .top-bar-tagline{font-size:.79rem;white-space:nowrap;overflow:hidden;letter-spacing:0;margin-top:0;position:absolute;left:14px;right:14px;bottom:8px;max-width:none}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
@@ -5707,27 +5707,41 @@ function fitTopBarTagline(){
     tl.style.fontSize=(current*(available/natural)*0.98)+'px';
   }
 }
-// [수정] 로고·타이틀·슬로건·구분선 묶음 전체를 태그라인 한 줄 높이만큼 아래로 내려 상단에 여유
-// 공간을 만든다 — topbar 위쪽 padding을 그만큼 늘리는 방식이라 묶음이 통째로 아래로 밀려나고,
-// 태그라인(bottom 기준 절대 위치)도 topbar 박스가 늘어난 만큼 함께 내려가 기존 간격은 그대로
-// 유지된다. 태그라인 폰트 크기가 화면 폭·문구 길이에 따라 달라지므로(fitTopBarTagline) 한 줄
-// 높이를 고정값이 아니라 실측으로 구한다
+// [수정] 로고·타이틀·슬로건·구분선 묶음은 topbar 위쪽에 최대한 붙이고(padding-top 오프셋 없음),
+// 태그라인만 JS로 태그라인 두 줄 높이만큼 위로 당겨(bottom 값을 늘려) 묶음과의 간격을 좁힌다.
+// 태그라인 폰트 크기가 화면 폭·문구 길이에 따라 달라지므로(fitTopBarTagline) 한 줄 높이를
+// 고정값이 아니라 실측으로 구해 반복 호출해도 항상 같은 결과가 나오도록 한다. 화면이 넓어
+// 태그라인 폰트가 커지는 구간에서는 "두 줄 높이"가 실제 간격보다 커져 묶음 텍스트와 겹칠 수
+// 있으므로, 묶음의 실제 아래쪽 끝보다 위로는 올라가지 않도록 최소 여백을 두고 제한한다
 function applyTopBarGroupOffset(){
   const tagline=document.getElementById('topBarTagline');
   const topBarEl=document.querySelector('.top-bar');
+  const logo=document.getElementById('topBarLogo');
+  const divider=document.querySelector('.top-bar-divider');
+  const title=document.getElementById('topBarTitle');
+  const slogan=document.getElementById('topBarSlogan');
   if (!tagline||!topBarEl) return;
+  topBarEl.style.paddingTop='';
   if (window.innerWidth>780){
-    topBarEl.style.paddingTop='';
+    tagline.style.bottom='';
     return;
   }
-  // 매 호출마다 CSS 기본값에서 다시 시작해, 문구 변경 등으로 반복 호출되어도 예전에 늘려둔 값이
-  // 누적되어 계속 커지지 않게 한다
-  topBarEl.style.paddingTop='';
+  // 매 호출마다 CSS 기본값(bottom:8px)에서 다시 시작해, 문구 변경 등으로 반복 호출되어도 예전에
+  // 당겨둔 값이 누적되어 계속 올라가지 않게 한다
+  tagline.style.bottom='';
   void document.body.offsetWidth;
   const taglineLH = parseFloat(getComputedStyle(tagline).lineHeight) || parseFloat(getComputedStyle(tagline).fontSize)*1.5;
-  const basePT = parseFloat(getComputedStyle(topBarEl).paddingTop) || 0;
-  // [수정] 태그라인 한 줄 높이만큼 더 내려달라는 추가 요청으로, 총 2줄 높이만큼 아래로 이동
-  topBarEl.style.paddingTop = (basePT + taglineLH*2) + 'px';
+  const baseBottom = parseFloat(getComputedStyle(tagline).bottom) || 0;
+  let targetBottom = baseBottom + taglineLH*2;
+  const groupEls=[logo,divider,title,slogan].filter(Boolean);
+  if (groupEls.length){
+    const groupBottom = Math.max(...groupEls.map(el=>el.getBoundingClientRect().bottom));
+    const topBarRect = topBarEl.getBoundingClientRect();
+    const minGap = 6; // 묶음과 태그라인 사이 최소 여백
+    const maxBottom = topBarRect.bottom - (groupBottom + minGap) - tagline.getBoundingClientRect().height;
+    targetBottom = Math.min(targetBottom, Math.max(maxBottom, baseBottom));
+  }
+  tagline.style.bottom = targetBottom + 'px';
   syncTopBarHeight();
 }
 window.addEventListener('resize', ()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); applyTopBarGroupOffset(); });

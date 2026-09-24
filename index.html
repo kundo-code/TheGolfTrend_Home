@@ -158,9 +158,6 @@ header{padding-top:var(--topbar-h,108px)}
 .nav ul{display:flex;list-style:none;gap:30px;font-size:.92rem;font-weight:500}
 .nav ul a{color:rgba(10,23,48,.75);transition:color .2s}
 .nav ul a:hover{color:var(--gold-deep)}
-.nav-right{display:flex;align-items:center;gap:12px}
-.cta{background:var(--gold);color:#fff;font-weight:600;font-size:.9rem;padding:10px 22px;border-radius:100px;transition:all .25s;border:1px solid rgba(221,179,103,.5)}
-.cta:hover{background:var(--gold-deep);color:#fff;transform:translateY(-1px)}
 .menu-btn{display:none;background:transparent;border:none;color:var(--pine-deep);font-size:1.4rem;cursor:pointer}
 
 /* HERO */
@@ -562,7 +559,9 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 원형 박스가 48px일 때 pd-nav-bar 좌측 여백(10px)·위아래 여백(4px)과 비교해 상대적으로
    커 보여 균형이 맞지 않던 것을, 40px로 축소해 여백과 더 조화롭게 맞춘다. 볼드 처리 + 크기 2배
    (1.3rem→2.6rem)는 그대로 유지(글자 자체의 실제 잉크 면적은 작아 40px 박스에서도 잘리지 않음) */
-.pd-nav-arrow{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:2.6rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
+/* [수정] 웹 전용 대형 좌/우 버튼(.pd-side-nav)으로 대체되어 이 상단 박스 안의 작은 화살표는
+   더 이상 노출하지 않는다(모바일은 원래부터 숨겨져 있었고, 이제 데스크톱에서도 제거) */
+.pd-nav-arrow{display:none}
 /* [수정] 방향 기호(‹›)가 폰트 자체의 세로 메트릭 때문에 박스 정중앙보다 살짝 아래로 치우쳐
    보이던 것을 실측(캔버스 픽셀 잉크 영역 측정) 후 보정 — 위로 3px, 좌우는 글자 모양이 서로 대칭
    (거울상)이라 잉크가 쏠리는 방향도 반대라서 각각 다르게 보정한다 */
@@ -632,20 +631,29 @@ section.block{padding:100px 24px;position:relative}
   transition:background .2s,color .2s,transform .2s,box-shadow .2s;
   z-index:15;
 }
-.pd-side-nav.prev{left:24px}
-.pd-side-nav.next{right:24px}
+/* [수정] 화면 가장자리(24px)가 아니라 상품 상세 카드(.pd-container, max-width:560px, 가운데 정렬)
+   가장자리에서 40px 떨어진 위치로 이동 — 뷰포트 폭과 무관하게 카드 기준으로 항상 같은 간격을
+   유지한다: 카드 가장자리(50% ± 280px)에서 버튼 너비(64px)+여백(40px)만큼 바깥쪽 */
+.pd-side-nav.prev{left:calc(50% - 384px)}
+.pd-side-nav.next{right:calc(50% - 384px)}
 /* [수정] 이 크기(64px 박스·2.2rem 글자)에서 실측한 결과 좌우는 이미 중앙이지만 위아래는 살짝
    아래로 치우쳐 보여(캔버스 픽셀 잉크 영역 실측) 위로 소폭 보정한다 */
 .pd-side-nav .pd-nav-arrow-glyph{display:inline-block;transform:translateY(-1.75px)}
 .pd-side-nav:hover{background:var(--gold);color:var(--pine-deep);box-shadow:0 10px 28px rgba(221,179,103,.4)}
 .pd-side-nav:active{transform:translateY(-50%) scale(.9)}
 #pdOverlay.pd-single .pd-side-nav{visibility:hidden}
+/* [수정] "미국령-괌/사이판"은 웹에서는 한 줄 그대로 90% 크기로, 모바일에서는 "미국령-괌"/"/ 사이판"
+   두 줄로 나눠 표기 — showPdRegionTransition()이 두 형태(.pd-rtl-oneline/.pd-rtl-twoline)를 모두
+   DOM에 넣어두고 이 미디어쿼리로 노출 형태만 전환한다 */
+.pd-rtl-oneline{font-size:90%}
+.pd-rtl-twoline{display:none}
 @media(max-width:780px){
-  .pd-nav-arrow{display:none}
   .pd-side-nav{display:none}
-  /* [수정] "말레이시아"·"미국령-괌/사이판"은 글자 수가 많아 다른 국가명보다 유독 커 보이므로
+  .pd-rtl-oneline{display:none}
+  .pd-rtl-twoline{display:inline}
+  /* [수정] "말레이시아"는 글자 수가 많아 다른 국가명보다 유독 커 보이므로
      모바일에서만 85% 크기로 축소(clamp 각 값에 0.85 적용) — showPdRegionTransition()이
-     해당 두 국가일 때만 .pd-rtl-long 클래스를 붙인다 */
+     말레이시아일 때만 .pd-rtl-long 클래스를 붙인다 */
   .pd-region-trans-label.pd-rtl-long{font-size:clamp(2.992rem,9.52vw,4.896rem)}
   /* [수정] 중앙 정렬에서 좌측 정렬로 변경.
      [수정] 상품 타이틀(.pd-top-title h2, 자신의 padding-left 20px)의 텍스트 시작 위치와 줄을
@@ -1904,20 +1912,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .nav ul li a:hover{color:var(--pine-deep);background:var(--gold)}
 .nav ul li a:active{color:var(--pine-deep);background:var(--gold);box-shadow:var(--btn-press)}
-.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.nav .cta{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:8px 18px;background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
-  border-radius:100px;font-size:.82rem;font-weight:700;letter-spacing:.04em;
-  transition:all .2s;white-space:nowrap;box-shadow:var(--btn-elevate),var(--btn-shine);
-}
-.nav .cta:hover{background:var(--btn-highlight),#CA8E3F;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
-.nav .cta:active{background:#CA8E3F;transform:translateY(1px);box-shadow:var(--btn-press)}
-.nav .cta-icon{font-size:1em;line-height:1}
 .nav .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
-/* [Phase] 데스크톱에서는 상단 nav의 "티타임 상담" pill 버튼을 그대로 쓰므로 숨김 — 780px 이하에서만
-   관리자 패널 아이콘 바로 아래(화면 우측 끝)에 뜨는 원형 "전화하기" 버튼으로 노출(아래 미디어 쿼리) */
+/* [수정] "티타임 상담"·"전화하기"는 이제 웹에서 탑바 우측 하단 아이콘 행(아래 @media(min-width:781px))
+   으로, 모바일에서는 기존처럼 메뉴바 아래 아이콘으로 노출된다 — 기본값은 숨김 */
 .mobile-call-fab{display:none}
+.tb-booking-fab{display:none}
 @media(max-width:780px){
   /* [Phase] 햄버거로 접지 않고 메뉴 항목을 바에 그대로(가로 스크롤 가능하게) 노출 — 다 안 들어가면
      좌우로 살짝 스크롤해서 볼 수 있다. "티타임 상담"은 상단 바에서 완전히 빼고 "전화하기"로 바꿔
@@ -1930,7 +1929,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav ul::-webkit-scrollbar{display:none}
   .nav ul li{flex-shrink:0}
   .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
-  .nav-right{display:none}
   .nav .menu-btn{display:none}
   /* [수정] 두 버튼을 메뉴바(nav) 바로 아래 우측에 두고, 스크롤 중 메뉴바가 실제로 있는 위치를
      그대로 따라다니도록 한다 — 탑바 높이(--topbar-h)만으로는 모바일에서 스크롤 시 탑바가
@@ -1953,6 +1951,31 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     transition:transform .2s;opacity:.7;
   }
   .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08)}
+}
+/* [수정] 웹(데스크톱)에서만 "티타임 상담"·"전화하기"·"관리자" 3개를 탑바 우측 끝쪽 하단에 한 줄로
+   배치한다 — 탑바 실측 높이(--topbar-h)를 기준으로 탑바의 자체 아래쪽 여백(18px)만큼 위에
+   맞춰 로고 영역과 겹치지 않게 하고, 버튼 박스 크기(56px)는 기존 관리자 아이콘 그대로 유지하되
+   박스 안 아이콘 글자 크기만 가독성을 위해 최대한 키운다(1.4rem→2.2rem) */
+@media(min-width:781px){
+  .tb-booking-fab,.mobile-call-fab{display:flex;align-items:center;justify-content:center}
+  .tb-booking-fab,.mobile-call-fab,.admin-fab{
+    position:fixed;bottom:auto;
+    top:calc(var(--topbar-h,108px) - 56px - 18px);
+    width:56px;height:56px;border-radius:50%;
+    font-size:2.2rem;box-shadow:0 8px 24px rgba(10,23,48,.25);
+    transition:transform .2s;
+    /* [버그 수정] 탑바(.top-bar) 자신의 z-index(201)가 이 버튼들의 기존 z-index(99)보다 높아,
+       탑바 영역 안으로 이동해 온 이 버튼들이 탑바 배경에 가려 보이지 않던 문제 — 탑바보다 위로 */
+    z-index:202;
+  }
+  .admin-fab{right:40px}
+  .mobile-call-fab{right:calc(40px + 68px);opacity:1}
+  .tb-booking-fab{
+    right:calc(40px + 136px);text-decoration:none;
+    background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
+    box-shadow:var(--btn-elevate),var(--btn-shine);
+  }
+  .tb-booking-fab:hover{transform:scale(1.08)}
 }
 
 /* ═══════════════ ABOUT BANNER ═══════════════ */
@@ -3073,9 +3096,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <li><a href="#booking">예약 문의</a></li>
     <li><a href="#about">회사 소개</a></li>
   </ul>
-  <div class="nav-right">
-    <a href="#booking" class="cta" aria-label="티타임 상담"><span class="cta-icon" aria-hidden="true">⛳</span><span class="cta-label">티타임 상담</span></a>
-  </div>
 </nav>
 
 <!-- [Phase] 전체 공지 팝업 — 활성화되고 노출 기간/시간에 해당하는 공지를 최신순 최대 5개까지
@@ -3708,11 +3728,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <button type="button" class="pd-side-nav next" onclick="pdMove(1)" aria-label="다음 상품"><span class="pd-nav-arrow-glyph">›</span></button>
 </div>
 
-<!-- [Phase] 모바일 전용 "전화하기" 플로팅 버튼 — 화면 우측 끝(관리자 패널 아이콘과 같은 x축)에
-     정렬하고, 관리자 패널 아이콘(.admin-fab)은 바로 위에 같은 크기로 쌓아 눈에 더 잘 띄고
-     엄지로 바로 누르기 쉽게 한다. 데스크톱에서는 기존 nav 안 "티타임 상담" pill 버튼을 그대로
-     쓰므로 숨김(CSS: @media 780px에서만 노출). 클릭 시 동작은 하단 "전화하기" 버튼과 동일하게
-     확인 팝업 후 전화 연결(callHotline) -->
+<!-- [수정] 웹(데스크톱)에서는 탑바 우측 끝 하단에 "티타임 상담"·"전화하기"·"관리자" 3개 아이콘
+     버튼을 한 줄로 배치한다(기존 nav 안 "티타임 상담" pill 버튼은 대체되어 숨김). 모바일에서는
+     기존처럼 관리자·전화하기 두 아이콘만 메뉴바 아래 세로로 쌓인다. position:fixed라 DOM 위치와
+     무관하게 CSS만으로 두 레이아웃을 전환할 수 있어 실제 배치는 아래 미디어쿼리에서 결정한다 -->
+<a href="#booking" class="tb-booking-fab" aria-label="티타임 상담" title="티타임 상담">⛳</a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기" title="전화하기">📞</button>
 <!-- ADMIN -->
 <button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기" title="관리자 패널">⚙️</button>
@@ -8152,10 +8172,16 @@ function showPdRegionTransition(cat, onDone){
   if (!trans || !cat){ onDone(); return; }
   if (bg) bg.style.backgroundImage=`url('${getImage(cat.id)}')`;
   if (label){
-    label.textContent=cat.ko;
-    // [수정] "말레이시아"·"미국령-괌/사이판"은 글자 수가 많아 모바일 화면 폭에서 다른 국가명보다
-    // 유독 커 보이므로, 이 두 국가에 한해 모바일에서만 텍스트를 85% 크기로 축소한다
-    label.classList.toggle('pd-rtl-long', cat.id==='malaysia' || cat.id==='guam');
+    // [수정] "미국령-괌/사이판"은 모바일에서 "미국령-괌"·"/ 사이판" 두 줄로 나눠 표기하고,
+    // 웹에서는 한 줄 그대로 90% 크기로 축소한다(둘 다 DOM에 넣어두고 미디어쿼리로 전환).
+    // "말레이시아"는 기존대로 모바일에서만 85% 축소를 유지한다
+    if (cat.id==='guam'){
+      label.innerHTML = '<span class="pd-rtl-oneline">미국령-괌/사이판</span><span class="pd-rtl-twoline">미국령-괌<br>/ 사이판</span>';
+      label.classList.remove('pd-rtl-long');
+    } else {
+      label.textContent=cat.ko;
+      label.classList.toggle('pd-rtl-long', cat.id==='malaysia');
+    }
   }
   const pdOverlay=document.getElementById('pdOverlay');
   if (pdOverlay) pdOverlay.style.overflow='hidden';

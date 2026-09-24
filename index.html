@@ -1844,17 +1844,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      fitTopBarTagline)가 실측 폭 기준으로 한 번 더 줄여 항상 가로 스크롤/줄바꿈 없이 데스크톱처럼
      한 줄 안에 온전히 들어가게 한다 */
   /* [수정] 로고는 좌측 끝이 고정되도록 120% 확대(transform:scale, origin:left)하고, 타이틀은
-     위쪽 끝이 고정되도록 120% 확대(origin:top)한다. 로고·타이틀·슬로건·구분선 묶음 전체는 위쪽에
-     최대한 붙이고(추가 padding-top 없음), 태그라인은 JS(applyTopBarGroupOffset)가 태그라인 두
-     줄 높이만큼 위로 당겨 묶음과의 간격을 좁힌다.
+     위쪽 끝이 고정되도록 120% 확대(origin:top)한다. 첨부 참고 이미지와 동일한 배치가 되도록
+     로고·타이틀·슬로건·구분선 묶음 전체를 top-bar 위쪽에서 일정 간격 아래로 내리고, 태그라인은
+     JS(positionTopBarTagline)가 묶음 바로 아래에 작은 고정 간격으로 붙여 배치한다.
      태그라인(정직/신속/공감...)은 로고 좌측 끝 줄에 맞춰 정렬하기 위해 텍스트 블록 밖으로 빼서
      .top-bar 자신을 기준으로 절대 위치시키고, 그만큼 아래쪽에 여유 공간을 확보한다 */
-  .top-bar{padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:34px;gap:8px;flex-direction:row;align-items:center}
+  .top-bar{padding:10px 14px;padding-top:calc(37px + env(safe-area-inset-top));padding-bottom:34px;gap:8px;flex-direction:row;align-items:center}
   .top-bar-logo{height:34.5px;transform:scale(1.2);transform-origin:left center}
   .top-bar-text{gap:1px;flex:1;min-width:0}
   .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;transform:scale(1.20);transform-origin:left top}
   .top-bar-slogan{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;letter-spacing:.02em}
-  .top-bar-tagline{font-size:.79rem;white-space:nowrap;overflow:hidden;letter-spacing:0;margin-top:0;position:absolute;left:14px;right:14px;bottom:8px;max-width:none}
+  .top-bar-tagline{font-size:.79rem;white-space:nowrap;overflow:hidden;letter-spacing:0;margin-top:0;position:absolute;left:14px;right:14px;top:0;max-width:none}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
      [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서
@@ -5664,7 +5664,7 @@ function renderTopBar(){
   const tl=document.getElementById('topBarTagline');
   if(tl)tl.textContent=getTagline();
   syncTopBarHeight();
-  requestAnimationFrame(()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); applyTopBarGroupOffset(); });
+  requestAnimationFrame(()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); positionTopBarTagline(); });
 }
 // [Phase] 모바일에서는 로고 폭·문구 길이가 관리자 설정에 따라 달라질 수 있어, 고정된 clamp/font-size
 // 값만으로는 타이틀·태그라인이 가로로 넘치거나(태그라인) 줄바꿈되어(타이틀) 데스크톱과 다르게 보일 수
@@ -5707,44 +5707,40 @@ function fitTopBarTagline(){
     tl.style.fontSize=(current*(available/natural)*0.98)+'px';
   }
 }
-// [수정] 로고·타이틀·슬로건·구분선 묶음은 topbar 위쪽에 최대한 붙이고(padding-top 오프셋 없음),
-// 태그라인만 JS로 태그라인 두 줄 높이만큼 위로 당겨(bottom 값을 늘려) 묶음과의 간격을 좁힌다.
-// 태그라인 폰트 크기가 화면 폭·문구 길이에 따라 달라지므로(fitTopBarTagline) 한 줄 높이를
-// 고정값이 아니라 실측으로 구해 반복 호출해도 항상 같은 결과가 나오도록 한다. 화면이 넓어
-// 태그라인 폰트가 커지는 구간에서는 "두 줄 높이"가 실제 간격보다 커져 묶음 텍스트와 겹칠 수
-// 있으므로, 묶음의 실제 아래쪽 끝보다 위로는 올라가지 않도록 최소 여백을 두고 제한한다
-function applyTopBarGroupOffset(){
+// 참고 이미지와 동일하게, 태그라인을 로고·타이틀·슬로건·구분선 묶음 바로 아래에 작은 고정
+// 간격(GAP)으로 붙여 배치한다. 묶음의 실측 아래쪽 끝을 기준으로 태그라인의 top 위치를 구하고,
+// top-bar의 padding-bottom을 태그라인이 다 들어갈 만큼 늘려 아래쪽 nav/본문과 겹치지 않게 한다.
+// top 계산은 매번 묶음의 실측값에서 새로 구하므로 반복 호출해도 값이 누적되지 않는다(멱등)
+function positionTopBarTagline(){
+  const GAP = 7;
   const tagline=document.getElementById('topBarTagline');
   const topBarEl=document.querySelector('.top-bar');
-  const logo=document.getElementById('topBarLogo');
-  const divider=document.querySelector('.top-bar-divider');
   const title=document.getElementById('topBarTitle');
   const slogan=document.getElementById('topBarSlogan');
   if (!tagline||!topBarEl) return;
-  topBarEl.style.paddingTop='';
   if (window.innerWidth>780){
-    tagline.style.bottom='';
+    tagline.style.top='';
+    topBarEl.style.paddingBottom='';
     return;
   }
-  // 매 호출마다 CSS 기본값(bottom:8px)에서 다시 시작해, 문구 변경 등으로 반복 호출되어도 예전에
-  // 당겨둔 값이 누적되어 계속 올라가지 않게 한다
-  tagline.style.bottom='';
+  // 로고는 transform:scale로 확대되면서 실제 보이는 그림보다 박스 아래쪽에 여백이 생겨, 이를
+  // 기준으로 삼으면 태그라인이 필요 이상으로 아래로 밀린다. 슬로건(텍스트 블록의 마지막 줄)을
+  // 기준으로 삼아야 참고 이미지처럼 묶음 바로 아래에 촘촘하게 붙는다
+  const anchor = slogan || title;
+  if (!anchor) return;
+  const topBarRect = topBarEl.getBoundingClientRect();
+  const groupBottom = anchor.getBoundingClientRect().bottom;
+  const top = groupBottom - topBarRect.top + GAP;
+  tagline.style.top = top + 'px';
   void document.body.offsetWidth;
-  const taglineLH = parseFloat(getComputedStyle(tagline).lineHeight) || parseFloat(getComputedStyle(tagline).fontSize)*1.5;
-  const baseBottom = parseFloat(getComputedStyle(tagline).bottom) || 0;
-  let targetBottom = baseBottom + taglineLH*2;
-  const groupEls=[logo,divider,title,slogan].filter(Boolean);
-  if (groupEls.length){
-    const groupBottom = Math.max(...groupEls.map(el=>el.getBoundingClientRect().bottom));
-    const topBarRect = topBarEl.getBoundingClientRect();
-    const minGap = 6; // 묶음과 태그라인 사이 최소 여백
-    const maxBottom = topBarRect.bottom - (groupBottom + minGap) - tagline.getBoundingClientRect().height;
-    targetBottom = Math.min(targetBottom, Math.max(maxBottom, baseBottom));
-  }
-  tagline.style.bottom = targetBottom + 'px';
+  const taglineRect = tagline.getBoundingClientRect();
+  const curPaddingBottom = parseFloat(getComputedStyle(topBarEl).paddingBottom) || 0;
+  const contentBottomNoPadBottom = topBarRect.height - curPaddingBottom;
+  const neededPaddingBottom = (taglineRect.bottom - topBarRect.top) - contentBottomNoPadBottom + GAP;
+  topBarEl.style.paddingBottom = Math.max(neededPaddingBottom, curPaddingBottom) + 'px';
   syncTopBarHeight();
 }
-window.addEventListener('resize', ()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); applyTopBarGroupOffset(); });
+window.addEventListener('resize', ()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); positionTopBarTagline(); });
 // [Phase] 회사소개의 "🏢 (주)더골프트렌드 · 대표이사 오선영 · Since 2023" 배지도 위와 동일한 방식으로
 // 좁은 화면에서 줄바꿈되지 않고 한 줄 안에 들어가도록 자동으로 맞춘다(고정 문구라 관리자 설정에
 // 따라 달라지지 않지만, 화면 폭에 따른 실측 기준 축소는 동일하게 필요)

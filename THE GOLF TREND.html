@@ -173,8 +173,9 @@ header{padding-top:var(--topbar-h,108px)}
 .hv-item+.hv-item::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:1px;background:rgba(221,179,103,.3)}
 .hv-icon{width:28px;height:28px;color:var(--gold);margin:0 auto 10px;display:block;filter:drop-shadow(0 2px 6px rgba(3,13,38,.5))}
 .hv-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.2rem;color:#fff;font-weight:500;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
-.hv-en{font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.5);margin-top:2px;margin-bottom:8px}
-.hv-desc{font-size:.86rem;color:rgba(247,245,240,.75);line-height:1.4}
+/* [수정] 영문 서브타이틀·설명 문구도 흰색 + 그림자 처리로 통일해 어두운 배경 위에서 가독성을 높임 */
+.hv-en{font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.5);margin-top:2px;margin-bottom:8px}
+.hv-desc{font-size:.86rem;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.45);line-height:1.4}
 .hero h1{font-size:clamp(2.6rem,5.5vw,4.6rem);color:#fff;font-weight:300;margin-bottom:40px}
 .hero h1 em{font-style:italic;font-weight:400;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
 .hero h1 .line{display:block;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4)}
@@ -260,11 +261,16 @@ section.block{padding:100px 24px;position:relative}
 .dest-region-divider{display:flex;align-items:center;gap:14px;margin:40px 0;color:var(--gold)}
 .dest-region-divider::before,.dest-region-divider::after{content:'';flex:1;height:1px;background:rgba(120,120,140,.25)}
 .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.cat-card{position:relative;aspect-ratio:3/2;border-radius:24px;overflow:hidden;cursor:pointer;border:1px solid var(--glass-border-soft);box-shadow:0 10px 32px rgba(0,0,0,.28);transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
-.cat-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.cat-card{position:relative;aspect-ratio:3/2;border-radius:24px;overflow:hidden;cursor:pointer;border:1px solid var(--glass-border-soft);box-shadow:0 10px 32px rgba(0,0,0,.28);transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .3s;touch-action:manipulation}
 .cat-card.open{outline:3px solid var(--gold);outline-offset:-3px}
 .cat-card .bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
-.cat-card:hover .bg{transform:scale(1.06)}
+/* [수정] 터치스크린에서는 탭 시 :hover 상태가 그대로 "고정"되어 이미지가 확대된 채로 남아있고
+   진입하려면 한 번 더 눌러야 하는 것처럼 느껴지던 문제 — 실제 마우스로 hover 가능한 기기에서만
+   확대 효과가 적용되도록 제한해, 터치 기기에서는 탭 즉시 selectCategory()가 실행되게 한다 */
+@media(hover:hover){
+  .cat-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  .cat-card:hover .bg{transform:scale(1.06)}
+}
 .cat-card .bg-korea{background-size:300% 200%}
 .cat-card::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.85) 100%)}
 .cat-card .content{position:absolute;inset:0;z-index:2;padding:24px;display:flex;flex-direction:column;justify-content:space-between}
@@ -281,11 +287,16 @@ section.block{padding:100px 24px;position:relative}
    구분선)는 공간이 부족하므로 감추고 지역명만 작게 남긴다 */
 @media(max-width:780px){
   .cat-grid{gap:8px}
-  .cat-card{aspect-ratio:1;border-radius:12px}
-  .cat-card .content{padding:8px}
+  /* [수정] 카드 폭이 화면 크기·열 개수에 따라 달라지므로, container query 단위(cqw)로 카드 자신의
+     실제 가로폭에 비례해 글자 크기가 정해지도록 함(예전엔 고정 .35rem이라 카드가 커져도 글자가
+     그대로라 너무 작아 보였음). cqw 미지원 브라우저를 위해 vw 기반 값을 폴백으로 먼저 선언 */
+  .cat-card{aspect-ratio:1;border-radius:12px;container-type:inline-size}
+  /* [수정] "top"(태그라인·상품수)이 숨겨지며 flex 자식이 하나만 남아 justify-content:space-between이
+     더 이상 하단 정렬로 작동하지 않던 문제를 flex-end로 명시해 지역명이 항상 좌측 하단에 오도록 함 */
+  .cat-card .content{padding:10px;justify-content:flex-end}
   .cat-card .top,.cat-card .divider{display:none}
-  .cat-card .name-ko{font-size:.35rem;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
-  .cat-card .name-en{font-size:.23rem;margin-top:2px;letter-spacing:.06em;overflow-wrap:anywhere;word-break:break-word}
+  .cat-card .name-ko{font-size:12vw;font-size:13cqw;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6);margin:0 2px;word-break:keep-all}
+  .cat-card .name-en{font-size:4.2vw;font-size:4.5cqw;margin-top:2px;letter-spacing:.06em;overflow-wrap:anywhere;word-break:break-word;margin-left:2px;margin-right:2px}
 }
 
 /* CATEGORY VIEW + PRODUCT GRID */
@@ -1130,6 +1141,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px);background:#fff}
 .link-admin-item.inactive{opacity:.55}
 .link-admin-item .name-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.link-admin-item .name-row .admin-channel-handle{flex:1;min-width:0}
+/* [추가] 삭제 버튼 + 활성화 토글을 함께 묶어 명칭 우측 끝에 나란히 정렬 */
+.link-admin-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.link-admin-del{width:22px;height:22px;flex-shrink:0;border:none;border-radius:50%;background:rgba(220,38,38,.12);color:#dc2626;font-size:.7rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.link-admin-del:hover{background:rgba(220,38,38,.22)}
 
 /* LINKS ADMIN */
 .link-admin-item{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:10px 12px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-md);margin-bottom:8px;box-shadow:var(--nm-shadow-raised-sm)}
@@ -1605,8 +1621,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   /* [Phase] "권역별·국가별 골프 여행지" 제목이 기본 clamp 최솟값(2rem)에서도 한 줄에 다 들어가지
      않고 줄바꿈되던 문제 — 이 섹션 제목만 모바일 전용으로 더 작은 최솟값을 둔다 */
   #destinations .sec-head h2{font-size:clamp(1.3rem,6.9vw,2rem)}
-  .hero-values{grid-template-columns:repeat(2,1fr);row-gap:20px}
+  /* [수정] 2열로 바뀌며 한 칸당 가로 폭이 넓어지므로, 아이콘·글자 크기도 좌우 여백만큼 커
+     보이도록 함께 키운다(기존엔 4열 데스크톱과 같은 크기라 상대적으로 작아 보였음) */
+  .hero-values{grid-template-columns:repeat(2,1fr);row-gap:24px;column-gap:12px}
+  .hv-item{padding:0 10px}
   .hv-item:nth-child(3)::before{display:none}
+  .hv-icon{width:38px;height:38px;margin-bottom:12px}
+  .hv-ko{font-size:1.5rem}
+  .hv-en{font-size:.82rem;margin-bottom:10px}
+  .hv-desc{font-size:.95rem}
   section.block{padding:70px 16px}
   /* product-grid·blog-grid는 모바일 전용 가로 슬라이딩 레이아웃(각 전용 규칙)을 따로 쓰므로
      여기서는 더 이상 1열 그리드로 강제하지 않는다. cat-grid는 항상 3열 고정 — 위쪽의 1024px
@@ -1626,10 +1649,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .pass-stub .barcode{flex:1 1 100%;width:100%}
   .booking-wrap{padding:28px 20px}
   .form-grid{grid-template-columns:1fr}
-  /* [Phase] 모바일에서도 "국내 권역"(2번째 칸)과 "해외 국가"(3번째 칸)만 좌우로 나란히 보이도록
-     2열 그리드로 바꾸고, 브랜드 소개(1번째)와 Support(4번째)는 그대로 한 줄 전체를 차지하게 한다 */
-  .foot-grid{grid-template-columns:1fr 1fr;gap:24px 20px}
-  .foot-grid>div:nth-child(1),.foot-grid>div:nth-child(4){grid-column:1/-1}
+  /* [수정] 모바일에서 "국내 권역"·"해외 국가"·"Support" 세 칸을 구분선으로 나눠 3단으로 나란히
+     배치하고(브랜드 소개만 한 줄 전체 차지), 목록 줄 간격도 기존 대비 50% 좁힌다 */
+  .foot-grid{grid-template-columns:1fr 1fr 1fr;gap:20px 0}
+  .foot-grid>div:nth-child(1){grid-column:1/-1}
+  .foot-grid>div:nth-child(2),.foot-grid>div:nth-child(3),.foot-grid>div:nth-child(4){padding:0 10px}
+  .foot-grid>div:nth-child(3),.foot-grid>div:nth-child(4){border-left:1px solid rgba(10,23,48,.14)}
+  .foot-grid ul{gap:5px}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
   /* [버그 수정] 모바일(주로 iOS Safari)에서 input의 font-size가 16px 미만이면 포커스 시 브라우저가
@@ -2506,11 +2532,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   display:grid;place-items:center;transition:all .2s;flex-shrink:0;
 }
 .plb-close:hover{ background:rgba(255,255,255,.25);transform:rotate(90deg); }
+/* [수정] 좌/우 이동 버튼을 화면 중앙이 아닌 하단으로 옮기고, 반투명은 유지하되 배경을
+   밝은 흰색에서 어두운 색으로 바꿔 밝은 이미지 위에서도 잘 보이도록 가독성을 높임 */
 .plb-prev,.plb-next{
-  position:fixed;top:50%;transform:translateY(-50%);
-  width:52px;height:52px;border-radius:50%;
-  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
-  color:#fff;font-size:1.8rem;cursor:pointer;
+  position:fixed;bottom:20px;
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.25);
+  color:#fff;font-size:1.6rem;cursor:pointer;
   display:grid;place-items:center;transition:all .2s;z-index:3100;
 }
 .plb-prev{ left:20px; }
@@ -2522,11 +2550,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   background:rgba(0,0,0,.4);padding:6px 16px;border-radius:100px;
   pointer-events:none;z-index:3100;
 }
+/* [수정] 기존 대비 90% 크기로 축소 */
 .plb-detail-link{
-  display:none;align-items:center;gap:6px;
-  height:44px;padding:0 18px;border-radius:100px;
+  display:none;align-items:center;gap:5px;
+  height:40px;padding:0 16px;border-radius:100px;
   background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
-  font-size:.9rem;font-weight:700;letter-spacing:.02em;
+  font-size:.81rem;font-weight:700;letter-spacing:.02em;
   text-decoration:none;cursor:pointer;
   box-shadow:var(--btn-elevate),var(--btn-shine);
   transition:transform .2s,background .2s,box-shadow .2s;flex-shrink:0;
@@ -3211,7 +3240,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      전체 화면 최상단에 뜨지 못하던 문제를 막기 위해 섹션 밖(body 최상위)으로 이동 -->
 <div class="pkg-lightbox" id="pkgLightbox" onclick="closePkgLightbox()">
   <div class="plb-top-actions">
-    <a class="plb-detail-link" id="plbDetailLink" href="#" target="_blank" rel="noopener" onclick="event.stopPropagation()">자세히 →</a>
+    <a class="plb-detail-link" id="plbDetailLink" href="#" onclick="event.stopPropagation()">자세히 →</a>
     <button class="plb-close" onclick="closePkgLightbox()">×</button>
   </div>
   <button class="plb-prev" onclick="pkgLbMove(-1);event.stopPropagation()">‹</button>
@@ -5128,13 +5157,15 @@ function collectSiteState(){
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides,
-    noticesOverride, themeOverride,
+    noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
   };
 }
 function applySiteState(state){
   if (!state) return;
   if (state.imageOverrides) imageOverrides = state.imageOverrides;
   if (state.imageHiddenOverrides) imageHiddenOverrides = state.imageHiddenOverrides;
+  if (state.customLinkItems) customLinkItems = Object.assign({band:[],blog:[],sns:[]}, state.customLinkItems);
+  if (state.linkHiddenOverrides) linkHiddenOverrides = state.linkHiddenOverrides;
   if (state.productOverrides) productOverrides = state.productOverrides;
   if (state.linkOverrides) linkOverrides = state.linkOverrides;
   if (state.linkActiveOverrides) linkActiveOverrides = state.linkActiveOverrides;
@@ -5162,6 +5193,8 @@ function applySiteState(state){
     localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
     localStorage.setItem(LINK_KEY, JSON.stringify(linkOverrides));
     localStorage.setItem(LINK_ACTIVE_KEY, JSON.stringify(linkActiveOverrides));
+    localStorage.setItem(CUSTOM_LINKS_KEY, JSON.stringify(customLinkItems));
+    localStorage.setItem(LINK_HIDDEN_KEY, JSON.stringify(linkHiddenOverrides));
     localStorage.setItem(LEGAL_KEY, JSON.stringify(legalOverrides));
     localStorage.setItem(LEGAL_CONTENT_KEY, JSON.stringify(legalContentOverrides));
     localStorage.setItem(CV_IMG_KEY, JSON.stringify(cvImageOverrides));
@@ -5919,7 +5952,7 @@ const LINK_DEFS = {
   blog: {
     label:'블로그',
     items:[
-      {key:'blog_naver_kr', name:'네이버 블로그 · 국내',    img:'icon-naver',   region:'국내', defaultUrl:'https://blog.naver.com/thegolftrend'},
+      {key:'blog_naver_kr', name:'네이버 블로그 · 국내 / 해외', img:'icon-naver', region:'국내', defaultUrl:'https://blog.naver.com/thegolftrend'},
       {key:'blog_naver_ov', name:'네이버 블로그 · 해외',    img:'icon-naver',   region:'해외', defaultUrl:'https://blog.naver.com/modamgolf'},
       {key:'blog_tistory',  name:'T-Story · 골프핸스토리',   img:'icon-tistory', defaultUrl:'https://golftrend.tistory.com/'}
     ]
@@ -5942,18 +5975,59 @@ const IMG_KEY='kundo_images_v1', PROD_KEY='kundo_products_v1', LINK_KEY='kundo_l
 // [Phase] 국내 권역·해외 국가 대표 이미지를 삭제(destructive)하지 않고도 화면에서만 잠시 감출 수
 // 있게 하는 상태 — true인 카테고리는 업로드한 이미지가 있어도 무시하고 기본(내장) 이미지로 표시된다
 const IMG_HIDDEN_KEY='kundo_images_hidden_v1';
-let imageOverrides={}, productOverrides={}, linkOverrides={}, linkActiveOverrides={}, imageHiddenOverrides={};
+// [추가] 브랜드 링크 그룹(밴드/블로그/SNS)에 관리자가 직접 추가한 링크 — 그룹별 배열로 저장.
+// 내장(고정) 링크는 지우지 않고 LINK_HIDDEN_KEY로 "삭제됨" 상태만 표시(언제든 복원 가능)
+const CUSTOM_LINKS_KEY='kundo_custom_links_v1', LINK_HIDDEN_KEY='kundo_link_hidden_v1';
+let imageOverrides={}, productOverrides={}, linkOverrides={}, linkActiveOverrides={}, imageHiddenOverrides={}, customLinkItems={band:[],blog:[],sns:[]}, linkHiddenOverrides={};
 try{imageOverrides=JSON.parse(localStorage.getItem(IMG_KEY)||'{}')}catch(e){}
 try{productOverrides=JSON.parse(localStorage.getItem(PROD_KEY)||'{}')}catch(e){}
 try{linkOverrides=JSON.parse(localStorage.getItem(LINK_KEY)||'{}')}catch(e){}
 try{linkActiveOverrides=JSON.parse(localStorage.getItem(LINK_ACTIVE_KEY)||'{}')}catch(e){}
 try{imageHiddenOverrides=JSON.parse(localStorage.getItem(IMG_HIDDEN_KEY)||'{}')}catch(e){}
+try{customLinkItems=Object.assign({band:[],blog:[],sns:[]}, JSON.parse(localStorage.getItem(CUSTOM_LINKS_KEY)||'{}'))}catch(e){}
+try{linkHiddenOverrides=JSON.parse(localStorage.getItem(LINK_HIDDEN_KEY)||'{}')}catch(e){}
 
 function saveImages(){try{localStorage.setItem(IMG_KEY,JSON.stringify(imageOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveImageHidden(){try{localStorage.setItem(IMG_HIDDEN_KEY,JSON.stringify(imageHiddenOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveProducts(){try{localStorage.setItem(PROD_KEY,JSON.stringify(productOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveLinks(){try{localStorage.setItem(LINK_KEY,JSON.stringify(linkOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveLinkActive(){try{localStorage.setItem(LINK_ACTIVE_KEY,JSON.stringify(linkActiveOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+function saveCustomLinks(){try{localStorage.setItem(CUSTOM_LINKS_KEY,JSON.stringify(customLinkItems))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+function saveLinkHidden(){try{localStorage.setItem(LINK_HIDDEN_KEY,JSON.stringify(linkHiddenOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+// [추가] 그룹(band/blog/sns)에 새 커스텀 링크 항목 추가
+function addCustomLink(group){
+  const id = 'custom_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  customLinkItems[group] = customLinkItems[group] || [];
+  customLinkItems[group].push({id, name:'', url:'', active:true});
+  saveCustomLinks();
+  renderAdminLinks();
+}
+function removeCustomLink(group, id){
+  if (!confirm('이 링크를 삭제하시겠습니까?')) return;
+  customLinkItems[group] = (customLinkItems[group]||[]).filter(it=>it.id!==id);
+  saveCustomLinks();
+  renderAdminLinks(); renderLinks(); renderFootSocials();
+}
+function setCustomLinkField(group, id, field, value){
+  const it = (customLinkItems[group]||[]).find(x=>x.id===id);
+  if (!it) return;
+  it[field]=value;
+  saveCustomLinks();
+  if (field!=='name') { renderLinks(); renderFootSocials(); }
+}
+// [추가] 내장(고정) 링크 항목은 삭제하지 않고 "삭제됨" 상태로 표시만 하며, 관리자 패널에서
+// 언제든 다시 복원할 수 있다(이미지 숨김 처리와 동일한 패턴)
+function hideBuiltinLink(key){
+  if (!confirm('이 링크를 목록에서 삭제하시겠습니까? (관리자 패널에서 다시 복원할 수 있습니다)')) return;
+  linkHiddenOverrides[key] = true;
+  saveLinkHidden();
+  renderAdminLinks(); renderLinks(); renderFootSocials();
+}
+function restoreBuiltinLink(key){
+  delete linkHiddenOverrides[key];
+  saveLinkHidden();
+  renderAdminLinks(); renderLinks(); renderFootSocials();
+}
 
 // 링크 활성 상태: URL이 비면 무조건 비활성. URL이 있으면 override가 false일 때만 비활성
 function isLinkActive(key){
@@ -6460,6 +6534,13 @@ function selectCategory(id, opts){
     setTimeout(()=>{
       const panel=document.getElementById(regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic');
       if (panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
+      // [추가] 권역별/국가별 타이틀로 먼저 이동하는 기존 동작은 그대로 유지하되, 사용자가 화면
+      // 전환을 인지할 수 있을 정도의 텀(900ms)을 둔 뒤 시즌별/월별 보기 타이틀이 화면 상단에
+      // 오도록 한 번 더 부드럽게 스크롤한다
+      setTimeout(()=>{
+        const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
+        if (filterRow) filterRow.scrollIntoView({behavior:'smooth',block:'start'});
+      },900);
     },100);
   }
 }
@@ -7600,12 +7681,15 @@ function renderLinks(){
     const g=LINK_DEFS[k];
     // 밴드 그룹에서는 공식 밴드(band_main)만 노출
     const items = (k==='band') ? g.items.filter(it=>it.key==='band_main') : g.items;
-    const active = items.filter(it=>isLinkActive(it.key));
-    if (!active.length) return '';
+    const active = items.filter(it=>!linkHiddenOverrides[it.key] && isLinkActive(it.key));
+    const customActive = (customLinkItems[k]||[]).filter(it=>it.url && it.active!==false);
+    if (!active.length && !customActive.length) return '';
     return `<div class="link-group">
       <h4>${g.label}</h4>
       ${active.map(it=>`<a class="link-item" href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener">
         ${linkIconEl(it)}<span class="lname">${it.name}</span><span class="larr">→</span></a>`).join('')}
+      ${customActive.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
+        <span class="lico">🔗</span><span class="lname">${escapeAttr(it.name||'링크')}</span><span class="larr">→</span></a>`).join('')}
     </div>`;
   }).join('');
   // B2C · B2B 별도 CTA 버튼 (활성 상태인 것만)
@@ -7646,10 +7730,13 @@ function updateOrganizationSameAs(){
 function renderFootSocials(){
   const c=document.getElementById('footSocials');
   const items=LINK_DEFS.sns.items.concat(LINK_DEFS.blog.items).concat(LINK_DEFS.band.items);
-  c.innerHTML=items.map(it=>{
-    if (!isLinkActive(it.key)) return '';
+  const builtinHTML = items.map(it=>{
+    if (linkHiddenOverrides[it.key] || !isLinkActive(it.key)) return '';
     return `<a href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener" title="${it.name}" class="foot-social">${linkIconEl(it)}</a>`;
   }).join('');
+  const customHTML = ['sns','blog','band'].flatMap(g=>customLinkItems[g]||[]).filter(it=>it.url && it.active!==false)
+    .map(it=>`<a href="${escapeAttr(it.url)}" target="_blank" rel="noopener" title="${escapeAttr(it.name||'링크')}" class="foot-social">🔗</a>`).join('');
+  c.innerHTML = builtinHTML + customHTML;
 }
 
 // ========== PRODUCT DETAIL MODAL ==========
@@ -9146,17 +9233,13 @@ function plbRender(){
   if(ctr) ctr.textContent=`${lbIdx+1} / ${list.length}`;
   const dl=document.getElementById('plbDetailLink');
   if(dl){
-    // [Phase 3] 상품별 "연결 링크·URL"이 있으면 그 주소로, 없으면 상품 상세 페이지로 이동
+    // [수정] 외부 "연결 링크·URL"이 있어도 항상 연결된 상품카드의 "자세히 →"와 동일하게
+    // 이 사이트 안의 상품 상세 페이지(openProductDetail)로 이동한다
     const product = (item && item.catId!=null) ? (getProducts(item.catId)[item.idx]||null) : null;
     if(product){
       dl.classList.add('show');
-      if(product.linkUrl){
-        dl.href = product.linkUrl;
-        dl.onclick=(e)=>{ e.stopPropagation(); };
-      } else {
-        dl.href = '#';
-        dl.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); closePkgLightbox(); openProductDetail(item.catId, item.idx); };
-      }
+      dl.href = '#';
+      dl.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); closePkgLightbox(); openProductDetail(item.catId, item.idx); };
     } else {
       dl.classList.remove('show');
       dl.onclick=(e)=>{ e.stopPropagation(); };
@@ -9173,6 +9256,27 @@ function closePkgLightbox(){
   if(lb) lb.classList.remove('open');
   document.body.style.overflow='';
 }
+// [추가] 라이트박스에서 손가락으로 좌/우 슬라이딩해 이전/다음 이미지로 넘길 수 있는 기능 —
+// 세로 스크롤(핀치줌 등)과 구분하기 위해 가로 이동량이 세로 이동량보다 뚜렷이 클 때만 넘긴다
+(function(){
+  let touchStartX=0, touchStartY=0, touching=false;
+  const lb=document.getElementById('pkgLightbox');
+  if (!lb) return;
+  lb.addEventListener('touchstart', e=>{
+    if (e.touches.length!==1) return;
+    touching=true;
+    touchStartX=e.touches[0].clientX; touchStartY=e.touches[0].clientY;
+  }, {passive:true});
+  lb.addEventListener('touchend', e=>{
+    if (!touching) return;
+    touching=false;
+    const dx=e.changedTouches[0].clientX-touchStartX;
+    const dy=e.changedTouches[0].clientY-touchStartY;
+    if (Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)*1.5){
+      pkgLbMove(dx<0?1:-1);
+    }
+  }, {passive:true});
+})();
 
 function switchTab(tab){
   activeAdminTab=tab;
@@ -9576,9 +9680,9 @@ function confirmProductReset(){
 
 // LINKS ADMIN
 function renderAdminLinks(){
-  document.getElementById('adminBand').innerHTML = renderLinkAdminGroup(LINK_DEFS.band.items);
-  document.getElementById('adminBlogLinks').innerHTML = renderLinkAdminGroup(LINK_DEFS.blog.items);
-  document.getElementById('adminSNS').innerHTML = renderLinkAdminGroup(LINK_DEFS.sns.items);
+  document.getElementById('adminBand').innerHTML = renderLinkAdminGroup('band');
+  document.getElementById('adminBlogLinks').innerHTML = renderLinkAdminGroup('blog');
+  document.getElementById('adminSNS').innerHTML = renderLinkAdminGroup('sns');
   renderAdminEntryExit();
 }
 function renderAdminEntryExit(){
@@ -9601,26 +9705,57 @@ function renderAdminEntryExit(){
     <button class="file-btn" style="margin-top:6px" onclick="addEntryExitCountry()">+ 국가 추가</button>
   `;
 }
-function renderLinkAdminGroup(items){
-  return items.map(it=>{
+// [수정] 내장(고정) 링크 목록 + 관리자가 그룹별로 자유롭게 추가한 커스텀 링크 목록을 함께 렌더링.
+// 삭제 버튼은 항상 활성화 토글 바로 왼쪽(=명칭의 우측 끝)에 나란히 배치된다
+function renderLinkAdminGroup(group){
+  const items = LINK_DEFS[group].items;
+  const builtinHTML = items.map(it=>{
+    const hidden = !!linkHiddenOverrides[it.key];
     const url = getLinkUrl(it.key);
     const active = isLinkActive(it.key);
     const noUrl = !url;
     return `
-    <div class="link-admin-item ${!active?'inactive':''}">
+    <div class="link-admin-item ${(!active||hidden)?'inactive':''}">
       ${linkIconEl(it)}
       <div class="content">
         <div class="name-row">
-          <div class="name">${it.name}</div>
-          <label class="toggle-switch ${noUrl?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
-            <input type="checkbox" ${active?'checked':''} ${noUrl?'disabled':''} onchange="setLinkActive('${it.key}',this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
+          <div class="name">${it.name}${hidden?' <span class="file-hint" style="color:var(--nm-danger)">(삭제됨)</span>':''}</div>
+          <div class="link-admin-actions">
+            ${hidden
+              ? `<button type="button" class="file-btn" onclick="restoreBuiltinLink('${it.key}')">복원</button>`
+              : `<button type="button" class="link-admin-del" onclick="hideBuiltinLink('${it.key}')" title="삭제">✕</button>`}
+            <label class="toggle-switch ${(noUrl||hidden)?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
+              <input type="checkbox" ${active?'checked':''} ${(noUrl||hidden)?'disabled':''} onchange="setLinkActive('${it.key}',this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
-        <input type="url" placeholder="URL 입력 (비우면 자동 비활성)" value="${escapeAttr(url)}" oninput="setLinkUrl('${it.key}',this.value);renderAdminLinks()">
+        <input type="url" placeholder="URL 입력 (비우면 자동 비활성)" value="${escapeAttr(url)}" ${hidden?'disabled':''} oninput="setLinkUrl('${it.key}',this.value);renderAdminLinks()">
       </div>
     </div>`;
   }).join('');
+  const customHTML = (customLinkItems[group]||[]).map(it=>{
+    const noUrl = !it.url;
+    const active = it.active!==false && !!it.url;
+    return `
+    <div class="link-admin-item ${!active?'inactive':''}">
+      <span class="lico">🔗</span>
+      <div class="content">
+        <div class="name-row">
+          <input type="text" class="admin-channel-handle" placeholder="표시 이름" value="${escapeAttr(it.name)}" oninput="setCustomLinkField('${group}','${it.id}','name',this.value)">
+          <div class="link-admin-actions">
+            <button type="button" class="link-admin-del" onclick="removeCustomLink('${group}','${it.id}')" title="삭제">✕</button>
+            <label class="toggle-switch ${noUrl?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
+              <input type="checkbox" ${active?'checked':''} ${noUrl?'disabled':''} onchange="setCustomLinkField('${group}','${it.id}','active',this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <input type="url" placeholder="URL 입력 (비우면 자동 비활성)" value="${escapeAttr(it.url)}" oninput="setCustomLinkField('${group}','${it.id}','url',this.value)">
+      </div>
+    </div>`;
+  }).join('');
+  return builtinHTML + customHTML + `<button type="button" class="file-btn" style="width:100%;margin-top:4px" onclick="addCustomLink('${group}')">+ 링크 추가</button>`;
 }
 
 // ========== ADVANCED PRODUCT EDITOR ==========

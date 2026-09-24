@@ -559,7 +559,11 @@ section.block{padding:100px 24px;position:relative}
    불균형해 보이던 것을, 우측 패딩만 위/아래와 비슷하게 줄여 정렬한다(좌측은 이전/다음 버튼 정렬
    기준이라 그대로 유지) */
 .pd-nav-bar{position:sticky;top:20px;z-index:10;display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:4px 4px 4px 10px;background:var(--pine-deep);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(10,23,48,.1);border-radius:100px;box-shadow:0 6px 20px rgba(10,23,48,.14)}
-.pd-nav-arrow{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:1.3rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
+/* [수정] 웹(데스크톱)에서 방향 기호를 박스 정중앙에 위치시키고, 볼드 처리 + 크기 2배(1.3rem→2.6rem)로
+   키움 — 커진 글자가 잘리지 않도록 버튼 박스도 36px→48px로 확대 */
+.pd-nav-arrow{flex-shrink:0;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:2.6rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
+.pd-nav-arrow.prev{padding-right:.06em}
+.pd-nav-arrow.next{padding-left:.06em}
 .pd-nav-arrow:hover{background:var(--gold);color:#fff;transform:scale(1.06)}
 .pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;line-height:1.25;pointer-events:none}
 /* [수정] 상단 내비게이션 박스 텍스트를 기존 대비 다시 95% 크기로 축소(1.636rem→1.554rem, .678rem→.644rem) */
@@ -1876,18 +1880,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
   .nav-right{display:none}
   .nav .menu-btn{display:none}
-  /* [Phase] "관리자 패널" 진입 아이콘(.admin-fab, 원래 56px)을 80% 크기(44.8px)로 축소하고,
-     아이콘 폰트 크기도 같은 비율로 줄인다(1.4rem→1.12rem). "전화하기" 버튼과 같은 x축(right:7.6px
-     = 아이콘 반지름 22.4px만큼 화면 우측으로 이동)에 놓이게 하고, bottom만 "전화하기" 버튼
-     바로 위(전화하기 높이 44.8 + 간격 12 = 56.8만큼 더 위)로 올린다 */
-  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;right:7.6px;bottom:calc(86.8px + env(safe-area-inset-bottom))}
-  /* [Phase] "티타임 상담" 아이콘을 "전화하기"로 바꾸면서 화면 우측 끝에서 아이콘 반지름(22.4px)
-     만큼 안쪽으로 이동시켜(right:7.6px) admin-fab과 같은 x축에 정렬 — admin-fab이 축소된
-     크기(44.8px)와 동일하게 맞추고, bottom은 admin-fab의 원래 자리(30px)를 그대로 물려받는다.
-     아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
+  /* [수정] 두 버튼을 화면 하단에서 탑바가 있는 우측 최상단으로 이동 — 절대적인 고정값 대신
+     탑바 실측 높이(--topbar-h)를 기준으로 위치시켜, 탑바 높이가 달라져도(반응형/로고 크기 조정 등)
+     두 아이콘이 항상 탑바 바로 아래에서 같은 간격을 유지하도록 한다. "관리자 패널" 진입 아이콘
+     (.admin-fab, 원래 56px)을 80% 크기(44.8px)로 축소하고, 아이콘 폰트 크기도 같은 비율로
+     줄인다(1.4rem→1.12rem). "전화하기" 버튼과 같은 x축(right:7.6px = 아이콘 반지름 22.4px만큼
+     화면 우측으로 이동)에 놓이게 한다 */
+  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;right:7.6px;bottom:auto;top:calc(var(--topbar-h,108px) + 10px)}
+  /* [수정] "전화하기" 버튼은 관리자 아이콘 바로 아래, 탑바 높이를 기준으로 한 같은 위치 체계 위에
+     10px 간격을 두고 쌓는다 — 위아래 간격도 탑바 높이(--topbar-h) 기준선 위에서 정해진다.
+     화면 우측 끝에서 아이콘 반지름(22.4px)만큼 안쪽으로 이동시켜(right:7.6px) admin-fab과
+     같은 x축에 정렬. 아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
   .mobile-call-fab{
     display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:7.6px;z-index:99;
+    position:fixed;bottom:auto;top:calc(var(--topbar-h,108px) + 10px + 44.8px + 10px);right:7.6px;z-index:99;
     width:44.8px;height:44.8px;border-radius:50%;
     background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
     font-size:1.2rem;box-shadow:var(--btn-elevate),0 8px 24px rgba(221,179,103,.35);
@@ -1944,6 +1950,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-identity-section h5{font-size:.82rem;font-weight:700;color:var(--nm-blue-deep);margin-bottom:10px;letter-spacing:.04em}
 .ai-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .ai-logo-preview{height:60px;width:auto;background:var(--nm-surface-light);border-radius:8px;padding:6px;box-shadow:var(--nm-shadow-raised-sm)}
+/* [수정] 안내 문구를 로고 이미지 아래로 이동 — 로고 교체 버튼과 같은 줄이 아니라 이미지 너비에
+   맞춰 감싸는 별도 컬럼으로 분리한다 */
+.ai-logo-col{display:flex;flex-direction:column;gap:6px;max-width:100%}
+.ai-logo-col .file-hint{margin-top:0}
 .ai-tagline{width:100%;padding:10px 12px;background:var(--nm-white);border:none;border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.85rem;line-height:1.55;font-family:'Noto Sans KR',sans-serif;min-height:60px;resize:vertical;box-shadow:var(--nm-shadow-inset)}
 .ai-tagline:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .ai-about-preview{width:100%;height:auto;max-height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block}
@@ -5769,11 +5779,13 @@ function renderAdminIdentity(){
   c.innerHTML=`
     <div class="admin-identity-section">
       <h5>로고 이미지 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(맨 위 탑바에 그대로 표시됨)</span></h5>
-      <div class="ai-row">
-        <img src="${getLogo()}" class="ai-logo-preview" alt="로고" style="transform:translate(${logoTransform.x}px,${logoTransform.y}px) scale(${logoTransform.scale/100});transform-origin:left center">
+      <div class="ai-row" style="justify-content:space-between;align-items:flex-start">
+        <div class="ai-logo-col">
+          <img src="${getLogo()}" class="ai-logo-preview" alt="로고" style="transform:translate(${logoTransform.x}px,${logoTransform.y}px) scale(${logoTransform.scale/100});transform-origin:left center">
+          <span class="file-hint">권장: 로고·타이틀·슬로건 등이 모두 포함된 완성된 브랜드 이미지, 가로로 넓은 비율의 투명 배경 PNG</span>
+        </div>
         <label class="file-btn">로고 교체<input type="file" accept="image/*" onchange="handleLogoUpload(this)"></label>
       </div>
-      <span class="file-hint">권장: 로고·타이틀·슬로건 등이 모두 포함된 완성된 브랜드 이미지, 가로로 넓은 비율의 투명 배경 PNG</span>
       <div class="ai-logo-xform">
         <label class="ai-xform-row">
           <span class="tc-label">크기</span>
@@ -6632,17 +6644,20 @@ function selectCategory(id, opts){
       // 동일하게 smoothScrollToEl 커스텀 이징을 써서 정확히 0.5초로 맞춘다
       const panel=document.getElementById(regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic');
       smoothScrollToEl(panel, 500, 0);
-      // [수정] 1단계 이동 후 1초간 머문 뒤 2단계 스크롤을 시작한다
-      setTimeout(()=>{
-        const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
-        // [수정] 두 번째 단계는 브라우저 기본 smooth 대신 약 0.3초간 이어지는(기존 2초 대비 더 빠른)
-        // 커스텀 이징 스크롤로 교체. 목표 위치도 시즌별 버튼 줄이 화면 맨 위에 딱 붙는 지점보다,
-        // 월별 박스(.period-filter-btn) 높이의 3배만큼 더 스크롤해(그 줄이 화면 위로 더 올라가도록)
-        // 상품 카드가 더 많이 보이게 한다
-        const chip=filterRow?filterRow.querySelector('.period-filter-btn'):null;
-        const chipH=chip?chip.getBoundingClientRect().height:0;
-        smoothScrollToEl(filterRow, 300, chipH*3);
-      }, 1000);
+      // [수정] 2단계 스크롤은 모바일에서만 적용. 웹(데스크톱)에서는 1단계 이동에서 멈춘다
+      if (window.innerWidth<=780){
+        // [수정] 1단계 이동 후 1초간 머문 뒤 2단계 스크롤을 시작한다
+        setTimeout(()=>{
+          const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
+          // [수정] 두 번째 단계는 브라우저 기본 smooth 대신 약 0.3초간 이어지는(기존 2초 대비 더 빠른)
+          // 커스텀 이징 스크롤로 교체. 목표 위치도 시즌별 버튼 줄이 화면 맨 위에 딱 붙는 지점보다,
+          // 월별 박스(.period-filter-btn) 높이의 3배만큼 더 스크롤해(그 줄이 화면 위로 더 올라가도록)
+          // 상품 카드가 더 많이 보이게 한다
+          const chip=filterRow?filterRow.querySelector('.period-filter-btn'):null;
+          const chipH=chip?chip.getBoundingClientRect().height:0;
+          smoothScrollToEl(filterRow, 300, chipH*3);
+        }, 1000);
+      }
     },100);
   }
 }
@@ -8150,6 +8165,72 @@ function pdTouchEnd(){
   content.addEventListener('touchmove', pdTouchMove, {passive:false});
   content.addEventListener('touchend', pdTouchEnd);
   content.addEventListener('touchcancel', pdTouchEnd);
+})();
+// [수정] 웹(데스크톱)에서도 모바일 스와이프처럼 마우스 좌/우 드래그로 이전/다음 상품 이동 가능하게 —
+// 터치와 동일한 방향 판정(directional lock) 방식을 마우스 이벤트로 그대로 옮긴다. 버튼/링크/갤러리
+// 위에서 시작한 드래그는 제외해 기존 클릭 동작을 그대로 둔다
+let pdMouse=null;
+let pdMouseWasDrag=false;
+function pdMouseDown(e){
+  if (e.button!==0) return;
+  if (e.target.closest && e.target.closest('.pd-gallery-main,a,button,input,textarea,select,label')) return;
+  pdMouse={startX:e.clientX, startY:e.clientY, dx:0, locked:false, horizontal:false};
+}
+function pdMouseMove(e){
+  if (!pdMouse) return;
+  const dx=e.clientX-pdMouse.startX, dy=e.clientY-pdMouse.startY;
+  if (!pdMouse.locked){
+    if (Math.abs(dx)<10 && Math.abs(dy)<10) return;
+    pdMouse.locked=true;
+    pdMouse.horizontal = Math.abs(dx) > Math.abs(dy)*1.3;
+    if (!pdMouse.horizontal){ pdMouse=null; return; }
+    document.body.style.userSelect='none';
+  }
+  if (!pdMouse.horizontal) return;
+  if (!pdSequence || pdSequence.length<2) return;
+  e.preventDefault();
+  pdMouseWasDrag=true;
+  pdMouse.dx=dx;
+  const content=document.getElementById('pdContent');
+  if (content){
+    content.style.transition='none';
+    content.style.transform=`translateX(${dx}px)`;
+  }
+}
+function pdMouseUp(){
+  if (!pdMouse) return;
+  const wasHorizontal=pdMouse.locked && pdMouse.horizontal, dx=pdMouse.dx;
+  const content=document.getElementById('pdContent');
+  document.body.style.userSelect='';
+  if (wasHorizontal && dx!==0 && pdSequence && pdSequence.length>1){
+    pdMove(dx<0?1:-1);
+  } else if (content){
+    content.style.transition='transform .2s ease';
+    content.style.transform='translateX(0)';
+  }
+  pdMouse=null;
+}
+// [수정] 웹상에서 마우스 가로 스크롤(트랙패드 좌/우 스와이프 등 deltaX)로도 이전/다음 상품 이동
+let pdWheelLock=false;
+function pdWheelHandler(e){
+  if (Math.abs(e.deltaX)<=Math.abs(e.deltaY)) return;
+  if (!pdSequence || pdSequence.length<2) return;
+  e.preventDefault();
+  if (pdWheelLock) return;
+  pdWheelLock=true;
+  pdMove(e.deltaX>0?1:-1);
+  setTimeout(()=>{ pdWheelLock=false; }, 450);
+}
+(function initPdMouseNav(){
+  const content=document.getElementById('pdContent');
+  if (!content) return;
+  content.addEventListener('mousedown', pdMouseDown);
+  window.addEventListener('mousemove', pdMouseMove);
+  window.addEventListener('mouseup', pdMouseUp);
+  content.addEventListener('click', e=>{
+    if (pdMouseWasDrag){ e.preventDefault(); e.stopPropagation(); pdMouseWasDrag=false; }
+  }, true);
+  content.addEventListener('wheel', pdWheelHandler, {passive:false});
 })();
 // [수정] 동영상은 별도의 "동영상 갤러리" 섹션(마우스 오버 재생)으로 분리되어, 여기서는 이미지만 다룬다
 function pdMediaList(p){

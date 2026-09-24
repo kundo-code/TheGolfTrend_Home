@@ -1806,11 +1806,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   transform:translate(var(--logo-x,0px),var(--logo-y,0px)) scale(var(--logo-scale,1));
 }
 @media(max-width:780px){
-  .top-bar{padding:14px;padding-left:8px;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
-  /* [수정] 좌측 여백(8px)을 뺀 나머지 가용 폭에 맞춰 로고 이미지(가로:세로 ≈ 4.38:1) 높이가
+  .top-bar{padding:14px;padding-left:4px;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
+  /* [수정] 좌측 여백(4px)을 뺀 나머지 가용 폭에 맞춰 로고 이미지(가로:세로 ≈ 4.38:1) 높이가
      화면 폭에 비례해 줄어들도록(clamp) 해, 320px 같은 좁은 화면에서도 로고 우측이 화면 밖으로
      밀려 잘리지 않게 한다. 372px 이상부터는 기존과 동일한 62px 유지 */
-  .top-bar-brand{height:clamp(50px, 22.83vw - 6.39px, 62px)}
+  .top-bar-brand{height:clamp(50px, 22.83vw - 5.48px, 62px)}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
      [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서
@@ -1877,16 +1877,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav-right{display:none}
   .nav .menu-btn{display:none}
   /* [Phase] "관리자 패널" 진입 아이콘(.admin-fab, 원래 56px)을 80% 크기(44.8px)로 축소하고,
-     아이콘 폰트 크기도 같은 비율로 줄인다(1.4rem→1.12rem). right는 그대로 두어(화면 우측 끝)
-     "전화하기" 버튼과 같은 x축에 놓이게 하고, bottom만 "전화하기" 버튼 바로 위(전화하기 높이
-     44.8 + 간격 12 = 56.8만큼 더 위)로 올린다 */
-  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;bottom:calc(86.8px + env(safe-area-inset-bottom))}
-  /* [Phase] "티타임 상담" 아이콘을 "전화하기"로 바꾸면서 화면 우측 끝(admin-fab과 같은 right:30px)
-     으로 정렬 — admin-fab이 축소된 크기(44.8px)와 동일하게 맞추고, bottom은 admin-fab의 원래
-     자리(30px)를 그대로 물려받는다. 아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
+     아이콘 폰트 크기도 같은 비율로 줄인다(1.4rem→1.12rem). "전화하기" 버튼과 같은 x축(right:7.6px
+     = 아이콘 반지름 22.4px만큼 화면 우측으로 이동)에 놓이게 하고, bottom만 "전화하기" 버튼
+     바로 위(전화하기 높이 44.8 + 간격 12 = 56.8만큼 더 위)로 올린다 */
+  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;right:7.6px;bottom:calc(86.8px + env(safe-area-inset-bottom))}
+  /* [Phase] "티타임 상담" 아이콘을 "전화하기"로 바꾸면서 화면 우측 끝에서 아이콘 반지름(22.4px)
+     만큼 안쪽으로 이동시켜(right:7.6px) admin-fab과 같은 x축에 정렬 — admin-fab이 축소된
+     크기(44.8px)와 동일하게 맞추고, bottom은 admin-fab의 원래 자리(30px)를 그대로 물려받는다.
+     아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
   .mobile-call-fab{
     display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:30px;z-index:99;
+    position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:7.6px;z-index:99;
     width:44.8px;height:44.8px;border-radius:50%;
     background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
     font-size:1.2rem;box-shadow:var(--btn-elevate),0 8px 24px rgba(221,179,103,.35);

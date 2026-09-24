@@ -1806,12 +1806,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   transform:translate(var(--logo-x,0px),var(--logo-y,0px)) scale(var(--logo-scale,1));
 }
 @media(max-width:780px){
-  .top-bar{padding:14px;padding-left:80px;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
-  /* [수정] 좌측 여백(80px)을 늘린 뒤로 320px처럼 아주 좁은 화면에서는 로고 이미지(가로:세로 ≈
-     4.38:1) 우측이 화면 밖으로 밀려 잘리는 문제가 있었다 — 여백은 그대로 유지하고, 그 여백을
-     뺀 나머지 가용 폭에 맞춰 로고 높이가 화면 폭에 비례해 줄어들도록(clamp) 해 항상 다 보이게
-     한다. 366px 이상(태그라인이 원래 크기로도 넉넉히 들어가는 폭)부터는 기존과 동일한 62px 유지 */
-  .top-bar-brand{height:clamp(50px, 22.83vw - 22.83px, 62px)}
+  .top-bar{padding:14px;padding-left:0;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
+  /* [수정] 좌측 여백을 0으로 되돌리면서, 여백이 넓었을 때(80px) 320px 같은 좁은 화면에서 로고가
+     잘리지 않도록 추가했던 반응형 축소(clamp)도 함께 제거 — 여백이 없으면 320px에서도 로고
+     자연 너비(271px)가 우측 padding(14px)을 빼도 화면 안에 충분히 들어가 더 이상 필요 없다 */
+  .top-bar-brand{height:62px}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
      [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서

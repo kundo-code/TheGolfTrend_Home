@@ -1619,8 +1619,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      시작되는," 한 줄이 폭을 넘겨 중간에 줄바꿈되던 문제 — 모바일 전용으로 더 작은 최솟값을 둔다 */
   .hero h1{font-size:clamp(1.6rem,7.8vw,2.4rem)}
   /* [Phase] "권역별·국가별 골프 여행지" 제목이 기본 clamp 최솟값(2rem)에서도 한 줄에 다 들어가지
-     않고 줄바꿈되던 문제 — 이 섹션 제목만 모바일 전용으로 더 작은 최솟값을 둔다 */
-  #destinations .sec-head h2{font-size:clamp(1.3rem,6.9vw,2rem)}
+     않고 줄바꿈되던 문제 — 이 섹션 제목만 모바일 전용으로 더 작은 최솟값을 둔다.
+     [수정] 요청대로라면 약 1.5자만큼 키워야 하지만, 실측 결과 390px 폭 기준 약 30px부터
+     줄바꿈이 시작되어(원래 값 26.9px 대비 여유가 크지 않음) 줄바꿈 없이 키울 수 있는
+     최대치(약 1자 분량)까지만 확대한다 */
+  #destinations .sec-head h2{font-size:clamp(1.35rem,7.3vw,2.05rem)}
   /* [수정] 2열로 바뀌며 한 칸당 가로 폭이 넓어지므로, 아이콘·글자 크기도 좌우 여백만큼 커
      보이도록 함께 키운다(기존엔 4열 데스크톱과 같은 크기라 상대적으로 작아 보였음) */
   .hero-values{grid-template-columns:repeat(2,1fr);row-gap:24px;column-gap:12px}
@@ -1650,12 +1653,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .booking-wrap{padding:28px 20px}
   .form-grid{grid-template-columns:1fr}
   /* [수정] 모바일에서 "국내 권역"·"해외 국가"·"Support" 세 칸을 구분선으로 나눠 3단으로 나란히
-     배치하고(브랜드 소개만 한 줄 전체 차지), 목록 줄 간격도 기존 대비 50% 좁힌다 */
+     배치하고(브랜드 소개만 한 줄 전체 차지), 목록 줄 간격도 기존 대비 좁힌다.
+     구분선은 칸 전체가 아니라 목록(ul)에만 둬 제목 아래부터 시작하도록 하고, 제목-목록 간격도
+     한 줄만큼 줄인다 */
   .foot-grid{grid-template-columns:1fr 1fr 1fr;gap:20px 0}
   .foot-grid>div:nth-child(1){grid-column:1/-1}
   .foot-grid>div:nth-child(2),.foot-grid>div:nth-child(3),.foot-grid>div:nth-child(4){padding:0 10px}
-  .foot-grid>div:nth-child(3),.foot-grid>div:nth-child(4){border-left:1px solid rgba(10,23,48,.14)}
-  .foot-grid ul{gap:5px}
+  .foot-grid>div:nth-child(2) h4,.foot-grid>div:nth-child(3) h4,.foot-grid>div:nth-child(4) h4{margin-bottom:8px}
+  .foot-grid>div:nth-child(3) ul,.foot-grid>div:nth-child(4) ul{border-left:1px solid rgba(10,23,48,.14);padding-left:10px}
+  .foot-grid ul{gap:2px}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
   /* [버그 수정] 모바일(주로 iOS Safari)에서 input의 font-size가 16px 미만이면 포커스 시 브라우저가
@@ -2533,9 +2539,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .plb-close:hover{ background:rgba(255,255,255,.25);transform:rotate(90deg); }
 /* [수정] 좌/우 이동 버튼을 화면 중앙이 아닌 하단으로 옮기고, 반투명은 유지하되 배경을
-   밝은 흰색에서 어두운 색으로 바꿔 밝은 이미지 위에서도 잘 보이도록 가독성을 높임 */
+   밝은 흰색에서 어두운 색으로 바꿔 밝은 이미지 위에서도 잘 보이도록 가독성을 높임.
+   [추가 수정] 버튼을 원래 위치보다 버튼 크기(48px)의 5배만큼(240px) 더 위로 올리고,
+   카운터도 버튼과 같은 높이(48px)·같은 bottom 값을 써서 가로·세로 모두 버튼 행과
+   나란히 중앙 정렬되도록 함 */
 .plb-prev,.plb-next{
-  position:fixed;bottom:20px;
+  position:fixed;bottom:260px;
   width:48px;height:48px;border-radius:50%;
   background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.25);
   color:#fff;font-size:1.6rem;cursor:pointer;
@@ -2545,9 +2554,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .plb-next{ right:20px; }
 .plb-prev:hover,.plb-next:hover{ background:rgba(221,179,103,.4);border-color:var(--gold); }
 .plb-counter{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  position:fixed;bottom:260px;left:50%;transform:translateX(-50%);
+  height:48px;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.65);font-size:.85rem;letter-spacing:.05em;
-  background:rgba(0,0,0,.4);padding:6px 16px;border-radius:100px;
+  background:rgba(0,0,0,.4);padding:0 16px;border-radius:100px;
   pointer-events:none;z-index:3100;
 }
 /* [수정] 기존 대비 90% 크기로 축소 */
@@ -5629,37 +5639,27 @@ window.addEventListener('resize', syncTopBarHeight);
 // 동기적으로 실행하던 것도 스크롤 버벅임의 원인 중 하나였다 — rAF로 프레임당 1회로 묶어(ticking
 // 플래그) 스크롤 중 반복 계산을 줄이고, .headline 요소도 매번 다시 querySelector하지 않고
 // 한 번만 찾아 캐시해둔다(헤드라인 배너는 페이지 로드 후 구조가 바뀌지 않음)
+// [수정] 예전에는 어디서든 위로 THRESHOLD(10px)만 스크롤해도 topbar가 다시 내려왔는데, 아래로
+// 계속 스크롤하는 도중 관성/미세한 역방향 흔들림만으로도 topbar가 다시 나타나 "스크롤해서
+// 내려가는데도 탑바가 같이 따라 내려온다"는 문제가 있었다. 이제 한 번 숨겨진 topbar는 오직
+// 헤드라인 배너(=메뉴바 nav가 원래 자리인 topbar 위치까지 올라오는 지점) 근처로 다시 스크롤해
+// 돌아왔을 때만 나타난다 — 페이지 중간 어디서든의 작은 위 스크롤로는 다시 나타나지 않는다
 (function initMobileTopbarScroll(){
-  const THRESHOLD = 10;
   const headlineEl = document.querySelector('.headline');
-  let lastY = window.scrollY;
-  let dirAccum = 0;
   let ticking = false;
   function update(){
     ticking = false;
     if (window.innerWidth > 780){
       document.body.classList.remove('mobile-topbar-hidden');
-      lastY = window.scrollY;
-      dirAccum = 0;
       return;
     }
     const y = window.scrollY;
-    const delta = y - lastY;
     const headlineBottom = headlineEl ? headlineEl.getBoundingClientRect().bottom + y : 0;
     if (y <= headlineBottom){
       document.body.classList.remove('mobile-topbar-hidden');
-      dirAccum = 0;
     } else {
-      dirAccum = (dirAccum === 0 || (dirAccum > 0) === (delta > 0)) ? dirAccum + delta : delta;
-      if (dirAccum <= -THRESHOLD){
-        document.body.classList.remove('mobile-topbar-hidden');
-        dirAccum = 0;
-      } else if (dirAccum >= THRESHOLD){
-        document.body.classList.add('mobile-topbar-hidden');
-        dirAccum = 0;
-      }
+      document.body.classList.add('mobile-topbar-hidden');
     }
-    lastY = y;
   }
   window.addEventListener('scroll', () => {
     if (ticking) return;
@@ -9256,24 +9256,60 @@ function closePkgLightbox(){
   if(lb) lb.classList.remove('open');
   document.body.style.overflow='';
 }
-// [추가] 라이트박스에서 손가락으로 좌/우 슬라이딩해 이전/다음 이미지로 넘길 수 있는 기능 —
-// 세로 스크롤(핀치줌 등)과 구분하기 위해 가로 이동량이 세로 이동량보다 뚜렷이 클 때만 넘긴다
+// [수정] 라이트박스에서 손가락으로 좌/우 슬라이딩해 이전/다음 이미지로 넘기는 기능 — 기존에는
+// 손을 뗄 때만 판정해 다음 이미지로 "뚝" 바뀌었는데, 이제 touchmove마다 이미지가 손가락 이동량을
+// 그대로 따라 움직여(1:1 트래킹) 드래그하는 타이밍에 맞춰 자연스럽게 넘어가는 느낌을 준다.
+// 손을 뗐을 때 일정 거리 이상 끌었으면 같은 방향으로 마저 밀려나가며 다음/이전 이미지가 반대편에서
+// 슬라이드해 들어오고, 그렇지 않으면 원래 자리로 스프링백된다
 (function(){
-  let touchStartX=0, touchStartY=0, touching=false;
+  let touchStartX=0, touchStartY=0, touching=false, dragging=false, dragDX=0;
   const lb=document.getElementById('pkgLightbox');
   if (!lb) return;
+  const getWrap = ()=>document.querySelector('.plb-img-wrap');
   lb.addEventListener('touchstart', e=>{
     if (e.touches.length!==1) return;
-    touching=true;
+    touching=true; dragging=false; dragDX=0;
     touchStartX=e.touches[0].clientX; touchStartY=e.touches[0].clientY;
+    const w=getWrap(); if (w) w.style.transition='none';
   }, {passive:true});
-  lb.addEventListener('touchend', e=>{
+  lb.addEventListener('touchmove', e=>{
+    if (!touching || e.touches.length!==1) return;
+    const dx=e.touches[0].clientX-touchStartX;
+    const dy=e.touches[0].clientY-touchStartY;
+    if (!dragging){
+      if (Math.abs(dx)<6 && Math.abs(dy)<6) return;
+      if (Math.abs(dx)<=Math.abs(dy)) return; // 세로 이동이 더 크면 스크롤/핀치줌으로 간주하고 무시
+      dragging=true;
+    }
+    dragDX=dx;
+    const w=getWrap();
+    if (w) w.style.transform=`translateX(${dx}px)`;
+  }, {passive:true});
+  lb.addEventListener('touchend', ()=>{
     if (!touching) return;
     touching=false;
-    const dx=e.changedTouches[0].clientX-touchStartX;
-    const dy=e.changedTouches[0].clientY-touchStartY;
-    if (Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)*1.5){
-      pkgLbMove(dx<0?1:-1);
+    const w=getWrap();
+    if (!dragging){ dragDX=0; return; }
+    dragging=false;
+    const dx=dragDX; dragDX=0;
+    if (!w) return;
+    w.style.transition='transform .25s cubic-bezier(.2,.7,.2,1)';
+    if (Math.abs(dx)>60){
+      const dir = dx<0 ? 1 : -1; // 왼쪽으로 끌면 다음, 오른쪽으로 끌면 이전
+      w.style.transform=`translateX(${dx<0?'-110%':'110%'})`;
+      setTimeout(()=>{
+        pkgLbMove(dir);
+        w.style.transition='none';
+        w.style.transform=`translateX(${dir>0?'110%':'-110%'})`;
+        requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            w.style.transition='transform .25s cubic-bezier(.2,.7,.2,1)';
+            w.style.transform='translateX(0)';
+          });
+        });
+      }, 220);
+    } else {
+      w.style.transform='translateX(0)';
     }
   }, {passive:true});
 })();

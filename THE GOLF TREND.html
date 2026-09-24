@@ -1843,12 +1843,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      기본 크기는 여기서 정하되, 화면이 좁거나 문구가 길어 그래도 넘칠 경우 JS(fitTopBarTitle·
      fitTopBarTagline)가 실측 폭 기준으로 한 번 더 줄여 항상 가로 스크롤/줄바꿈 없이 데스크톱처럼
      한 줄 안에 온전히 들어가게 한다 */
-  .top-bar{padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));gap:8px;flex-direction:row;align-items:center}
-  .top-bar-logo{height:34.5px}
+  /* [수정] 로고/타이틀을 각각 120%/115% 확대하되, 실제 레이아웃 높이(로고 자체 높이, 타이틀·슬로건
+     줄간격)는 전혀 바뀌지 않도록 height/font-size 대신 transform:scale로만 시각적으로 키운다(레이아웃
+     박스 크기에 영향을 주지 않으므로 --topbar-h·safe-area 계산 등 하위 로직이 그대로 안전하게 맞는다).
+     로고는 좌측 끝이 고정되도록 transform-origin을 left로, 타이틀은 위쪽 끝이 고정되도록 top으로 둔다.
+     태그라인(정직/신속/공감...)은 로고 좌측 끝 줄에 맞춰 정렬하기 위해 텍스트 블록 밖으로 빼서
+     .top-bar 자신을 기준으로 절대 위치시키고, 그만큼 아래쪽에 여유 공간을 확보한다 */
+  .top-bar{padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:34px;gap:8px;flex-direction:row;align-items:center}
+  .top-bar-logo{height:34.5px;transform:scale(1.2);transform-origin:left center}
   .top-bar-text{gap:1px;flex:1;min-width:0}
-  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
-  .top-bar-slogan{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2}
-  .top-bar-tagline{font-size:.62rem;white-space:nowrap;overflow:hidden;max-width:100%;letter-spacing:0;margin-top:0}
+  .top-bar-title{font-size:.92rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;transform:scale(1.15);transform-origin:left top}
+  .top-bar-slogan{font-size:.68rem;white-space:nowrap;overflow:hidden;max-width:100%;line-height:1.2;letter-spacing:.02em}
+  .top-bar-tagline{font-size:.79rem;white-space:nowrap;overflow:hidden;letter-spacing:0;margin-top:0;position:absolute;left:14px;right:14px;bottom:8px;max-width:none}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
      [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서

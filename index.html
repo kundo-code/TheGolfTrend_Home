@@ -1806,11 +1806,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   transform:translate(var(--logo-x,0px),var(--logo-y,0px)) scale(var(--logo-scale,1));
 }
 @media(max-width:780px){
-  .top-bar{padding:14px;padding-left:20px;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
-  /* [수정] 좌측 여백(20px)을 뺀 나머지 가용 폭에 맞춰 로고 이미지(가로:세로 ≈ 4.38:1) 높이가
+  .top-bar{padding:14px;padding-left:8px;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px}
+  /* [수정] 좌측 여백(8px)을 뺀 나머지 가용 폭에 맞춰 로고 이미지(가로:세로 ≈ 4.38:1) 높이가
      화면 폭에 비례해 줄어들도록(clamp) 해, 320px 같은 좁은 화면에서도 로고 우측이 화면 밖으로
      밀려 잘리지 않게 한다. 372px 이상부터는 기존과 동일한 62px 유지 */
-  .top-bar-brand{height:clamp(50px, 22.83vw - 9.13px, 62px)}
+  .top-bar-brand{height:clamp(50px, 22.83vw - 6.39px, 62px)}
   /* [Phase] 헤드라인 배너를 지나 아래로 스크롤하면 topbar는 위로 숨고 nav만 화면 상단에 남는다.
      다시 위로(또는 헤드라인 배너 쪽으로) 스크롤하면 topbar가 다시 내려와 헤드라인 배너와 함께 보인다.
      [버그 수정] nav는 position:sticky인데, 한때 nav의 top에도 topbar와 같은 transition을 줘서
@@ -1860,13 +1860,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .nav .cta-icon{font-size:1em;line-height:1}
 .nav .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
 /* [Phase] 데스크톱에서는 상단 nav의 "티타임 상담" pill 버튼을 그대로 쓰므로 숨김 — 780px 이하에서만
-   관리자 패널 아이콘 위에 뜨는 원형 버튼으로 노출(아래 미디어 쿼리) */
-.mobile-tt-fab{display:none}
+   관리자 패널 아이콘 바로 아래(화면 우측 끝)에 뜨는 원형 "전화하기" 버튼으로 노출(아래 미디어 쿼리) */
+.mobile-call-fab{display:none}
 @media(max-width:780px){
   /* [Phase] 햄버거로 접지 않고 메뉴 항목을 바에 그대로(가로 스크롤 가능하게) 노출 — 다 안 들어가면
-     좌우로 살짝 스크롤해서 볼 수 있다. "티타임 상담"은 상단 바에서 완전히 빼서(.mobile-tt-fab로
-     대체) 관리자 패널 아이콘 바로 위에 떠 있는 원형 버튼으로 옮긴다 — 엄지로 누르기 쉬운 화면
-     우측 하단에서 두 버튼을 함께 찾을 수 있게 한다 */
+     좌우로 살짝 스크롤해서 볼 수 있다. "티타임 상담"은 상단 바에서 완전히 빼고 "전화하기"로 바꿔
+     (.mobile-call-fab) 화면 우측 끝에 배치, 관리자 패널 아이콘은 그 바로 위에 같은 x축으로 쌓아
+     엄지로 누르기 쉬운 화면 우측 하단에서 두 버튼을 함께 찾을 수 있게 한다 */
   .nav{padding:0 10px;justify-content:flex-start;gap:6px}
   .nav ul{display:flex;position:static;background:none;border:none;
     flex-direction:row;justify-content:flex-start;padding:0;gap:2px;
@@ -1877,23 +1877,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav-right{display:none}
   .nav .menu-btn{display:none}
   /* [Phase] "관리자 패널" 진입 아이콘(.admin-fab, 원래 56px)을 80% 크기(44.8px)로 축소하고,
-     아이콘 폰트 크기도 같은 비율로 줄인다(1.4rem→1.12rem). bottom/right 앵커는 그대로 둬 우측
-     하단에 고정된 채로 크기만 줄어들게 한다 */
-  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem}
-  /* [Phase] "티타임 상담" 버튼을 축소된 admin-fab과 정확히 같은 크기(44.8px)로 맞춘다. 두 버튼의
-     높이가 이제 같으므로 bottom 값도 admin-fab과 동일하게 둬 나란히 정렬하고, right는 admin-fab
-     우측 여백(30) + admin-fab 너비(44.8) + 간격(12)으로 admin-fab 좌측에 위치시킨다.
-     아이콘 폰트 크기는 "admin-fab과 같은 크기"라는 기준에 맞춰, 두 버튼이 56px였을 때의 원래
-     비율(1.5rem)에 동일한 80% 축소율을 적용한 1.2rem으로 맞춘다. 투명도(70%)는 기존 그대로 유지 */
-  .mobile-tt-fab{
+     아이콘 폰트 크기도 같은 비율로 줄인다(1.4rem→1.12rem). right는 그대로 두어(화면 우측 끝)
+     "전화하기" 버튼과 같은 x축에 놓이게 하고, bottom만 "전화하기" 버튼 바로 위(전화하기 높이
+     44.8 + 간격 12 = 56.8만큼 더 위)로 올린다 */
+  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;bottom:calc(86.8px + env(safe-area-inset-bottom))}
+  /* [Phase] "티타임 상담" 아이콘을 "전화하기"로 바꾸면서 화면 우측 끝(admin-fab과 같은 right:30px)
+     으로 정렬 — admin-fab이 축소된 크기(44.8px)와 동일하게 맞추고, bottom은 admin-fab의 원래
+     자리(30px)를 그대로 물려받는다. 아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
+  .mobile-call-fab{
     display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:86.8px;z-index:99;
+    position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:30px;z-index:99;
     width:44.8px;height:44.8px;border-radius:50%;
     background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
     font-size:1.2rem;box-shadow:var(--btn-elevate),0 8px 24px rgba(221,179,103,.35);
     transition:transform .2s;opacity:.7;
   }
-  .mobile-tt-fab:hover,.mobile-tt-fab:active{transform:scale(1.08)}
+  .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08)}
 }
 
 /* ═══════════════ ABOUT BANNER ═══════════════ */
@@ -3636,13 +3635,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </div>
 </div>
 
-<!-- [Phase] 모바일 전용 "티타임 상담" 플로팅 버튼 — 원래 상단 nav 안에서 아이콘만 남은 원형
-     버튼이었으나, 관리자 패널 아이콘(.admin-fab)과 같은 자리(우측 하단)에 같은 크기로 쌓아 눈에 더
-     잘 띄고 엄지로 바로 누르기 쉽게 한다. 데스크톱에서는 기존 nav 안 pill 버튼을 그대로 쓰므로
-     숨김(CSS: @media 780px에서만 노출) -->
-<a href="#booking" class="mobile-tt-fab" aria-label="티타임 상담" title="티타임 상담">⛳</a>
+<!-- [Phase] 모바일 전용 "전화하기" 플로팅 버튼 — 화면 우측 끝(관리자 패널 아이콘과 같은 x축)에
+     정렬하고, 관리자 패널 아이콘(.admin-fab)은 바로 위에 같은 크기로 쌓아 눈에 더 잘 띄고
+     엄지로 바로 누르기 쉽게 한다. 데스크톱에서는 기존 nav 안 "티타임 상담" pill 버튼을 그대로
+     쓰므로 숨김(CSS: @media 780px에서만 노출). 클릭 시 동작은 하단 "전화하기" 버튼과 동일하게
+     확인 팝업 후 전화 연결(callHotline) -->
+<button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기" title="전화하기">📞</button>
 <!-- ADMIN -->
-<button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기" title="관리자 패널">🔧</button>
+<button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기" title="관리자 패널">⚙️</button>
 <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
 <aside class="admin-panel" id="adminPanel" aria-label="관리자 패널" aria-hidden="true">
   <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>

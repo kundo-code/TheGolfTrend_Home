@@ -559,11 +559,16 @@ section.block{padding:100px 24px;position:relative}
    불균형해 보이던 것을, 우측 패딩만 위/아래와 비슷하게 줄여 정렬한다(좌측은 이전/다음 버튼 정렬
    기준이라 그대로 유지) */
 .pd-nav-bar{position:sticky;top:20px;z-index:10;display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:4px 4px 4px 10px;background:var(--pine-deep);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(10,23,48,.1);border-radius:100px;box-shadow:0 6px 20px rgba(10,23,48,.14)}
-/* [수정] 웹(데스크톱)에서 방향 기호를 박스 정중앙에 위치시키고, 볼드 처리 + 크기 2배(1.3rem→2.6rem)로
-   키움 — 커진 글자가 잘리지 않도록 버튼 박스도 36px→48px로 확대 */
-.pd-nav-arrow{flex-shrink:0;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:2.6rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
-.pd-nav-arrow.prev{padding-right:.06em}
-.pd-nav-arrow.next{padding-left:.06em}
+/* [수정] 원형 박스가 48px일 때 pd-nav-bar 좌측 여백(10px)·위아래 여백(4px)과 비교해 상대적으로
+   커 보여 균형이 맞지 않던 것을, 40px로 축소해 여백과 더 조화롭게 맞춘다. 볼드 처리 + 크기 2배
+   (1.3rem→2.6rem)는 그대로 유지(글자 자체의 실제 잉크 면적은 작아 40px 박스에서도 잘리지 않음) */
+.pd-nav-arrow{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:2.6rem;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,transform .2s;box-shadow:0 2px 6px rgba(10,23,48,.12)}
+/* [수정] 방향 기호(‹›)가 폰트 자체의 세로 메트릭 때문에 박스 정중앙보다 살짝 아래로 치우쳐
+   보이던 것을 실측(캔버스 픽셀 잉크 영역 측정) 후 보정 — 위로 3px, 좌우는 글자 모양이 서로 대칭
+   (거울상)이라 잉크가 쏠리는 방향도 반대라서 각각 다르게 보정한다 */
+.pd-nav-arrow-glyph{display:inline-block}
+.pd-nav-arrow.prev .pd-nav-arrow-glyph{transform:translate(0,-3px)}
+.pd-nav-arrow.next .pd-nav-arrow-glyph{transform:translate(-0.5px,-3px)}
 .pd-nav-arrow:hover{background:var(--gold);color:#fff;transform:scale(1.06)}
 .pd-nav-info{flex:1;min-width:0;text-align:center;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:8px;line-height:1.25;pointer-events:none}
 /* [수정] 상단 내비게이션 박스 텍스트를 기존 대비 다시 95% 크기로 축소(1.636rem→1.554rem, .678rem→.644rem) */
@@ -978,13 +983,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-bottom .fbo-copy{color:rgba(10,23,48,.45);font-size:.82rem;text-align:center;letter-spacing:.05em;padding-top:4px}
 
 /* ADMIN PANEL */
-/* FIX: iOS 하단 홈 인디케이터(제스처 바)에 버튼이 가려지거나 너무 붙어 보이지 않도록, 화면 자체의
-   30px 여백에 safe-area 만큼을 더한다. safe-area가 없는 기기(대부분의 안드로이드·데스크톱)에서는
-   env()가 0으로 계산되어 기존과 동일하게 30px 그대로 유지된다 */
-.admin-fab{position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:30px;z-index:99;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);color:#fff;border:none;cursor:pointer;font-size:1.4rem;box-shadow:var(--nm-shadow-blue),0 8px 24px rgba(221,179,103,.35);transition:transform .2s}
+/* [수정] 웹(데스크톱)에서도 관리자 버튼을 화면 하단 고정이 아니라 메뉴바(nav) 바로 아래 우측에 두고,
+   스크롤 중 메뉴바가 실제로 있는 위치(초기엔 헤드라인 배너 아래, 스크롤 후엔 상단에 sticky로 고정)를
+   그대로 따라다니도록 한다 — --fab-nav-bottom은 JS(initMobileTopbarScroll)가 스크롤/리사이즈마다
+   nav.getBoundingClientRect().bottom 실측값으로 갱신하는 커스텀 프로퍼티 */
+.admin-fab{position:fixed;top:calc(var(--fab-nav-bottom, 160px) + 10px);right:30px;z-index:99;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);color:#fff;border:none;cursor:pointer;font-size:1.4rem;box-shadow:var(--nm-shadow-blue),0 8px 24px rgba(221,179,103,.35);transition:transform .2s}
 .admin-fab:hover{transform:scale(1.08) rotate(30deg)}
 /* [관리자 패널 Soft Neumorphism] 다크 글래스 패널 → 실버·화이트 뉴모피즘 패널 */
-.admin-panel{position:fixed;top:0;right:0;width:var(--admin-w,640px);max-width:100vw;height:100vh;z-index:210;background:var(--nm-surface);box-shadow:-12px 0 40px rgba(10,23,48,.25);border-left:1px solid var(--nm-border);transform:translateX(calc(100% + 24px));transition:transform .35s cubic-bezier(.4,.7,.2,1);display:flex;flex-direction:column;color:var(--nm-text)}
+/* [수정] 패널 실측 너비를 기준으로 상품 리스트 줄바꿈을 판단할 수 있도록 컨테이너 쿼리 기준 요소로 지정
+   (뷰포트 폭이 아니라 이 패널 자신의 폭을 드래그로 좁혀도 아래 .apc-head/.apc-actions 규칙이 반응함) */
+.admin-panel{position:fixed;top:0;right:0;width:var(--admin-w,640px);max-width:100vw;height:100vh;z-index:210;background:var(--nm-surface);box-shadow:-12px 0 40px rgba(10,23,48,.25);border-left:1px solid var(--nm-border);transform:translateX(calc(100% + 24px));transition:transform .35s cubic-bezier(.4,.7,.2,1);display:flex;flex-direction:column;color:var(--nm-text);container-type:inline-size;container-name:admin-panel}
 .admin-panel.open{transform:translateX(0)}
 /* [수정] 이미 존재하던 패널 너비 조절 기능이 4px짜리 옅은 선 하나뿐이라 있는 줄 모르고 지나치기
    쉬웠다 — 손잡이를 항상 뚜렷하게 보이는 "그립"(점 3개) 모양으로 바꿔 존재를 바로 알아볼 수 있게 함 */
@@ -1135,12 +1143,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    동일한 크기·모양으로 맞추되, select 특유의 기본 화살표 UI가 남도록 appearance는 건드리지 않는다 */
 .apc-move-select{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);color:var(--nm-text)}
 .apc-move-select:hover{box-shadow:var(--nm-shadow-hover)}
-/* [버그 수정] 모바일에서 관리자 패널 상품 리스트 각 항목 줄(.apc-head)이 손잡이·번호·제목·배지·
-   화살표에 이어 팝업노출 토글·고급편집·복제·삭제 버튼까지 한 줄에 모두 욱여넣으려다 보니, 좁은
-   화면 폭에서 오른쪽 버튼들(특히 "고급 편집")이 화면 밖으로 밀려 잘려 보였다 — 모바일에서만
-   .apc-head가 줄바꿈되게 하고, 버튼 묶음(.apc-actions)은 그 아래 한 줄 전체를 새로 차지하도록 해
-   항상 화면 안에 온전히 보이게 한다 */
-@media(max-width:780px){
+/* [버그 수정] 관리자 패널 상품 리스트 각 항목 줄(.apc-head)이 손잡이·번호·제목·배지·화살표에 이어
+   팝업노출 토글·고급편집·복제·삭제·이동 버튼까지 한 줄에 모두 욱여넣으려다 보니, 기본 패널 너비
+   (640px)에서도 이미 "이동" 버튼이 잘려 보이는 문제가 있었다 — 기존에는 "뷰포트 폭"(@media)
+   기준이라 데스크톱에서 관리자 패널 너비 조절 손잡이(#adminResizeHandle)로 패널만 좁혀도 반응하지
+   않았던 것을, 패널 자신의 실측 너비 기준 컨테이너 쿼리(@container)로 바꿔 패널을 얼마나 좁히든
+   항상 화면 안에 온전히 보이게 한다. 패널 폭이 900px 미만이면 .apc-head가 줄바꿈되어 버튼 묶음
+   (.apc-actions)이 그 아래 한 줄 전체를 새로 차지하며(높이는 자동으로 늘어남), .apc-actions
+   자체도 flex-wrap이 걸려 있어(위 .apc-actions 규칙) 패널이 더 좁아져 "이동"까지 다섯 개를 한
+   줄에 담을 공간이 없으면 "이동"만 자동으로 그 아래 세 번째 줄로 내려간다(팝업노출·고급편집·
+   복제·삭제 네 개는 패널 최소 너비 420px에서도 한 줄에 넉넉히 들어감) */
+@container admin-panel (max-width: 900px){
   .apc-head{flex-wrap:wrap}
   .apc-actions{flex-basis:100%;justify-content:flex-start;margin-top:6px}
 }
@@ -1880,20 +1893,21 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
   .nav-right{display:none}
   .nav .menu-btn{display:none}
-  /* [수정] 두 버튼을 화면 하단에서 탑바가 있는 우측 최상단으로 이동 — 절대적인 고정값 대신
-     탑바 실측 높이(--topbar-h)를 기준으로 위치시켜, 탑바 높이가 달라져도(반응형/로고 크기 조정 등)
-     두 아이콘이 항상 탑바 바로 아래에서 같은 간격을 유지하도록 한다. "관리자 패널" 진입 아이콘
-     (.admin-fab, 원래 56px)을 80% 크기(44.8px)로 축소하고, 아이콘 폰트 크기도 같은 비율로
-     줄인다(1.4rem→1.12rem). "전화하기" 버튼과 같은 x축(right:7.6px = 아이콘 반지름 22.4px만큼
-     화면 우측으로 이동)에 놓이게 한다 */
-  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;right:7.6px;bottom:auto;top:calc(var(--topbar-h,108px) + 10px)}
-  /* [수정] "전화하기" 버튼은 관리자 아이콘 바로 아래, 탑바 높이를 기준으로 한 같은 위치 체계 위에
-     10px 간격을 두고 쌓는다 — 위아래 간격도 탑바 높이(--topbar-h) 기준선 위에서 정해진다.
-     화면 우측 끝에서 아이콘 반지름(22.4px)만큼 안쪽으로 이동시켜(right:7.6px) admin-fab과
-     같은 x축에 정렬. 아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
+  /* [수정] 두 버튼을 메뉴바(nav) 바로 아래 우측에 두고, 스크롤 중 메뉴바가 실제로 있는 위치를
+     그대로 따라다니도록 한다 — 탑바 높이(--topbar-h)만으로는 모바일에서 스크롤 시 탑바가
+     사라지고 메뉴바가 화면 맨 위로 붙는 전환(.nav{top:0}) 상황을 반영하지 못해, 탑바가 사라진
+     뒤에도 아이콘이 원래 탑바 높이만큼 아래에 떠 있어 메뉴바와 멀어져 보였다 — JS가 스크롤마다
+     실측해 갱신하는 --fab-nav-bottom(메뉴바의 현재 하단 위치)을 기준으로 바꿔 항상 메뉴바
+     바로 아래에 붙어 있게 한다. "관리자 패널" 진입 아이콘(.admin-fab, 원래 56px)을 80% 크기
+     (44.8px)로 축소하고, 아이콘 폰트 크기도 같은 비율로 줄인다(1.4rem→1.12rem). "전화하기" 버튼과
+     같은 x축(right:7.6px = 아이콘 반지름 22.4px만큼 화면 우측으로 이동)에 놓이게 한다 */
+  .admin-fab{width:44.8px;height:44.8px;font-size:1.12rem;right:7.6px;bottom:auto;top:calc(var(--fab-nav-bottom, 160px) + 10px)}
+  /* [수정] "전화하기" 버튼은 관리자 아이콘 바로 아래, 메뉴바 위치를 기준으로 한 같은 위치 체계 위에
+     10px 간격을 두고 쌓는다. 화면 우측 끝에서 아이콘 반지름(22.4px)만큼 안쪽으로 이동시켜
+     (right:7.6px) admin-fab과 같은 x축에 정렬. 아이콘 폰트 크기·투명도(70%)는 기존 그대로 유지 */
   .mobile-call-fab{
     display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:auto;top:calc(var(--topbar-h,108px) + 10px + 44.8px + 10px);right:7.6px;z-index:99;
+    position:fixed;bottom:auto;top:calc(var(--fab-nav-bottom, 160px) + 10px + 44.8px + 10px);right:7.6px;z-index:99;
     width:44.8px;height:44.8px;border-radius:50%;
     background:var(--btn-highlight),var(--gold);color:var(--pine-deep);
     font-size:1.2rem;box-shadow:var(--btn-elevate),0 8px 24px rgba(221,179,103,.35);
@@ -1952,8 +1966,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ai-logo-preview{height:60px;width:auto;background:var(--nm-surface-light);border-radius:8px;padding:6px;box-shadow:var(--nm-shadow-raised-sm)}
 /* [수정] 안내 문구를 로고 이미지 아래로 이동 — 로고 교체 버튼과 같은 줄이 아니라 이미지 너비에
    맞춰 감싸는 별도 컬럼으로 분리한다 */
-.ai-logo-col{display:flex;flex-direction:column;gap:6px;max-width:100%}
-.ai-logo-col .file-hint{margin-top:0}
+/* [버그 수정] align-items 기본값(stretch)이 로고 이미지의 width:auto를 무시하고 컬럼 전체 폭까지
+   가로로 늘려버려(원래 비율 4.38:1 → 실제 렌더 7.9:1까지 찌그러짐) 이미지 비율이 깨지던 문제 —
+   flex-start로 바꿔 이미지가 자기 높이(60px)에 맞는 원래 비율 그대로 줄어들게 한다.
+   [수정] 안내 문구를 로고 이미지 바로 아래가 아니라 한 줄 높이만큼 더 아래로 띄운다 */
+.ai-logo-col{display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:100%}
+.ai-logo-col .file-hint{margin-top:1.3em}
 .ai-tagline{width:100%;padding:10px 12px;background:var(--nm-white);border:none;border-radius:var(--nm-r-sm);color:var(--nm-text);font-size:.85rem;line-height:1.55;font-family:'Noto Sans KR',sans-serif;min-height:60px;resize:vertical;box-shadow:var(--nm-shadow-inset)}
 .ai-tagline:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .ai-about-preview{width:100%;height:auto;max-height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block}
@@ -3630,12 +3648,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <div class="pd-overlay" id="pdOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeProductDetail)">
   <div class="pd-container" id="pdContainer">
     <div class="pd-nav-bar" id="pdNavBar">
-      <button class="pd-nav-arrow prev" onclick="pdMove(-1)" aria-label="이전 상품">‹</button>
+      <button class="pd-nav-arrow prev" onclick="pdMove(-1)" aria-label="이전 상품"><span class="pd-nav-arrow-glyph">‹</span></button>
       <div class="pd-nav-info">
         <span class="pd-nav-region" id="pdNavRegion"></span>
         <span class="pd-nav-count" id="pdNavCount"></span>
       </div>
-      <button class="pd-nav-arrow next" onclick="pdMove(1)" aria-label="다음 상품">›</button>
+      <button class="pd-nav-arrow next" onclick="pdMove(1)" aria-label="다음 상품"><span class="pd-nav-arrow-glyph">›</span></button>
       <button class="pd-close" onclick="closeProductDetail()" aria-label="닫기">×</button>
     </div>
     <div id="pdContent"></div>
@@ -5712,28 +5730,44 @@ window.addEventListener('resize', syncTopBarHeight);
 // 내려가는데도 탑바가 같이 따라 내려온다"는 문제가 있었다. 이제 한 번 숨겨진 topbar는 오직
 // 헤드라인 배너(=메뉴바 nav가 원래 자리인 topbar 위치까지 올라오는 지점) 근처로 다시 스크롤해
 // 돌아왔을 때만 나타난다 — 페이지 중간 어디서든의 작은 위 스크롤로는 다시 나타나지 않는다
+// [수정] 관리자·전화하기 아이콘(.admin-fab, .mobile-call-fab)을 메뉴바(nav) 바로 아래에서 스크롤을
+// 따라다니게 하려면, nav의 실제 현재 위치(스크롤 전 원래 자리에 있을 때와, sticky로 화면 상단에
+// 붙었을 때, 모바일에서 탑바가 사라지며 nav가 top:0으로 바뀔 때 모두)를 실측해야 한다 — 이 값을
+// --fab-nav-bottom 커스텀 프로퍼티로 갱신해 두 아이콘의 top 계산에 그대로 사용한다. 기존 모바일
+// topbar 숨김/노출 판정과 같은 스크롤 이벤트·rAF 스로틀을 공유해 리스너를 늘리지 않는다
 (function initMobileTopbarScroll(){
   const headlineEl = document.querySelector('.headline');
+  const navEl = document.getElementById('mainNav');
   let ticking = false;
   function update(){
     ticking = false;
     if (window.innerWidth > 780){
       document.body.classList.remove('mobile-topbar-hidden');
-      return;
-    }
-    const y = window.scrollY;
-    const headlineBottom = headlineEl ? headlineEl.getBoundingClientRect().bottom + y : 0;
-    if (y <= headlineBottom){
-      document.body.classList.remove('mobile-topbar-hidden');
     } else {
-      document.body.classList.add('mobile-topbar-hidden');
+      const y = window.scrollY;
+      const headlineBottom = headlineEl ? headlineEl.getBoundingClientRect().bottom + y : 0;
+      if (y <= headlineBottom){
+        document.body.classList.remove('mobile-topbar-hidden');
+      } else {
+        document.body.classList.add('mobile-topbar-hidden');
+      }
     }
+    if (navEl) document.documentElement.style.setProperty('--fab-nav-bottom', navEl.getBoundingClientRect().bottom+'px');
   }
   window.addEventListener('scroll', () => {
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(update);
   }, { passive: true });
+  window.addEventListener('resize', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  });
+  update();
+  // [수정] 스크립트 실행 시점엔 이미지 등이 아직 로드 전이라 nav 레이아웃이 최종 값이 아닐 수
+  // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
+  window.addEventListener('load', update);
 })();
 let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){

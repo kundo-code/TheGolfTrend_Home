@@ -312,9 +312,14 @@ section.block{padding:100px 24px;position:relative}
   .cat-card .content{padding:10px;justify-content:flex-end}
   .cat-card .top,.cat-card .divider{display:none}
   /* [수정] 320~430px 폭에서 가장 긴 "미국령-괌/사이판"(줄바꿈 포함 2줄) 카드가 3줄로 넘어가지
-     않는 한도 내에서 최대한 키움(13cqw→15cqw, 약 1.5자 분량) */
-  .cat-card .name-ko{font-size:13.8vw;font-size:15cqw;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6);margin:0 2px;word-break:keep-all}
-  .cat-card .name-en{font-size:4.2vw;font-size:4.5cqw;margin-top:2px;letter-spacing:.06em;overflow-wrap:anywhere;word-break:break-word;margin-left:2px;margin-right:2px}
+     않는 한도 내에서 105% 확대(15cqw→15.75cqw) */
+  .cat-card .name-ko{font-size:14.49vw;font-size:15.75cqw;line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6);margin:0 2px;word-break:keep-all}
+  .cat-card .name-en{font-size:4.41vw;font-size:4.725cqw;margin-top:2px;letter-spacing:.06em;overflow-wrap:anywhere;word-break:break-word;margin-left:2px;margin-right:2px}
+}
+/* [수정] 320~329px의 가장 좁은 폭에서는 105% 크기가 "미국령-괌/사이판" 카드를 3줄로
+   넘기므로, 이 구간만 3줄이 되지 않는 한도 내에서 최대치(약 104%)로 살짝 낮춘다 */
+@media(max-width:329px){
+  .cat-card .name-ko{font-size:14.352vw;font-size:15.6cqw}
 }
 
 /* CATEGORY VIEW + PRODUCT GRID */
@@ -1177,13 +1182,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 @media(max-width:780px){.band-cta-row{grid-template-columns:1fr}}
 
 /* Toggle Switch (관리자 전용) */
-.toggle-switch{position:relative;display:inline-block;width:38px;height:20px;cursor:pointer;flex-shrink:0}
-.toggle-switch.locked{cursor:not-allowed;opacity:.5}
-.toggle-switch input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;inset:0;background:var(--nm-surface);border-radius:100px;transition:.2s;box-shadow:var(--nm-shadow-inset)}
 .toggle-slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;top:3px;background:var(--nm-white);border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(10,23,48,.3)}
-.toggle-switch input:checked+.toggle-slider{background:linear-gradient(135deg,var(--nm-blue) 0%,var(--nm-blue-deep) 100%);box-shadow:none}
-.toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px);background:#fff}
 .link-admin-item.inactive{opacity:.55}
 .link-admin-item .name-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
 .link-admin-item .name-row .admin-channel-handle{flex:1;min-width:0}
@@ -1723,6 +1723,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .foot-grid ul{gap:2px}
   .admin-panel{width:100vw!important}
   .admin-resize-handle{display:none}
+  /* [수정] 모바일에서 "전체 초기화/상품 초기화" 텍스트가 좁은 flex 폭에 밀려 2줄로
+     줄바꿈되고 하단이 잘리던 문제 — 폰트/패딩/여백을 줄여 텍스트가 한 줄에 들어가도록
+     버튼 크기를 축소한다 */
+  .admin-foot{padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));gap:8px}
+  .admin-foot button{padding:10px 6px;font-size:.8rem;white-space:nowrap}
   /* [버그 수정] 모바일(주로 iOS Safari)에서 input의 font-size가 16px 미만이면 포커스 시 브라우저가
      자동으로 화면을 확대(zoom)한다 — 관리자 패널 곳곳의 입력 필드가 데스크톱 정보 밀도를 위해
      .8rem~.95rem(13~15px대)로 작게 잡혀 있어, 모바일에서 어느 필드를 탭하든 화면이 확대되며 다음
@@ -6788,13 +6793,33 @@ function refreshCategoryProducts(regionKey){
     fitProductCardsToScreen(grid);
   } else {
     grid.className='product-grid';
-    grid.innerHTML=filtered.map(({p,i})=>productCardHTML(p,selectedId,i)).join('');
+    const cardsHTML=filtered.map(({p,i})=>productCardHTML(p,selectedId,i)).join('');
+    // [수정] 상품이 3개 이하라 캐러셀(.pc-track)로 전환되지 않아도, 모바일에서는 여전히 화면을
+    // 한 장씩 스와이프해 넘기는 가로 캐러셀(scroll-snap)이다 — 여행이야기(renderBlog)/상품 캐러셀
+    // (productCarouselHTML)과 동일하게 맨 앞엔 마지막 상품의 복제를, 맨 뒤엔 첫 상품의 복제를
+    // 범퍼로 붙여 양끝에서 스와이프로 자연스럽게 순환되도록 한다. 상품이 1개뿐이면 복제해도
+    // 의미가 없어 생략하고, 데스크톱(3열 정적 그리드)에서는 범퍼가 레이아웃을 어그러뜨리므로
+    // 모바일 폭에서만 적용한다
+    const mobileLoop = window.innerWidth<=780 && filtered.length>=2;
+    grid.dataset.total = filtered.length;
+    grid.dataset.looped = mobileLoop ? '1' : '';
+    grid.innerHTML = mobileLoop
+      ? productCardHTML(filtered[filtered.length-1].p, selectedId, filtered[filtered.length-1].i) + cardsHTML + productCardHTML(filtered[0].p, selectedId, filtered[0].i)
+      : cardsHTML;
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
     // [Phase] 상품이 3개 이하라 캐러셀(.pc-track)로 전환되지 않아도, 모바일에서 손가락으로 화면을
     // 댄 채 빠르게 밀어 넘기는 드래그 스크롤이 항상 되도록 캐러셀과 동일한 방식을 적용한다.
     // 데스크톱(가로 스크롤이 없는 그리드)에서는 스크롤할 내용이 없어 사실상 아무 효과가 없다
     initCarouselDrag(grid);
     fitProductCardsToScreen(grid);
+    if (mobileLoop){
+      // [수정] 범퍼가 맨 앞에 붙으므로, scrollIntoView 대신 grid 자신의 scrollLeft만 직접 계산해
+      // 실제 첫 상품이 중앙에 오도록 즉시(애니메이션 없이) 맞춘다(여행이야기 캐러셀과 동일한 방식)
+      requestAnimationFrame(()=>{
+        const firstReal = grid.querySelectorAll('.product')[1];
+        if (firstReal) grid.scrollLeft = firstReal.offsetLeft - (grid.clientWidth - firstReal.clientWidth)/2;
+      });
+    }
   }
 }
 
@@ -7017,6 +7042,20 @@ function initProductCarousel(regionKey){
   initCarouselDrag(track);
   pcRecalcPadding(regionKey);
   pcUpdateCenterDim(regionKey);
+  // [수정] 모바일(카드 1장씩 노출)에서는 최초 스크롤 위치(0)가 실제 첫 상품이 아니라 맨 앞 범퍼
+  // (마지막 상품의 복제)를 중앙에 놓아, 패널을 열자마자 마지막 상품이 노출되는 문제가 있었다 —
+  // 여행이야기 캐러셀(renderBlog)과 동일하게 실제 첫 상품이 중앙에 오도록 즉시(애니메이션 없이)
+  // 스크롤 위치를 다시 계산해 맞춘다. scrollIntoView는 조상 스크롤 컨테이너(페이지 전체)까지 함께
+  // 움직일 수 있어 쓰지 않고 track 자신의 scrollLeft만 직접 계산한다(데스크톱 3장 노출 레이아웃은
+  // 이미 정상 동작하므로 건드리지 않는다)
+  if (window.innerWidth<=780){
+    requestAnimationFrame(()=>{
+      const firstReal = track.querySelectorAll('.product')[1];
+      if (firstReal) track.scrollLeft = firstReal.offsetLeft - (track.clientWidth - firstReal.clientWidth)/2;
+      pcUpdateDots(regionKey);
+      pcUpdateCenterDim(regionKey);
+    });
+  }
   let scrollTimer=null;
   track.addEventListener('scroll', ()=>{
     clearTimeout(scrollTimer);
@@ -9948,7 +9987,7 @@ function renderLinkAdminGroup(group){
             ${hidden
               ? `<button type="button" class="file-btn" onclick="restoreBuiltinLink('${it.key}')">복원</button>`
               : `<button type="button" class="link-admin-del" onclick="hideBuiltinLink('${it.key}')" title="삭제">✕</button>`}
-            <label class="toggle-switch ${(noUrl||hidden)?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
+            <label class="popup-toggle ${(noUrl||hidden)?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
               <input type="checkbox" ${active?'checked':''} ${(noUrl||hidden)?'disabled':''} onchange="setLinkActive('${it.key}',this.checked)">
               <span class="toggle-slider"></span>
             </label>
@@ -9969,7 +10008,7 @@ function renderLinkAdminGroup(group){
           <input type="text" class="admin-channel-handle" placeholder="표시 이름" value="${escapeAttr(it.name)}" oninput="setCustomLinkField('${group}','${it.id}','name',this.value)">
           <div class="link-admin-actions">
             <button type="button" class="link-admin-del" onclick="removeCustomLink('${group}','${it.id}')" title="삭제">✕</button>
-            <label class="toggle-switch ${noUrl?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
+            <label class="popup-toggle ${noUrl?'locked':''}" title="${noUrl?'URL을 먼저 입력하세요':(active?'노출 중 · 클릭하여 숨김':'숨김 · 클릭하여 노출')}">
               <input type="checkbox" ${active?'checked':''} ${noUrl?'disabled':''} onchange="setCustomLinkField('${group}','${it.id}','active',this.checked)">
               <span class="toggle-slider"></span>
             </label>

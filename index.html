@@ -5726,7 +5726,8 @@ function applyTopBarGroupOffset(){
   void document.body.offsetWidth;
   const taglineLH = parseFloat(getComputedStyle(tagline).lineHeight) || parseFloat(getComputedStyle(tagline).fontSize)*1.5;
   const basePT = parseFloat(getComputedStyle(topBarEl).paddingTop) || 0;
-  topBarEl.style.paddingTop = (basePT + taglineLH) + 'px';
+  // [수정] 태그라인 한 줄 높이만큼 더 내려달라는 추가 요청으로, 총 2줄 높이만큼 아래로 이동
+  topBarEl.style.paddingTop = (basePT + taglineLH*2) + 'px';
   syncTopBarHeight();
 }
 window.addEventListener('resize', ()=>{ fitTopBarTitle(); fitTopBarSlogan(); fitTopBarTagline(); applyTopBarGroupOffset(); });

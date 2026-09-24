@@ -1632,7 +1632,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      [수정] 요청대로라면 약 1.5자만큼 키워야 하지만, 실측 결과 390px 폭 기준 약 30px부터
      줄바꿈이 시작되어(원래 값 26.9px 대비 여유가 크지 않음) 줄바꿈 없이 키울 수 있는
      최대치(약 1자 분량)까지만 확대한다 */
-  #destinations .sec-head h2{font-size:clamp(1.35rem,7.3vw,2.05rem)}
+  /* [수정] 95% 크기로 축소 */
+  #destinations .sec-head h2{font-size:clamp(1.283rem,6.935vw,1.948rem)}
   /* [수정] 2열로 바뀌며 한 칸당 가로 폭이 넓어지므로, 아이콘·글자 크기도 좌우 여백만큼 커
      보이도록 함께 키운다(기존엔 4열 데스크톱과 같은 크기라 상대적으로 작아 보였음) */
   .hero-values{grid-template-columns:repeat(2,1fr);row-gap:24px;column-gap:12px}
@@ -2559,7 +2560,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 좌/우 이동 버튼을 화면 중앙이 아닌 하단으로 옮기고, 반투명은 유지하되 배경을
    밝은 흰색에서 어두운 색으로 바꿔 밝은 이미지 위에서도 잘 보이도록 가독성을 높임.
    [추가 수정] 버튼을 원래 위치보다 버튼 크기(48px)의 5배만큼(240px) 더 위로 올림.
-   카운터(숫자 영역)는 버튼과 같은 줄이 아니라, 버튼 줄 바로 위(48px 위)에 별도의 줄로 배치 */
+   카운터(숫자 영역)는 버튼 줄 아래, 화면 맨 하단(버튼 기준 가로 중앙)에 별도로 배치 —
+   아래쪽 .plb-counter 규칙 참고 */
 .plb-prev,.plb-next{
   position:fixed;bottom:260px;
   width:48px;height:48px;border-radius:50%;
@@ -2570,8 +2572,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .plb-prev{ left:20px; }
 .plb-next{ right:20px; }
 .plb-prev:hover,.plb-next:hover{ background:rgba(221,179,103,.4);border-color:var(--gold); }
+/* [수정] 카운터를 버튼 줄 위가 아닌 화면 하단(버튼 기준 가로 중앙)으로 이동 — 화면 맨 아래로부터
+   카운터 박스 자신의 높이(32px)만큼만 여백을 두어 딱 붙지 않을 정도로만 띄운다 */
 .plb-counter{
-  position:fixed;bottom:308px;left:50%;transform:translateX(-50%);
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
   height:32px;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.65);font-size:.85rem;letter-spacing:.05em;
   background:rgba(0,0,0,.4);padding:0 16px;border-radius:100px;
@@ -7809,7 +7813,7 @@ function pdRenderAt(catId, idx, opts){
   const content=document.getElementById('pdContent');
   if (content && opts.dir){
     content.style.transition='none';
-    content.style.transform=`translateX(${opts.dir>0?'40vw':'-40vw'})`;
+    content.style.transform=`translateX(${opts.dir>0?'100vw':'-100vw'})`;
     void content.offsetWidth; // 강제 reflow — 위 스타일이 애니메이션 없이 즉시 반영되게 함
     requestAnimationFrame(()=>{
       content.style.transition='transform .28s cubic-bezier(.22,.8,.36,1)';
@@ -7841,7 +7845,9 @@ function pdMove(dir){
   const content=document.getElementById('pdContent');
   if (content){
     content.style.transition='transform .22s ease';
-    content.style.transform=`translateX(${dir>0?'-40vw':'40vw'})`;
+    // [수정] 종료 지점을 40vw→100vw로 늘려, 스와이프 드래그량이 커도(최대 화면 폭만큼) 방향이
+    // 역전되며 "튕기는" 느낌 없이 항상 같은 방향으로 매끄럽게 이어지도록 함
+    content.style.transform=`translateX(${dir>0?'-100vw':'100vw'})`;
   }
   const finish=()=>pdRenderAt(next.catId, next.idx, {dir});
   if (catChanged){
@@ -7928,7 +7934,10 @@ function pdTouchEnd(){
   if (!pdTouch) return;
   const wasHorizontal=pdTouch.horizontal, dx=pdTouch.dx;
   const content=document.getElementById('pdContent');
-  if (wasHorizontal && Math.abs(dx)>70 && pdSequence && pdSequence.length>1){
+  // [수정] 이전에는 70px 이상 끌어야만 다음/이전으로 전환하고, 그보다 적으면 원래 자리로
+  // 스프링백했다 — 방향이 확정된(horizontal locked) 스와이프라면 끌린 거리와 상관없이
+  // 항상 같은 방향으로 매끄럽게 전환되도록 임계값을 제거
+  if (wasHorizontal && dx!==0 && pdSequence && pdSequence.length>1){
     pdMove(dx<0?1:-1);
   } else if (content){
     content.style.transition='transform .2s ease';
@@ -9272,8 +9281,8 @@ function closePkgLightbox(){
 // [수정] 라이트박스에서 손가락으로 좌/우 슬라이딩해 이전/다음 이미지로 넘기는 기능 — 기존에는
 // 손을 뗄 때만 판정해 다음 이미지로 "뚝" 바뀌었는데, 이제 touchmove마다 이미지가 손가락 이동량을
 // 그대로 따라 움직여(1:1 트래킹) 드래그하는 타이밍에 맞춰 자연스럽게 넘어가는 느낌을 준다.
-// 손을 뗐을 때 일정 거리 이상 끌었으면 같은 방향으로 마저 밀려나가며 다음/이전 이미지가 반대편에서
-// 슬라이드해 들어오고, 그렇지 않으면 원래 자리로 스프링백된다
+// 손을 뗐을 때는(가로 드래그로 방향이 확정됐다면) 끌린 거리와 상관없이 같은 방향으로 마저 밀려
+// 나가며 다음/이전 이미지가 반대편에서 매끄럽게 슬라이드해 들어온다(원래 자리로 스프링백하지 않음)
 (function(){
   let touchStartX=0, touchStartY=0, touching=false, dragging=false, dragDX=0;
   const lb=document.getElementById('pkgLightbox');
@@ -9307,7 +9316,10 @@ function closePkgLightbox(){
     const dx=dragDX; dragDX=0;
     if (!w) return;
     w.style.transition='transform .25s cubic-bezier(.2,.7,.2,1)';
-    if (Math.abs(dx)>60){
+    // [수정] 이전에는 60px 이상 끌어야만 다음/이전으로 전환하고, 그보다 적으면 원래 자리로
+    // 스프링백했다 — 방향이 확정된(가로 드래그로 판정된) 스와이프라면 거리와 상관없이
+    // 항상 같은 방향으로 매끄럽게 넘어가도록 임계값을 제거
+    if (dx!==0){
       const dir = dx<0 ? 1 : -1; // 왼쪽으로 끌면 다음, 오른쪽으로 끌면 이전
       w.style.transform=`translateX(${dx<0?'-110%':'110%'})`;
       setTimeout(()=>{

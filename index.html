@@ -1977,6 +1977,73 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .tb-booking-fab:hover{transform:scale(1.08)}
 }
+/* [추가] 날씨·환율 위젯(웹 전용) — 탑바 우측 끝, 위 액션 버튼 줄 바로 아래에 배치. 크기·위치는
+   관리자 패널에서 조절하는 CSS 커스텀 프로퍼티(--weather-*, --currency-*, 기본값은 각 규칙의
+   fallback 값)로 제어된다. 탑바 자체가 z-index:201이라 액션 버튼과 같은 이유로 그 위(202)에
+   둔다 */
+.widget-box{
+  display:none;position:fixed;z-index:202;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:16px;box-shadow:0 8px 24px rgba(10,23,48,.18);
+  padding:10px 14px;color:var(--pine-deep);overflow:hidden;box-sizing:border-box;
+}
+@media(min-width:781px){
+  .widget-box{display:block}
+  .weather-widget{
+    top:calc(var(--topbar-h,108px) + 8px + var(--weather-y,0px));
+    right:calc(40px - var(--weather-x,0px));
+    width:var(--weather-w,200px);height:var(--weather-h,112px);
+    cursor:pointer;transition:box-shadow .2s;
+  }
+  .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
+  .currency-widget{
+    top:calc(var(--topbar-h,108px) + 8px + var(--weather-h,112px) + 8px + var(--currency-y,0px));
+    right:calc(40px - var(--currency-x,0px));
+    width:var(--currency-w,220px);height:var(--currency-h,168px);
+  }
+}
+.wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}
+.wx-loc{font-size:.64rem;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-main{display:flex;align-items:center;gap:6px;margin-top:2px}
+.wx-icon{font-size:1.6rem;line-height:1}
+.wx-temp{font-size:1.5rem;font-weight:700}
+.wx-label{font-size:.72rem;color:rgba(10,23,48,.7)}
+.wx-sub{font-size:.64rem;color:rgba(10,23,48,.5);margin-top:3px}
+.cur-title{font-size:.72rem;font-weight:700;margin-bottom:4px}
+.cur-list{display:flex;flex-direction:column;gap:2px}
+.cur-row{display:flex;align-items:center;gap:6px;font-size:.72rem}
+.cur-flag{font-size:.9rem}
+.cur-name{flex:1;color:rgba(10,23,48,.7)}
+.cur-rate{font-weight:700}
+.cur-calc-btn{margin-top:6px;width:100%;padding:5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:600;cursor:pointer}
+.cur-calc-btn:hover{background:var(--gold-deep)}
+/* 날씨·환율 상세 오버레이(클릭 시 팝업) */
+.widget-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+.widget-detail-overlay.show{display:flex}
+.widget-detail-card{background:#fff;color:var(--pine-deep);border-radius:20px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.widget-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.widget-detail-head h4{font-size:1.1rem;color:var(--pine-deep)}
+.widget-detail-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:rgba(10,23,48,.5)}
+.widget-detail-tabs{display:flex;gap:8px;margin-bottom:12px}
+.widget-detail-tabs button{flex:1;padding:8px;border:none;border-radius:10px;background:rgba(10,23,48,.06);font-size:.82rem;font-weight:600;cursor:pointer;color:rgba(10,23,48,.6)}
+.widget-detail-tabs button.active{background:var(--gold);color:#fff}
+.wx-daily-list{display:flex;flex-direction:column;gap:6px}
+.wx-daily-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(10,23,48,.04);border-radius:10px;font-size:.82rem}
+.wx-daily-date{width:56px;font-weight:600;flex-shrink:0}
+.wx-daily-icon{flex:1}
+.wx-daily-pop{color:#3b82c4;flex-shrink:0}
+.wx-daily-temp{flex-shrink:0}
+.wx-hourly-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.wx-hourly-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;min-width:48px;font-size:.76rem}
+.wx-hourly-icon{font-size:1.2rem}
+.wx-hourly-pop{color:#3b82c4;font-size:.7rem}
+.cur-calc-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cur-calc-row input{width:110px;padding:8px 10px;border:1px solid rgba(10,23,48,.15);border-radius:8px;font-size:.9rem}
+.cur-calc-row select{padding:8px 10px;border:1px solid rgba(10,23,48,.15);border-radius:8px;font-size:.85rem}
+.cur-calc-lbl{font-size:.8rem;color:rgba(10,23,48,.6)}
+.cur-calc-result{font-size:1.6rem;font-weight:700;color:var(--pine-deep);text-align:center;margin-bottom:14px;padding:10px;background:rgba(10,23,48,.04);border-radius:10px}
+.cur-full-list{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.cur-disclaimer{font-size:.66rem;color:rgba(10,23,48,.45);line-height:1.4}
 
 /* ═══════════════ ABOUT BANNER ═══════════════ */
 /* [수정] 배너 안에 합성된 "THE GOLF TREND" 글자가 아래 "Beyond Golf, Into Life." 제목(h2, 최대
@@ -3736,6 +3803,36 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기" title="전화하기">📞</button>
 <!-- ADMIN -->
 <button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기" title="관리자 패널">⚙️</button>
+
+<!-- [추가] 웹(데스크톱) 전용 날씨·환율 위젯 — 탑바 우측 끝, 위 액션 버튼 줄 바로 아래에 배치되고
+     크기/위치는 관리자 패널(사이트 아이덴티티 → 위젯 설정)에서 조절할 수 있다(CSS 커스텀
+     프로퍼티 --weather-*/--currency-*). 모바일에서는 표시하지 않는다 -->
+<div class="widget-box weather-widget" id="weatherWidget" onclick="toggleWeatherDetail()" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
+<div class="widget-box currency-widget" id="currencyWidget"></div>
+
+<div class="widget-detail-overlay" id="weatherDetailOverlay">
+  <div class="widget-detail-card">
+    <div class="widget-detail-head">
+      <h4>🌤️ 날씨</h4>
+      <button type="button" class="widget-detail-close" onclick="toggleWeatherDetail()" aria-label="닫기">×</button>
+    </div>
+    <div class="widget-detail-tabs" id="weatherDetailTabs">
+      <button type="button" data-tab="daily" class="active" onclick="setWeatherDetailTab('daily')">일별예보</button>
+      <button type="button" data-tab="hourly" onclick="setWeatherDetailTab('hourly')">시간별예보</button>
+    </div>
+    <div class="widget-detail-body" id="weatherDetailBody"></div>
+  </div>
+</div>
+<div class="widget-detail-overlay" id="currencyDetailOverlay">
+  <div class="widget-detail-card">
+    <div class="widget-detail-head">
+      <h4>💱 환율 계산기</h4>
+      <button type="button" class="widget-detail-close" onclick="toggleCurrencyDetail()" aria-label="닫기">×</button>
+    </div>
+    <div class="widget-detail-body" id="currencyDetailBody"></div>
+  </div>
+</div>
+
 <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
 <aside class="admin-panel" id="adminPanel" aria-label="관리자 패널" aria-hidden="true">
   <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>
@@ -5550,6 +5647,21 @@ try{ themeOverride = JSON.parse(localStorage.getItem(THEME_KEY)||'null'); }catch
 const LOGO_XFORM_KEY = 'kundo_logo_xform_v1';
 let logoTransform = { scale:100, x:0, y:0 };
 try{ const lx = JSON.parse(localStorage.getItem(LOGO_XFORM_KEY)||'null'); if (lx) logoTransform = Object.assign({scale:100,x:0,y:0}, lx); }catch(e){}
+// [추가] 웹(데스크톱) 전용 날씨·환율 위젯의 크기·위치(탑바 우측 끝 기준 x/y 오프셋)를 관리자가
+// 조절할 수 있게 저장 — 로고 스케일/위치 조절과 동일한 패턴(localStorage + CSS 커스텀 프로퍼티)
+const WIDGET_CFG_KEY = 'kundo_widget_cfg_v1';
+const WIDGET_CFG_DEFAULT = {
+  weather:{w:200,h:112,x:0,y:0},
+  currency:{w:220,h:168,x:0,y:0},
+};
+let widgetConfig = JSON.parse(JSON.stringify(WIDGET_CFG_DEFAULT));
+try{
+  const wc = JSON.parse(localStorage.getItem(WIDGET_CFG_KEY)||'null');
+  if (wc){
+    widgetConfig.weather = Object.assign({}, WIDGET_CFG_DEFAULT.weather, wc.weather);
+    widgetConfig.currency = Object.assign({}, WIDGET_CFG_DEFAULT.currency, wc.currency);
+  }
+}catch(e){}
 const HERO_BG_MAX = 4; // 히어로 배경 최대 등록 개수 — 이 값을 바꾸면 등록 가능 개수도 함께 바뀜
 let heroBgList = []; // {type:'image'|'video', url} 최대 HERO_BG_MAX개 — 2개 이상이면 자동 로테이션
 try{logoOverride=localStorage.getItem(LOGO_KEY)||null;}catch(e){}
@@ -5606,6 +5718,245 @@ function resetLogoTransform(){
   try{ localStorage.removeItem(LOGO_XFORM_KEY); }catch(e){}
   renderTopBar(); renderAdminIdentity(); queueSiteStateSync();
 }
+// [추가] 날씨·환율 위젯 크기/위치 — 로고 스케일/위치 조절과 동일한 패턴(드래그 중엔 preview로
+// 화면만 즉시 갱신, 놓는 순간 set으로 저장)
+function applyWidgetConfigCSS(){
+  const root = document.documentElement;
+  const w = widgetConfig.weather, c = widgetConfig.currency;
+  root.style.setProperty('--weather-w', w.w+'px');
+  root.style.setProperty('--weather-h', w.h+'px');
+  root.style.setProperty('--weather-x', w.x+'px');
+  root.style.setProperty('--weather-y', w.y+'px');
+  root.style.setProperty('--currency-w', c.w+'px');
+  root.style.setProperty('--currency-h', c.h+'px');
+  root.style.setProperty('--currency-x', c.x+'px');
+  root.style.setProperty('--currency-y', c.y+'px');
+}
+function previewWidgetConfig(widget, patch){
+  widgetConfig[widget] = Object.assign({}, widgetConfig[widget], patch);
+  applyWidgetConfigCSS();
+  const valEl = document.getElementById('widgetXformVals_'+widget);
+  if (valEl){ const v=widgetConfig[widget]; valEl.textContent = `너비 ${v.w}px · 높이 ${v.h}px · 가로 ${v.x}px · 세로 ${v.y}px`; }
+}
+function setWidgetConfig(widget, patch){
+  widgetConfig[widget] = Object.assign({}, widgetConfig[widget], patch);
+  try{ localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig)); }catch(e){}
+  applyWidgetConfigCSS(); renderAdminIdentity(); queueSiteStateSync();
+}
+function resetWidgetConfig(widget){
+  widgetConfig[widget] = Object.assign({}, WIDGET_CFG_DEFAULT[widget]);
+  try{ localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig)); }catch(e){}
+  applyWidgetConfigCSS(); renderAdminIdentity(); queueSiteStateSync();
+}
+// ══ 날씨 위젯(웹 전용) ═══════════════════════════════════════════════
+// [추가] Open-Meteo(api.open-meteo.com) — 별도 API 키 없이 무료로 쓸 수 있는 기상 API. 여러
+// 국가 기상청 모델을 종합해 매시간 갱신되는 예보를 제공한다(한국 기상청 공식 API는 발급받은
+// 인증키가 필요해 이 파일만으로는 연동할 수 없어 대신 사용). 기본 위치는 서울 강남구 세곡동
+// (요청하신 참고 화면과 동일한 좌표)으로 고정하되, current(현재)·hourly(시간별)·daily(일별)를
+// 한 번의 요청으로 함께 받아온다
+const WEATHER_LOCATION = { name:'서울특별시 강남구 세곡동', lat:37.4663, lon:127.1009 };
+const WMO_CODES = {
+  0:{icon:'☀️',label:'맑음'}, 1:{icon:'🌤️',label:'대체로 맑음'}, 2:{icon:'⛅',label:'구름 조금'}, 3:{icon:'☁️',label:'흐림'},
+  45:{icon:'🌫️',label:'안개'}, 48:{icon:'🌫️',label:'짙은 안개'},
+  51:{icon:'🌦️',label:'약한 이슬비'}, 53:{icon:'🌦️',label:'이슬비'}, 55:{icon:'🌦️',label:'강한 이슬비'},
+  56:{icon:'🌧️',label:'착빙성 이슬비'}, 57:{icon:'🌧️',label:'강한 착빙성 이슬비'},
+  61:{icon:'🌧️',label:'약한 비'}, 63:{icon:'🌧️',label:'비'}, 65:{icon:'🌧️',label:'강한 비'},
+  66:{icon:'🌧️',label:'착빙성 비'}, 67:{icon:'🌧️',label:'강한 착빙성 비'},
+  71:{icon:'🌨️',label:'약한 눈'}, 73:{icon:'🌨️',label:'눈'}, 75:{icon:'🌨️',label:'강한 눈'}, 77:{icon:'🌨️',label:'싸락눈'},
+  80:{icon:'🌦️',label:'약한 소나기'}, 81:{icon:'🌦️',label:'소나기'}, 82:{icon:'🌦️',label:'강한 소나기'},
+  85:{icon:'🌨️',label:'약한 소낙눈'}, 86:{icon:'🌨️',label:'강한 소낙눈'},
+  95:{icon:'⛈️',label:'뇌우'}, 96:{icon:'⛈️',label:'우박 동반 뇌우'}, 99:{icon:'⛈️',label:'강한 우박 동반 뇌우'},
+};
+function wmoInfo(code){ return WMO_CODES[code] || {icon:'🌡️', label:'-'}; }
+let weatherData = null, weatherFetchFailed = false;
+const WEATHER_REFRESH_MS = 15*60*1000; // 15분마다 갱신
+async function fetchWeatherData(){
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LOCATION.lat}&longitude=${WEATHER_LOCATION.lon}`
+      + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,weather_code`
+      + `&hourly=temperature_2m,weather_code,precipitation_probability`
+      + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset`
+      + `&timezone=Asia%2FSeoul&forecast_days=10`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('weather fetch failed: '+res.status);
+    weatherData = await res.json();
+    weatherFetchFailed = false;
+  }catch(e){
+    console.error('[weather] fetch 실패:', e);
+    weatherFetchFailed = true;
+  }
+  renderWeatherWidget();
+  if (document.getElementById('weatherDetailOverlay')?.classList.contains('show')) renderWeatherDetail();
+}
+function renderWeatherWidget(){
+  const el = document.getElementById('weatherWidget');
+  if (!el) return;
+  if (!weatherData || !weatherData.current){
+    el.innerHTML = `<div class="wgt-loading">${weatherFetchFailed?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+    return;
+  }
+  const cur = weatherData.current;
+  const info = wmoInfo(cur.weather_code);
+  el.innerHTML = `
+    <div class="wx-loc">${escapeAttr(WEATHER_LOCATION.name)}</div>
+    <div class="wx-main"><span class="wx-icon">${info.icon}</span><span class="wx-temp">${Math.round(cur.temperature_2m)}°</span></div>
+    <div class="wx-label">${info.label}</div>
+    <div class="wx-sub">체감 ${Math.round(cur.apparent_temperature)}° · 습도 ${Math.round(cur.relative_humidity_2m)}%</div>
+  `;
+}
+function toggleWeatherDetail(){
+  const overlay = document.getElementById('weatherDetailOverlay');
+  if (!overlay) return;
+  const willShow = !overlay.classList.contains('show');
+  overlay.classList.toggle('show', willShow);
+  document.body.style.overflow = willShow ? 'hidden' : '';
+  if (willShow) renderWeatherDetail();
+}
+let weatherDetailTab = 'daily';
+function setWeatherDetailTab(tab){ weatherDetailTab = tab; renderWeatherDetail(); }
+function renderWeatherDetail(){
+  const body = document.getElementById('weatherDetailBody');
+  const tabs = document.getElementById('weatherDetailTabs');
+  if (!body) return;
+  if (tabs) tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.tab===weatherDetailTab));
+  if (!weatherData || !weatherData.daily){
+    body.innerHTML = `<div class="wgt-loading">${weatherFetchFailed?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+    return;
+  }
+  if (weatherDetailTab==='daily'){
+    const d = weatherData.daily;
+    body.innerHTML = `<div class="wx-daily-list">${d.time.map((date,i)=>{
+      const info = wmoInfo(d.weather_code[i]);
+      const dt = new Date(date+'T00:00:00');
+      const label = i===0?'오늘':i===1?'내일':`${dt.getMonth()+1}/${dt.getDate()}`;
+      const dow = ['일','월','화','수','목','금','토'][dt.getDay()];
+      return `<div class="wx-daily-row">
+        <span class="wx-daily-date">${label}(${dow})</span>
+        <span class="wx-daily-icon">${info.icon} ${info.label}</span>
+        <span class="wx-daily-pop">💧${d.precipitation_probability_max[i]}%</span>
+        <span class="wx-daily-temp"><b>${Math.round(d.temperature_2m_max[i])}°</b> / ${Math.round(d.temperature_2m_min[i])}°</span>
+      </div>`;
+    }).join('')}</div>`;
+  } else {
+    const h = weatherData.hourly;
+    const now = new Date();
+    let startIdx = h.time.findIndex(t=>new Date(t)>=now);
+    if (startIdx<0) startIdx=0;
+    const slice = [];
+    for (let i=startIdx;i<startIdx+24 && i<h.time.length;i++) slice.push(i);
+    body.innerHTML = `<div class="wx-hourly-list">${slice.map(i=>{
+      const info = wmoInfo(h.weather_code[i]);
+      const dt = new Date(h.time[i]);
+      return `<div class="wx-hourly-col">
+        <span class="wx-hourly-time">${dt.getHours()}시</span>
+        <span class="wx-hourly-icon">${info.icon}</span>
+        <span class="wx-hourly-temp">${Math.round(h.temperature_2m[i])}°</span>
+        <span class="wx-hourly-pop">${h.precipitation_probability[i]}%</span>
+      </div>`;
+    }).join('')}</div>`;
+  }
+}
+// ══ 환율 위젯(웹 전용) ═══════════════════════════════════════════════
+// [추가] open.er-api.com — 별도 API 키 없이 무료로 쓸 수 있는 환율 API. 각국 중앙은행/은행 간
+// 기준환율을 하루 1회 갱신해 제공한다(특정 은행의 실시간 매매기준율과는 다를 수 있어 위젯·계산기
+// 화면에 안내 문구를 함께 노출한다). 기본으로 원/달러/엔화/링깃을 보여주고, 계산기에서는 동아시아·
+// 동남아시아 주요 통화를 모두 선택할 수 있다
+const CURRENCY_DEFAULT_LIST = ['USD','JPY','MYR'];
+const CURRENCY_LABELS = {
+  USD:{name:'달러', flag:'🇺🇸'}, JPY:{name:'엔화', flag:'🇯🇵'}, CNY:{name:'위안', flag:'🇨🇳'},
+  MYR:{name:'링깃', flag:'🇲🇾'}, THB:{name:'바트', flag:'🇹🇭'}, VND:{name:'동', flag:'🇻🇳'},
+  PHP:{name:'페소', flag:'🇵🇭'}, IDR:{name:'루피아', flag:'🇮🇩'},
+};
+let currencyData = null, currencyFetchFailed = false;
+const CURRENCY_REFRESH_MS = 60*60*1000; // 1시간마다 갱신 시도(원본 API 자체는 1일 1회 갱신)
+async function fetchCurrencyData(){
+  try{
+    const res = await fetch('https://open.er-api.com/v6/latest/KRW');
+    if (!res.ok) throw new Error('currency fetch failed: '+res.status);
+    const json = await res.json();
+    if (json.result!=='success') throw new Error('currency api error');
+    currencyData = json;
+    currencyFetchFailed = false;
+  }catch(e){
+    console.error('[currency] fetch 실패:', e);
+    currencyFetchFailed = true;
+  }
+  renderCurrencyWidget();
+  if (document.getElementById('currencyDetailOverlay')?.classList.contains('show')) renderCurrencyDetail();
+}
+function krwPerUnit(code){
+  if (!currencyData || !currencyData.rates || !currencyData.rates[code]) return null;
+  return 1/currencyData.rates[code]; // base=KRW → rates[code]는 "1원 = code 몇 단위" → 역수를 취하면 "code 1단위 = 몇 원"
+}
+function renderCurrencyWidget(){
+  const el = document.getElementById('currencyWidget');
+  if (!el) return;
+  if (!currencyData){
+    el.innerHTML = `<div class="wgt-loading">${currencyFetchFailed?'환율 정보를 불러오지 못했습니다':'환율 정보를 불러오는 중…'}</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="cur-title">실시간 환율</div>
+    <div class="cur-list">${CURRENCY_DEFAULT_LIST.map(code=>{
+      const per = krwPerUnit(code);
+      const lbl = CURRENCY_LABELS[code]||{name:code,flag:''};
+      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${lbl.name}</span><span class="cur-rate">${per?per.toLocaleString('ko-KR',{maximumFractionDigits:2}):'-'}원</span></div>`;
+    }).join('')}</div>
+    <button type="button" class="cur-calc-btn" onclick="toggleCurrencyDetail()">💱 환율 계산기</button>
+  `;
+}
+function toggleCurrencyDetail(){
+  const overlay = document.getElementById('currencyDetailOverlay');
+  if (!overlay) return;
+  const willShow = !overlay.classList.contains('show');
+  overlay.classList.toggle('show', willShow);
+  document.body.style.overflow = willShow ? 'hidden' : '';
+  if (willShow) renderCurrencyDetail();
+}
+let currencyCalcAmount = 10000, currencyCalcCode = 'USD';
+function setCurrencyCalcAmount(v){ currencyCalcAmount = Number(v)||0; renderCurrencyDetail(); }
+function setCurrencyCalcCode(v){ currencyCalcCode = v; renderCurrencyDetail(); }
+function renderCurrencyDetail(){
+  const body = document.getElementById('currencyDetailBody');
+  if (!body) return;
+  if (!currencyData){
+    body.innerHTML = `<div class="wgt-loading">${currencyFetchFailed?'환율 정보를 불러오지 못했습니다':'환율 정보를 불러오는 중…'}</div>`;
+    return;
+  }
+  const allCodes = Object.keys(CURRENCY_LABELS);
+  const per = krwPerUnit(currencyCalcCode);
+  const result = per ? (currencyCalcAmount/per) : 0;
+  const updated = currencyData.time_last_update_utc ? new Date(currencyData.time_last_update_utc).toLocaleDateString('ko-KR') : '';
+  body.innerHTML = `
+    <div class="cur-calc-row">
+      <input type="number" min="0" step="1000" value="${currencyCalcAmount}" oninput="setCurrencyCalcAmount(this.value)">
+      <span class="cur-calc-lbl">원으로 살 때</span>
+      <select onchange="setCurrencyCalcCode(this.value)">${allCodes.map(c=>`<option value="${c}" ${c===currencyCalcCode?'selected':''}>${CURRENCY_LABELS[c].flag} ${CURRENCY_LABELS[c].name}(${c})</option>`).join('')}</select>
+    </div>
+    <div class="cur-calc-result">${result.toLocaleString('ko-KR',{maximumFractionDigits:2})} ${currencyCalcCode}</div>
+    <div class="cur-full-list">${allCodes.map(code=>{
+      const p = krwPerUnit(code);
+      const lbl=CURRENCY_LABELS[code];
+      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${lbl.name}(${code})</span><span class="cur-rate">${p?p.toLocaleString('ko-KR',{maximumFractionDigits:2}):'-'}원</span></div>`;
+    }).join('')}</div>
+    <div class="cur-disclaimer">※ 은행 간 기준환율(${updated} 갱신)이며, 실제 환전 시 금융기관이 고시하는 매매기준율(스프레드 포함)과는 다를 수 있습니다.</div>
+  `;
+}
+function initWeatherCurrencyWidgets(){
+  applyWidgetConfigCSS();
+  if (window.innerWidth<=780) return; // 모바일은 위젯 자체가 숨겨지므로 데이터도 가져오지 않는다
+  fetchWeatherData();
+  fetchCurrencyData();
+  setInterval(fetchWeatherData, WEATHER_REFRESH_MS);
+  setInterval(fetchCurrencyData, CURRENCY_REFRESH_MS);
+}
+window.addEventListener('resize', ()=>{
+  // 모바일→데스크톱으로 창을 넓힌 경우를 대비한 안전망 — 아직 한 번도 못 가져왔다면 시도
+  if (window.innerWidth>780){
+    if (!weatherData && !weatherFetchFailed) fetchWeatherData();
+    if (!currencyData && !currencyFetchFailed) fetchCurrencyData();
+  }
+});
 // [추가] 화면 테마 — 탑바/내비게이션바 배경·폰트 색상, 사이트 전체 배경(색상 또는 이미지)
 function saveThemeOverride(){
   try{ localStorage.setItem(THEME_KEY, JSON.stringify(themeOverride||{})); }catch(e){ alert('저장 공간 부족'); }
@@ -5938,6 +6289,59 @@ function renderAdminIdentity(){
         ${ab?`<button class="file-btn danger" onclick="clearAboutBanner()">기본값 복원</button>`:''}
       </div>
       <span class="file-hint">권장 이미지 1600×420px 이상 (와이드 배너) · 이미지 10MB / 동영상 50MB 이하</span>
+    </div>
+    <div class="admin-identity-section">
+      <h5>위젯 설정 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(웹/데스크톱 탑바 우측의 날씨·환율 위젯 크기·위치)</span></h5>
+      <div class="ai-logo-xform">
+        <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🌤️ 날씨 위젯</span>
+        <label class="ai-xform-row">
+          <span class="tc-label">너비</span>
+          <input type="range" min="140" max="320" step="1" value="${widgetConfig.weather.w}"
+            oninput="previewWidgetConfig('weather',{w:Number(this.value)})" onchange="setWidgetConfig('weather',{w:Number(this.value)})">
+        </label>
+        <label class="ai-xform-row">
+          <span class="tc-label">높이</span>
+          <input type="range" min="80" max="220" step="1" value="${widgetConfig.weather.h}"
+            oninput="previewWidgetConfig('weather',{h:Number(this.value)})" onchange="setWidgetConfig('weather',{h:Number(this.value)})">
+        </label>
+        <label class="ai-xform-row">
+          <span class="tc-label">가로 위치</span>
+          <input type="range" min="-120" max="120" step="1" value="${widgetConfig.weather.x}"
+            oninput="previewWidgetConfig('weather',{x:Number(this.value)})" onchange="setWidgetConfig('weather',{x:Number(this.value)})">
+        </label>
+        <label class="ai-xform-row">
+          <span class="tc-label">세로 위치</span>
+          <input type="range" min="-80" max="200" step="1" value="${widgetConfig.weather.y}"
+            oninput="previewWidgetConfig('weather',{y:Number(this.value)})" onchange="setWidgetConfig('weather',{y:Number(this.value)})">
+        </label>
+        <span class="file-hint" id="widgetXformVals_weather">너비 ${widgetConfig.weather.w}px · 높이 ${widgetConfig.weather.h}px · 가로 ${widgetConfig.weather.x}px · 세로 ${widgetConfig.weather.y}px</span>
+        ${(widgetConfig.weather.w!==WIDGET_CFG_DEFAULT.weather.w||widgetConfig.weather.h!==WIDGET_CFG_DEFAULT.weather.h||widgetConfig.weather.x!==0||widgetConfig.weather.y!==0)?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('weather')" style="margin-top:6px">날씨 위젯 초기화</button>`:''}
+      </div>
+      <div class="ai-logo-xform" style="margin-top:16px">
+        <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">💱 환율 위젯</span>
+        <label class="ai-xform-row">
+          <span class="tc-label">너비</span>
+          <input type="range" min="160" max="340" step="1" value="${widgetConfig.currency.w}"
+            oninput="previewWidgetConfig('currency',{w:Number(this.value)})" onchange="setWidgetConfig('currency',{w:Number(this.value)})">
+        </label>
+        <label class="ai-xform-row">
+          <span class="tc-label">높이</span>
+          <input type="range" min="100" max="320" step="1" value="${widgetConfig.currency.h}"
+            oninput="previewWidgetConfig('currency',{h:Number(this.value)})" onchange="setWidgetConfig('currency',{h:Number(this.value)})">
+        </label>
+        <label class="ai-xform-row">
+          <span class="tc-label">가로 위치</span>
+          <input type="range" min="-120" max="120" step="1" value="${widgetConfig.currency.x}"
+            oninput="previewWidgetConfig('currency',{x:Number(this.value)})" onchange="setWidgetConfig('currency',{x:Number(this.value)})">
+        </label>
+        <label class="ai-xform-row">
+          <span class="tc-label">세로 위치</span>
+          <input type="range" min="-80" max="200" step="1" value="${widgetConfig.currency.y}"
+            oninput="previewWidgetConfig('currency',{y:Number(this.value)})" onchange="setWidgetConfig('currency',{y:Number(this.value)})">
+        </label>
+        <span class="file-hint" id="widgetXformVals_currency">너비 ${widgetConfig.currency.w}px · 높이 ${widgetConfig.currency.h}px · 가로 ${widgetConfig.currency.x}px · 세로 ${widgetConfig.currency.y}px</span>
+        ${(widgetConfig.currency.w!==WIDGET_CFG_DEFAULT.currency.w||widgetConfig.currency.h!==WIDGET_CFG_DEFAULT.currency.h||widgetConfig.currency.x!==0||widgetConfig.currency.y!==0)?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('currency')" style="margin-top:6px">환율 위젯 초기화</button>`:''}
+      </div>
     </div>`;
 }
 // [추가] 화면 테마(탑바·내비게이션바 배경/폰트 색상, 사이트 전체 배경) 관리자 UI
@@ -11790,6 +12194,7 @@ document.addEventListener('keydown',e=>{
 safeRender(renderAll);
 try{ setInterval(cycleHero,6000); }catch(e){ console.error('[init] cycleHero interval 실패:', e); }
 try{ setInterval(cycleSpot,8000); }catch(e){ console.error('[init] cycleSpot interval 실패:', e); }
+try{ initWeatherCurrencyWidgets(); }catch(e){ console.error('[init] 날씨·환율 위젯 초기화 실패:', e); }
 
 // 로컬(localStorage/IndexedDB) 데이터로 먼저 빠르게 그린 뒤, Supabase에 저장된 공유 상태를
 // 백그라운드에서 가져와 있으면(다른 기기/브라우저에서 저장한 최신 내용) 다시 렌더링해 동기화.

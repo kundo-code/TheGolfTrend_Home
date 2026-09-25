@@ -1030,7 +1030,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-bottom .fbo-copy{color:rgba(10,23,48,.45);font-size:.82rem;text-align:center;letter-spacing:.05em;padding-top:4px}
 
 /* ADMIN PANEL */
-/* [수정] 관리자·전화하기·티타임 상담 3개 아이콘은 웹·모바일 모두 화면 우측 최하단 고정 위치(코너
+/* [수정] 관리자·전화하기·문의하기 3개 아이콘은 웹·모바일 모두 화면 우측 최하단 고정 위치(코너
    플로팅 클러스터)로 통일한다(정확한 배치는 아래 두 미디어쿼리에서). 바탕 박스를 반투명 유리
    느낌으로 바꿔(backdrop-filter 블러 + 낮춘 알파) 페이지 콘텐츠 위에 떠 있을 때 덜 답답해 보이게
    하고, 아이콘 자체(이모지)는 배경과 무관하게 항상 또렷이 보인다 */
@@ -1055,6 +1055,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    (뷰포트 폭이 아니라 이 패널 자신의 폭을 드래그로 좁혀도 아래 .apc-head/.apc-actions 규칙이 반응함) */
 .admin-panel{position:fixed;top:0;right:0;width:var(--admin-w,640px);max-width:100vw;height:100vh;z-index:210;background:var(--nm-surface);box-shadow:-12px 0 40px rgba(10,23,48,.25);border-left:1px solid var(--nm-border);transform:translateX(calc(100% + 24px));transition:transform .35s cubic-bezier(.4,.7,.2,1);display:flex;flex-direction:column;color:var(--nm-text);container-type:inline-size;container-name:admin-panel}
 .admin-panel.open{transform:translateX(0)}
+/* [추가] 패널을 화면 좌측 끝으로도 옮길 수 있게(관리자 헤더의 ⇄ 버튼) — 위젯 위치 슬라이더를
+   조절하는 동안 패널이 화면 우측(위젯이 있는 쪽)을 가리는 문제를 우측 대신 좌측에 열어 피할 수
+   있다. transform 닫힘 방향만 반대로(왼쪽 화면 밖으로) 뒤집고, 열림 상태(translateX(0))는
+   공통이므로 .side-left.open이 더 높은 특정성으로 항상 이긴다 */
+.admin-panel.side-left{left:0;right:auto;border-left:none;border-right:1px solid var(--nm-border);box-shadow:12px 0 40px rgba(10,23,48,.25);transform:translateX(calc(-100% - 24px))}
+.admin-panel.side-left.open{transform:translateX(0)}
+.admin-panel.side-left .admin-resize-handle{left:auto;right:-9px}
+.admin-side-toggle{background:var(--nm-surface);border:none;color:var(--nm-text-soft);width:44px;height:44px;border-radius:50%;font-size:1.1rem;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);margin-right:8px}
+.admin-side-toggle:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
 /* [수정] 이미 존재하던 패널 너비 조절 기능이 4px짜리 옅은 선 하나뿐이라 있는 줄 모르고 지나치기
    쉬웠다 — 손잡이를 항상 뚜렷하게 보이는 "그립"(점 3개) 모양으로 바꿔 존재를 바로 알아볼 수 있게 함 */
 .admin-resize-handle{position:absolute;top:0;left:-9px;width:18px;height:100%;cursor:ew-resize;z-index:5;touch-action:none}
@@ -1927,7 +1936,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .nav ul li a:hover{color:var(--pine-deep);background:var(--gold)}
 .nav ul li a:active{color:var(--pine-deep);background:var(--gold);box-shadow:var(--btn-press)}
 .nav .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
-/* [수정] "티타임 상담"은 웹 전용(아래 @media(min-width:781px))이고, 모바일에서는 노출하지 않는다
+/* [수정] "문의하기"는 웹 전용(아래 @media(min-width:781px))이고, 모바일에서는 노출하지 않는다
    ("전화하기"로 대체) — 기본값은 숨김 */
 .mobile-call-fab{display:none}
 .tb-booking-fab{display:none}
@@ -1964,31 +1973,31 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08)}
   .admin-fab::after,.mobile-call-fab::after{font-size:.66rem;padding:5px 9px}
 }
-/* [수정] 웹(데스크톱)에서 "전화하기"·"티타임 상담"·"관리자" 3개를 화면 우측 최하단 코너에 한 줄로
-   배치한다 — 스크롤과 무관하게 항상 같은 화면 위치(position:fixed + bottom/right)에 떠 있다.
-   코너에서 가장 가까운 자리(오른쪽 끝)에 "전화하기", 그 다음이 "티타임 상담"(두 아이콘 사이),
-   가장 안쪽에 "관리자" — 기존에는 관리자가 코너 쪽, 전화하기가 중간이었던 순서를 서로 맞바꿨다.
-   버튼 박스 크기(56px)는 기존 관리자 아이콘 그대로 유지하되 박스 안 아이콘 글자 크기만
-   가독성을 위해 최대한 키운다(1.4rem→2.2rem) */
+/* [수정] 웹(데스크톱)에서 "전화하기"·"문의하기"·"관리자" 3개를 화면 우측 최하단 코너에 세로로
+   쌓는다(가로 한 줄이 아니라 모바일과 같은 세로 스택) — 스크롤과 무관하게 항상 같은 화면 위치
+   (position:fixed + bottom/right)에 떠 있다. 코너에서 가장 가까운 자리(맨 아래)에 "전화하기",
+   그 다음이 "문의하기"(두 아이콘 사이), 가장 안쪽(맨 위)에 "관리자". 버튼 박스 크기(56px)는
+   기존 관리자 아이콘 그대로 유지하되 박스 안 아이콘 글자 크기만 가독성을 위해 최대한 키운다
+   (1.4rem→2.2rem) */
 @media(min-width:781px){
   .tb-booking-fab,.mobile-call-fab{display:flex;align-items:center;justify-content:center}
   .tb-booking-fab,.mobile-call-fab,.admin-fab{
-    position:fixed;top:auto;
-    bottom:calc(40px + env(safe-area-inset-bottom));
+    position:fixed;top:auto;right:40px;
     width:56px;height:56px;border-radius:50%;
     font-size:2.2rem;box-shadow:0 8px 24px rgba(10,23,48,.25);
     transition:transform .2s;
     z-index:202;
   }
-  .admin-fab{right:calc(40px + 136px)}
+  .mobile-call-fab{bottom:calc(40px + env(safe-area-inset-bottom));opacity:1}
+  .tb-booking-fab{bottom:calc(40px + 68px + env(safe-area-inset-bottom))}
+  .admin-fab{bottom:calc(40px + 136px + env(safe-area-inset-bottom))}
   .tb-booking-fab,.mobile-call-fab{
     background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,0) 55%),rgba(221,179,103,.82);
     backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
     color:var(--pine-deep);
   }
-  .mobile-call-fab{right:40px;opacity:1}
   .tb-booking-fab{
-    right:calc(40px + 68px);text-decoration:none;
+    text-decoration:none;
     box-shadow:var(--btn-elevate),var(--btn-shine);
   }
   .tb-booking-fab:hover{transform:scale(1.08)}
@@ -2073,13 +2082,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* 날씨·환율 상세 오버레이(클릭 시 팝업) */
 .widget-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
 .widget-detail-overlay.show{display:flex}
-.widget-detail-card{background:#fff;color:var(--pine-deep);border-radius:20px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.widget-detail-card{background:rgba(255,255,255,var(--popup-opacity,1));color:var(--pine-deep);border-radius:20px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
 .widget-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .widget-detail-head h4{font-size:1.1rem;color:var(--pine-deep)}
 .widget-detail-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:rgba(10,23,48,.5)}
 .widget-detail-tabs{display:flex;gap:8px;margin-bottom:12px}
 .widget-detail-tabs button{flex:1;padding:8px;border:none;border-radius:10px;background:rgba(10,23,48,.06);font-size:.82rem;font-weight:600;cursor:pointer;color:rgba(10,23,48,.6)}
 .widget-detail-tabs button.active{background:var(--gold);color:#fff}
+/* [추가] 날씨 상세 팝업 — 권역/국가 선택 드롭다운 + 현재 조회 중인 지역명 표시 */
+.wx-location-select{width:100%;padding:9px 12px;margin-bottom:10px;border:1px solid rgba(10,23,48,.15);border-radius:10px;font-size:.84rem;font-weight:600;color:var(--pine-deep);background:#fff;cursor:pointer}
+.wx-detail-loc{font-size:.78rem;font-weight:700;color:rgba(10,23,48,.6);margin-bottom:8px}
 .wx-daily-list{display:flex;flex-direction:column;gap:6px}
 .wx-daily-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(10,23,48,.04);border-radius:10px;font-size:.82rem}
 .wx-daily-date{width:56px;font-weight:600;flex-shrink:0}
@@ -2091,9 +2103,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .wx-hourly-icon{font-size:1.2rem}
 .wx-hourly-pop{color:#3b82c4;font-size:.7rem}
 .cur-calc-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.cur-calc-row input{width:110px;padding:8px 10px;border:1px solid rgba(10,23,48,.15);border-radius:8px;font-size:.9rem}
-.cur-calc-row select{padding:8px 10px;border:1px solid rgba(10,23,48,.15);border-radius:8px;font-size:.85rem}
+.cur-calc-row input{width:100px;padding:8px 10px;border:1px solid rgba(10,23,48,.15);border-radius:8px;font-size:.9rem}
+.cur-calc-row select{padding:8px 10px;border:1px solid rgba(10,23,48,.15);border-radius:8px;font-size:.8rem;flex:1;min-width:120px}
 .cur-calc-lbl{font-size:.8rem;color:rgba(10,23,48,.6)}
+.cur-calc-arrow{font-size:.9rem;color:rgba(10,23,48,.4);flex-shrink:0}
 .cur-calc-result{font-size:1.6rem;font-weight:700;color:var(--pine-deep);text-align:center;margin-bottom:14px;padding:10px;background:rgba(10,23,48,.04);border-radius:10px}
 .cur-full-list{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .cur-disclaimer{font-size:.66rem;color:rgba(10,23,48,.45);line-height:1.4}
@@ -3848,11 +3861,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <button type="button" class="pd-side-nav next" onclick="pdMove(1)" aria-label="다음 상품"><span class="pd-nav-arrow-glyph">›</span></button>
 </div>
 
-<!-- [수정] 웹(데스크톱)에서는 탑바 우측 끝 하단에 "티타임 상담"·"전화하기"·"관리자" 3개 아이콘
-     버튼을 한 줄로 배치한다(기존 nav 안 "티타임 상담" pill 버튼은 대체되어 숨김). 모바일에서는
-     기존처럼 관리자·전화하기 두 아이콘만 메뉴바 아래 세로로 쌓인다. position:fixed라 DOM 위치와
+<!-- [수정] 웹(데스크톱)·모바일 모두 화면 우측 최하단 코너에 "전화하기"·"문의하기"·"관리자"
+     (모바일은 문의하기 제외 두 개만) 아이콘 버튼을 세로로 쌓는다. position:fixed라 DOM 위치와
      무관하게 CSS만으로 두 레이아웃을 전환할 수 있어 실제 배치는 아래 미디어쿼리에서 결정한다 -->
-<a href="#booking" class="tb-booking-fab" aria-label="티타임 상담">⛳</a>
+<a href="#booking" class="tb-booking-fab" aria-label="문의하기">⛳</a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기">📞</button>
 <!-- ADMIN -->
 <button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기">⚙️</button>
@@ -3869,6 +3881,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <h4>🌤️ 날씨</h4>
       <button type="button" class="widget-detail-close" onclick="toggleWeatherDetail()" aria-label="닫기">×</button>
     </div>
+    <select class="wx-location-select" id="weatherLocationSelect" onchange="setWeatherDetailLocation(this.value)"></select>
     <div class="widget-detail-tabs" id="weatherDetailTabs">
       <button type="button" data-tab="daily" class="active" onclick="setWeatherDetailTab('daily')">일별예보</button>
       <button type="button" data-tab="hourly" onclick="setWeatherDetailTab('hourly')">시간별예보</button>
@@ -3891,7 +3904,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <div class="admin-resize-handle" id="adminResizeHandle" title="드래그하여 패널 너비 조절" aria-hidden="true"></div>
   <div class="admin-head">
     <div><h3>관리자 패널</h3><p>이미지 · 상품 · 링크 · AI 리드를 관리하세요</p></div>
-    <button class="admin-close" onclick="toggleAdmin()" aria-label="닫기">×</button>
+    <div style="display:flex;align-items:center">
+      <button class="admin-side-toggle" onclick="toggleAdminPanelSide()" aria-label="패널을 반대쪽으로 이동" title="패널을 반대쪽으로 이동 — 위젯 위치 조절 시 위젯이 가려지면 반대쪽으로 옮겨보세요">⇄</button>
+      <button class="admin-close" onclick="toggleAdmin()" aria-label="닫기">×</button>
+    </div>
   </div>
   <div class="admin-login" id="adminLoginGate" style="display:none">
     <p class="al-desc">관리자 계정으로 로그인해야 이미지·상품 등을 관리할 수 있습니다.</p>
@@ -5709,6 +5725,7 @@ const WIDGET_CFG_KEY = 'kundo_widget_cfg_v2';
 const WIDGET_CFG_DEFAULT = {
   weather:{scale:100,x:0,y:0,opacity:92},
   currency:{scale:100,x:0,y:0,opacity:92},
+  popup:{opacity:100}, // [추가] 날씨·환율 상세 팝업창(.widget-detail-card) 바탕색 투명도
 };
 let widgetConfig = JSON.parse(JSON.stringify(WIDGET_CFG_DEFAULT));
 try{
@@ -5716,6 +5733,7 @@ try{
   if (wc){
     widgetConfig.weather = Object.assign({}, WIDGET_CFG_DEFAULT.weather, wc.weather);
     widgetConfig.currency = Object.assign({}, WIDGET_CFG_DEFAULT.currency, wc.currency);
+    widgetConfig.popup = Object.assign({}, WIDGET_CFG_DEFAULT.popup, wc.popup);
   }
 }catch(e){}
 const HERO_BG_MAX = 4; // 히어로 배경 최대 등록 개수 — 이 값을 바꾸면 등록 가능 개수도 함께 바뀜
@@ -5778,7 +5796,7 @@ function resetLogoTransform(){
 // 화면만 즉시 갱신, 놓는 순간 set으로 저장)
 function applyWidgetConfigCSS(){
   const root = document.documentElement;
-  const w = widgetConfig.weather, c = widgetConfig.currency;
+  const w = widgetConfig.weather, c = widgetConfig.currency, p = widgetConfig.popup;
   root.style.setProperty('--weather-scale', w.scale/100);
   root.style.setProperty('--weather-opacity', w.opacity/100);
   root.style.setProperty('--weather-x', w.x+'px');
@@ -5787,6 +5805,24 @@ function applyWidgetConfigCSS(){
   root.style.setProperty('--currency-opacity', c.opacity/100);
   root.style.setProperty('--currency-x', c.x+'px');
   root.style.setProperty('--currency-y', c.y+'px');
+  root.style.setProperty('--popup-opacity', p.opacity/100);
+}
+// [추가] 날씨·환율 상세 팝업창 바탕색 투명도 — 위젯 크기/위치 조절과 같은 preview(즉시 미리보기)/
+// set(저장) 패턴
+function previewPopupOpacity(v){
+  document.documentElement.style.setProperty('--popup-opacity', v/100);
+  const valEl = document.getElementById('popupOpacityVal');
+  if (valEl) valEl.textContent = `투명도 ${v}%`;
+}
+function setPopupOpacity(v){
+  widgetConfig.popup = { opacity:Number(v) };
+  try{ localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig)); }catch(e){}
+  applyWidgetConfigCSS(); renderAdminWidgets(); queueSiteStateSync();
+}
+function resetPopupOpacity(){
+  widgetConfig.popup = Object.assign({}, WIDGET_CFG_DEFAULT.popup);
+  try{ localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig)); }catch(e){}
+  applyWidgetConfigCSS(); renderAdminWidgets(); queueSiteStateSync();
 }
 function previewWidgetConfig(widget, patch){
   widgetConfig[widget] = Object.assign({}, widgetConfig[widget], patch);
@@ -5811,6 +5847,27 @@ function resetWidgetConfig(widget){
 // (요청하신 참고 화면과 동일한 좌표)으로 고정하되, current(현재)·hourly(시간별)·daily(일별)를
 // 한 번의 요청으로 함께 받아온다
 const WEATHER_LOCATION = { name:'서울특별시 강남구 세곡동', lat:37.4663, lon:127.1009 };
+// [추가] 날씨 상세 팝업에서 권역별·국가별 날씨도 확인할 수 있도록 — CATEGORIES(국내 권역/해외 국가)와
+// 같은 목록을 대표 좌표와 함께 정리. 국가/권역 전체를 대표하는 주요 도시 좌표를 사용한다(정확한
+// 지점 단위 예보가 아니라 해당 권역/국가의 대략적인 날씨 참고용)
+const WEATHER_LOCATIONS = [
+  { id:'default', name:WEATHER_LOCATION.name, lat:WEATHER_LOCATION.lat, lon:WEATHER_LOCATION.lon },
+  { id:'gangwon', name:'강원권 (춘천)', lat:37.8228, lon:128.1555 },
+  { id:'chungcheong', name:'충청권 (대전)', lat:36.3504, lon:127.3845 },
+  { id:'honam', name:'호남권 (광주)', lat:35.1595, lon:126.8526 },
+  { id:'yeongnam', name:'영남권 (부산)', lat:35.1796, lon:129.0756 },
+  { id:'capital', name:'수도권 (서울)', lat:37.5665, lon:126.9780 },
+  { id:'jeju', name:'제주', lat:33.4996, lon:126.5312 },
+  { id:'japan', name:'일본 (도쿄)', lat:35.6762, lon:139.6503 },
+  { id:'china', name:'중국 (베이징)', lat:39.9042, lon:116.4074 },
+  { id:'mongolia', name:'몽골 (울란바토르)', lat:47.8864, lon:106.9057 },
+  { id:'vietnam', name:'베트남 (하노이)', lat:21.0278, lon:105.8342 },
+  { id:'thailand', name:'태국 (방콕)', lat:13.7563, lon:100.5018 },
+  { id:'philippines', name:'필리핀 (마닐라)', lat:14.5995, lon:120.9842 },
+  { id:'malaysia', name:'말레이시아 (쿠알라룸푸르)', lat:3.1390, lon:101.6869 },
+  { id:'indonesia', name:'인도네시아 (발리)', lat:-8.6500, lon:115.2167 },
+  { id:'guam', name:'미국령-괌/사이판 (괌)', lat:13.4443, lon:144.7937 },
+];
 const WMO_CODES = {
   0:{icon:'☀️',label:'맑음'}, 1:{icon:'🌤️',label:'대체로 맑음'}, 2:{icon:'⛅',label:'구름 조금'}, 3:{icon:'☁️',label:'흐림'},
   45:{icon:'🌫️',label:'안개'}, 48:{icon:'🌫️',label:'짙은 안개'},
@@ -5826,16 +5883,21 @@ const WMO_CODES = {
 function wmoInfo(code){ return WMO_CODES[code] || {icon:'🌡️', label:'-'}; }
 let weatherData = null, weatherFetchFailed = false;
 const WEATHER_REFRESH_MS = 15*60*1000; // 15분마다 갱신
+// [추가] 위도/경도만 받아 Open-Meteo에서 예보를 가져오는 공용 헬퍼 — 기본 위치(위젯에 상시 노출)와
+// 날씨 상세 팝업에서 선택한 다른 권역/국가 조회에 모두 재사용한다
+async function fetchWeatherJSON(lat, lon){
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,weather_code`
+    + `&hourly=temperature_2m,weather_code,precipitation_probability`
+    + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset`
+    + `&timezone=Asia%2FSeoul&forecast_days=10`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('weather fetch failed: '+res.status);
+  return res.json();
+}
 async function fetchWeatherData(){
   try{
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LOCATION.lat}&longitude=${WEATHER_LOCATION.lon}`
-      + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,weather_code`
-      + `&hourly=temperature_2m,weather_code,precipitation_probability`
-      + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset`
-      + `&timezone=Asia%2FSeoul&forecast_days=10`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('weather fetch failed: '+res.status);
-    weatherData = await res.json();
+    weatherData = await fetchWeatherJSON(WEATHER_LOCATION.lat, WEATHER_LOCATION.lon);
     weatherFetchFailed = false;
   }catch(e){
     console.error('[weather] fetch 실패:', e);
@@ -5870,18 +5932,49 @@ function toggleWeatherDetail(){
 }
 let weatherDetailTab = 'daily';
 function setWeatherDetailTab(tab){ weatherDetailTab = tab; renderWeatherDetail(); }
+// [추가] 날씨 상세 팝업에서 선택한 위치의 데이터를 캐시 — 같은 위치를 다시 고르면 재요청하지 않는다
+const weatherLocData = {}; // { locationId: {json 응답} | 'failed' }
+let weatherSelectedLocId = 'default';
+async function setWeatherDetailLocation(id){
+  weatherSelectedLocId = id;
+  renderWeatherDetail(); // 즉시 지역명 갱신 + 필요 시 로딩중 표시
+  if (id==='default' || weatherLocData[id]) return; // 기본 위치는 weatherData를 직접 참조, 나머지는 캐시 있으면 재요청 안 함
+  const loc = WEATHER_LOCATIONS.find(l=>l.id===id);
+  if (!loc) return;
+  try{
+    weatherLocData[id] = await fetchWeatherJSON(loc.lat, loc.lon);
+  }catch(e){
+    console.error('[weather] 지역 조회 실패:', id, e);
+    weatherLocData[id] = 'failed';
+  }
+  renderWeatherDetail();
+}
 function renderWeatherDetail(){
   const body = document.getElementById('weatherDetailBody');
   const tabs = document.getElementById('weatherDetailTabs');
+  const select = document.getElementById('weatherLocationSelect');
   if (!body) return;
   if (tabs) tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.tab===weatherDetailTab));
-  if (!weatherData || !weatherData.daily){
-    body.innerHTML = `<div class="wgt-loading">${weatherFetchFailed?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+  if (select && select.options.length===0){
+    select.innerHTML = WEATHER_LOCATIONS.map(l=>`<option value="${l.id}">${escapeAttr(l.name)}</option>`).join('');
+  }
+  if (select) select.value = weatherSelectedLocId;
+  const curLoc = WEATHER_LOCATIONS.find(l=>l.id===weatherSelectedLocId);
+  const isDefault = weatherSelectedLocId==='default';
+  const data = isDefault ? weatherData : weatherLocData[weatherSelectedLocId];
+  const failed = isDefault ? weatherFetchFailed : (data==='failed');
+  const locLabel = `<div class="wx-detail-loc">📍 ${escapeAttr(curLoc?curLoc.name:'')}</div>`;
+  if (failed){
+    body.innerHTML = locLabel + `<div class="wgt-loading">날씨 정보를 불러오지 못했습니다</div>`;
+    return;
+  }
+  if (!data || !data.daily){
+    body.innerHTML = locLabel + `<div class="wgt-loading">날씨 정보를 불러오는 중…</div>`;
     return;
   }
   if (weatherDetailTab==='daily'){
-    const d = weatherData.daily;
-    body.innerHTML = `<div class="wx-daily-list">${d.time.map((date,i)=>{
+    const d = data.daily;
+    body.innerHTML = locLabel + `<div class="wx-daily-list">${d.time.map((date,i)=>{
       const info = wmoInfo(d.weather_code[i]);
       const dt = new Date(date+'T00:00:00');
       const label = i===0?'오늘':i===1?'내일':`${dt.getMonth()+1}/${dt.getDate()}`;
@@ -5894,13 +5987,13 @@ function renderWeatherDetail(){
       </div>`;
     }).join('')}</div>`;
   } else {
-    const h = weatherData.hourly;
+    const h = data.hourly;
     const now = new Date();
     let startIdx = h.time.findIndex(t=>new Date(t)>=now);
     if (startIdx<0) startIdx=0;
     const slice = [];
     for (let i=startIdx;i<startIdx+24 && i<h.time.length;i++) slice.push(i);
-    body.innerHTML = `<div class="wx-hourly-list">${slice.map(i=>{
+    body.innerHTML = locLabel + `<div class="wx-hourly-list">${slice.map(i=>{
       const info = wmoInfo(h.weather_code[i]);
       const dt = new Date(h.time[i]);
       return `<div class="wx-hourly-col">
@@ -5923,6 +6016,10 @@ const CURRENCY_LABELS = {
   MYR:{name:'링깃', flag:'🇲🇾'}, THB:{name:'바트', flag:'🇹🇭'}, VND:{name:'동', flag:'🇻🇳'},
   PHP:{name:'페소', flag:'🇵🇭'}, IDR:{name:'루피아', flag:'🇮🇩'},
 };
+// [추가] 환율 계산기의 "기준 통화"(FROM) 선택지 — 목록의 외화뿐 아니라 원화(KRW)도 포함해,
+// 원화→외화·외화→원화·외화→외화(예: 달러→엔화) 어느 방향으로든 계산할 수 있게 한다. 참고용
+// 전체 환율 표(cur-full-list)는 기존처럼 외화만 보여주므로 CURRENCY_LABELS는 그대로 둔다
+const CALC_CURRENCY_LABELS = Object.assign({KRW:{name:'원', flag:'🇰🇷'}}, CURRENCY_LABELS);
 let currencyData = null, currencyFetchFailed = false;
 const CURRENCY_REFRESH_MS = 60*60*1000; // 1시간마다 갱신 시도(원본 API 자체는 1일 1회 갱신)
 async function fetchCurrencyData(){
@@ -5969,9 +6066,18 @@ function toggleCurrencyDetail(){
   document.body.style.overflow = willShow ? 'hidden' : '';
   if (willShow) renderCurrencyDetail();
 }
-let currencyCalcAmount = 10000, currencyCalcCode = 'USD';
+let currencyCalcAmount = 10000, currencyCalcFrom = 'KRW', currencyCalcCode = 'USD';
 function setCurrencyCalcAmount(v){ currencyCalcAmount = Number(v)||0; renderCurrencyDetail(); }
+function setCurrencyCalcFrom(v){ currencyCalcFrom = v; renderCurrencyDetail(); }
 function setCurrencyCalcCode(v){ currencyCalcCode = v; renderCurrencyDetail(); }
+// [추가] KRW를 기준(pivot)으로 삼아 임의의 두 통화(원화 포함) 사이를 환산 — 달러→다른 외화,
+// 외화→달러처럼 목록의 어떤 통화 조합이든 계산할 수 있게 한다
+function currencyConvert(amount, fromCode, toCode){
+  if (!currencyData || !currencyData.rates) return null;
+  const rFrom = currencyData.rates[fromCode], rTo = currencyData.rates[toCode];
+  if (!rFrom || !rTo) return null;
+  return amount * (rTo/rFrom);
+}
 function renderCurrencyDetail(){
   const body = document.getElementById('currencyDetailBody');
   if (!body) return;
@@ -5980,16 +6086,18 @@ function renderCurrencyDetail(){
     return;
   }
   const allCodes = Object.keys(CURRENCY_LABELS);
-  const per = krwPerUnit(currencyCalcCode);
-  const result = per ? (currencyCalcAmount/per) : 0;
+  const calcCodes = Object.keys(CALC_CURRENCY_LABELS);
+  const result = currencyConvert(currencyCalcAmount, currencyCalcFrom, currencyCalcCode) || 0;
   const updated = currencyData.time_last_update_utc ? new Date(currencyData.time_last_update_utc).toLocaleDateString('ko-KR') : '';
+  const calcOptions = (selected)=>calcCodes.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${CALC_CURRENCY_LABELS[c].flag} ${CALC_CURRENCY_LABELS[c].name}(${c})</option>`).join('');
   body.innerHTML = `
     <div class="cur-calc-row">
-      <input type="number" min="0" step="1000" value="${currencyCalcAmount}" oninput="setCurrencyCalcAmount(this.value)">
-      <span class="cur-calc-lbl">원으로 살 때</span>
-      <select onchange="setCurrencyCalcCode(this.value)">${allCodes.map(c=>`<option value="${c}" ${c===currencyCalcCode?'selected':''}>${CURRENCY_LABELS[c].flag} ${CURRENCY_LABELS[c].name}(${c})</option>`).join('')}</select>
+      <input type="number" min="0" step="1" value="${currencyCalcAmount}" oninput="setCurrencyCalcAmount(this.value)">
+      <select onchange="setCurrencyCalcFrom(this.value)">${calcOptions(currencyCalcFrom)}</select>
+      <span class="cur-calc-arrow">→</span>
+      <select onchange="setCurrencyCalcCode(this.value)">${calcOptions(currencyCalcCode)}</select>
     </div>
-    <div class="cur-calc-result">${result.toLocaleString('ko-KR',{maximumFractionDigits:2})} ${currencyCalcCode}</div>
+    <div class="cur-calc-result">${result.toLocaleString('ko-KR',{maximumFractionDigits:2})} ${CALC_CURRENCY_LABELS[currencyCalcCode].name}</div>
     <div class="cur-full-list">${allCodes.map(code=>{
       const p = krwPerUnit(code);
       const lbl=CURRENCY_LABELS[code];
@@ -6379,10 +6487,22 @@ function renderAdminWidgets(){
       ${changed?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('${widget}')" style="margin-top:6px">${label} 초기화</button>`:''}
     </div>`;
   };
+  const pOpacity = widgetConfig.popup.opacity;
+  const pChanged = pOpacity !== WIDGET_CFG_DEFAULT.popup.opacity;
   c.innerHTML = `
-    <span class="file-hint" style="display:block;margin-bottom:10px">웹(데스크톱)에서만 탑바 우측 끝, 액션 버튼 줄 바로 아래에 노출되는 실시간 날씨·환율 위젯의 크기·위치·바탕박스 투명도를 조절합니다.</span>
-    ${xformBlock('weather','🌤️ 날씨 위젯',[-150,150],[-100,250])}
+    <span class="file-hint" style="display:block;margin-bottom:10px">웹은 탑바 우측 끝, 모바일은 메뉴바 바로 아래에 나란히 노출되는 실시간 날씨·환율 위젯의 크기·위치·바탕박스 투명도를 조절합니다.</span>
     ${xformBlock('currency','💱 환율 위젯',[-150,150],[-100,250])}
+    ${xformBlock('weather','🌤️ 날씨 위젯',[-150,150],[-100,250])}
+    <div class="ai-logo-xform" style="margin-top:16px">
+      <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🗂️ 상세 팝업창</span>
+      <label class="ai-xform-row">
+        <span class="tc-label">바탕 투명도</span>
+        <input type="range" min="20" max="100" step="1" value="${pOpacity}"
+          oninput="previewPopupOpacity(Number(this.value))" onchange="setPopupOpacity(Number(this.value))">
+      </label>
+      <span class="file-hint" id="popupOpacityVal">투명도 ${pOpacity}%</span>
+      ${pChanged?`<button type="button" class="file-btn danger" onclick="resetPopupOpacity()" style="margin-top:6px">팝업창 초기화</button>`:''}
+    </div>
   `;
 }
 // [추가] 화면 테마(탑바·내비게이션바 배경/폰트 색상, 사이트 전체 배경) 관리자 UI
@@ -9444,6 +9564,24 @@ async function handleChangePasswordClick(e){
   msgEl.classList.add('is-ok');
 }
 
+// [추가] 관리자 패널을 화면 좌/우 어느 쪽에 열지 — 날씨·환율 위젯이 화면 우측에 있어, 패널이
+// 항상 우측에서 열리면 위젯 위치를 조절하는 동안 위젯 자체가 가려져 확인하기 어렵다는 요청으로
+// 추가. 헤더의 ⇄ 버튼으로 즉시 전환하고 localStorage에 기억해둔다
+const ADMIN_SIDE_KEY='kundo_admin_side_v1';
+function initAdminPanelSide(){
+  const panel=document.getElementById('adminPanel');
+  if (!panel) return;
+  let side='right';
+  try{ side = localStorage.getItem(ADMIN_SIDE_KEY) || 'right'; }catch(e){}
+  panel.classList.toggle('side-left', side==='left');
+}
+function toggleAdminPanelSide(){
+  const panel=document.getElementById('adminPanel');
+  if (!panel) return;
+  const isLeft = panel.classList.toggle('side-left');
+  try{ localStorage.setItem(ADMIN_SIDE_KEY, isLeft?'left':'right'); }catch(e){}
+}
+initAdminPanelSide();
 // 관리자 패널 너비 드래그 조절
 const ADMIN_WIDTH_KEY='kundo_admin_width_v1';
 (function initAdminResize(){
@@ -9460,7 +9598,10 @@ const ADMIN_WIDTH_KEY='kundo_admin_width_v1';
   });
   handle.addEventListener('pointermove', e=>{
     if (!dragging) return;
-    let w = startW + (startX - e.clientX);
+    // [수정] 패널이 좌측에 열려 있으면 손잡이가 패널 우측 끝에 있고, 오른쪽으로 끌수록 넓어져야
+    // 하므로 부호가 반대가 된다
+    const isLeft = panel.classList.contains('side-left');
+    let w = isLeft ? (startW + (e.clientX - startX)) : (startW + (startX - e.clientX));
     w = Math.min(Math.max(w, 420), Math.min(window.innerWidth - 60, 1200));
     panel.style.setProperty('--admin-w', w+'px');
   });

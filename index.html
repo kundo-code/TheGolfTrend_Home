@@ -863,6 +863,11 @@ section.block{padding:100px 24px;position:relative}
 .pd-share{padding:12px 16px 16px;display:flex;gap:8px}
 .pd-share button{flex:1;padding:11px;background:transparent;border:1px solid rgba(10,23,48,.14);border-radius:12px;color:rgba(10,23,48,.75);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
 .pd-share button:hover{background:rgba(10,23,48,.04);color:var(--pine-deep)}
+/* [버그 수정] 이미지 생성이 끝나 실제 공유 시트를 여는 두 번째 탭이 필요한 상태를, 버튼 글자만
+   바뀌어 눈에 잘 안 띄던 것에서 벗어나 금색 배경 + 은은한 펄스로 확실히 눈에 띄게 한다 —
+   두 번째 탭을 놓쳐 "아무 반응이 없다"고 느끼는 것을 방지 */
+.pd-share button.share-ready,.pd-share button.share-ready:hover{background:var(--gold);border-color:var(--gold);color:#fff;animation:pdShareReadyPulse 1.1s ease-in-out infinite}
+@keyframes pdShareReadyPulse{0%,100%{box-shadow:0 0 0 0 rgba(221,179,103,.55)}50%{box-shadow:0 0 0 9px rgba(221,179,103,0)}}
 .pd-calendar-note{padding:14px 20px;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:12px;margin:0 16px 16px;font-size:.82rem;color:rgba(10,23,48,.75);display:flex;align-items:center;gap:10px}
 .pd-calendar-note .icon{font-size:1.2rem}
 
@@ -9743,16 +9748,35 @@ function fixScheduleBadgesForCapture(clonedDoc){
 // (에러도 .catch(()=>{})로 무시되어 사용자 눈에는 버튼이 그냥 반응 없는 것처럼 보였다). 그래서 이미지
 // 생성이 끝나면 버튼을 "공유 시트 열기"로 바꿔 한 번 더 탭을 받고, 그 클릭 핸들러 안에서(=새로
 // 발생한 진짜 사용자 제스처) navigator.share()를 호출해 활성화 소멸 문제를 피한다.
+// [버그 수정] iOS Safari 등 일부 모바일 브라우저는 캔버스 한 변이 대략 4096px를 넘거나 전체
+// 면적이 커지면 캡처가 조용히 실패(빈 이미지·toBlob null)하거나 매우 느려진다. 상품 상세 전체
+// (갤러리·일정·요금표·문의하기까지 이어지는 세로로 매우 긴 요소)를 scale:2 그대로 캡처하면 이
+// 한계를 쉽게 넘을 수 있어, 실제 캡처 대상 크기에 맞춰 scale을 동적으로 낮춘다(작게 잘리는
+// 요소는 원래 요청한 배율 그대로 유지)
+const SHARE_CAPTURE_MAX_DIM = 4096;
+const SHARE_CAPTURE_TIMEOUT_MS = 25000;
+function safeCaptureScale(target, requestedScale){
+  const rect = target.getBoundingClientRect();
+  const w = Math.max(rect.width, 1), h = Math.max(rect.height, 1);
+  // [버그 수정] 세로로 아주 긴 상품 상세(사진·일정·요금표가 많은 경우)는 scale:1로도 4096px 한계를
+  // 넘을 수 있어, 하한을 1로 고정하지 않고 필요하면 1 밑으로도 낮춰 4096 한계를 우선 지킨다
+  // (가독성이 심하게 나빠지지 않도록 0.35까지만 허용)
+  const capped = Math.min(requestedScale, SHARE_CAPTURE_MAX_DIM/w, SHARE_CAPTURE_MAX_DIM/h);
+  return Math.max(0.35, capped);
+}
 function captureAndShare(opts){
-  const { target, btn, title, fileNameBase, canvasOpts, beforeCapture, afterCapture, restart } = opts;
+  const { target, btn, title, fileNameBase, canvasOpts, mimeType, quality, beforeCapture, afterCapture, restart } = opts;
   if (!target || typeof html2canvas==='undefined'){
     alert('이미지 생성 기능을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
     return;
   }
   const origLabel=btn.textContent;
   btn.disabled=true; btn.textContent='이미지 생성 중...';
+  btn.classList.remove('share-ready');
   if (beforeCapture) beforeCapture();
-  html2canvas(target, canvasOpts).then(canvas=>{
+  const finalCanvasOpts = { ...canvasOpts, scale: safeCaptureScale(target, canvasOpts.scale||1) };
+  const timeout = new Promise((_,reject)=>setTimeout(()=>reject(new Error('capture-timeout')), SHARE_CAPTURE_TIMEOUT_MS));
+  Promise.race([html2canvas(target, finalCanvasOpts), timeout]).then(canvas=>{
     if (afterCapture) afterCapture();
     canvas.toBlob(blob=>{
       if (!blob){
@@ -9760,14 +9784,15 @@ function captureAndShare(opts){
         alert('이미지 생성에 실패했습니다.');
         return;
       }
-      const fileName=`${fileNameBase.replace(/[\\/:*?"<>|]/g,'')}.png`;
-      const file=new File([blob], fileName, {type:'image/png'});
+      const ext = mimeType==='image/jpeg' ? 'jpg' : 'png';
+      const fileName=`${fileNameBase.replace(/[\\/:*?"<>|]/g,'')}.${ext}`;
+      const file=new File([blob], fileName, {type:mimeType||'image/png'});
       offerShare(btn, origLabel, file, title, restart);
-    },'image/png');
+    }, mimeType||'image/png', quality);
   }).catch(()=>{
     if (afterCapture) afterCapture();
     btn.disabled=false; btn.textContent=origLabel;
-    alert('이미지 생성에 실패했습니다.');
+    alert('이미지 생성에 실패했습니다. 상품 정보가 많아 시간이 오래 걸리는 경우일 수 있어요 — 잠시 후 다시 시도해주세요.');
   });
 }
 function downloadImageFile(file){
@@ -9777,6 +9802,9 @@ function downloadImageFile(file){
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),4000);
 }
+// [버그 수정] 이미지가 준비되면 버튼 글자만 "공유 시트 열기"로 바뀌었는데, 실기기에서는 이 미묘한
+// 텍스트 변화를 못 보고 지나쳐 "눌러도 반응 없다"고 느끼는 경우가 있었다 — 금색 배경 + 펄스
+// 애니메이션(share-ready 클래스)으로 지금 한 번 더 눌러야 한다는 것을 명확히 알려준다
 function offerShare(btn, origLabel, file, title, restart){
   const canShareFiles = !!(navigator.share && navigator.canShare && navigator.canShare({files:[file]}));
   if (!canShareFiles){
@@ -9785,12 +9813,14 @@ function offerShare(btn, origLabel, file, title, restart){
     return;
   }
   btn.disabled=false;
-  btn.textContent='📤 공유 시트 열기';
+  btn.textContent='📤 눌러서 공유하기';
+  btn.classList.add('share-ready');
   btn.onclick=function(){
     navigator.share({files:[file], title, text:title}).catch(err=>{
       if (!(err && err.name==='AbortError')) downloadImageFile(file);
     }).finally(()=>{
       btn.textContent=origLabel;
+      btn.classList.remove('share-ready');
       btn.onclick=restart;
     });
   };
@@ -9800,11 +9830,16 @@ function shareProductImage(btn){
   const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
   const target=document.getElementById('pdContent');
   const shareBar=target.querySelector('.pd-share');
+  // [버그 수정] 상품 상세 전체(갤러리·일정·요금표 등 포함해 세로로 매우 김)를 PNG·scale:2로 그대로
+  // 캡처하면 사진이 많은 상품일수록 캔버스가 커져 모바일에서 메모리 부담·생성 시간이 급격히
+  // 늘어난다 — 데스크톱은 문제 없이 되던 것과 달리 모바일에서만 실패하던 주된 원인. 사진이 많은
+  // 페이지 전체 캡처에는 용량이 훨씬 작고 인코딩도 빠른 JPEG(고화질)를 사용한다
   captureAndShare({
     target, btn,
     title: p.title||'',
     fileNameBase: p.title||'상품',
-    canvasOpts:{backgroundColor:'#030D26',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture},
+    canvasOpts:{backgroundColor:'#030D26',scale:2,useCORS:true,imageTimeout:12000,onclone:fixScheduleBadgesForCapture},
+    mimeType:'image/jpeg', quality:0.92,
     beforeCapture(){ if (shareBar) shareBar.style.display='none'; },
     afterCapture(){ if (shareBar) shareBar.style.display=''; },
     restart(){ shareProductImage(btn); },

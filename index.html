@@ -9737,35 +9737,77 @@ function fixScheduleBadgesForCapture(clonedDoc){
   clonedDoc.querySelectorAll('.pd-sch-opt .tag').forEach(el=>halfHeightFix(el,19));
   clonedDoc.querySelectorAll('.pd-sch-meals span').forEach(el=>halfHeightFix(el,22));
 }
+// [버그 수정] html2canvas로 이미지를 만드는 데는 시간이 걸리는데, 그 완료 콜백 안에서 곧바로
+// navigator.share()를 호출하면 iOS Safari 등 일부 모바일 브라우저에서는 그 사이 최초 탭의 "사용자
+// 제스처(user activation)"가 이미 소멸되어 공유 시트가 뜨지 않고 NotAllowedError로 조용히 실패했다
+// (에러도 .catch(()=>{})로 무시되어 사용자 눈에는 버튼이 그냥 반응 없는 것처럼 보였다). 그래서 이미지
+// 생성이 끝나면 버튼을 "공유 시트 열기"로 바꿔 한 번 더 탭을 받고, 그 클릭 핸들러 안에서(=새로
+// 발생한 진짜 사용자 제스처) navigator.share()를 호출해 활성화 소멸 문제를 피한다.
+function captureAndShare(opts){
+  const { target, btn, title, fileNameBase, canvasOpts, beforeCapture, afterCapture, restart } = opts;
+  if (!target || typeof html2canvas==='undefined'){
+    alert('이미지 생성 기능을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.');
+    return;
+  }
+  const origLabel=btn.textContent;
+  btn.disabled=true; btn.textContent='이미지 생성 중...';
+  if (beforeCapture) beforeCapture();
+  html2canvas(target, canvasOpts).then(canvas=>{
+    if (afterCapture) afterCapture();
+    canvas.toBlob(blob=>{
+      if (!blob){
+        btn.disabled=false; btn.textContent=origLabel;
+        alert('이미지 생성에 실패했습니다.');
+        return;
+      }
+      const fileName=`${fileNameBase.replace(/[\\/:*?"<>|]/g,'')}.png`;
+      const file=new File([blob], fileName, {type:'image/png'});
+      offerShare(btn, origLabel, file, title, restart);
+    },'image/png');
+  }).catch(()=>{
+    if (afterCapture) afterCapture();
+    btn.disabled=false; btn.textContent=origLabel;
+    alert('이미지 생성에 실패했습니다.');
+  });
+}
+function downloadImageFile(file){
+  const url=URL.createObjectURL(file);
+  const a=document.createElement('a');
+  a.href=url; a.download=file.name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+function offerShare(btn, origLabel, file, title, restart){
+  const canShareFiles = !!(navigator.share && navigator.canShare && navigator.canShare({files:[file]}));
+  if (!canShareFiles){
+    btn.disabled=false; btn.textContent=origLabel;
+    downloadImageFile(file);
+    return;
+  }
+  btn.disabled=false;
+  btn.textContent='📤 공유 시트 열기';
+  btn.onclick=function(){
+    navigator.share({files:[file], title, text:title}).catch(err=>{
+      if (!(err && err.name==='AbortError')) downloadImageFile(file);
+    }).finally(()=>{
+      btn.textContent=origLabel;
+      btn.onclick=restart;
+    });
+  };
+}
 function shareProductImage(btn){
-  if (!currentPd || typeof html2canvas==='undefined') return;
+  if (!currentPd) return;
   const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
   const target=document.getElementById('pdContent');
   const shareBar=target.querySelector('.pd-share');
-  const origLabel=btn.textContent;
-  btn.disabled=true; btn.textContent='이미지 생성 중...';
-  if (shareBar) shareBar.style.display='none';
-  html2canvas(target,{backgroundColor:'#030D26',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture}).then(canvas=>{
-    if (shareBar) shareBar.style.display='';
-    btn.disabled=false; btn.textContent=origLabel;
-    canvas.toBlob(blob=>{
-      if (!blob){ alert('이미지 생성에 실패했습니다.'); return; }
-      const fileName=`${(p.title||'상품').replace(/[\\/:*?"<>|]/g,'')}.png`;
-      const file=new File([blob], fileName, {type:'image/png'});
-      if (navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file], title:p.title||'', text:p.title||''}).catch(()=>{});
-      } else {
-        const url=URL.createObjectURL(blob);
-        const a=document.createElement('a');
-        a.href=url; a.download=fileName;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(()=>URL.revokeObjectURL(url),4000);
-      }
-    },'image/png');
-  }).catch(()=>{
-    if (shareBar) shareBar.style.display='';
-    btn.disabled=false; btn.textContent=origLabel;
-    alert('이미지 생성에 실패했습니다.');
+  captureAndShare({
+    target, btn,
+    title: p.title||'',
+    fileNameBase: p.title||'상품',
+    canvasOpts:{backgroundColor:'#030D26',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture},
+    beforeCapture(){ if (shareBar) shareBar.style.display='none'; },
+    afterCapture(){ if (shareBar) shareBar.style.display=''; },
+    restart(){ shareProductImage(btn); },
   });
 }
 // [Phase] 요금표의 각 요금 항목(.pd-price-entry)만 따로 이미지로 캡처해 공유/저장할 수 있게 한다 —
@@ -9774,34 +9816,17 @@ function shareProductImage(btn){
 // 아니라 버튼이 속한 요금 항목 카드 하나로 좁힌다. 캡처 중에는 이 버튼 자신만 잠깐 숨겨(상세보기·
 // 링크 버튼은 그대로 캡처에 포함되도록) 버튼이 이미지에 함께 찍히지 않게 한다
 function sharePriceEntryImage(btn){
-  if (typeof html2canvas==='undefined') return;
   const target=btn.closest('.pd-price-entry'); if (!target) return;
   const headline=target.querySelector('.pe-headline');
   const title=(headline?headline.textContent:'') || (currentPd?getProducts(currentPd.catId)[currentPd.idx]?.title:'') || '요금 항목';
-  const origLabel=btn.textContent;
-  btn.disabled=true; btn.textContent='이미지 생성 중...';
-  btn.style.visibility='hidden';
-  html2canvas(target,{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture}).then(canvas=>{
-    btn.style.visibility='';
-    btn.disabled=false; btn.textContent=origLabel;
-    canvas.toBlob(blob=>{
-      if (!blob){ alert('이미지 생성에 실패했습니다.'); return; }
-      const fileName=`${title.replace(/[\\/:*?"<>|]/g,'')}_요금표.png`;
-      const file=new File([blob], fileName, {type:'image/png'});
-      if (navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file], title, text:title}).catch(()=>{});
-      } else {
-        const url=URL.createObjectURL(blob);
-        const a=document.createElement('a');
-        a.href=url; a.download=fileName;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(()=>URL.revokeObjectURL(url),4000);
-      }
-    },'image/png');
-  }).catch(()=>{
-    btn.style.visibility='';
-    btn.disabled=false; btn.textContent=origLabel;
-    alert('이미지 생성에 실패했습니다.');
+  captureAndShare({
+    target, btn,
+    title,
+    fileNameBase: title+'_요금표',
+    canvasOpts:{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture},
+    beforeCapture(){ btn.style.visibility='hidden'; },
+    afterCapture(){ btn.style.visibility=''; },
+    restart(){ sharePriceEntryImage(btn); },
   });
 }
 

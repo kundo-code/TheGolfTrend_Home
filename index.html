@@ -9807,6 +9807,46 @@ function fixScheduleBadgesForCapture(clonedDoc){
   clonedDoc.querySelectorAll('.pd-sch-opt .tag').forEach(el=>halfHeightFix(el,19));
   clonedDoc.querySelectorAll('.pd-sch-meals span').forEach(el=>halfHeightFix(el,22));
 }
+// [버그 수정] "이미지 생성에 실패했습니다" 팝업이 몇 초 만에(타임아웃까지 기다리지 않고) 뜨는
+// 사례를 확인했다 — 원인은 상품 상세 안의 <video>(타이틀 영상·동영상 갤러리)였다. html2canvas는
+// 동영상 프레임을 제대로 그리지 못하는 것으로 알려져 있고, 특히 스토리지 등 다른 도메인에서
+// 재생 중인 영상은 CORS 설정에 따라 캔버스를 "오염"시켜(SecurityError) 캡처 전체를 그 자리에서
+// 실패시킬 수 있다. 복제 요소에 들어가기 직전에, 실제 화면에서 재생 중이던 프레임을 직접 캔버스에
+// 찍어(drawImage) 정지 이미지로 만든 뒤 <video>를 그 이미지로 교체한다 — 프레임을 못 찍는
+// 경우(역시 CORS 등)에는 캡처 자체를 막지 않도록 그 영상만 조용히 숨긴다. html2canvas의
+// onclone(document, element)에서 두 번째 인자 element가 target에 정확히 대응하는 복제본이라,
+// 페이지 전체가 아니라 이 캡처 대상 안의 video만 정확히 짝지어 찾을 수 있다(캡처와 무관한, 배경
+// 목록의 다른 상품 카드 동영상 등과 섞이지 않는다)
+function replaceVideosForCapture(clonedTarget, liveTarget){
+  const liveVideos = liveTarget.querySelectorAll('video');
+  const clonedVideos = clonedTarget.querySelectorAll('video');
+  liveVideos.forEach((liveVideo, i)=>{
+    const clonedVideo = clonedVideos[i];
+    if (!clonedVideo) return;
+    try{
+      const w = liveVideo.videoWidth || liveVideo.clientWidth;
+      const h = liveVideo.videoHeight || liveVideo.clientHeight;
+      if (!w || !h) throw new Error('no video frame yet');
+      const snap = document.createElement('canvas');
+      snap.width=w; snap.height=h;
+      snap.getContext('2d').drawImage(liveVideo, 0, 0, w, h);
+      const dataUrl = snap.toDataURL('image/jpeg', 0.85); // 오염된 캔버스면 여기서 SecurityError
+      const cs = getComputedStyle(liveVideo);
+      const img = clonedVideo.ownerDocument.createElement('img');
+      img.src = dataUrl;
+      img.style.cssText = `width:${cs.width};height:${cs.height};object-fit:${cs.objectFit};display:${cs.display};position:${cs.position};`;
+      clonedVideo.replaceWith(img);
+    } catch(e){
+      clonedVideo.style.display='none';
+    }
+  });
+}
+function prepareCloneForCapture(target){
+  return function(clonedDoc, clonedTarget){
+    fixScheduleBadgesForCapture(clonedDoc);
+    replaceVideosForCapture(clonedTarget || clonedDoc, target);
+  };
+}
 // [버그 수정] html2canvas로 이미지를 만드는 데는 시간이 걸리는데, 그 완료 콜백 안에서 곧바로
 // navigator.share()를 호출하면 iOS Safari 등 일부 모바일 브라우저에서는 그 사이 최초 탭의 "사용자
 // 제스처(user activation)"가 이미 소멸되어 공유 시트가 뜨지 않고 NotAllowedError로 조용히 실패했다
@@ -9853,6 +9893,14 @@ function captureAndShare(opts){
   btn.classList.remove('share-ready');
   let restored=false;
   const restoreOnce=()=>{ if (restored) return; restored=true; if (afterCapture) afterCapture(); };
+  // [Phase] 생성이 몇 초 이상 걸릴 때 버튼 글자가 멈춰있으면 "반응이 없다"고 느끼기 쉽다 —
+  // 1초마다 경과 시간을 표시해 지금 실제로 작업이 진행 중이라는 걸 실시간으로 보여준다
+  const startedAt = Date.now();
+  const tickTimer = setInterval(()=>{
+    if (stale()){ clearInterval(tickTimer); return; }
+    btn.textContent = `이미지 생성 중... (${Math.floor((Date.now()-startedAt)/1000)}초)`;
+  }, 1000);
+  const stopTicking = ()=>clearInterval(tickTimer);
   try{
     if (beforeCapture) beforeCapture();
     const finalCanvasOpts = { ...canvasOpts, scale: safeCaptureScale(target, canvasOpts.scale||1) };
@@ -9862,6 +9910,7 @@ function captureAndShare(opts){
       restoreOnce();
       canvas.toBlob(blob=>{
         if (stale()) return;
+        stopTicking();
         if (!blob){
           btn.disabled=false; btn.textContent=origLabel;
           alert('이미지 생성에 실패했습니다.');
@@ -9875,12 +9924,14 @@ function captureAndShare(opts){
     }).catch(()=>{
       if (stale()) return;
       restoreOnce();
+      stopTicking();
       btn.disabled=false; btn.textContent=origLabel;
       alert('이미지 생성에 실패했습니다. 상품 정보가 많아 시간이 오래 걸리는 경우일 수 있어요 — 잠시 후 다시 시도해주세요.');
     });
   } catch(e){
     if (stale()) return;
     restoreOnce();
+    stopTicking();
     btn.disabled=false; btn.textContent=origLabel;
     alert('이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
   }
@@ -9936,7 +9987,7 @@ function shareProductImage(btn){
     target, btn,
     title: p.title||'',
     fileNameBase: p.title||'상품',
-    canvasOpts:{backgroundColor:'#030D26',scale:1.5,useCORS:true,imageTimeout:12000,onclone:fixScheduleBadgesForCapture},
+    canvasOpts:{backgroundColor:'#030D26',scale:1.5,useCORS:true,imageTimeout:12000,onclone:prepareCloneForCapture(target)},
     mimeType:'image/jpeg', quality:0.9,
     beforeCapture(){ if (shareBar) shareBar.style.display='none'; },
     afterCapture(){ if (shareBar) shareBar.style.display=''; },
@@ -9956,7 +10007,7 @@ function sharePriceEntryImage(btn){
     target, btn,
     title,
     fileNameBase: title+'_요금표',
-    canvasOpts:{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:fixScheduleBadgesForCapture},
+    canvasOpts:{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:prepareCloneForCapture(target)},
     beforeCapture(){ btn.style.visibility='hidden'; },
     afterCapture(){ btn.style.visibility=''; },
     restart(){ sharePriceEntryImage(btn); },
@@ -13000,13 +13051,20 @@ Promise.race([
   siteStatePulled,
   new Promise(resolve=>setTimeout(()=>resolve(false), 4000)),
 ]).then(()=>{
-  // [Phase] 링크 공유(shareProductLink)로 들어온 방문자는 ?p=<catId>:<idx> 딥링크로 바로 그
-  // 상품 상세가 열려야 하며, 이때는 관련 없는 프로모션 팝업으로 방해하지 않는다
-  const deepLink = parsePdDeepLink();
+  // [버그 수정] 상품 상세를 열면 syncPdUrl()이 주소창에 ?p=<catId>:<idx>를 즉시 써넣는다 — 그런데
+  // 이 딥링크 자동 열기는 Supabase 동기화가 끝나거나 최대 4초 타임아웃될 때까지 기다린 뒤에야
+  // 실행된다. 그래서 사용자가 상품 카드를 직접 탭해 상세를 연 바로 그 순간에도(딥링크로 들어온 게
+  // 전혀 아닌데) 주소창에 이미 자기 자신이 써넣은 ?p=가 남아있어, 1~4초 뒤 이 코드가 "딥링크로
+  // 들어왔다"고 오인해 같은 상품을 처음부터 다시 열어버렸다 — 마침 그 사이 이미지 공유 생성이
+  // 진행 중이었다면 전체가 새로 렌더링되며 진행 상태가 통째로 사라지고 "생성 실패"로 보였다.
+  // 이미 열려있는 상세가 있다면(사용자가 직접 연 것이든 뭐든) 절대 다시 열지 않는다 — 진짜
+  // 딥링크는 페이지가 막 열렸을 때, 즉 아직 아무 상세도 열려있지 않을 때만 유효하다
+  const deepLink = !currentPd ? parsePdDeepLink() : null;
   if (deepLink){
     openProductDetail(deepLink.catId, deepLink.idx);
     return;
   }
+  if (currentPd) return; // 사용자가 이미 다른 상세를 보고 있다면 프로모션 팝업으로 방해하지 않는다
   // [Phase] 전체 공지 팝업(긴급 안내 등 최우선 안내) → 항목별 요금표 팝업 → EDITOR'S PICK 팝업 순으로 시도
   setTimeout(()=>{ if (!showNoticePopup()){ if (!showEntryPopups()) showEditorsPickPopup(); } }, 300);
 });

@@ -10014,7 +10014,16 @@ async function shareProductImage(btn){
     clearInterval(tickTimer);
     if (stale()) return;
     btn.disabled = false; btn.textContent = origLabel;
-    alert('이미지를 불러오지 못했습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.');
+    console.error('[shareProductImage] 사진을 가져오지 못함:', e);
+    // [버그 수정] fetch()로 읽어(File 객체로 만들어) navigator.share에 넘기는 방식은 이미지
+    // 호스트가 CORS를 허용하지 않으면 실패한다 — 반면 그 사진 URL을 새 탭에서 그냥 "보여주는" 것은
+    // CORS와 무관하게 항상 가능하다(브라우저가 이미지를 직접 렌더링할 뿐, JS가 바이트를 읽지
+    // 않으므로). 프로그램적 공유가 실패해도 사용자가 그 화면에서 길게 눌러 저장·공유할 수 있도록
+    // 안내하고 새 탭으로 열어주는 대안을 제공한다 — 실패 이유(오류 메시지)도 함께 보여줘 다음에
+    // 같은 문제가 생기면 바로 원인을 알 수 있게 한다
+    if (confirm(`이미지를 불러오지 못했습니다. (${e && e.message ? e.message : e})\n\n대신 사진을 새 화면에 열어드릴까요? 그 화면에서 길게 눌러 저장하거나 공유할 수 있습니다.`)){
+      window.open(imageUrl, '_blank');
+    }
   }
 }
 // [Phase] 요금표의 각 요금 항목(.pd-price-entry)만 따로 이미지로 캡처해 공유/저장할 수 있게 한다 —

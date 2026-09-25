@@ -2118,11 +2118,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   /* [추가] 히어로 배경이미지를 위젯 줄 영역까지 확장 — margin-top(음수)만큼 히어로 박스를 위로
      끌어올려 그 배경(.hero-bg)이 위젯 줄 뒤까지 깔리게 하고, 동일한 값을 padding-top에 더해
      안쪽 콘텐츠는 원래 위치 그대로 유지한다(둘이 정확히 상쇄됨). --widget-row-h는
-     syncWidgetRowHeight()가 위젯 줄의 실측 높이로 채워둔다. 추가로 -5px를 margin-top에만 더해
-     (padding-top에는 더하지 않아) 히어로 섹션 전체(배경+콘텐츠)를 5px 위로 살짝 올린다 */
+     syncWidgetRowHeight()가 위젯 줄의 실측 높이로 채워둔다. margin-top에만 -5px를 추가로 더해
+     (padding-top에는 반영하지 않아) 히어로 섹션 전체(배경+콘텐츠)를 5px 위로 올리고, 반대로
+     padding-top에서만 8px를 빼(margin-top은 그대로 둬) 배경이 시작되는 지점은 그대로 둔 채
+     콘텐츠만 위젯 줄 쪽으로 8px 더 가깝게 당겨 그 사이 여백을 좁힌다 */
   .hero{
     margin-top:calc(-1 * var(--widget-row-h,0px) - 5px);
-    padding-top:calc(32px + var(--widget-row-h,0px));
+    padding-top:calc(32px + var(--widget-row-h,0px) - 8px);
   }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}

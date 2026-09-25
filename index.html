@@ -1952,15 +1952,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08)}
 }
-/* [수정] 웹(데스크톱)에서만 "티타임 상담"·"전화하기"·"관리자" 3개를 탑바 우측 끝쪽 하단에 한 줄로
-   배치한다 — 탑바 실측 높이(--topbar-h)를 기준으로 탑바의 자체 아래쪽 여백(18px)만큼 위에
-   맞춰 로고 영역과 겹치지 않게 하고, 버튼 박스 크기(56px)는 기존 관리자 아이콘 그대로 유지하되
-   박스 안 아이콘 글자 크기만 가독성을 위해 최대한 키운다(1.4rem→2.2rem) */
+/* [수정] 웹(데스크톱)에서만 "티타임 상담"·"전화하기"·"관리자" 3개를 메뉴바(nav) 바로 아래
+   우측 끝쪽에 한 줄로 배치한다 — 탑바 높이 기준 고정 위치 대신, 모바일과 같은 방식으로 JS
+   (initMobileTopbarScroll)가 스크롤마다 실측해 갱신하는 --fab-nav-bottom(메뉴바의 현재 하단
+   위치)을 기준으로 삼아, 메뉴바가 원래 자리(헤드라인 배너 아래)에 있을 때도, 스크롤 후
+   탑바 바로 밑에 sticky로 붙었을 때도 항상 메뉴바 바로 아래에서 함께 움직인다. 버튼 박스
+   크기(56px)는 기존 관리자 아이콘 그대로 유지하되 박스 안 아이콘 글자 크기만 가독성을 위해
+   최대한 키운다(1.4rem→2.2rem) */
 @media(min-width:781px){
   .tb-booking-fab,.mobile-call-fab{display:flex;align-items:center;justify-content:center}
   .tb-booking-fab,.mobile-call-fab,.admin-fab{
     position:fixed;bottom:auto;
-    top:calc(var(--topbar-h,108px) - 56px - 18px);
+    top:calc(var(--fab-nav-bottom, 160px) + 10px);
     width:56px;height:56px;border-radius:50%;
     font-size:2.2rem;box-shadow:0 8px 24px rgba(10,23,48,.25);
     transition:transform .2s;
@@ -1977,10 +1980,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .tb-booking-fab:hover{transform:scale(1.08)}
 }
-/* [추가] 날씨·환율 위젯(웹 전용) — 탑바 우측 끝, 위 액션 버튼 줄 바로 아래에 배치. 박스 자체의
-   너비/높이는 고정값이고, 관리자 패널(헤드라인 배너 아래 "위젯 설정")에서 조절하는 CSS 커스텀
-   프로퍼티(--weather-*, --currency-*)로 스케일(우측 상단 모서리 기준 확대/축소)·위치·바탕박스
-   투명도를 제어한다. 탑바 자체가 z-index:201이라 액션 버튼과 같은 이유로 그 위(202)에 둔다 */
+/* [추가] 날씨·환율 위젯(웹 전용) — 위 액션 버튼 줄(이제 메뉴바 바로 아래를 --fab-nav-bottom
+   기준으로 따라다님) 바로 아래에 같은 우측 끝에서 이어서 배치해, 버튼 줄과 함께 스크롤을
+   따라다닌다. 박스 자체의 너비/높이는 고정값이고, 관리자 패널(헤드라인 배너 아래 "위젯 설정")
+   에서 조절하는 CSS 커스텀 프로퍼티(--weather-*, --currency-*)로 스케일(우측 상단 모서리
+   기준 확대/축소)·위치·바탕박스 투명도를 제어한다. 탑바 자체가 z-index:201이라 액션 버튼과
+   같은 이유로 그 위(202)에 둔다 */
 .widget-box{
   display:none;position:fixed;z-index:202;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -1990,7 +1995,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 @media(min-width:781px){
   .widget-box{display:block}
   .weather-widget{
-    top:calc(var(--topbar-h,108px) + 8px + var(--weather-y,0px));
+    top:calc(var(--fab-nav-bottom, 160px) + 10px + 56px + 8px + var(--weather-y,0px));
     right:calc(40px - var(--weather-x,0px));
     width:200px;height:118px;
     transform:scale(var(--weather-scale,1));transform-origin:top right;
@@ -1999,7 +2004,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
   .currency-widget{
-    top:calc(var(--topbar-h,108px) + 8px + (118px * var(--weather-scale,1)) + 8px + var(--currency-y,0px));
+    top:calc(var(--fab-nav-bottom, 160px) + 10px + 56px + 8px + (118px * var(--weather-scale,1)) + 8px + var(--currency-y,0px));
     right:calc(40px - var(--currency-x,0px));
     width:340px;height:100px;
     transform:scale(var(--currency-scale,1));transform-origin:top right;

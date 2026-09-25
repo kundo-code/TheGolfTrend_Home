@@ -2035,26 +2035,33 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
 }
-/* [추가] 모바일: 메뉴바(nav) 바로 아래에 공간을 확보해 환율·날씨 위젯을 나란히 한 줄로 배치한다.
+/* [수정] 모바일: 메뉴바(nav) 바로 아래에 공간을 확보해 날씨·환율 위젯을 나란히 한 줄로 배치한다.
    두 위젯의 원래(데스크톱) 박스 크기를 그대로 쓰되, 좁은 화면에 맞춰 기본 스케일을 줄여(0.6)
    겹치지 않게 하고, 관리자 패널의 스케일 슬라이더는 이 기본 축소값 위에 추가로 곱해지는 배율로
-   동작한다(예: 관리자 슬라이더 100% = 0.6배, 150% = 0.9배). 환율 위젯은 화면 좌측에서, 날씨
+   동작한다(예: 관리자 슬라이더 100% = 0.6배, 150% = 0.9배). 날씨 위젯은 화면 좌측에서, 환율
    위젯은 화면 우측에서 각각 자신의 바깥쪽 모서리를 기준으로 축소되어 서로 가까워지지 않는다 */
 @media(max-width:780px){
   .widget-box{display:block}
-  .currency-widget{
-    top:calc(var(--fab-nav-bottom, 160px) + 8px + var(--currency-y,0px));
-    left:calc(12px + var(--currency-x,0px));
-    width:340px;height:100px;
-    transform:scale(calc(var(--currency-scale,1) * .6));transform-origin:top left;
-    background:rgba(255,255,255,var(--currency-opacity,.92));
-  }
   .weather-widget{
     top:calc(var(--fab-nav-bottom, 160px) + 8px + var(--weather-y,0px));
-    right:calc(12px - var(--weather-x,0px));
+    left:calc(12px + var(--weather-x,0px));
     width:200px;height:118px;
-    transform:scale(calc(var(--weather-scale,1) * .6));transform-origin:top right;
+    transform:scale(calc(var(--weather-scale,1) * .6));transform-origin:top left;
     background:rgba(255,255,255,var(--weather-opacity,.92));
+  }
+  .currency-widget{
+    top:calc(var(--fab-nav-bottom, 160px) + 8px + var(--currency-y,0px));
+    right:calc(12px - var(--currency-x,0px));
+    width:340px;height:100px;
+    transform:scale(calc(var(--currency-scale,1) * .6));transform-origin:top right;
+    background:rgba(255,255,255,var(--currency-opacity,.92));
+  }
+  /* [추가] 위젯이 position:fixed라 문서 흐름과 무관하게 메뉴바 바로 아래(=히어로 섹션이 시작되는
+     지점)에 떠서, 위젯 높이만큼 히어로 섹션 상단 콘텐츠와 겹쳐 보이던 문제 — 히어로 섹션 상단
+     패딩에 두 위젯 중 더 큰 쪽의 실제 높이(스케일 반영)만큼을 더해 내용이 위젯 아래에서
+     시작하도록 한다 */
+  .hero{
+    padding-top:calc(32px + max(118px * var(--weather-scale,1), 100px * var(--currency-scale,1)) * .6 + 16px);
   }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}

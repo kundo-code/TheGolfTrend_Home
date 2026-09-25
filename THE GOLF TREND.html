@@ -9972,27 +9972,50 @@ function offerShare(btn, origLabel, file, title, restart){
     }
   };
 }
-function shareProductImage(btn){
+// [버그 수정] 상세 페이지 전체를 html2canvas로 캡처하는 방식은 페이지 안의 사진·동영상이 많을수록,
+// 그리고 그중 하나라도 다른 도메인에서 CORS를 지원하지 않으면 계속 실패할 위험이 있었다(용량·
+// 시간을 줄이고 동영상을 정지 이미지로 바꿔치기해도 근본적으로 "페이지 전체를 다시 그려서
+// 캡처"하는 접근 자체가 무겁고 실패 지점이 많다). 화면을 캡처하는 대신, 상품에 이미 등록된 실제
+// 사진 파일(타이틀 사진 → 없으면 갤러리 첫 사진 → 그것도 없으면 지역 대표 이미지)을 그대로
+// 내려받아 공유한다 — 캡처가 아니라 파일을 그대로 받아오는 것이라 훨씬 빠르고 안정적이며, 카카오톡
+// 등 메신저에서도 그 사진 그대로 미리보기에 노출된다
+function pdShareImageUrl(p, catId){
+  if (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
+  const gallery = pdMediaList(p);
+  if (gallery.length && gallery[0].url) return gallery[0].url;
+  return getImage(catId) || '';
+}
+async function shareProductImage(btn){
   if (!currentPd) return;
   const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
-  const target=document.getElementById('pdContent');
-  const shareBar=target.querySelector('.pd-share');
-  // [버그 수정] 상품 상세 전체(갤러리·일정·요금표 등 포함해 세로로 매우 김)를 PNG·scale:2로 그대로
-  // 캡처하면 사진이 많은 상품일수록 캔버스가 커져 모바일에서 메모리 부담·생성 시간이 급격히
-  // 늘어난다 — 데스크톱은 문제 없이 되던 것과 달리 모바일에서만 실패하던 주된 원인. 사진이 많은
-  // 페이지 전체 캡처에는 용량이 훨씬 작고 인코딩도 빠른 JPEG(고화질)를 사용하고, 기본 배율도
-  // 2배에서 1.5배로 낮춰(공유용 이미지는 인쇄가 아니라 화면 미리보기용이라 이 정도로도 충분히
-  // 선명하다) 캔버스 픽셀 수를 더 줄여 체감 생성 시간을 단축한다
-  captureAndShare({
-    target, btn,
-    title: p.title||'',
-    fileNameBase: p.title||'상품',
-    canvasOpts:{backgroundColor:'#030D26',scale:1.5,useCORS:true,imageTimeout:12000,onclone:prepareCloneForCapture(target)},
-    mimeType:'image/jpeg', quality:0.9,
-    beforeCapture(){ if (shareBar) shareBar.style.display='none'; },
-    afterCapture(){ if (shareBar) shareBar.style.display=''; },
-    restart(){ shareProductImage(btn); },
-  });
+  const imageUrl = pdShareImageUrl(p, currentPd.catId);
+  if (!imageUrl){ alert('공유할 사진이 없습니다. "🔗 링크 공유"를 이용해주세요.'); return; }
+  const myToken = pdShareToken;
+  const stale = ()=> myToken!==pdShareToken;
+  const origLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = '이미지 불러오는 중...';
+  btn.classList.remove('share-ready');
+  const startedAt = Date.now();
+  const tickTimer = setInterval(()=>{
+    if (stale()){ clearInterval(tickTimer); return; }
+    btn.textContent = `이미지 불러오는 중... (${Math.floor((Date.now()-startedAt)/1000)}초)`;
+  }, 1000);
+  try{
+    const resp = await fetch(imageUrl);
+    if (!resp.ok) throw new Error('http '+resp.status);
+    const blob = await resp.blob();
+    clearInterval(tickTimer);
+    if (stale()) return;
+    const ext = (blob.type.split('/')[1]||'jpg').replace('jpeg','jpg').split('+')[0];
+    const fileName = `${(p.title||'상품').replace(/[\\/:*?"<>|]/g,'')}.${ext}`;
+    const file = new File([blob], fileName, {type: blob.type||'image/jpeg'});
+    offerShare(btn, origLabel, file, p.title||'', ()=>shareProductImage(btn));
+  } catch(e){
+    clearInterval(tickTimer);
+    if (stale()) return;
+    btn.disabled = false; btn.textContent = origLabel;
+    alert('이미지를 불러오지 못했습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.');
+  }
 }
 // [Phase] 요금표의 각 요금 항목(.pd-price-entry)만 따로 이미지로 캡처해 공유/저장할 수 있게 한다 —
 // shareProductImage()와 동일한 html2canvas→Blob→navigator.share(파일 공유 시트에서 기기별로

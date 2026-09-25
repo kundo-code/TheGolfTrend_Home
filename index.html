@@ -1977,13 +1977,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .tb-booking-fab:hover{transform:scale(1.08)}
 }
-/* [추가] 날씨·환율 위젯(웹 전용) — 탑바 우측 끝, 위 액션 버튼 줄 바로 아래에 배치. 크기·위치는
-   관리자 패널에서 조절하는 CSS 커스텀 프로퍼티(--weather-*, --currency-*, 기본값은 각 규칙의
-   fallback 값)로 제어된다. 탑바 자체가 z-index:201이라 액션 버튼과 같은 이유로 그 위(202)에
-   둔다 */
+/* [추가] 날씨·환율 위젯(웹 전용) — 탑바 우측 끝, 위 액션 버튼 줄 바로 아래에 배치. 박스 자체의
+   너비/높이는 고정값이고, 관리자 패널(헤드라인 배너 아래 "위젯 설정")에서 조절하는 CSS 커스텀
+   프로퍼티(--weather-*, --currency-*)로 스케일(우측 상단 모서리 기준 확대/축소)·위치·바탕박스
+   투명도를 제어한다. 탑바 자체가 z-index:201이라 액션 버튼과 같은 이유로 그 위(202)에 둔다 */
 .widget-box{
   display:none;position:fixed;z-index:202;
-  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border-radius:16px;box-shadow:0 8px 24px rgba(10,23,48,.18);
   padding:10px 14px;color:var(--pine-deep);overflow:hidden;box-sizing:border-box;
 }
@@ -1992,14 +1992,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .weather-widget{
     top:calc(var(--topbar-h,108px) + 8px + var(--weather-y,0px));
     right:calc(40px - var(--weather-x,0px));
-    width:var(--weather-w,200px);height:var(--weather-h,112px);
+    width:200px;height:118px;
+    transform:scale(var(--weather-scale,1));transform-origin:top right;
+    background:rgba(255,255,255,var(--weather-opacity,.92));
     cursor:pointer;transition:box-shadow .2s;
   }
   .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
   .currency-widget{
-    top:calc(var(--topbar-h,108px) + 8px + var(--weather-h,112px) + 8px + var(--currency-y,0px));
+    top:calc(var(--topbar-h,108px) + 8px + (118px * var(--weather-scale,1)) + 8px + var(--currency-y,0px));
     right:calc(40px - var(--currency-x,0px));
-    width:var(--currency-w,220px);height:var(--currency-h,168px);
+    width:340px;height:100px;
+    transform:scale(var(--currency-scale,1));transform-origin:top right;
+    background:rgba(255,255,255,var(--currency-opacity,.92));
   }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}
@@ -2010,10 +2014,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .wx-label{font-size:.72rem;color:rgba(10,23,48,.7)}
 .wx-sub{font-size:.64rem;color:rgba(10,23,48,.5);margin-top:3px}
 .cur-title{font-size:.72rem;font-weight:700;margin-bottom:4px}
-.cur-list{display:flex;flex-direction:column;gap:2px}
+/* [수정] 위젯 안의 실시간 환율은 국가별 통화 항목 사이에 구분선을 두고 한 줄로 가로로 길게
+   배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
+   두 곳에서 공유되므로 .cur-list 안에서만 가로형으로 덮어쓴다) */
+.cur-list{display:flex;align-items:center;justify-content:space-between}
 .cur-row{display:flex;align-items:center;gap:6px;font-size:.72rem}
+.cur-list .cur-row{gap:4px;padding:0 8px;white-space:nowrap;border-right:1px solid rgba(10,23,48,.15)}
+.cur-list .cur-row:first-child{padding-left:0}
+.cur-list .cur-row:last-child{border-right:none;padding-right:0}
 .cur-flag{font-size:.9rem}
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
+.cur-list .cur-name{flex:none}
 .cur-rate{font-weight:700}
 .cur-calc-btn{margin-top:6px;width:100%;padding:5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:600;cursor:pointer}
 .cur-calc-btn:hover{background:var(--gold-deep)}
@@ -3869,6 +3880,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <div class="admin-body">
     <div id="tabImages">
       <div class="admin-section"><h4 class="admin-h4-lg">헤드라인 배너</h4><div id="adminHeadline"></div></div>
+      <div class="admin-section"><h4 class="admin-h4-lg">🌤️ 위젯 설정 (날씨·환율)</h4><div id="adminWidgets"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">사이트 아이덴티티 (로고·태그라인·회사소개 배너)</h4><div id="adminIdentity"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">🎨 화면 테마 (탑바·내비게이션바·배경)</h4><div id="adminTheme"></div></div>
       <div class="admin-section"><h4 class="admin-h4-lg">시즌 테마 (홈 화면 분위기)</h4><div id="adminSeasonTheme"></div></div>
@@ -5647,12 +5659,14 @@ try{ themeOverride = JSON.parse(localStorage.getItem(THEME_KEY)||'null'); }catch
 const LOGO_XFORM_KEY = 'kundo_logo_xform_v1';
 let logoTransform = { scale:100, x:0, y:0 };
 try{ const lx = JSON.parse(localStorage.getItem(LOGO_XFORM_KEY)||'null'); if (lx) logoTransform = Object.assign({scale:100,x:0,y:0}, lx); }catch(e){}
-// [추가] 웹(데스크톱) 전용 날씨·환율 위젯의 크기·위치(탑바 우측 끝 기준 x/y 오프셋)를 관리자가
-// 조절할 수 있게 저장 — 로고 스케일/위치 조절과 동일한 패턴(localStorage + CSS 커스텀 프로퍼티)
-const WIDGET_CFG_KEY = 'kundo_widget_cfg_v1';
+// [추가] 웹(데스크톱) 전용 날씨·환율 위젯의 크기(스케일)·위치(탑바 우측 끝 기준 x/y 오프셋)·
+// 바탕박스 투명도를 관리자가 조절할 수 있게 저장 — 로고 스케일/위치 조절과 동일한 패턴
+// (localStorage + CSS 커스텀 프로퍼티). 박스 자체의 너비/높이는 고정값이고, scale은 그 박스를
+// 우측 상단(탑바 쪽 모서리)을 기준으로 통째로 확대/축소한다
+const WIDGET_CFG_KEY = 'kundo_widget_cfg_v2';
 const WIDGET_CFG_DEFAULT = {
-  weather:{w:200,h:112,x:0,y:0},
-  currency:{w:220,h:168,x:0,y:0},
+  weather:{scale:100,x:0,y:0,opacity:92},
+  currency:{scale:100,x:0,y:0,opacity:92},
 };
 let widgetConfig = JSON.parse(JSON.stringify(WIDGET_CFG_DEFAULT));
 try{
@@ -5723,12 +5737,12 @@ function resetLogoTransform(){
 function applyWidgetConfigCSS(){
   const root = document.documentElement;
   const w = widgetConfig.weather, c = widgetConfig.currency;
-  root.style.setProperty('--weather-w', w.w+'px');
-  root.style.setProperty('--weather-h', w.h+'px');
+  root.style.setProperty('--weather-scale', w.scale/100);
+  root.style.setProperty('--weather-opacity', w.opacity/100);
   root.style.setProperty('--weather-x', w.x+'px');
   root.style.setProperty('--weather-y', w.y+'px');
-  root.style.setProperty('--currency-w', c.w+'px');
-  root.style.setProperty('--currency-h', c.h+'px');
+  root.style.setProperty('--currency-scale', c.scale/100);
+  root.style.setProperty('--currency-opacity', c.opacity/100);
   root.style.setProperty('--currency-x', c.x+'px');
   root.style.setProperty('--currency-y', c.y+'px');
 }
@@ -5736,17 +5750,17 @@ function previewWidgetConfig(widget, patch){
   widgetConfig[widget] = Object.assign({}, widgetConfig[widget], patch);
   applyWidgetConfigCSS();
   const valEl = document.getElementById('widgetXformVals_'+widget);
-  if (valEl){ const v=widgetConfig[widget]; valEl.textContent = `너비 ${v.w}px · 높이 ${v.h}px · 가로 ${v.x}px · 세로 ${v.y}px`; }
+  if (valEl){ const v=widgetConfig[widget]; valEl.textContent = `크기 ${v.scale}% · 투명도 ${v.opacity}% · 가로 ${v.x}px · 세로 ${v.y}px`; }
 }
 function setWidgetConfig(widget, patch){
   widgetConfig[widget] = Object.assign({}, widgetConfig[widget], patch);
   try{ localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig)); }catch(e){}
-  applyWidgetConfigCSS(); renderAdminIdentity(); queueSiteStateSync();
+  applyWidgetConfigCSS(); renderAdminWidgets(); queueSiteStateSync();
 }
 function resetWidgetConfig(widget){
   widgetConfig[widget] = Object.assign({}, WIDGET_CFG_DEFAULT[widget]);
   try{ localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig)); }catch(e){}
-  applyWidgetConfigCSS(); renderAdminIdentity(); queueSiteStateSync();
+  applyWidgetConfigCSS(); renderAdminWidgets(); queueSiteStateSync();
 }
 // ══ 날씨 위젯(웹 전용) ═══════════════════════════════════════════════
 // [추가] Open-Meteo(api.open-meteo.com) — 별도 API 키 없이 무료로 쓸 수 있는 기상 API. 여러
@@ -6289,60 +6303,47 @@ function renderAdminIdentity(){
         ${ab?`<button class="file-btn danger" onclick="clearAboutBanner()">기본값 복원</button>`:''}
       </div>
       <span class="file-hint">권장 이미지 1600×420px 이상 (와이드 배너) · 이미지 10MB / 동영상 50MB 이하</span>
-    </div>
-    <div class="admin-identity-section">
-      <h5>위젯 설정 <span style="color:rgba(247,245,240,.5);font-size:.72rem;font-weight:400">(웹/데스크톱 탑바 우측의 날씨·환율 위젯 크기·위치)</span></h5>
-      <div class="ai-logo-xform">
-        <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🌤️ 날씨 위젯</span>
-        <label class="ai-xform-row">
-          <span class="tc-label">너비</span>
-          <input type="range" min="140" max="320" step="1" value="${widgetConfig.weather.w}"
-            oninput="previewWidgetConfig('weather',{w:Number(this.value)})" onchange="setWidgetConfig('weather',{w:Number(this.value)})">
-        </label>
-        <label class="ai-xform-row">
-          <span class="tc-label">높이</span>
-          <input type="range" min="80" max="220" step="1" value="${widgetConfig.weather.h}"
-            oninput="previewWidgetConfig('weather',{h:Number(this.value)})" onchange="setWidgetConfig('weather',{h:Number(this.value)})">
-        </label>
-        <label class="ai-xform-row">
-          <span class="tc-label">가로 위치</span>
-          <input type="range" min="-120" max="120" step="1" value="${widgetConfig.weather.x}"
-            oninput="previewWidgetConfig('weather',{x:Number(this.value)})" onchange="setWidgetConfig('weather',{x:Number(this.value)})">
-        </label>
-        <label class="ai-xform-row">
-          <span class="tc-label">세로 위치</span>
-          <input type="range" min="-80" max="200" step="1" value="${widgetConfig.weather.y}"
-            oninput="previewWidgetConfig('weather',{y:Number(this.value)})" onchange="setWidgetConfig('weather',{y:Number(this.value)})">
-        </label>
-        <span class="file-hint" id="widgetXformVals_weather">너비 ${widgetConfig.weather.w}px · 높이 ${widgetConfig.weather.h}px · 가로 ${widgetConfig.weather.x}px · 세로 ${widgetConfig.weather.y}px</span>
-        ${(widgetConfig.weather.w!==WIDGET_CFG_DEFAULT.weather.w||widgetConfig.weather.h!==WIDGET_CFG_DEFAULT.weather.h||widgetConfig.weather.x!==0||widgetConfig.weather.y!==0)?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('weather')" style="margin-top:6px">날씨 위젯 초기화</button>`:''}
-      </div>
-      <div class="ai-logo-xform" style="margin-top:16px">
-        <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">💱 환율 위젯</span>
-        <label class="ai-xform-row">
-          <span class="tc-label">너비</span>
-          <input type="range" min="160" max="340" step="1" value="${widgetConfig.currency.w}"
-            oninput="previewWidgetConfig('currency',{w:Number(this.value)})" onchange="setWidgetConfig('currency',{w:Number(this.value)})">
-        </label>
-        <label class="ai-xform-row">
-          <span class="tc-label">높이</span>
-          <input type="range" min="100" max="320" step="1" value="${widgetConfig.currency.h}"
-            oninput="previewWidgetConfig('currency',{h:Number(this.value)})" onchange="setWidgetConfig('currency',{h:Number(this.value)})">
-        </label>
-        <label class="ai-xform-row">
-          <span class="tc-label">가로 위치</span>
-          <input type="range" min="-120" max="120" step="1" value="${widgetConfig.currency.x}"
-            oninput="previewWidgetConfig('currency',{x:Number(this.value)})" onchange="setWidgetConfig('currency',{x:Number(this.value)})">
-        </label>
-        <label class="ai-xform-row">
-          <span class="tc-label">세로 위치</span>
-          <input type="range" min="-80" max="200" step="1" value="${widgetConfig.currency.y}"
-            oninput="previewWidgetConfig('currency',{y:Number(this.value)})" onchange="setWidgetConfig('currency',{y:Number(this.value)})">
-        </label>
-        <span class="file-hint" id="widgetXformVals_currency">너비 ${widgetConfig.currency.w}px · 높이 ${widgetConfig.currency.h}px · 가로 ${widgetConfig.currency.x}px · 세로 ${widgetConfig.currency.y}px</span>
-        ${(widgetConfig.currency.w!==WIDGET_CFG_DEFAULT.currency.w||widgetConfig.currency.h!==WIDGET_CFG_DEFAULT.currency.h||widgetConfig.currency.x!==0||widgetConfig.currency.y!==0)?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('currency')" style="margin-top:6px">환율 위젯 초기화</button>`:''}
-      </div>
     </div>`;
+}
+// [추가] 웹(데스크톱) 전용 날씨·환율 위젯의 크기(스케일)·위치·바탕박스 투명도 관리자 UI —
+// "헤드라인 배너" 섹션 바로 아래(renderAdminImages에서 renderAdminHeadline 다음)에 위치
+function renderAdminWidgets(){
+  const c=document.getElementById('adminWidgets');if(!c)return;
+  const xformBlock=(widget,label,xRange,yRange)=>{
+    const v=widgetConfig[widget];
+    const changed=(v.scale!==100||v.x!==0||v.y!==0||v.opacity!==WIDGET_CFG_DEFAULT[widget].opacity);
+    return `
+    <div class="ai-logo-xform"${widget==='currency'?' style="margin-top:16px"':''}>
+      <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">${label}</span>
+      <label class="ai-xform-row">
+        <span class="tc-label">크기</span>
+        <input type="range" min="50" max="200" step="1" value="${v.scale}"
+          oninput="previewWidgetConfig('${widget}',{scale:Number(this.value)})" onchange="setWidgetConfig('${widget}',{scale:Number(this.value)})">
+      </label>
+      <label class="ai-xform-row">
+        <span class="tc-label">배경 투명도</span>
+        <input type="range" min="20" max="100" step="1" value="${v.opacity}"
+          oninput="previewWidgetConfig('${widget}',{opacity:Number(this.value)})" onchange="setWidgetConfig('${widget}',{opacity:Number(this.value)})">
+      </label>
+      <label class="ai-xform-row">
+        <span class="tc-label">가로 위치</span>
+        <input type="range" min="${xRange[0]}" max="${xRange[1]}" step="1" value="${v.x}"
+          oninput="previewWidgetConfig('${widget}',{x:Number(this.value)})" onchange="setWidgetConfig('${widget}',{x:Number(this.value)})">
+      </label>
+      <label class="ai-xform-row">
+        <span class="tc-label">세로 위치</span>
+        <input type="range" min="${yRange[0]}" max="${yRange[1]}" step="1" value="${v.y}"
+          oninput="previewWidgetConfig('${widget}',{y:Number(this.value)})" onchange="setWidgetConfig('${widget}',{y:Number(this.value)})">
+      </label>
+      <span class="file-hint" id="widgetXformVals_${widget}">크기 ${v.scale}% · 투명도 ${v.opacity}% · 가로 ${v.x}px · 세로 ${v.y}px</span>
+      ${changed?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('${widget}')" style="margin-top:6px">${label} 초기화</button>`:''}
+    </div>`;
+  };
+  c.innerHTML = `
+    <span class="file-hint" style="display:block;margin-bottom:10px">웹(데스크톱)에서만 탑바 우측 끝, 액션 버튼 줄 바로 아래에 노출되는 실시간 날씨·환율 위젯의 크기·위치·바탕박스 투명도를 조절합니다.</span>
+    ${xformBlock('weather','🌤️ 날씨 위젯',[-150,150],[-100,250])}
+    ${xformBlock('currency','💱 환율 위젯',[-150,150],[-100,250])}
+  `;
 }
 // [추가] 화면 테마(탑바·내비게이션바 배경/폰트 색상, 사이트 전체 배경) 관리자 UI
 function renderAdminTheme(){
@@ -10191,6 +10192,7 @@ function renderAdminHeadline(){
 // IMAGES ADMIN
 function renderAdminImages(){
   renderAdminHeadline();
+  renderAdminWidgets();
   const dom=document.getElementById('adminDomestic');
   const ov=document.getElementById('adminOverseas');
   const bl=document.getElementById('adminBlog');

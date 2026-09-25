@@ -353,6 +353,10 @@ section.block{padding:100px 24px;position:relative}
 .period-filter-btn:hover{background:rgba(10,23,48,.08);color:var(--pine-deep)}
 .period-filter-btn.active{background:var(--fairway);border-color:var(--fairway);color:#fff;font-weight:600}
 .product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+/* [추가] 등록된 상품이 1개뿐일 때 — 3열 그리드의 첫 칸에만 들어가 좌측으로 치우쳐 보이는 대신,
+   카드 폭은 평소 그리드 한 칸과 같게 유지한 채(3열 그리드였다면 차지했을 폭, 간격 2개분을 뺀 것)
+   그 한 칸을 가로 폭 기준 중앙에 오도록 한다 */
+.product-grid.single-item{grid-template-columns:minmax(0,calc((100% - 40px) / 3));justify-content:center}
 /* [Phase] 상품이 3개 이하라 캐러셀(.pc-carousel)로 전환되지 않는 경우에도, 모바일에서는 좌/우로
    슬라이딩해서 넘겨볼 수 있도록 그리드 대신 가로 스크롤 트랙으로 바꾼다(네이티브 scroll-snap) */
 @media(max-width:780px){
@@ -368,6 +372,8 @@ section.block{padding:100px 24px;position:relative}
   .product-grid{margin-left:-22px;margin-right:-22px;width:calc(100% + 44px);gap:10px}
   .product-grid>.product{flex:0 0 80%;scroll-snap-align:center}
   .product-grid>.empty-state{flex:0 0 100%}
+  /* [추가] 모바일(가로 스크롤 flex 트랙)에서도 상품이 1개뿐이면 좌측 정렬 대신 중앙 배치 */
+  .product-grid.single-item{justify-content:center}
 }
 /* [수정] 상품이 4개 이상(3개 초과)이면 위 .product-grid 대신 이 캐러셀로 전환 — 카드(.product)
    마크업은 동일하게 재사용하고, 배치를 grid에서 가로 스크롤 flex 트랙으로 바꿔 좌우로 넘겨볼 수
@@ -1952,7 +1958,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
   .nav .menu-btn{display:none}
   /* [수정] "관리자"·"전화하기" 두 아이콘을 화면 우측 최하단 코너에 세로로 쌓는다(스크롤과 무관하게
-     항상 같은 자리 — position:fixed + bottom/right이라 --fab-nav-bottom 실측 없이도 항상 고정).
+     항상 같은 자리 — position:fixed + bottom/right이라 스크롤 실측 없이도 항상 고정).
      "전화하기"(고객이 실제로 누를 확률이 높은 아이콘)를 코너에 가장 가깝게(맨 아래), "관리자"(내부
      스태프용)는 그 바로 위로 — 기존에는 반대(관리자가 위, 전화하기가 아래)였던 순서를 그대로 유지한
      채 화면 상단 메뉴바 밑에서 화면 우측 하단 코너로 위치만 옮긴 것 */
@@ -2039,18 +2045,21 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    두 위젯의 원래(데스크톱) 박스 크기를 그대로 쓰되, 좁은 화면에 맞춰 기본 스케일을 줄여(0.6)
    겹치지 않게 하고, 관리자 패널의 스케일 슬라이더는 이 기본 축소값 위에 추가로 곱해지는 배율로
    동작한다(예: 관리자 슬라이더 100% = 0.6배, 150% = 0.9배). 날씨 위젯은 화면 좌측에서, 환율
-   위젯은 화면 우측에서 각각 자신의 바깥쪽 모서리를 기준으로 축소되어 서로 가까워지지 않는다 */
+   위젯은 화면 우측에서 각각 자신의 바깥쪽 모서리를 기준으로 축소되어 서로 가까워지지 않는다.
+   top은 스크롤마다 갱신되는 --fab-nav-bottom이 아니라, 페이지 로드·리사이즈 시점에 한 번만
+   구해 고정해 두는 --mobile-widget-anchor를 쓴다 — 스크롤 중 위젯이 흔들려 보이던 문제를
+   막기 위해 스크롤 시에는 다시 계산하지 않는다(JS의 syncMobileWidgetAnchor 참고) */
 @media(max-width:780px){
   .widget-box{display:block}
   .weather-widget{
-    top:calc(var(--fab-nav-bottom, 160px) + 8px + var(--weather-y,0px));
+    top:calc(var(--mobile-widget-anchor, 160px) + 8px + var(--weather-y,0px));
     left:calc(12px + var(--weather-x,0px));
     width:200px;height:118px;
     transform:scale(calc(var(--weather-scale,1) * .6));transform-origin:top left;
     background:rgba(255,255,255,var(--weather-opacity,.92));
   }
   .currency-widget{
-    top:calc(var(--fab-nav-bottom, 160px) + 8px + var(--currency-y,0px));
+    top:calc(var(--mobile-widget-anchor, 160px) + 8px + var(--currency-y,0px));
     right:calc(12px - var(--currency-x,0px));
     width:340px;height:100px;
     transform:scale(calc(var(--currency-scale,1) * .6));transform-origin:top right;
@@ -6314,14 +6323,8 @@ window.addEventListener('resize', syncTopBarHeight);
 // 내려가는데도 탑바가 같이 따라 내려온다"는 문제가 있었다. 이제 한 번 숨겨진 topbar는 오직
 // 헤드라인 배너(=메뉴바 nav가 원래 자리인 topbar 위치까지 올라오는 지점) 근처로 다시 스크롤해
 // 돌아왔을 때만 나타난다 — 페이지 중간 어디서든의 작은 위 스크롤로는 다시 나타나지 않는다
-// [수정] 관리자·전화하기 아이콘(.admin-fab, .mobile-call-fab)을 메뉴바(nav) 바로 아래에서 스크롤을
-// 따라다니게 하려면, nav의 실제 현재 위치(스크롤 전 원래 자리에 있을 때와, sticky로 화면 상단에
-// 붙었을 때, 모바일에서 탑바가 사라지며 nav가 top:0으로 바뀔 때 모두)를 실측해야 한다 — 이 값을
-// --fab-nav-bottom 커스텀 프로퍼티로 갱신해 두 아이콘의 top 계산에 그대로 사용한다. 기존 모바일
-// topbar 숨김/노출 판정과 같은 스크롤 이벤트·rAF 스로틀을 공유해 리스너를 늘리지 않는다
 (function initMobileTopbarScroll(){
   const headlineEl = document.querySelector('.headline');
-  const navEl = document.getElementById('mainNav');
   let ticking = false;
   function update(){
     ticking = false;
@@ -6336,7 +6339,6 @@ window.addEventListener('resize', syncTopBarHeight);
         document.body.classList.add('mobile-topbar-hidden');
       }
     }
-    if (navEl) document.documentElement.style.setProperty('--fab-nav-bottom', navEl.getBoundingClientRect().bottom+'px');
   }
   window.addEventListener('scroll', () => {
     if (ticking) return;
@@ -6353,6 +6355,23 @@ window.addEventListener('resize', syncTopBarHeight);
   // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
   window.addEventListener('load', update);
 })();
+// [수정] 모바일 날씨·환율 위젯 위치 — 예전에는 --fab-nav-bottom(스크롤마다 실측 갱신)을 그대로
+// 썼는데, position:fixed 요소를 JS로 매 프레임 다시 위치시키는 방식은 iOS 사파리 등에서 네이티브
+// 스크롤 컴포지팅을 한두 프레임 따라잡지 못해 위젯이 화면에서 흔들려 보이는 원인이 됐다. 위젯은
+// "메뉴바가 원래(스크롤 전) 있던 자리 바로 아래"에만 고정되면 되므로, 그 y좌표를 페이지 로드·
+// 리사이즈 시점에 한 번만 구해 고정값으로 굳혀 두고 스크롤 중에는 다시 계산하지 않는다.
+// getBoundingClientRect().bottom(뷰포트 기준 좌표)에 현재 scrollY를 더하면 호출 시점의 스크롤
+// 위치와 무관하게 항상 같은 문서 절대좌표가 나오므로 안전하다 — 이 좌표를 그대로 position:fixed
+// top 값으로 쓰면 화면상 "메뉴바 바로 아래" 자리에 스크롤과 무관하게 계속 고정된다
+function syncMobileWidgetAnchor(){
+  const navEl = document.getElementById('mainNav');
+  if (!navEl) return;
+  const rect = navEl.getBoundingClientRect();
+  document.documentElement.style.setProperty('--mobile-widget-anchor', Math.round(rect.bottom + window.scrollY)+'px');
+}
+window.addEventListener('resize', syncMobileWidgetAnchor);
+window.addEventListener('load', syncMobileWidgetAnchor);
+syncMobileWidgetAnchor();
 let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;
@@ -7472,7 +7491,9 @@ function refreshCategoryProducts(regionKey){
     initProductCarousel(regionKey);
     fitProductCardsToScreen(grid);
   } else {
-    grid.className='product-grid';
+    // [수정] 등록된 상품이 1개뿐이면 그리드(데스크톱 3열/모바일 가로 스크롤) 안에서 좌측으로
+    // 치우쳐 보이지 않도록 .single-item 클래스를 얹어 가로 폭 기준 중앙에 배치한다
+    grid.className='product-grid'+(filtered.length===1?' single-item':'');
     const cardsHTML=filtered.map(({p,i})=>productCardHTML(p,selectedId,i)).join('');
     // [수정] 상품이 3개 이하라 캐러셀(.pc-track)로 전환되지 않아도, 모바일에서는 여전히 화면을
     // 한 장씩 스와이프해 넘기는 가로 캐러셀(scroll-snap)이다 — 여행이야기(renderBlog)/상품 캐러셀

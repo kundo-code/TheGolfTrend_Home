@@ -2077,7 +2077,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .mobile-widget-row{
     display:flex;flex-direction:column;gap:8px;
     position:sticky;top:calc(var(--topbar-h,108px) + 54px);z-index:201;
-    padding:8px 12px 0;
+    /* [수정] 좌우 여백을 12px→20px로 넓힘 — iOS Safari는 화면 가장자리 근처(대략 20px 이내)에서
+       시작되는 가로 드래그를 "뒤로 가기"/탭 전환 같은 시스템 제스처로 가로채는 경우가 있어, 날씨
+       위젯(왼쪽으로 숨김)이나 환율·일본 날씨 위젯(오른쪽으로 숨김)을 드래그할 때 화면 전체가
+       좌우로 밀리는 문제가 있었다. 위젯의 터치 시작 지점이 그 위험 구간에 들어가지 않도록 화면
+       가장자리로부터 충분한 여백을 확보한다 */
+    padding:8px 20px 0;
   }
   body.mobile-topbar-hidden .mobile-widget-row{top:54px}
   .mobile-weather-pair{display:flex;gap:8px}
@@ -2120,12 +2125,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      안쪽 콘텐츠는 원래 위치 그대로 유지한다(둘이 정확히 상쇄됨). --widget-row-h는
      syncWidgetRowHeight()가 위젯 줄의 실측 높이로 채워둔다. margin-top에만 -5px를 추가로 더해
      (padding-top에는 반영하지 않아) 히어로 섹션 전체(배경+콘텐츠)를 5px 위로 올리고, padding-top은
-     -8px(여백 좁힘) - 15px(여백을 메뉴바 쪽으로 더 좁힘) = 순 -23px로 조정해(margin-top은 그대로
-     둬 배경이 시작되는 지점은 그대로 유지) 위젯 줄과 히어로 콘텐츠 사이 여백을 최종적으로 23px
-     좁힌다 */
+     -8px(여백 좁힘) - 15px(여백을 메뉴바 쪽으로 더 좁힘) + 5px(현재 위치에서 콘텐츠를 5px 내림) =
+     순 -18px로 조정해(margin-top은 그대로 둬 배경이 시작되는 지점은 그대로 유지) 위젯 줄과 히어로
+     콘텐츠 사이 여백을 최종적으로 18px 좁힌다 */
   .hero{
     margin-top:calc(-1 * var(--widget-row-h,0px) - 5px);
-    padding-top:calc(32px + var(--widget-row-h,0px) - 23px);
+    padding-top:calc(32px + var(--widget-row-h,0px) - 18px);
   }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}

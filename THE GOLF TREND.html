@@ -1040,12 +1040,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    플로팅 클러스터)로 통일한다(정확한 배치는 아래 두 미디어쿼리에서). 바탕 박스를 반투명 유리
    느낌으로 바꿔(backdrop-filter 블러 + 낮춘 알파) 페이지 콘텐츠 위에 떠 있을 때 덜 답답해 보이게
    하고, 아이콘 자체(이모지)는 배경과 무관하게 항상 또렷이 보인다 */
-.admin-fab{position:fixed;z-index:99;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(221,179,103,.82) 0%,rgba(202,142,63,.82) 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border:none;cursor:pointer;font-size:1.4rem;box-shadow:var(--nm-shadow-blue),0 8px 24px rgba(221,179,103,.35);transition:transform .2s}
+.admin-fab{position:fixed;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,rgba(221,179,103,.82) 0%,rgba(202,142,63,.82) 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border:none;cursor:pointer;font-size:1.4rem;box-shadow:var(--nm-shadow-blue),0 8px 24px rgba(221,179,103,.35);transition:transform .2s}
 .admin-fab:hover{transform:scale(1.08) rotate(30deg)}
 /* [추가] 아이콘 위에 마우스를 올리면 aria-label 텍스트를 작은 말풍선으로 보여주는 커스텀 툴팁 —
    네이티브 title 속성 툴팁(스타일 지정 불가·지연 발생)을 대체한다. 아이콘들이 화면 하단에 있어
    말풍선은 항상 아이콘 위쪽에 뜨게 한다 */
-.admin-fab,.mobile-call-fab,.tb-booking-fab{position:fixed}
+/* [수정] 관리자/전화하기/문의하기 세 아이콘은 항상 화면 최상단 레이어에 떠 있어야 하는 상시 노출
+   버튼이라, 모바일 날씨·환율 위젯 줄(.mobile-widget-row, z-index:201)이나 위젯 박스 자체
+   (.widget-box, z-index:202)보다 반드시 위에 그려지도록 z-index를 명시한다(문의하기·전화하기는
+   기존에 z-index가 아예 지정되어 있지 않아 position:fixed임에도 사실상 auto로 밀려 있었다) */
+.admin-fab,.mobile-call-fab,.tb-booking-fab{position:fixed;z-index:203}
 .admin-fab::after,.mobile-call-fab::after,.tb-booking-fab::after{
   content:attr(aria-label);position:absolute;bottom:calc(100% + 10px);left:50%;
   transform:translateX(-50%) translateY(4px);white-space:nowrap;
@@ -1968,7 +1972,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .mobile-call-fab{
     display:flex;align-items:center;justify-content:center;
-    position:fixed;top:auto;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;z-index:99;
+    position:fixed;top:auto;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;
     width:44.8px;height:44.8px;border-radius:50%;
     background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,0) 55%),rgba(221,179,103,.82);
     backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -2104,7 +2108,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .currency-widget{
     position:relative;top:auto;left:auto;right:auto;
     width:100%;height:auto;min-height:100px;
-    transform:scale(var(--currency-scale,1));transform-origin:top left;
+    /* [수정] transform-origin을 top left가 아닌 top center로 — 관리자 패널에서 환율 위젯 크기(배율)를
+       100%가 아닌 값으로 조절해뒀을 때, top left 기준으로는 박스가 오른쪽으로만 커져(줄어들어) 왼쪽
+       여백은 그대로인데 오른쪽 여백만 줄어드는(또는 화면 밖으로 밀려나는) 비대칭이 생겼다. 중앙을
+       기준으로 커지고 줄어들게 하면 배율이 얼마든 좌우 여백이 항상 똑같이 유지된다 */
+    transform:scale(var(--currency-scale,1));transform-origin:top center;
     background:rgba(255,255,255,var(--currency-opacity,.92));
   }
   .widget-drag-wrap.widget-hidden .widget-box{pointer-events:none}
@@ -2157,7 +2165,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
 .cur-list .cur-name{flex:none}
 .cur-rate{font-weight:700}
-.cur-calc-btn{margin-top:6px;width:100%;padding:5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:600;cursor:pointer}
+/* [수정] 세로 길이를 2px 늘리기 위해 상하 padding만 5px→6px로(좌우는 그대로 5px) — 버튼 폭은
+   부모(.currency-widget)의 padding box(좌우 여백이 이제 항상 대칭)를 100% 그대로 채운다 */
+.cur-calc-btn{margin-top:6px;width:100%;padding:6px 5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:600;cursor:pointer}
 .cur-calc-btn:hover{background:var(--gold-deep)}
 /* 날씨·환율 상세 오버레이(클릭 시 팝업) */
 .widget-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}

@@ -8944,6 +8944,53 @@ function renderFootSocials(){
 }
 
 // ========== PRODUCT DETAIL MODAL ==========
+// [Phase] 상품 상세를 "이미지"가 아니라 "링크"로 공유할 때 쓰는 딥링크 — ?p=<catId>:<idx>를 붙인
+// URL로 들어오면 자동으로 그 상품 상세가 열린다. 이 사이트는 정적 GitHub Pages라 카카오톡·문자의
+// 링크 미리보기 썸네일은 서버가 URL별로 다른 og:image를 내려줄 수 없어 사이트 공통 이미지만
+// 쓸 수 있다(상품 사진을 미리보기로 보여주려면 상품 이미지 공유(shareProductImage)를 이용) —
+// 대신 이 링크는 받는 사람이 열자마자 정확히 그 상품 상세로 바로 이동시켜준다
+const PD_DEEPLINK_PARAM = 'p';
+const PD_ORIGINAL_TITLE = document.title;
+function getProductShareUrl(catId, idx){
+  const url = new URL(location.href);
+  url.search=''; url.hash='';
+  url.searchParams.set(PD_DEEPLINK_PARAM, `${catId}:${idx}`);
+  return url.toString();
+}
+function parsePdDeepLink(){
+  const raw = new URLSearchParams(location.search).get(PD_DEEPLINK_PARAM);
+  if (!raw) return null;
+  const sep = raw.lastIndexOf(':');
+  if (sep<0) return null;
+  const catId = raw.slice(0,sep), idx = parseInt(raw.slice(sep+1),10);
+  if (!catId || isNaN(idx) || !findCat(catId)) return null;
+  if (!getProducts(catId)[idx]) return null;
+  return { catId, idx };
+}
+function syncPdUrl(catId, idx){
+  try{ history.replaceState(history.state, '', getProductShareUrl(catId, idx)); } catch(e){}
+}
+function resetPdUrl(){
+  try{ history.replaceState(history.state, '', location.pathname+location.hash); } catch(e){}
+}
+function shareProductLink(){
+  if (!currentPd) return;
+  const p = getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
+  const url = getProductShareUrl(currentPd.catId, currentPd.idx);
+  const title = p.title || '';
+  const text = title ? `${title} — THE GOLF TREND` : 'THE GOLF TREND';
+  if (navigator.share){
+    navigator.share({title, text, url}).catch(()=>{});
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>{
+      alert('링크가 복사되었습니다.');
+    }).catch(()=>{ prompt('아래 링크를 복사해 공유하세요.', url); });
+    return;
+  }
+  prompt('아래 링크를 복사해 공유하세요.', url);
+}
 // [수정] catId가 국내/해외 어느 권역에 속하는지 판별 — selectCategory()에서 쓰는 것과 동일한 방식
 function pdRegionKeyFor(catId){
   return CATEGORIES.overseas.some(c=>c.id===catId) ? 'overseas' : 'domestic';
@@ -8977,6 +9024,8 @@ function closeProductDetail(){
   const c=document.getElementById('pdContent');
   if (c){ pauseVideosIn(c); c.innerHTML=''; c.style.cssText=''; }
   resumeGridVideosAfterModal(); // 다시 화면에 보이는 배경 카드 동영상만 재생 재개
+  resetPdUrl();
+  document.title = PD_ORIGINAL_TITLE;
 }
 // [수정] 실제로 특정 상품을 #pdContent에 그려 넣는 공용 함수 — 최초로 열 때(openProductDetail)와
 // 이전/다음으로 넘어갈 때(pdMove) 모두 이 함수를 거친다. opts.dir이 있으면 그 방향에서
@@ -8990,6 +9039,8 @@ function pdRenderAt(catId, idx, opts){
   pauseGridVideosForModal(); // 모달에 가려지는 배경 카드 동영상은 정지해 동시 디코딩 부담을 줄임
   renderProductDetail(p,cat,idx);
   updatePdNav(cat);
+  syncPdUrl(catId, idx);
+  document.title = p.title ? `${p.title} | THE GOLF TREND` : PD_ORIGINAL_TITLE;
   const overlay=document.getElementById('pdOverlay');
   if (overlay) overlay.scrollTop=0; // 새 상품은 항상 맨 위에서부터 보여준다
   startGalleryAutoSlide(p);
@@ -9704,6 +9755,7 @@ function renderProductDetail(p,cat,idx){
   // Share
   html += `<div class="pd-slot"><div class="pd-share">
     <button onclick="shareProductImage(this)">📤 공유하기</button>
+    <button onclick="shareProductLink()">🔗 링크 공유</button>
     <button onclick="closeProductDetail()">닫기</button>
   </div></div>`;
 
@@ -9764,6 +9816,12 @@ function safeCaptureScale(target, requestedScale){
   const capped = Math.min(requestedScale, SHARE_CAPTURE_MAX_DIM/w, SHARE_CAPTURE_MAX_DIM/h);
   return Math.max(0.35, capped);
 }
+// [버그 수정] 공유 시트를 빈 화면 터치로 취소한 뒤 "공유하기"를 다시 누르면(=재시도 캡처), 공유하기
+// ·닫기 버튼이 통째로 사라진 채 멈추는 문제가 있었다 — beforeCapture()로 이미 pd-share를 숨긴
+// 상태에서, html2canvas()가 (특히 직전 캡처로 메모리가 늘어난 실기기에서) Promise를 반환하기도
+// 전에 동기적으로 예외를 던지면 그 예외가 .then/.catch 체인에 걸리지 않고 그대로 빠져나가
+// afterCapture()가 영영 호출되지 못했다. try/catch로 감싸고 afterCapture를 단 한 번만 보장
+// 실행하는 restoreOnce()를 통해, 실패 경로가 무엇이든(동기 예외 포함) 항상 UI가 복구되게 한다
 function captureAndShare(opts){
   const { target, btn, title, fileNameBase, canvasOpts, mimeType, quality, beforeCapture, afterCapture, restart } = opts;
   if (!target || typeof html2canvas==='undefined'){
@@ -9773,27 +9831,35 @@ function captureAndShare(opts){
   const origLabel=btn.textContent;
   btn.disabled=true; btn.textContent='이미지 생성 중...';
   btn.classList.remove('share-ready');
-  if (beforeCapture) beforeCapture();
-  const finalCanvasOpts = { ...canvasOpts, scale: safeCaptureScale(target, canvasOpts.scale||1) };
-  const timeout = new Promise((_,reject)=>setTimeout(()=>reject(new Error('capture-timeout')), SHARE_CAPTURE_TIMEOUT_MS));
-  Promise.race([html2canvas(target, finalCanvasOpts), timeout]).then(canvas=>{
-    if (afterCapture) afterCapture();
-    canvas.toBlob(blob=>{
-      if (!blob){
-        btn.disabled=false; btn.textContent=origLabel;
-        alert('이미지 생성에 실패했습니다.');
-        return;
-      }
-      const ext = mimeType==='image/jpeg' ? 'jpg' : 'png';
-      const fileName=`${fileNameBase.replace(/[\\/:*?"<>|]/g,'')}.${ext}`;
-      const file=new File([blob], fileName, {type:mimeType||'image/png'});
-      offerShare(btn, origLabel, file, title, restart);
-    }, mimeType||'image/png', quality);
-  }).catch(()=>{
-    if (afterCapture) afterCapture();
+  let restored=false;
+  const restoreOnce=()=>{ if (restored) return; restored=true; if (afterCapture) afterCapture(); };
+  try{
+    if (beforeCapture) beforeCapture();
+    const finalCanvasOpts = { ...canvasOpts, scale: safeCaptureScale(target, canvasOpts.scale||1) };
+    const timeout = new Promise((_,reject)=>setTimeout(()=>reject(new Error('capture-timeout')), SHARE_CAPTURE_TIMEOUT_MS));
+    Promise.race([html2canvas(target, finalCanvasOpts), timeout]).then(canvas=>{
+      restoreOnce();
+      canvas.toBlob(blob=>{
+        if (!blob){
+          btn.disabled=false; btn.textContent=origLabel;
+          alert('이미지 생성에 실패했습니다.');
+          return;
+        }
+        const ext = mimeType==='image/jpeg' ? 'jpg' : 'png';
+        const fileName=`${fileNameBase.replace(/[\\/:*?"<>|]/g,'')}.${ext}`;
+        const file=new File([blob], fileName, {type:mimeType||'image/png'});
+        offerShare(btn, origLabel, file, title, restart);
+      }, mimeType||'image/png', quality);
+    }).catch(()=>{
+      restoreOnce();
+      btn.disabled=false; btn.textContent=origLabel;
+      alert('이미지 생성에 실패했습니다. 상품 정보가 많아 시간이 오래 걸리는 경우일 수 있어요 — 잠시 후 다시 시도해주세요.');
+    });
+  } catch(e){
+    restoreOnce();
     btn.disabled=false; btn.textContent=origLabel;
-    alert('이미지 생성에 실패했습니다. 상품 정보가 많아 시간이 오래 걸리는 경우일 수 있어요 — 잠시 후 다시 시도해주세요.');
-  });
+    alert('이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
+  }
 }
 function downloadImageFile(file){
   const url=URL.createObjectURL(file);
@@ -9816,13 +9882,19 @@ function offerShare(btn, origLabel, file, title, restart){
   btn.textContent='📤 눌러서 공유하기';
   btn.classList.add('share-ready');
   btn.onclick=function(){
-    navigator.share({files:[file], title, text:title}).catch(err=>{
-      if (!(err && err.name==='AbortError')) downloadImageFile(file);
-    }).finally(()=>{
+    try{
+      navigator.share({files:[file], title, text:title}).catch(err=>{
+        if (!(err && err.name==='AbortError')) downloadImageFile(file);
+      }).finally(()=>{
+        btn.textContent=origLabel;
+        btn.classList.remove('share-ready');
+        btn.onclick=restart;
+      });
+    } catch(e){
       btn.textContent=origLabel;
       btn.classList.remove('share-ready');
       btn.onclick=restart;
-    });
+    }
   };
 }
 function shareProductImage(btn){
@@ -12885,6 +12957,13 @@ Promise.race([
   siteStatePulled,
   new Promise(resolve=>setTimeout(()=>resolve(false), 4000)),
 ]).then(()=>{
+  // [Phase] 링크 공유(shareProductLink)로 들어온 방문자는 ?p=<catId>:<idx> 딥링크로 바로 그
+  // 상품 상세가 열려야 하며, 이때는 관련 없는 프로모션 팝업으로 방해하지 않는다
+  const deepLink = parsePdDeepLink();
+  if (deepLink){
+    openProductDetail(deepLink.catId, deepLink.idx);
+    return;
+  }
   // [Phase] 전체 공지 팝업(긴급 안내 등 최우선 안내) → 항목별 요금표 팝업 → EDITOR'S PICK 팝업 순으로 시도
   setTimeout(()=>{ if (!showNoticePopup()){ if (!showEntryPopups()) showEditorsPickPopup(); } }, 300);
 });

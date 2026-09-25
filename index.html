@@ -2021,7 +2021,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [추가] 위젯을 감싸는 래퍼(.mobile-widget-row/.widget-drag-wrap)는 모바일 전용 레이아웃이다.
    웹에서는 display:contents로 스스로는 박스를 만들지 않아, 자식 .widget-box가 기존처럼
    position:fixed로(부모 위치와 무관하게) 그대로 동작한다 */
-.mobile-widget-row,.widget-drag-wrap{display:contents}
+.mobile-widget-row,.widget-drag-wrap,.mobile-weather-pair{display:contents}
 .widget-peek-handle{display:none}
 /* [수정] 웹: 액션 버튼 3개가 화면 하단 코너로 옮겨가면서 다시 비게 된 탑바 우측 끝 아래 자리에
    위젯을 세로로 쌓는다(--topbar-h 기준). 순서는 환율 위젯이 위, 날씨 위젯이 그 아래 — 환율
@@ -2046,6 +2046,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
 }
+/* [추가] 일본 날씨 위젯(모바일 전용) — .widget-box를 공유해 웹의 일반 규칙(@media(min-width:781px)
+   {.widget-box{display:block}})에도 걸리므로, 여기서 항상 display:none으로 덮어써 웹에서는 절대
+   보이지 않게 한다(이 규칙이 위 웹 전용 블록보다 소스 순서상 뒤에 있어 우선한다). 모바일에서만
+   아래 @media(max-width:780px) 블록이 다시 block으로 되돌린다 */
+.weather-widget-jp{display:none}
 /* [수정] 모바일: 날씨·환율 위젯을 더 이상 position:fixed(+ 스크롤마다 JS로 좌표를 다시 계산해
    고정하는 --mobile-widget-anchor)로 띄우지 않는다. 대신 메뉴바(nav)와 완전히 같은 방식 —
    position:sticky — 을 쓰는 줄(.mobile-widget-row)에 넣어, nav 바로 아래(문서 순서상으로도
@@ -2058,54 +2063,49 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       아래로 밀려나 겹치지 않는다. 다만 히어로 섹션의 바탕이미지(.hero-bg)는 히어로 박스 시작
       지점부터만 깔리므로, 위젯 줄 영역은 배경 없이 비어 보이는 문제가 있다 — 이는 아래 .hero의
       margin-top(음수)/padding-top 조합으로 해결한다(자세한 설명은 JS의 syncWidgetRowHeight 참고).
-   두 위젯의 원래(데스크톱) 박스 크기를 그대로 쓰되, 좁은 화면에 맞춰 기본 스케일을 줄인다(0.6).
-   관리자 패널의 스케일 슬라이더는 이 기본 축소값 위에 추가로 곱해지는 배율로 동작한다(예: 관리자
-   슬라이더 100% = 0.6배, 150% = 0.9배). 두 위젯 모두 transform-origin을 top left로 통일해
-   스케일에 따른 실제 화면 점유 폭을 그대로 예측 가능하게 하고(.widget-drag-wrap의 width/height
-   calc가 이 폭과 정확히 일치해야 flex 줄 안에서 정렬이 맞는다), 좌/우 배치 자체는 각 위젯을
-   감싸는 .widget-drag-wrap의 margin과 .mobile-widget-row의 justify-content:space-between으로
-   해결한다. 손가락 드래그로 화면 밖에 숨기고 꺼내는 기능은 .widget-drag-wrap의 --drag-x
-   변수(JS의 initWidgetDrag/setWidgetHidden 참고)로 구현한다 — 이 값은 오직 드래그 제스처가
-   있을 때만 바뀌므로 스크롤과는 완전히 무관하다 */
+   [수정] 위젯을 작게 축소해 두던 이전 방식(0.6배 스케일) 대신, 화면 가로 폭에 맞춰 실제 크기로
+   키운다 — 환율 위젯은 줄 전체 폭(.mobile-widget-row, flex-direction:column의 1번째 자식),
+   그 아래 날씨 위젯 2개(서울 기본 위치 + 일본, .mobile-weather-pair 안에서 flex:1 1 0으로 균등
+   분할)는 가로 폭의 절반씩 차지한다. 너비를 컨테이너 기준으로 유동적으로 잡으므로 더 이상
+   .widget-drag-wrap에 width를 고정 px로 미리 계산해둘 필요가 없다(래퍼가 곧 flex 아이템). 관리자
+   패널의 스케일 슬라이더는 이 기본(100%) 위에 추가로 곱해지는 배율로 그대로 남겨둔다. 손가락
+   드래그로 화면 밖에 숨기고 꺼내는 기능은 .widget-drag-wrap의 --drag-x 변수(JS의
+   initWidgetDrag/setWidgetHidden 참고)로 구현한다 — 이 값은 오직 드래그 제스처가 있을 때만
+   바뀌므로 스크롤과는 완전히 무관하다 */
 @media(max-width:780px){
   .widget-box{display:block}
   .mobile-widget-row{
-    display:flex;justify-content:space-between;align-items:flex-start;
+    display:flex;flex-direction:column;gap:8px;
     position:sticky;top:calc(var(--topbar-h,108px) + 54px);z-index:201;
+    padding:8px 12px 0;
   }
   body.mobile-topbar-hidden .mobile-widget-row{top:54px}
+  .mobile-weather-pair{display:flex;gap:8px}
   .widget-drag-wrap{
-    display:block;position:relative;touch-action:pan-y;
+    display:block;position:relative;touch-action:pan-y;min-width:0;
     transform:translateX(var(--drag-x,0px));
   }
   .widget-drag-wrap:not(.dragging){transition:transform .25s cubic-bezier(.2,.8,.3,1)}
-  .widget-drag-wrap[data-widget="weather"]{
-    width:calc(200px * var(--weather-scale,1) * .6);
-    height:calc(118px * var(--weather-scale,1) * .6);
-    margin-left:calc(12px + var(--weather-x,0px));
-    margin-top:calc(8px + var(--weather-y,0px));
-  }
-  .widget-drag-wrap[data-widget="currency"]{
-    width:calc(340px * var(--currency-scale,1) * .6);
-    height:calc(100px * var(--currency-scale,1) * .6);
-    margin-right:calc(12px - var(--currency-x,0px));
-    margin-top:calc(8px + var(--currency-y,0px));
-  }
-  .weather-widget{
+  .widget-drag-wrap[data-widget="currency"]{width:100%}
+  .widget-drag-wrap[data-widget="weather"],.widget-drag-wrap[data-widget="weatherJapan"]{flex:1 1 0}
+  .widget-drag-wrap[data-widget="weather"]{margin-top:calc(var(--weather-y,0px))}
+  .widget-drag-wrap[data-widget="currency"]{margin-top:calc(var(--currency-y,0px))}
+  .weather-widget,.weather-widget-jp{
     position:relative;top:auto;left:auto;right:auto;
-    width:200px;height:118px;
-    transform:scale(calc(var(--weather-scale,1) * .6));transform-origin:top left;
+    width:100%;height:auto;min-height:118px;
+    transform:scale(var(--weather-scale,1));transform-origin:top left;
     background:rgba(255,255,255,var(--weather-opacity,.92));
   }
   .currency-widget{
     position:relative;top:auto;left:auto;right:auto;
-    width:340px;height:100px;
-    transform:scale(calc(var(--currency-scale,1) * .6));transform-origin:top left;
+    width:100%;height:auto;min-height:100px;
+    transform:scale(var(--currency-scale,1));transform-origin:top left;
     background:rgba(255,255,255,var(--currency-opacity,.92));
   }
   .widget-drag-wrap.widget-hidden .widget-box{pointer-events:none}
   /* [추가] 위젯을 화면 밖으로 드래그해 숨기면, 숨겨진 위젯 쪽 가장자리에 작은 손잡이(peek handle)
-     하나만 화면 안에 남겨 다시 탭하거나 안쪽으로 드래그해 꺼낼 수 있게 한다 */
+     하나만 화면 안에 남겨 다시 탭하거나 안쪽으로 드래그해 꺼낼 수 있게 한다. 날씨(서울)는 왼쪽으로,
+     환율과 일본 날씨는 오른쪽으로 숨겨지므로 손잡이도 그에 맞춰 반대쪽 가장자리에 붙인다 */
   .widget-peek-handle{
     display:none;position:absolute;top:0;bottom:0;width:22px;
     align-items:center;justify-content:center;border:none;padding:0;
@@ -2113,13 +2113,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .widget-drag-wrap.widget-hidden .widget-peek-handle{display:flex}
   .widget-drag-wrap[data-widget="weather"] .widget-peek-handle{right:0;border-radius:0 10px 10px 0}
-  .widget-drag-wrap[data-widget="currency"] .widget-peek-handle{left:0;border-radius:10px 0 0 10px}
+  .widget-drag-wrap[data-widget="currency"] .widget-peek-handle,
+  .widget-drag-wrap[data-widget="weatherJapan"] .widget-peek-handle{left:0;border-radius:10px 0 0 10px}
   /* [추가] 히어로 배경이미지를 위젯 줄 영역까지 확장 — margin-top(음수)만큼 히어로 박스를 위로
      끌어올려 그 배경(.hero-bg)이 위젯 줄 뒤까지 깔리게 하고, 동일한 값을 padding-top에 더해
      안쪽 콘텐츠는 원래 위치 그대로 유지한다(둘이 정확히 상쇄됨). --widget-row-h는
-     syncWidgetRowHeight()가 위젯 줄의 실측 높이로 채워둔다 */
+     syncWidgetRowHeight()가 위젯 줄의 실측 높이로 채워둔다. 추가로 -5px를 margin-top에만 더해
+     (padding-top에는 더하지 않아) 히어로 섹션 전체(배경+콘텐츠)를 5px 위로 살짝 올린다 */
   .hero{
-    margin-top:calc(-1 * var(--widget-row-h,0px));
+    margin-top:calc(-1 * var(--widget-row-h,0px) - 5px);
     padding-top:calc(32px + var(--widget-row-h,0px));
   }
 }
@@ -3311,15 +3313,25 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      CSS .mobile-widget-row 주석 참고). 모바일에서는 손가락으로 좌우로 드래그해 화면 밖에 숨기거나
      (peek 손잡이만 남음) 다시 꺼낼 수 있다(JS initWidgetDrag/setWidgetHidden 참고). 크기/위치/
      투명도는 관리자 패널(사이트 아이덴티티 → 위젯 설정)에서 조절 — CSS 커스텀 프로퍼티
-     --weather-*/--currency-* 사용 -->
+     --weather-*/--currency-* 사용
+     [추가] 모바일 기본 배치: 환율 위젯은 가로 폭 전체, 그 아래 날씨 위젯 2개(서울/일본)를 가로 폭의
+     절반씩 나란히 배치한다(.mobile-weather-pair). 일본 날씨 위젯(#weatherWidgetJapan)은 모바일
+     전용이며 웹(데스크톱)에서는 노출하지 않는다(.weather-widget-jp가 항상 display:none이었다가
+     max-width:780px에서만 block으로 바뀜 — 자세한 설명은 CSS 주석 참고) -->
 <div class="mobile-widget-row" id="mobileWidgetRow">
-  <div class="widget-drag-wrap" id="weatherDragWrap" data-widget="weather">
-    <div class="widget-box weather-widget" id="weatherWidget" onclick="toggleWeatherDetail()" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
-    <button type="button" class="widget-peek-handle" id="weatherPeekHandle" onclick="setWidgetHidden('weather',false)" aria-label="날씨 위젯 다시 보기">‹</button>
-  </div>
   <div class="widget-drag-wrap" id="currencyDragWrap" data-widget="currency">
     <div class="widget-box currency-widget" id="currencyWidget"></div>
     <button type="button" class="widget-peek-handle" id="currencyPeekHandle" onclick="setWidgetHidden('currency',false)" aria-label="환율 위젯 다시 보기">›</button>
+  </div>
+  <div class="mobile-weather-pair">
+    <div class="widget-drag-wrap" id="weatherDragWrap" data-widget="weather">
+      <div class="widget-box weather-widget" id="weatherWidget" onclick="toggleWeatherDetail()" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
+      <button type="button" class="widget-peek-handle" id="weatherPeekHandle" onclick="setWidgetHidden('weather',false)" aria-label="날씨 위젯 다시 보기">‹</button>
+    </div>
+    <div class="widget-drag-wrap" id="weatherJapanDragWrap" data-widget="weatherJapan">
+      <div class="widget-box weather-widget-jp" id="weatherWidgetJapan" onclick="toggleJapanWeatherDetail()" role="button" tabindex="0" aria-label="일본 날씨 상세보기"></div>
+      <button type="button" class="widget-peek-handle" id="weatherJapanPeekHandle" onclick="setWidgetHidden('weatherJapan',false)" aria-label="일본 날씨 위젯 다시 보기">›</button>
+    </div>
   </div>
 </div>
 
@@ -6092,6 +6104,41 @@ function renderWeatherDetail(){
     }).join('')}</div>`;
   }
 }
+// [추가] 일본 날씨 위젯(모바일 전용) — 서울 기본 위치 위젯 오른쪽에 상시 노출되는 두 번째 실시간
+// 날씨 위젯. weatherLocData['japan'] 캐시를 날씨 상세 팝업과 공유해, 위젯이 주기적으로 갱신해둔
+// 데이터를 상세 팝업에서 "일본"을 선택했을 때도 그대로 재사용한다(중복 요청 없음)
+const JAPAN_LOCATION = WEATHER_LOCATIONS.find(l=>l.id==='japan');
+async function fetchWeatherDataJapan(){
+  try{
+    weatherLocData.japan = await fetchWeatherJSON(JAPAN_LOCATION.lat, JAPAN_LOCATION.lon);
+  }catch(e){
+    console.error('[weather] 일본 날씨 fetch 실패:', e);
+    weatherLocData.japan = 'failed';
+  }
+  renderWeatherWidgetJapan();
+  if (document.getElementById('weatherDetailOverlay')?.classList.contains('show') && weatherSelectedLocId==='japan') renderWeatherDetail();
+}
+function renderWeatherWidgetJapan(){
+  const el = document.getElementById('weatherWidgetJapan');
+  if (!el) return;
+  const data = weatherLocData.japan;
+  if (!data || data==='failed' || !data.current){
+    el.innerHTML = `<div class="wgt-loading">${data==='failed'?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+    return;
+  }
+  const cur = data.current;
+  const info = wmoInfo(cur.weather_code);
+  el.innerHTML = `
+    <div class="wx-loc">${escapeAttr(JAPAN_LOCATION.name)}</div>
+    <div class="wx-main"><span class="wx-icon">${info.icon}</span><span class="wx-temp">${Math.round(cur.temperature_2m)}°</span></div>
+    <div class="wx-label">${info.label}</div>
+    <div class="wx-sub">체감 ${Math.round(cur.apparent_temperature)}° · 습도 ${Math.round(cur.relative_humidity_2m)}%</div>
+  `;
+}
+function toggleJapanWeatherDetail(){
+  setWeatherDetailLocation('japan');
+  toggleWeatherDetail();
+}
 // ══ 환율 위젯(웹 전용) ═══════════════════════════════════════════════
 // [추가] open.er-api.com — 별도 API 키 없이 무료로 쓸 수 있는 환율 API. 각국 중앙은행/은행 간
 // 기준환율을 하루 1회 갱신해 제공한다(특정 은행의 실시간 매매기준율과는 다를 수 있어 위젯·계산기
@@ -6197,13 +6244,16 @@ function initWeatherCurrencyWidgets(){
   // [수정] 위젯이 이제 모바일에서도 노출되므로 화면 너비와 무관하게 항상 가져온다
   applyWidgetConfigCSS();
   fetchWeatherData();
+  fetchWeatherDataJapan();
   fetchCurrencyData();
   setInterval(fetchWeatherData, WEATHER_REFRESH_MS);
+  setInterval(fetchWeatherDataJapan, WEATHER_REFRESH_MS);
   setInterval(fetchCurrencyData, CURRENCY_REFRESH_MS);
 }
 window.addEventListener('resize', ()=>{
   // 안전망 — 초기 로드 시 실패했거나 아직 못 가져왔다면 리사이즈 때마다 재시도
   if (!weatherData && !weatherFetchFailed) fetchWeatherData();
+  if (!weatherLocData.japan && weatherLocData.japan!=='failed') fetchWeatherDataJapan();
   if (!currencyData && !currencyFetchFailed) fetchCurrencyData();
 });
 // [추가] 화면 테마 — 탑바/내비게이션바 배경·폰트 색상, 사이트 전체 배경(색상 또는 이미지)
@@ -6433,15 +6483,19 @@ window.addEventListener('resize', syncTopBarHeight);
 // 가로로 일정 거리 이상 움직였을 때만 그 제스처를 가로채(preventDefault) 드래그로 처리한다
 const WIDGET_HIDDEN_KEY = 'kundo_widget_hidden_v1';
 const WIDGET_PEEK = 22; // 숨겨졌을 때 화면 안에 남겨두는 손잡이 폭(px, CSS .widget-peek-handle width와 일치)
-let widgetHidden = {weather:false, currency:false};
+// [수정] 위젯이 3개(날씨-서울/환율/날씨-일본)로 늘어나면서 숨기는 방향도 위젯마다 다르다 — 날씨
+// (서울)는 줄의 왼쪽 절반에 있어 왼쪽으로, 환율(줄 전체 폭)과 날씨(일본, 줄의 오른쪽 절반)는
+// 오른쪽으로 드래그해야 화면 밖으로 나간다
+const WIDGET_HIDE_DIR = {weather:-1, currency:1, weatherJapan:1};
+let widgetHidden = {weather:false, currency:false, weatherJapan:false};
 try{
   const wh = JSON.parse(localStorage.getItem(WIDGET_HIDDEN_KEY)||'null');
   if (wh) widgetHidden = Object.assign(widgetHidden, wh);
 }catch(e){}
 function widgetHiddenOffset(name, wrap){
-  const width = wrap.getBoundingClientRect().width || (name==='weather'?120:204);
+  const width = wrap.getBoundingClientRect().width || 120;
   const dist = Math.max(0, width - WIDGET_PEEK);
-  return name==='weather' ? -dist : dist; // 날씨=좌측으로, 환율=우측으로만 숨긴다
+  return dist * (WIDGET_HIDE_DIR[name] || 1);
 }
 function applyWidgetHiddenState(name){
   const wrap = document.getElementById(name+'DragWrap');
@@ -6455,7 +6509,7 @@ function setWidgetHidden(name, hidden){
   try{ localStorage.setItem(WIDGET_HIDDEN_KEY, JSON.stringify(widgetHidden)); }catch(e){}
   applyWidgetHiddenState(name);
 }
-const widgetSuppressClick = {weather:false, currency:false};
+const widgetSuppressClick = {weather:false, currency:false, weatherJapan:false};
 function initWidgetDrag(name){
   const wrap = document.getElementById(name+'DragWrap');
   if (!wrap) return;
@@ -6480,7 +6534,7 @@ function initWidgetDrag(name){
     if (e.cancelable) e.preventDefault();
     const maxOffset = Math.abs(widgetHiddenOffset(name, wrap));
     let next = startOffset + dx;
-    next = name==='weather' ? Math.max(-maxOffset, Math.min(0, next)) : Math.max(0, Math.min(maxOffset, next));
+    next = (WIDGET_HIDE_DIR[name]||1) < 0 ? Math.max(-maxOffset, Math.min(0, next)) : Math.max(0, Math.min(maxOffset, next));
     wrap.style.setProperty('--drag-x', next+'px');
   };
   const onUp = () => {
@@ -6512,13 +6566,12 @@ document.addEventListener('click', function(e){
     e.preventDefault();
   }
 }, true);
-initWidgetDrag('weather');
-initWidgetDrag('currency');
-applyWidgetHiddenState('weather');
-applyWidgetHiddenState('currency');
+['weather','currency','weatherJapan'].forEach(name => {
+  initWidgetDrag(name);
+  applyWidgetHiddenState(name);
+});
 window.addEventListener('resize', () => {
-  applyWidgetHiddenState('weather');
-  applyWidgetHiddenState('currency');
+  ['weather','currency','weatherJapan'].forEach(applyWidgetHiddenState);
 });
 // [추가] 히어로 섹션의 바탕이미지를 위젯 줄 영역까지 확장 — .mobile-widget-row는 히어로 바깥의
 // 별도 요소라 히어로 자신의 배경(.hero-bg, position:absolute;inset:0)이 원래는 히어로 박스

@@ -2110,7 +2110,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .widget-drag-wrap.widget-hidden .widget-box{pointer-events:none}
   /* [추가] 위젯을 화면 밖으로 드래그해 숨기면, 숨겨진 위젯 쪽 가장자리에 작은 손잡이(peek handle)
      하나만 화면 안에 남겨 다시 탭하거나 안쪽으로 드래그해 꺼낼 수 있게 한다. 날씨(서울)는 왼쪽으로,
-     환율과 일본 날씨는 오른쪽으로 숨겨지므로 손잡이도 그에 맞춰 반대쪽 가장자리에 붙인다 */
+     일본 날씨는 오른쪽으로만 숨겨지므로 손잡이도 그에 맞춰 반대쪽 가장자리에 고정한다. 환율은 줄
+     전체 폭을 차지해 좌/우 어느 쪽으로도 숨길 수 있는 양방향 위젯이라(JS의 WIDGET_BIDIRECTIONAL),
+     손잡이 위치도 고정하지 않고 실제로 숨겨진 방향(.hidden-left/.hidden-right, JS가 토글)에 따라
+     반대쪽에 나타나도록 한다 */
   .widget-peek-handle{
     display:none;position:absolute;top:0;bottom:0;width:22px;
     align-items:center;justify-content:center;border:none;padding:0;
@@ -2118,8 +2121,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .widget-drag-wrap.widget-hidden .widget-peek-handle{display:flex}
   .widget-drag-wrap[data-widget="weather"] .widget-peek-handle{right:0;border-radius:0 10px 10px 0}
-  .widget-drag-wrap[data-widget="currency"] .widget-peek-handle,
   .widget-drag-wrap[data-widget="weatherJapan"] .widget-peek-handle{left:0;border-radius:10px 0 0 10px}
+  .widget-drag-wrap[data-widget="currency"].hidden-right .widget-peek-handle{left:0;right:auto;border-radius:10px 0 0 10px}
+  .widget-drag-wrap[data-widget="currency"].hidden-left .widget-peek-handle{right:0;left:auto;border-radius:0 10px 10px 0}
   /* [추가] 히어로 배경이미지를 위젯 줄 영역까지 확장 — margin-top(음수)만큼 히어로 박스를 위로
      끌어올려 그 배경(.hero-bg)이 위젯 줄 뒤까지 깔리게 하고, 동일한 값을 padding-top에 더해
      안쪽 콘텐츠는 원래 위치 그대로 유지한다(둘이 정확히 상쇄됨). --widget-row-h는
@@ -6490,20 +6494,34 @@ window.addEventListener('resize', syncTopBarHeight);
 // .mobile-widget-row 주석 참고). 세로 스크롤은 touch-action:pan-y(CSS)로 기본 허용하고, 손가락이
 // 가로로 일정 거리 이상 움직였을 때만 그 제스처를 가로채(preventDefault) 드래그로 처리한다
 const WIDGET_HIDDEN_KEY = 'kundo_widget_hidden_v1';
+const WIDGET_HIDDEN_SIDE_KEY = 'kundo_widget_hidden_side_v1';
 const WIDGET_PEEK = 22; // 숨겨졌을 때 화면 안에 남겨두는 손잡이 폭(px, CSS .widget-peek-handle width와 일치)
 // [수정] 위젯이 3개(날씨-서울/환율/날씨-일본)로 늘어나면서 숨기는 방향도 위젯마다 다르다 — 날씨
-// (서울)는 줄의 왼쪽 절반에 있어 왼쪽으로, 환율(줄 전체 폭)과 날씨(일본, 줄의 오른쪽 절반)는
-// 오른쪽으로 드래그해야 화면 밖으로 나간다
+// (서울)는 줄의 왼쪽 절반에 있어 왼쪽으로만, 날씨(일본, 줄의 오른쪽 절반)는 오른쪽으로만 드래그해야
+// 화면 밖으로 나간다. 여기 있는 값은 그 둘처럼 "고정 방향" 위젯의 기본값이자, 환율처럼 양방향
+// 위젯의 "처음"(아직 한 번도 숨겨본 적 없을 때) 기본 방향으로도 쓰인다
 const WIDGET_HIDE_DIR = {weather:-1, currency:1, weatherJapan:1};
+// [추가] 환율 위젯은 줄 전체 폭을 차지해 좌/우 어느 쪽으로도 자연스럽게 숨길 수 있다 — 여기 등록된
+// 위젯만 좌우 양방향 드래그를 허용하고, 마지막으로 숨긴 방향을 widgetHiddenSide에 기억해뒀다가
+// 다음에 숨길 때(코드로 setWidgetHidden을 호출하는 경우 등) 같은 방향으로 다시 숨긴다
+const WIDGET_BIDIRECTIONAL = {currency:true};
 let widgetHidden = {weather:false, currency:false, weatherJapan:false};
+let widgetHiddenSide = {}; // {[name]: -1|1} — 양방향 위젯이 실제로 숨겨진 방향
 try{
   const wh = JSON.parse(localStorage.getItem(WIDGET_HIDDEN_KEY)||'null');
   if (wh) widgetHidden = Object.assign(widgetHidden, wh);
+  const whs = JSON.parse(localStorage.getItem(WIDGET_HIDDEN_SIDE_KEY)||'null');
+  if (whs) widgetHiddenSide = whs;
 }catch(e){}
-function widgetHiddenOffset(name, wrap){
+function widgetHideDir(name){
+  return widgetHiddenSide[name] || WIDGET_HIDE_DIR[name] || 1;
+}
+function widgetMaxDist(wrap){
   const width = wrap.getBoundingClientRect().width || 120;
-  const dist = Math.max(0, width - WIDGET_PEEK);
-  return dist * (WIDGET_HIDE_DIR[name] || 1);
+  return Math.max(0, width - WIDGET_PEEK);
+}
+function widgetHiddenOffset(name, wrap){
+  return widgetMaxDist(wrap) * widgetHideDir(name);
 }
 function applyWidgetHiddenState(name){
   const wrap = document.getElementById(name+'DragWrap');
@@ -6511,6 +6529,11 @@ function applyWidgetHiddenState(name){
   const hidden = !!widgetHidden[name];
   wrap.classList.toggle('widget-hidden', hidden);
   wrap.style.setProperty('--drag-x', hidden ? widgetHiddenOffset(name, wrap)+'px' : '0px');
+  if (WIDGET_BIDIRECTIONAL[name]){
+    const dir = widgetHideDir(name);
+    wrap.classList.toggle('hidden-left', hidden && dir<0);
+    wrap.classList.toggle('hidden-right', hidden && dir>0);
+  }
 }
 function setWidgetHidden(name, hidden){
   widgetHidden[name] = hidden;
@@ -6540,9 +6563,11 @@ function initWidgetDrag(name){
     }
     if (verticalLock || !moved) return;
     if (e.cancelable) e.preventDefault();
-    const maxOffset = Math.abs(widgetHiddenOffset(name, wrap));
+    const maxDist = widgetMaxDist(wrap);
     let next = startOffset + dx;
-    next = (WIDGET_HIDE_DIR[name]||1) < 0 ? Math.max(-maxOffset, Math.min(0, next)) : Math.max(0, Math.min(maxOffset, next));
+    next = WIDGET_BIDIRECTIONAL[name]
+      ? Math.max(-maxDist, Math.min(maxDist, next))
+      : ((WIDGET_HIDE_DIR[name]||1) < 0 ? Math.max(-maxDist, Math.min(0, next)) : Math.max(0, Math.min(maxDist, next)));
     wrap.style.setProperty('--drag-x', next+'px');
   };
   const onUp = () => {
@@ -6551,8 +6576,15 @@ function initWidgetDrag(name){
     wrap.classList.remove('dragging');
     if (!moved) return; // 이동 없는 탭은 기존 클릭 동작(날씨 상세보기 등)에 그대로 맡긴다
     const cur = parseFloat(getComputedStyle(wrap).getPropertyValue('--drag-x')) || 0;
-    const maxOffset = Math.abs(widgetHiddenOffset(name, wrap));
-    setWidgetHidden(name, Math.abs(cur) > maxOffset * 0.4);
+    const maxDist = widgetMaxDist(wrap);
+    const shouldHide = Math.abs(cur) > maxDist * 0.4;
+    if (shouldHide && WIDGET_BIDIRECTIONAL[name]){
+      // 이번에 실제로 끌어간 방향을 기억해뒀다가, 다음에 숨길 때(예: 손잡이를 안 거치고 다시
+      // 드래그로 숨기는 경우) 같은 방향의 손잡이가 같은 쪽에 나타나도록 한다
+      widgetHiddenSide[name] = cur < 0 ? -1 : 1;
+      try{ localStorage.setItem(WIDGET_HIDDEN_SIDE_KEY, JSON.stringify(widgetHiddenSide)); }catch(e){}
+    }
+    setWidgetHidden(name, shouldHide);
     // 드래그 직후 브라우저가 뒤이어 쏘는 ghost click(예: 상세보기 오픈)만 막으면 되므로 아주 짧게만
     // 켜둔다 — 계속 true로 남겨두면(예: 다음 click이 한참 뒤에야 발생하는 경우) 나중에 사용자가
     // peek 손잡이를 탭해 위젯을 꺼내려 할 때도 그 클릭까지 함께 막혀버린다

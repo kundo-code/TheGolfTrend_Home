@@ -2054,9 +2054,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       끼어들 여지가 없으므로 흔들림이 생기지 않는다.
    2) nav가 body.mobile-topbar-hidden으로 화면 위로 접힐 때 위젯 줄의 top 값도 nav와 정확히
       같은 시점에(같은 클래스 토글 하나로) 같이 바뀌므로, 스크롤 시 메뉴바와 한 몸처럼 움직인다.
-   3) position:fixed 오버레이가 아니라 실제 문서 흐름을 차지하는 요소이므로, 예전처럼 위젯
-      높이만큼 히어로 섹션 padding-top을 별도로 계산해 겹침을 피할 필요가 없다(자연스럽게
-      아래 콘텐츠를 밀어낸다).
+   3) position:fixed 오버레이가 아니라 실제 문서 흐름을 차지하는 요소이므로, 콘텐츠가 자연스럽게
+      아래로 밀려나 겹치지 않는다. 다만 히어로 섹션의 바탕이미지(.hero-bg)는 히어로 박스 시작
+      지점부터만 깔리므로, 위젯 줄 영역은 배경 없이 비어 보이는 문제가 있다 — 이는 아래 .hero의
+      margin-top(음수)/padding-top 조합으로 해결한다(자세한 설명은 JS의 syncWidgetRowHeight 참고).
    두 위젯의 원래(데스크톱) 박스 크기를 그대로 쓰되, 좁은 화면에 맞춰 기본 스케일을 줄인다(0.6).
    관리자 패널의 스케일 슬라이더는 이 기본 축소값 위에 추가로 곱해지는 배율로 동작한다(예: 관리자
    슬라이더 100% = 0.6배, 150% = 0.9배). 두 위젯 모두 transform-origin을 top left로 통일해
@@ -2113,6 +2114,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .widget-drag-wrap.widget-hidden .widget-peek-handle{display:flex}
   .widget-drag-wrap[data-widget="weather"] .widget-peek-handle{right:0;border-radius:0 10px 10px 0}
   .widget-drag-wrap[data-widget="currency"] .widget-peek-handle{left:0;border-radius:10px 0 0 10px}
+  /* [추가] 히어로 배경이미지를 위젯 줄 영역까지 확장 — margin-top(음수)만큼 히어로 박스를 위로
+     끌어올려 그 배경(.hero-bg)이 위젯 줄 뒤까지 깔리게 하고, 동일한 값을 padding-top에 더해
+     안쪽 콘텐츠는 원래 위치 그대로 유지한다(둘이 정확히 상쇄됨). --widget-row-h는
+     syncWidgetRowHeight()가 위젯 줄의 실측 높이로 채워둔다 */
+  .hero{
+    margin-top:calc(-1 * var(--widget-row-h,0px));
+    padding-top:calc(32px + var(--widget-row-h,0px));
+  }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}
 .wx-loc{font-size:.64rem;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -5883,6 +5892,7 @@ function applyWidgetConfigCSS(){
   root.style.setProperty('--currency-x', c.x+'px');
   root.style.setProperty('--currency-y', c.y+'px');
   root.style.setProperty('--popup-opacity', p.opacity/100);
+  syncWidgetRowHeight(); // 위젯 크기 조절 시 히어로 배경이 덮는 범위(--widget-row-h)도 함께 갱신
 }
 // [추가] 날씨·환율 상세 팝업창 바탕색 투명도 — 위젯 크기/위치 조절과 같은 preview(즉시 미리보기)/
 // set(저장) 패턴
@@ -6510,6 +6520,22 @@ window.addEventListener('resize', () => {
   applyWidgetHiddenState('weather');
   applyWidgetHiddenState('currency');
 });
+// [추가] 히어로 섹션의 바탕이미지를 위젯 줄 영역까지 확장 — .mobile-widget-row는 히어로 바깥의
+// 별도 요소라 히어로 자신의 배경(.hero-bg, position:absolute;inset:0)이 원래는 히어로 박스
+// 시작점(=위젯 줄이 끝나는 지점)부터만 깔린다. .hero에 위젯 줄 실측 높이(--widget-row-h)만큼
+// margin-top을 음수로 줘서 히어로 박스 자체를 위로 끌어올려 위젯 줄 영역까지 겹치게 하고,
+// 동시에 같은 값만큼 padding-top을 늘려 안쪽 콘텐츠(텍스트 등)는 원래 위치 그대로 유지한다
+// — margin과 padding이 정확히 상쇄되므로 콘텐츠는 안 움직이고 배경(그 뒤에 깔린 이미지)만
+// 위젯 줄 뒤까지 넓어져 보인다. 위젯 자체는 z-index:201(.mobile-widget-row)로 히어로보다 항상
+// 위에 그려지므로 배경이 확장되어도 위젯을 가리지 않는다
+function syncWidgetRowHeight(){
+  const row = document.getElementById('mobileWidgetRow');
+  if (!row) return;
+  document.documentElement.style.setProperty('--widget-row-h', Math.round(row.getBoundingClientRect().height)+'px');
+}
+window.addEventListener('resize', syncWidgetRowHeight);
+window.addEventListener('load', syncWidgetRowHeight);
+syncWidgetRowHeight();
 let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;

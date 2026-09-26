@@ -6903,7 +6903,14 @@ function syncHeroWidgetGap(){
     .map(sel=>document.querySelector(sel))
     .filter(el=>el && getComputedStyle(el).display!=='none');
   const widgetsBottom = widgetEls.length ? Math.max(...widgetEls.map(el=>el.getBoundingClientRect().bottom)) : 0;
-  const lowestBottom = Math.max(rowBottom, widgetsBottom);
+  // [수정] 웹 일반(플로팅) 모드에서는 환율·날씨 위젯이 로고 옆 상단(탑바 기준)에 떠 있어, 그 아래로
+  // 문서 순서상 한참 뒤에 오는 메뉴바(.nav)보다 훨씬 위쪽에 위치한다. 위젯 하단만 기준으로 삼으면
+  // 히어로 콘텐츠가 위젯 바로 아래(즉 메뉴바보다도 위쪽)로 끌어올려져, 메뉴바와 히어로 사이 간격이
+  // 아예 사라지거나 심하면 겹쳐 보이는 문제가 있었다. 메뉴바 하단도 항상 최소 기준선에 포함시켜,
+  // 히어로 콘텐츠가 절대 메뉴바보다 위로(또는 메뉴바 바로 아래 간격 없이) 올라가지 않도록 한다
+  const nav = document.querySelector('.nav');
+  const navBottom = (nav && getComputedStyle(nav).display!=='none') ? nav.getBoundingClientRect().bottom : 0;
+  const lowestBottom = Math.max(rowBottom, widgetsBottom, navBottom);
   if (lowestBottom <= 0) return;
   // [수정] 자연 간격이 원하는 값(60px)보다 넓은 경우(웹 일반 모드에서 위젯이 로고 옆에 떠 있을 때
   // 흔함)에는 콘텐츠를 위로 당겨야 하므로, 델타가 음수여도 그대로 적용한다(양수일 때만 적용하면

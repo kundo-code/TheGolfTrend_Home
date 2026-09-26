@@ -2169,6 +2169,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   /* [수정] 환율 위젯 박스 높이를 날씨 위젯(118px 고정)과 동일하게 맞춘다 — 내용(제목·환율
      한 줄·계산기 버튼)은 min-height보다 작아 남는 공간이 생기므로, flex 세로 중앙 정렬로
      안쪽 내용을 박스 가운데에 예쁘게 배치한다 */
+  /* [수정] 웹 일반(플로팅) 모드에서는 위젯이 탑바 영역 위에 떠 있는 카드로 보여야 하므로,
+     z-index를 탑바(203)보다 높게(205) 둬 항상 탑바 위에 그려지도록 한다 — 모바일/컴팩트 모드는
+     위젯이 메뉴바 아래 별도 줄로 내려가 탑바와 겹칠 일이 없고 그쪽은 반대로 탑바/메뉴바가 항상
+     위에 있어야 하므로, 아래 body.widgets-compact 전용 규칙에서 다시 낮춘다(자세한 설명은 그
+     규칙 주석 참고) */
   .currency-widget{
     top:calc(13px + var(--currency-y,0px));
     left:50%;right:auto;
@@ -2177,6 +2182,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     transform:translateX(calc(-50% + var(--currency-x,0px))) scale(var(--currency-scale,1));
     transform-origin:top center;
     background:rgba(255,255,255,var(--currency-opacity,.92));
+    z-index:205;
   }
   .weather-widget{
     top:calc(4px + var(--weather-y,0px));
@@ -2186,6 +2192,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     transform-origin:top center;
     background:rgba(255,255,255,var(--weather-opacity,.92));
     cursor:pointer;transition:box-shadow .2s;
+    z-index:205;
   }
   .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
 }
@@ -2209,6 +2216,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     transform-origin:top center;
     background:rgba(255,255,255,var(--weather-jp-opacity,.92));
     cursor:pointer;transition:box-shadow .2s;
+    z-index:205;
   }
   .weather-widget-jp:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
 }
@@ -2237,10 +2245,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      남색 반투명 + 금색 곡선 패턴)을 적용해 시각적으로 통일한다 — 폭도 그 섹션처럼 화면 전체
      (edge-to-edge)로 펼치고, 위젯 클러스터 자체는 justify-content:center로 그 안에서 가운데
      정렬한다(#destinations의 .wrap{max-width:1280px} 중앙정렬과 같은 원리). padding-top을
-     20px로 둬 메뉴바 바로 아래 붙지 않고 20px만큼 떨어진 자리에 위젯이 오도록 한다 */
+     20px로 둬 메뉴바 바로 아래 붙지 않고 20px만큼 떨어진 자리에 위젯이 오도록 한다.
+     [버그 수정] 히어로 섹션과의 간격(기존 30px)을 margin-bottom으로 뒀더니, margin은 배경이
+     칠해지지 않는 박스 바깥 영역이라 그 구간만 배경이 끊겨 옅은 색 이음매(seam)가 보였다 —
+     margin을 없애고 그만큼을 padding-bottom(16+30=46px)으로 흡수해, 히어로가 시작되기 직전까지
+     배경이 끊김없이 이어지게 한다(위젯과 히어로 사이의 실제 간격은 그대로 46px 유지) */
   body.widgets-compact .mobile-widget-row{
-    display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:24px;
-    width:100%;margin:0 0 30px;padding:20px 24px 16px;
+    display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:28px;
+    width:100%;margin:0;padding:20px 24px 46px;
     background-color:rgba(14,21,34,.6);
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
     background-size:900px 562px;background-repeat:repeat;
@@ -2256,18 +2268,33 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   /* [수정] 데스크톱 컴팩트 모드는 폭이 넉넉해 거의 항상 200px 그대로 나오지만, 혹시 컴팩트 모드가
      상대적으로 좁은 폭에서 걸리는 경우를 대비해 모바일과 동일하게 줄어들 수 있는 여지를 둔다 */
   body.widgets-compact .widget-drag-wrap[data-widget="weather"],
-  body.widgets-compact .widget-drag-wrap[data-widget="weatherJapan"]{flex:0 1 200px;min-width:0;margin-top:0}
+  body.widgets-compact .widget-drag-wrap[data-widget="weatherJapan"]{flex:0 1 240px;min-width:0;margin-top:0}
+  /* [수정] 웹 컴팩트 모드(위젯이 메뉴바 아래 줄로 내려간 상태)는 모바일과 동일하게 탑바/메뉴바가
+     항상 위젯보다 위에 그려져야 한다 — 위 웹 일반(플로팅) 모드용 규칙이 올려둔 z-index:205를
+     여기서 다시 200으로 낮춰(탑바 203·메뉴바 204보다 아래) 확정한다 */
   body.widgets-compact .currency-widget,
   body.widgets-compact .weather-widget,
   body.widgets-compact .weather-widget-jp{
     position:relative;top:auto;left:auto;right:auto;
     transform:none;
+    z-index:200;
   }
-  body.widgets-compact .currency-widget{width:fit-content;height:auto}
+  /* [수정] 위젯 섹션 배경(넓어진 남색 밴드)에 맞춰 위젯 자체 크기도 20% 키운다 — 날씨
+     200×118px→240×142px, 환율은 날씨와 같은 높이(142px)로, 내부 텍스트도 비례해서 확대한다 */
+  body.widgets-compact .currency-widget{width:fit-content;height:auto;min-height:142px}
   body.widgets-compact .weather-widget,
   body.widgets-compact .weather-widget-jp{
-    width:100%;max-width:200px;height:118px;box-sizing:border-box;
+    width:100%;max-width:240px;height:142px;box-sizing:border-box;
   }
+  body.widgets-compact .cur-title{font-size:.95rem;margin-bottom:6px}
+  body.widgets-compact .cur-list .cur-row{font-size:.72rem;gap:4px;padding:0 6px}
+  body.widgets-compact .cur-flag{font-size:1.2rem}
+  body.widgets-compact .cur-calc-btn{font-size:.85rem;padding:8px 5px;margin-top:8px}
+  body.widgets-compact .wx-loc{font-size:.92rem}
+  body.widgets-compact .wx-icon{font-size:1.9rem}
+  body.widgets-compact .wx-temp{font-size:1.8rem}
+  body.widgets-compact .wx-label{font-size:.86rem}
+  body.widgets-compact .wx-sub{font-size:.76rem}
   /* [수정] 위젯 줄이 히어로 위에 얹힌 별도의 실제 블록이 되어 그만큼 페이지 전체 길이가 늘어나므로,
      히어로 자신을 더 이상 최소 한 화면 높이(100vh)로 강제하지 않고 콘텐츠 높이에 맞춰 줄어들게
      한다 — 위젯 줄 높이만큼 페이지가 무한정 길어지는 대신, 히어로가 그만큼 짧아져 전체 길이가
@@ -2303,10 +2330,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .widget-box{display:block}
   /* [수정] 위젯 줄에 "권역별·국가별 골프 여행지"(#destinations) 섹션과 동일한 바탕(탑바 계열
      남색 반투명 + 금색 곡선 패턴)을 적용해 시각적으로 통일한다. padding-top을 20px로 둬 메뉴바
-     바로 아래 붙지 않고 20px만큼 떨어진 자리에 위젯이 오도록 한다 */
+     바로 아래 붙지 않고 20px만큼 떨어진 자리에 위젯이 오도록 한다.
+     [버그 수정] 히어로 섹션과의 간격(기존 30px)을 margin-bottom으로 뒀더니, margin은 배경이
+     칠해지지 않는 박스 바깥 영역이라 그 구간만 배경이 끊겨 옅은 색 이음매(seam)가 보였다 —
+     margin을 없애고 그만큼을 padding-bottom(16+30=46px)으로 흡수해, 히어로가 시작되기 직전까지
+     배경이 끊김없이 이어지게 한다(위젯과 히어로 사이의 실제 간격은 그대로 46px 유지) */
   .mobile-widget-row{
     display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:16px;
-    margin-bottom:30px;
     background-color:rgba(14,21,34,.6);
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
     background-size:900px 562px;background-repeat:repeat;
@@ -2315,7 +2345,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
        위젯(왼쪽으로 숨김)이나 환율·일본 날씨 위젯(오른쪽으로 숨김)을 드래그할 때 화면 전체가
        좌우로 밀리는 문제가 있었다. 위젯의 터치 시작 지점이 그 위험 구간에 들어가지 않도록 화면
        가장자리로부터 충분한 여백을 확보한다 */
-    padding:20px 20px 16px;
+    padding:20px 20px 46px;
   }
   .mobile-weather-pair{display:flex;flex-direction:row;gap:8px;min-width:0}
   .widget-drag-wrap{

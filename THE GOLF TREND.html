@@ -6597,7 +6597,7 @@ function fitCompanyLine(){
   }
 }
 window.addEventListener('resize', fitCompanyLine);
-requestAnimationFrame(fitCompanyLine);
+requestAnimationFrame(()=>safeRender(fitCompanyLine));
 // [Phase 3] topbar만 스크롤 내내 화면 상단에 고정(position:fixed)되고, 헤드라인 배너·내비게이션바는
 // 일반 흐름으로 그 바로 아래에서 시작해 함께 스크롤된다. 실제 렌더링된 topbar 높이를 --topbar-h로
 // 반영해 <header>의 padding-top(= topbar가 차지하던 자리)과 앵커 스크롤 여백 계산에 사용한다.
@@ -6650,7 +6650,7 @@ window.addEventListener('resize', syncTopBarHeight);
     ticking = true;
     requestAnimationFrame(update);
   });
-  update();
+  safeRender(update);
   // [수정] 스크립트 실행 시점엔 이미지 등이 아직 로드 전이라 nav 레이아웃이 최종 값이 아닐 수
   // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
   window.addEventListener('load', update);
@@ -6774,8 +6774,7 @@ document.addEventListener('click', function(e){
   }
 }, true);
 ['weather','currency','weatherJapan'].forEach(name => {
-  initWidgetDrag(name);
-  applyWidgetHiddenState(name);
+  safeRender(()=>{ initWidgetDrag(name); applyWidgetHiddenState(name); });
 });
 window.addEventListener('resize', () => {
   ['weather','currency','weatherJapan'].forEach(applyWidgetHiddenState);
@@ -6795,7 +6794,7 @@ function syncWidgetRowHeight(){
 }
 window.addEventListener('resize', syncWidgetRowHeight);
 window.addEventListener('load', syncWidgetRowHeight);
-syncWidgetRowHeight();
+safeRender(syncWidgetRowHeight);
 // [추가] 웹(데스크톱)에서 화면 가로폭이 좁아져 위젯 클러스터(환율·날씨)가 좌측 로고 영역과 겹칠
 // 정도가 되면, body에 widgets-compact 클래스를 붙여 메뉴바 아래 별도 줄로 내려서 배치한다(CSS는
 // @media(min-width:781px){body.widgets-compact ...} 참고). 실제 DOM에 떠 있는 위젯 요소를
@@ -6820,7 +6819,7 @@ function syncWidgetLayoutMode(){
 }
 window.addEventListener('resize', syncWidgetLayoutMode);
 window.addEventListener('load', syncWidgetLayoutMode);
-syncWidgetLayoutMode();
+safeRender(syncWidgetLayoutMode);
 // [추가] 날씨 위젯(국내)·날씨 위젯(해외) 두 박스의 실제 내용 길이가 서로 달라 자연 높이가 다를 때,
 // CSS(grid)만으로는 지역/문구 길이 차이나 브라우저별 렌더링 차이까지 완벽히 보장하기 어려울 수
 // 있어, 두 박스 중 실제로 더 필요한 높이(scrollHeight)를 재서 둘 다 그 값으로 명시적으로
@@ -10474,7 +10473,7 @@ function toggleAdminPanelSide(){
   const isLeft = panel.classList.toggle('side-left');
   try{ localStorage.setItem(ADMIN_SIDE_KEY, isLeft?'left':'right'); }catch(e){}
 }
-initAdminPanelSide();
+safeRender(initAdminPanelSide);
 // 관리자 패널 너비 드래그 조절
 const ADMIN_WIDTH_KEY='kundo_admin_width_v1';
 (function initAdminResize(){
@@ -11103,8 +11102,8 @@ function initPkgDrag(type){
     if (st.dragJustMoved){ e.preventDefault(); e.stopPropagation(); st.dragJustMoved=false; }
   }, true);
 }
-initPkgDrag('domestic');
-initPkgDrag('overseas');
+safeRender(()=>initPkgDrag('domestic'));
+safeRender(()=>initPkgDrag('overseas'));
 
 // ── 라이트박스 ───────────────────────────────────────────────────
 let lbType='', lbIdx=0;
@@ -12992,7 +12991,7 @@ function renderAll(){
 }
 
 // INIT
-applySeasonTheme(getSeasonTheme(), false);
+safeRender(()=>applySeasonTheme(getSeasonTheme(), false));
 try{ applyTheme(); }catch(e){}
 
 // ══ 여행 스타일 드롭다운 다중선택 ════════════════════════════════

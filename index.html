@@ -6820,20 +6820,45 @@ syncWidgetLayoutMode();
 // CSS(grid)만으로는 지역/문구 길이 차이나 브라우저별 렌더링 차이까지 완벽히 보장하기 어려울 수
 // 있어, 두 박스 중 실제로 더 필요한 높이(scrollHeight)를 재서 둘 다 그 값으로 명시적으로
 // 맞춘다(웹 compact 모드에서만 — 일반 데스크톱은 고정 118px, 모바일은 기존 자체 방식 그대로 둔다)
+// [수정] 웹폰트가 초기 측정 시점 이후에 늦게 로딩되어 완료되면 두 박스의 텍스트 폭/줄바꿈이 미세하게
+// 바뀌면서 나중에 다시 높이가 어긋나는 경우가 있어(재측정을 다시 트리거할 계기가 없었음), 두 박스를
+// ResizeObserver로 직접 관찰해 어떤 이유로든(폰트 로딩, 데이터 재갱신 등) 자연 높이가 달라질 때마다
+// 스스로 다시 맞추도록 한다. syncing 플래그는 이 함수 자신이 만든 높이 변경 때문에 옵저버가 다시
+// 불려 무한 반복되는 것을 막기 위함이다
 function syncWeatherPairHeight(){
+  // [수정] 이 플래그를 파일 상단의 별도 let 변수로 두면, syncWidgetLayoutMode()의 즉시 실행
+  // 호출(파일 순서상 이 함수보다 앞)이 이 함수를 먼저 부르는 시점에 아직 그 let 선언 줄에
+  // 도달하지 않아 "Cannot access before initialization" 오류가 난다(HERO_WIDGET_GAP과 동일한
+  // 문제). 대신 함수 자신의 프로퍼티에 플래그를 담아 선언 순서와 완전히 무관하게 만든다
+  if (syncWeatherPairHeight._syncing) return;
   const wx = document.getElementById('weatherWidget');
   const wxJp = document.getElementById('weatherWidgetJapan');
   if (!wx || !wxJp) return;
+  syncWeatherPairHeight._syncing = true;
   if (window.innerWidth <= 780 || !document.body.classList.contains('widgets-compact')){
     wx.style.height = ''; wxJp.style.height = '';
+    syncWeatherPairHeight._syncing = false;
     return;
   }
   wx.style.height = 'auto'; wxJp.style.height = 'auto';
   const h = Math.max(wx.scrollHeight, wxJp.scrollHeight, 118);
   wx.style.height = h + 'px';
   wxJp.style.height = h + 'px';
+  syncWeatherPairHeight._syncing = false;
 }
 window.addEventListener('resize', syncWeatherPairHeight);
+if (typeof ResizeObserver !== 'undefined'){
+  const weatherPairObserver = new ResizeObserver(()=>{ if (!syncWeatherPairHeight._syncing) syncWeatherPairHeight(); });
+  window.addEventListener('load', ()=>{
+    const wx = document.getElementById('weatherWidget');
+    const wxJp = document.getElementById('weatherWidgetJapan');
+    if (wx) weatherPairObserver.observe(wx);
+    if (wxJp) weatherPairObserver.observe(wxJp);
+  });
+}
+if (document.fonts && document.fonts.ready){
+  document.fonts.ready.then(()=>{ syncWeatherPairHeight(); syncHeroWidgetGap(); });
+}
 // [추가] 히어로 섹션의 실제 콘텐츠(.hero-inner)와 위젯(환율·날씨) 사이의 세로 간격을, 위젯이
 // 로고 옆에 떠 있는 상태(웹 일반 모드)든 메뉴바 아래로 내려온 상태(compact 모드)든 항상 같은 값
 // (HERO_WIDGET_GAP)으로 맞춘다. 히어로가 flex 세로 중앙 정렬(align-items:center)을 쓰고 있어

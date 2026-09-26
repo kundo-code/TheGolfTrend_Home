@@ -2040,20 +2040,29 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    위젯을 세로로 쌓는다(--topbar-h 기준). 순서는 환율 위젯이 위, 날씨 위젯이 그 아래 — 환율
    위젯의 높이(100px)에 그 자신의 스케일을 곱한 값만큼 아래로 내려 날씨 위젯을 배치해, 관리자가
    환율 위젯 크기를 조절해도 두 위젯이 겹치지 않는다 */
+/* [수정] 위젯 기본 위치 기준점을 "탑바 우측 하단"에서 "탑바 가로 폭 중앙의 최상단(topbar 자체의
+   top:0 지점)"으로 변경 — 이 지점을 (0px,0px)로 두고, 환율 위젯은 그 자리 그대로(0,0), 날씨
+   위젯은 그 아래 340px(0,340) 지점을 기본 위치로 삼는다. 가로는 항상 화면 중앙에 맞춘 뒤
+   --currency-x/--weather-x만큼 좌우로, 세로는 위 기준점에서 --currency-y/--weather-y(또는 날씨는
+   +340px 기준)만큼 위아래로 관리자 설정값을 더한다. x가 커질수록 오른쪽으로, y가 커질수록
+   아래로 이동하는 기존 부호 규칙은 그대로 유지(전에는 right:를 줄이는 방식으로 우측 이동을
+   표현했다면, 이제는 translateX를 늘리는 방식으로 동일하게 표현) */
 @media(min-width:781px){
   .widget-box{display:block}
   .currency-widget{
-    top:calc(var(--topbar-h,108px) + 8px + var(--currency-y,0px));
-    right:calc(40px - var(--currency-x,0px));
+    top:calc(0px + var(--currency-y,0px));
+    left:50%;right:auto;
     width:340px;height:100px;
-    transform:scale(var(--currency-scale,1));transform-origin:top right;
+    transform:translateX(calc(-50% + var(--currency-x,0px))) scale(var(--currency-scale,1));
+    transform-origin:top center;
     background:rgba(255,255,255,var(--currency-opacity,.92));
   }
   .weather-widget{
-    top:calc(var(--topbar-h,108px) + 8px + (100px * var(--currency-scale,1)) + 8px + var(--weather-y,0px));
-    right:calc(40px - var(--weather-x,0px));
+    top:calc(340px + var(--weather-y,0px));
+    left:50%;right:auto;
     width:200px;height:118px;
-    transform:scale(var(--weather-scale,1));transform-origin:top right;
+    transform:translateX(calc(-50% + var(--weather-x,0px))) scale(var(--weather-scale,1));
+    transform-origin:top center;
     background:rgba(255,255,255,var(--weather-opacity,.92));
     cursor:pointer;transition:box-shadow .2s;
   }

@@ -1049,22 +1049,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    플로팅 클러스터)로 통일한다(정확한 배치는 아래 두 미디어쿼리에서). 바탕 박스를 반투명 유리
    느낌으로 바꿔(backdrop-filter 블러 + 낮춘 알파) 페이지 콘텐츠 위에 떠 있을 때 덜 답답해 보이게
    하고, 아이콘 자체(이모지)는 배경과 무관하게 항상 또렷이 보인다 */
-/* [수정] "리퀴드글래스"(liquid glass) 느낌의 유리구슬 버튼 — 좌상단에 밝은 하이라이트, 우하단에
-   은은한 그림자를 얹은 방사형 그라데이션으로 볼록한 유리 질감을 내고, 안쪽 테두리에 밝은
-   림라이트(inset)와 어두운 그림자(inset)를 더해 두께감을 준다. 관리자/문의하기/전화하기 3개
-   아이콘 모두 아래에서 이 배경·그림자·테두리 조합을 공유한다(.fab-icon에는 filter:brightness(0)를
-   줘 아이콘을 또렷한 실루엣으로 보이게 한다 — 첨부 참고 이미지와 동일한 방식) */
+/* [수정] "리퀴드글래스"(liquid glass) 느낌의 유리구슬 버튼 — 첨부 참고 이미지(호박색 유리구슬)에
+   맞춰 좌상단에 크고 또렷한 타원형 하이라이트, 우하단에 짙은 그림자를 얹은 방사형 그라데이션
+   조합으로 볼록하고 반짝이는 유리 질감을 낸다. 안쪽 테두리의 밝은 림라이트(inset)·어두운
+   그림자(inset)로 두께감을 더한다. 관리자/문의하기/전화하기 3개 아이콘 모두 이 배경·그림자·테두리
+   조합을 공유하며, 아이콘 자체(이모지)는 원래 색상 그대로 유지한다(.fab-icon은 크기/정렬용) */
 .admin-fab{position:fixed;width:56px;height:56px;border-radius:50%;
   background:
-    radial-gradient(circle at 30% 24%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.45) 16%, rgba(255,255,255,0) 40%),
-    radial-gradient(circle at 70% 82%, rgba(120,70,10,.35) 0%, rgba(120,70,10,0) 55%),
-    linear-gradient(160deg, rgba(255,221,150,.55) 0%, rgba(221,179,103,.42) 50%, rgba(180,120,40,.4) 100%);
+    radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
+    radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
+    radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;
-  border:1px solid rgba(255,255,255,.45);cursor:pointer;font-size:1.4rem;
-  box-shadow:inset 0 2px 5px rgba(255,255,255,.7),inset 0 -8px 12px rgba(120,70,10,.3),0 8px 20px rgba(10,23,48,.22);
+  border:1px solid rgba(255,255,255,.5);cursor:pointer;font-size:1.4rem;
+  box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
   transition:transform .2s}
 .admin-fab:hover{transform:scale(1.08) rotate(30deg)}
-.fab-icon{filter:brightness(0) saturate(100%)}
+.fab-icon{display:inline-block}
 /* [추가] 아이콘 위에 마우스를 올리면 aria-label 텍스트를 작은 말풍선으로 보여주는 커스텀 툴팁 —
    네이티브 title 속성 툴팁(스타일 지정 불가·지연 발생)을 대체한다. 아이콘들이 화면 하단에 있어
    말풍선은 항상 아이콘 위쪽에 뜨게 한다 */
@@ -2005,16 +2005,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     position:fixed;top:auto;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;
     width:44.8px;height:44.8px;border-radius:50%;
     background:
-      radial-gradient(circle at 30% 24%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.45) 16%, rgba(255,255,255,0) 40%),
-      radial-gradient(circle at 70% 82%, rgba(120,70,10,.35) 0%, rgba(120,70,10,0) 55%),
-      linear-gradient(160deg, rgba(255,221,150,.55) 0%, rgba(221,179,103,.42) 50%, rgba(180,120,40,.4) 100%);
+      radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
+      radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
+      radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
     backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.45);
+    border:1px solid rgba(255,255,255,.5);
     color:var(--pine-deep);
-    font-size:1.2rem;box-shadow:inset 0 2px 5px rgba(255,255,255,.7),inset 0 -8px 12px rgba(120,70,10,.3),0 8px 20px rgba(10,23,48,.22);
+    font-size:1.2rem;box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
     transition:transform .2s;
   }
-  .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08)}
+  .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08) rotate(30deg)}
   .admin-fab::after,.mobile-call-fab::after{font-size:.66rem;padding:5px 9px}
 }
 /* [수정] 웹(데스크톱)에서 "전화하기"·"문의하기"·"관리자" 3개를 화면 우측 최하단 코너에 세로로
@@ -2039,18 +2039,19 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .mobile-call-fab{bottom:calc(40px + 136px + env(safe-area-inset-bottom))}
   .tb-booking-fab,.mobile-call-fab{
     background:
-      radial-gradient(circle at 30% 24%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.45) 16%, rgba(255,255,255,0) 40%),
-      radial-gradient(circle at 70% 82%, rgba(120,70,10,.35) 0%, rgba(120,70,10,0) 55%),
-      linear-gradient(160deg, rgba(255,221,150,.55) 0%, rgba(221,179,103,.42) 50%, rgba(180,120,40,.4) 100%);
+      radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
+      radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
+      radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
     backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.45);
+    border:1px solid rgba(255,255,255,.5);
     color:var(--pine-deep);
-    box-shadow:inset 0 2px 5px rgba(255,255,255,.7),inset 0 -8px 12px rgba(120,70,10,.3),0 8px 20px rgba(10,23,48,.22);
+    box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
   }
   .tb-booking-fab{
     text-decoration:none;
   }
-  .tb-booking-fab:hover{transform:scale(1.08)}
+  .tb-booking-fab:hover{transform:scale(1.08) rotate(30deg)}
+  .mobile-call-fab:hover{transform:scale(1.08) rotate(30deg)}
 }
 /* [수정] 날씨·환율 위젯 — 이제 웹·모바일 모두 노출된다. 박스 자체의 너비/높이는 고정값이고,
    관리자 패널(헤드라인 배너 아래 "위젯 설정")에서 조절하는 CSS 커스텀 프로퍼티(--weather-*,
@@ -5911,7 +5912,7 @@ try{ const lx = JSON.parse(localStorage.getItem(LOGO_XFORM_KEY)||'null'); if (lx
 const WIDGET_CFG_KEY = 'kundo_widget_cfg_v2';
 const WIDGET_CFG_DEFAULT = {
   weather:{scale:90,x:0,y:6,opacity:92}, // 날씨 위젯(국내, 서울)
-  weatherJp:{scale:100,x:0,y:0,opacity:92}, // [추가] 날씨 위젯(해외, 일본) — 국내 위젯과 별도로 크기·위치 조절
+  weatherJp:{scale:100,x:195,y:-115,opacity:92}, // 날씨 위젯(해외, 일본) — 국내 위젯과 별도로 크기·위치 조절
   currency:{scale:105,x:0,y:-2,opacity:92},
   popup:{opacity:100}, // [추가] 날씨·환율 상세 팝업창(.widget-detail-card) 바탕색 투명도
 };
@@ -6906,7 +6907,7 @@ function renderAdminWidgets(){
     <span class="file-hint" style="display:block;margin-bottom:10px">웹은 탑바 우측 끝, 모바일은 메뉴바 바로 아래에 나란히 노출되는 실시간 날씨·환율 위젯의 크기·위치·바탕박스 투명도를 조절합니다. 슬라이더를 끌거나, 옆 칸에 숫자를 직접 입력해도 됩니다.</span>
     ${xformBlock('currency','💱 환율 위젯',[-800,800],[-100,100])}
     ${xformBlock('weather','🌤️ 날씨 위젯(국내)',[-800,800],[-100,100])}
-    ${xformBlock('weatherJp','🌏 날씨 위젯(해외)',[-800,800],[-100,100])}
+    ${xformBlock('weatherJp','🌏 날씨 위젯(해외)',[-800,800],[-200,200])}
     <div class="ai-logo-xform" style="margin-top:16px">
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🗂️ 상세 팝업창</span>
       <label class="ai-xform-row">

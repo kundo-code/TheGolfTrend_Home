@@ -180,7 +180,11 @@ header{padding-top:var(--topbar-h,108px)}
 .hero-wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:120px;z-index:1;pointer-events:none}
 .hero-wave path{fill:var(--pine-deep);opacity:.7}
 .hero-wave path.top{opacity:.4}
-.hero-inner{max-width:1280px;width:100%;position:relative;z-index:2;display:grid;grid-template-columns:1.35fr 1fr;gap:40px;align-items:stretch}
+.hero-inner{max-width:1280px;width:100%;position:relative;z-index:2;display:grid;grid-template-columns:1.35fr 1fr;gap:40px;align-items:stretch;transition:opacity .25s ease,transform .25s ease}
+/* [추가] 웹 일반(플로팅 위젯) 모드에서 위로 스크롤하다가 히어로 콘텐츠 위쪽이 날씨·환율 위젯과
+   겹치기 시작하는 순간, 위젯 뒤로 어정쩡하게 가려지는 대신 콘텐츠 자체가 메뉴바 쪽으로 살짝
+   말려 올라가며 부드럽게 사라지게 한다(JS: initHeroWidgetOverlapHide 참고) */
+body.hero-content-hidden .hero-inner{opacity:0;transform:translateY(-16px);pointer-events:none}
 .hero-main{padding:52px 48px;background:var(--glass-bg);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:32px;box-shadow:var(--glass-shadow)}
 .eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:100px;background:rgba(3,13,38,.55);border:1px solid rgba(221,179,103,.4);box-shadow:0 4px 14px rgba(3,13,38,.22);font-size:1.17rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#fff;text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);margin-bottom:24px}
 .eyebrow .pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
@@ -6751,6 +6755,47 @@ window.addEventListener('resize', syncTopBarHeight);
   // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
   window.addEventListener('load', update);
 })();
+// [추가] 웹 일반(플로팅 위젯) 모드 전용 — 위로 스크롤해 히어로 섹션이 다시 화면에 들어올 때, 문서
+// 흐름을 따르는 히어로 콘텐츠(.hero-inner)가 언젠가는 position:fixed로 항상 같은 자리에 떠 있는
+// 환율·날씨 위젯의 아래쪽 경계와 스쳐 지나가며 겹치는 순간이 생긴다. 그 순간 위젯이 히어로 카드
+// 위에 그냥 얹혀 보이는 어색한 모습 대신, 히어로 콘텐츠 쪽을 메뉴바 방향으로 살짝 끌어올리며
+// 부드럽게 사라지게 해(body.hero-content-hidden, CSS는 .hero-inner 주석 참고) 마치 메뉴바 레이어
+// 밑으로 말려 들어가는 것처럼 보이게 한다. 모바일·위젯 컴팩트 모드는 위젯이 position:fixed가
+// 아니라(sticky/문서흐름) 이런 충돌이 생기지 않으므로 대상에서 제외한다
+(function initHeroWidgetOverlapHide(){
+  let ticking = false;
+  function update(){
+    ticking = false;
+    const heroInner = document.querySelector('.hero-inner');
+    if (!heroInner) return;
+    if (window.innerWidth <= 780 || document.body.classList.contains('widgets-compact')){
+      document.body.classList.remove('hero-content-hidden');
+      return;
+    }
+    const widgetEls = ['.currency-widget','.weather-widget','.weather-widget-jp']
+      .map(sel=>document.querySelector(sel))
+      .filter(el=>el && getComputedStyle(el).display!=='none');
+    if (!widgetEls.length){
+      document.body.classList.remove('hero-content-hidden');
+      return;
+    }
+    const widgetsBottom = Math.max(...widgetEls.map(el=>el.getBoundingClientRect().bottom));
+    const heroTop = heroInner.getBoundingClientRect().top;
+    document.body.classList.toggle('hero-content-hidden', heroTop < widgetsBottom);
+  }
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }, { passive: true });
+  window.addEventListener('resize', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  });
+  safeRender(update);
+  window.addEventListener('load', update);
+})();
 // [수정] 모바일 날씨·환율 위젯을 손가락으로 좌우 드래그해 화면 밖으로 숨기거나(peek 손잡이만
 // 남김) 다시 꺼낼 수 있게 한다. 위젯이 슬라이드하는 거리(--drag-x)는 오직 이 드래그 제스처가
 // 있을 때만 바뀌는 값이라 스크롤과는 완전히 무관하다(위치 자체는 CSS position:sticky가 담당 —
@@ -6990,6 +7035,16 @@ function syncHeroWidgetGap(){
   const HERO_WIDGET_GAP = 60; // 히어로의 기본 padding-top과 동일한 값 — 화면이 좁을 때 자연스럽게 나오는 간격. 함수 안에 두어 위쪽에서(예: applyWidgetConfigCSS → syncWidgetLayoutMode) 이 함수가 먼저 호출되어도 참조 시점 문제가 없게 한다
   const heroInner = document.querySelector('.hero-inner');
   if (!heroInner) return;
+  // [버그 수정] naturalTop은 getBoundingClientRect() 기반이라 "뷰포트 기준" 좌표 — 스크롤 위치에
+  // 따라 값이 달라진다. 이 함수는 애초에 "페이지 맨 위(히어로가 메뉴바 바로 아래 보이는 상태)"를
+  // 전제로 간격을 재는 보정이라, 페이지를 한참 내린 상태(예: 전체공지·EDITOR'S PICK 팝업을 열고
+  // 푸터까지 스크롤한 뒤 팝업을 닫으면 body의 overflow:hidden↔'' 전환 등으로 resize가 발생해
+  // scheduleWidgetSync()가 이 함수를 부를 수 있음)에서 호출되면 naturalTop이 터무니없는 값이 되어
+  // 거대한 margin-top이 계산·적용되고, 이후 맨 위로 스크롤해도(이 함수를 다시 부를 계기가 없어)
+  // 그 값이 그대로 남아 메뉴바와 히어로 사이에 큰 빈 공간이 생기는 버그가 있었다. 페이지 맨 위
+  // 근처가 아니면 지금 다시 잴 이유도 없으므로, 이전 보정값을 그대로 두고 건너뛴다 — 사용자가
+  // 다시 맨 위로 돌아왔을 때 다음 resize/load에서 정상적으로 재계산된다
+  if (window.scrollY > 100) return;
   heroInner.style.marginTop = ''; // 이전에 적용해둔 보정값을 지우고 "자연" 위치부터 다시 잰다
   const naturalTop = heroInner.getBoundingClientRect().top;
   const row = document.getElementById('mobileWidgetRow');

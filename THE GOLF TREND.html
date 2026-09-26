@@ -161,9 +161,11 @@ img{max-width:100%;display:block}
    topbar가 position:fixed로 빠지면서 생기는 자리만큼만 padding-top을 준다. */
 header{padding-top:var(--topbar-h,108px)}
 .nav{padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.logo{display:flex;flex-direction:column;gap:3px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--pine-deep)}
+/* [수정] .logo는 현재 footer(어두운 배경)에서만 쓰이므로 밝은 배경 전제였던 기본 색상을
+   흰색 계열로 직접 조정 — 다른 곳에서 재사용될 경우를 위해 클래스명 자체는 그대로 둔다 */
+.logo{display:flex;flex-direction:column;gap:3px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:#fff}
 .logo .logo-text{font-size:1.5rem;font-weight:700;letter-spacing:.04em;line-height:1}
-.logo .logo-sub{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.01em;color:rgba(10,23,48,.55)}
+.logo .logo-sub{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.01em;color:rgba(247,245,240,.6)}
 .nav ul{display:flex;list-style:none;gap:30px;font-size:.92rem;font-weight:500}
 .nav ul a{color:rgba(10,23,48,.75);transition:color .2s}
 .nav ul a:hover{color:var(--gold-deep)}
@@ -259,6 +261,17 @@ section.block{padding:100px 24px;position:relative}
   border-top:1px solid rgba(221,179,103,.15);
   border-bottom:1px solid rgba(221,179,103,.15);
 }
+/* [수정] "권역별·국가별 골프 여행지" 섹션만 탑바와 동일한 배경색(#0e1522 계열) + 곡선 라인 패턴을
+   황금색 70% 반투명으로 변경 — .sec-bg-pattern은 #links(SNS 링크) 섹션과 공유하는 클래스라
+   ID 선택자로 이 섹션에만 덮어써서 #links는 기존 화이트 배경 그대로 유지한다 */
+#destinations{
+  background-color:rgba(14,21,34,.92);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+}
+#destinations .sec-head h2{color:#fff}
+#destinations .sec-head p{color:rgba(247,245,240,.75)}
+#destinations .dest-region-divider{color:var(--gold)}
+#destinations .dest-region-divider::before,#destinations .dest-region-divider::after{background:rgba(221,179,103,.3)}
 .wrap{max-width:1280px;margin:0 auto}
 .sec-head{margin-bottom:44px;display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
 .sec-head .left{max-width:640px}
@@ -1034,13 +1047,23 @@ section.block{padding:100px 24px;position:relative}
 .success h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.6rem;color:#fff;margin-bottom:8px;font-weight:500}
 
 /* FOOTER */
-footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+/* [수정] 푸터 배경을 탑바와 동일한 배경색 + 황금색 70% 반투명 곡선 라인 패턴으로 변경.
+   기존 다크 텍스트(rgba(10,23,48,X))는 밝은 배경을 전제로 했던 색이라, 어두운 배경에서도
+   읽히도록 밝은 톤(rgba(247,245,240,X))으로 함께 뒤집었다 */
+footer{
+  padding:80px 24px 40px;border-top:1px solid rgba(221,179,103,.2);
+  background-color:rgba(14,21,34,.92);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-size:900px 562px;
+  background-repeat:repeat;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
 .foot-grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
-.foot-grid p{color:rgba(10,23,48,.6);font-size:.9rem;margin-top:14px;max-width:320px}
-.foot-grid h4{color:var(--pine-deep);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.95rem;font-weight:500;margin-bottom:18px}
+.foot-grid p{color:rgba(247,245,240,.65);font-size:.9rem;margin-top:14px;max-width:320px}
+.foot-grid h4{color:#fff;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.95rem;font-weight:500;margin-bottom:18px}
 .foot-grid ul{list-style:none;display:flex;flex-direction:column;gap:10px}
-.foot-grid a{color:rgba(10,23,48,.6);font-size:.9rem;transition:color .2s;cursor:pointer}
-.foot-grid a:hover{color:var(--gold-deep)}
+.foot-grid a{color:rgba(247,245,240,.65);font-size:.9rem;transition:color .2s;cursor:pointer}
+.foot-grid a:hover{color:var(--gold)}
 .foot-socials{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
 /* FIX: 실제 아이콘(.lico)은 36x36px으로 유지하되, 탭 영역(.foot-social 자체)은 최소 44x44px을
    확보해 터치 표준을 충족한다 — 아이콘은 그 안에서 그대로 중앙 정렬되므로 보이는 크기는 바뀌지 않는다 */
@@ -1051,10 +1074,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-socials .foot-social .lico.naver{background:#03C75A}
 .foot-socials .foot-social .lico.tistory{background:#FF5C00}
 .foot-socials .foot-social .lico.tiktok{background:#000;border:1px solid #666}
-.foot-bottom{max-width:1280px;margin:0 auto;padding-top:16px;border-top:1px solid rgba(10,23,48,.08);display:flex;flex-direction:column;gap:12px;color:rgba(10,23,48,.5);font-size:.82rem}
-.foot-bottom .fbo-insurance{display:flex;align-items:center;gap:10px;color:rgba(10,23,48,.68);font-size:.82rem;padding:14px 18px;background:rgba(221,179,103,.10);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;line-height:1.5}
-.foot-bottom .fbo-insurance b{color:var(--gold-deep);font-weight:600;margin-right:2px}
-.foot-bottom .fbo-copy{color:rgba(10,23,48,.45);font-size:.82rem;text-align:center;letter-spacing:.05em;padding-top:4px}
+.foot-bottom{max-width:1280px;margin:0 auto;padding-top:16px;border-top:1px solid rgba(221,179,103,.15);display:flex;flex-direction:column;gap:12px;color:rgba(247,245,240,.5);font-size:.82rem}
+.foot-bottom .fbo-insurance{display:flex;align-items:center;gap:10px;color:rgba(247,245,240,.75);font-size:.82rem;padding:14px 18px;background:rgba(221,179,103,.14);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;line-height:1.5}
+.foot-bottom .fbo-insurance b{color:var(--gold);font-weight:600;margin-right:2px}
+.foot-bottom .fbo-copy{color:rgba(247,245,240,.45);font-size:.82rem;text-align:center;letter-spacing:.05em;padding-top:4px}
 
 /* ADMIN PANEL */
 /* [수정] 관리자·전화하기·문의하기 3개 아이콘은 웹·모바일 모두 화면 우측 최하단 고정 위치(코너
@@ -1824,15 +1847,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* FOOTER COMPANY */
 .foot-company{max-width:1280px;margin:0 auto;padding:20px 0 8px;display:flex;flex-direction:column;gap:6px}
-.foot-company .fc-line{font-size:.86rem;color:rgba(10,23,48,.7);line-height:1.65}
-.foot-company .fc-line b{color:var(--pine-deep);font-weight:600}
+.foot-company .fc-line{font-size:.86rem;color:rgba(247,245,240,.7);line-height:1.65}
+.foot-company .fc-line b{color:#fff;font-weight:600}
 
 /* FOOTER TERMS/POLICY LINKS (상단부) */
-.foot-terms{max-width:1280px;margin:24px auto 0;padding:20px 0;border-top:1px solid rgba(10,23,48,.08);display:flex;flex-wrap:wrap;gap:12px 14px}
-.foot-terms a{display:inline-flex;align-items:center;padding:7px 14px;font-size:.82rem;color:rgba(10,23,48,.65);border-radius:100px;background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.08);transition:all .2s;cursor:pointer}
-.foot-terms a:hover{background:rgba(221,179,103,.15);border-color:var(--gold);color:var(--pine-deep);transform:translateY(-1px)}
-.foot-terms a.hi{background:rgba(221,179,103,.14);color:var(--gold-deep);border-color:rgba(221,179,103,.35);font-weight:600}
-.foot-terms a.hi:hover{background:rgba(221,179,103,.25);color:var(--pine-deep)}
+.foot-terms{max-width:1280px;margin:24px auto 0;padding:20px 0;border-top:1px solid rgba(221,179,103,.15);display:flex;flex-wrap:wrap;gap:12px 14px}
+.foot-terms a{display:inline-flex;align-items:center;padding:7px 14px;font-size:.82rem;color:rgba(247,245,240,.7);border-radius:100px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);transition:all .2s;cursor:pointer}
+.foot-terms a:hover{background:rgba(221,179,103,.22);border-color:var(--gold);color:#fff;transform:translateY(-1px)}
+.foot-terms a.hi{background:rgba(221,179,103,.18);color:var(--gold);border-color:rgba(221,179,103,.4);font-weight:600}
+.foot-terms a.hi:hover{background:rgba(221,179,103,.3);color:#fff}
 
 /* LINKS AUTO-FIT */
 .link-groups{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:20px!important}
@@ -2914,8 +2937,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 순차 배경 배치에서 화이트+패턴 톤 — 기본 배경과 같은 곡선 라인 패턴(#faf4e9)을 재사용, 유리질감 강화(saturate) */
 .pkg-poster-section{
   padding:80px 0;
-  background-color:rgba(255,255,255,.92);
-  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23faf4e9%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-color:rgba(14,21,34,.92);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
   background-size:900px 562px;
   background-repeat:repeat;
   backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
@@ -2941,7 +2964,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .pkg-group-title{
   font-family:'Bebas Neue','Noto Sans KR',sans-serif;
-  font-size:clamp(1.2rem,2vw,1.6rem);color:#0A1730;
+  font-size:clamp(1.2rem,2vw,1.6rem);color:#fff;
   font-weight:600;margin:0;letter-spacing:-.01em;
 }
 
@@ -2950,8 +2973,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* FIX: 40px → 44px로 키워 터치 표준(최소 44x44px) 충족 */
 .pkg-nav-btn{
   width:44px;height:44px;border-radius:50%;
-  background:rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.2);
-  color:#0A1730;font-size:1.3rem;cursor:pointer;transition:all .2s;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+  color:#fff;font-size:1.3rem;cursor:pointer;transition:all .2s;
   display:grid;place-items:center;line-height:1;
 }
 .pkg-nav-btn:hover{
@@ -3032,7 +3055,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   display:flex;justify-content:center;gap:6px;
 }
 .pkg-counter{ font-size:.78rem;font-weight:600;color:rgba(247,245,240,.55);letter-spacing:.02em; }
-.pkg-poster-section .pkg-counter{ color:rgba(10,23,48,.5); }
 .pkg-dot{
   width:7px;height:7px;border-radius:50%;
   background:rgba(247,245,240,.25);border:none;cursor:pointer;
@@ -3129,32 +3151,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 
 
-/* ── 포스터 섹션 화이트 패널 내 카드 보정 ─────────────────── */
-.pkg-poster-section .pkg-card{
-  background:#f5f0e8;
-  border:1px solid rgba(0,0,0,.1);
-  box-shadow:0 4px 16px rgba(0,0,0,.12);
-}
-.pkg-poster-section .pkg-card:hover{
-  border-color:rgba(221,179,103,.5);
-  box-shadow:0 14px 40px rgba(0,0,0,.2);
-}
-
-/* pkg-tag 다크 배경에서 화이트 배경으로 */
-.pkg-poster-section .pkg-tag{
-  background:rgba(10,23,48,.1);
-  border-color:rgba(10,23,48,.25);
-  color:var(--pine);
-}
-.pkg-poster-section .pkg-dot{
-  background:rgba(0,0,0,.2);
-}
-.pkg-poster-section .pkg-dot.active{
-  background:var(--pine);
-}
-.pkg-poster-section .pkg-nav-btn:hover{
-  background:rgba(10,23,48,.15);border-color:var(--pine);color:var(--pine);
-}
+/* [수정] 포스터 섹션 배경을 탑바와 동일한 다크 네이비로 되돌리면서, 화이트 패널이던 시절
+   여기서만 밝은 톤으로 덮어썼던 카드/태그/도트 보정 규칙은 제거 — .pkg-card/.pkg-tag/.pkg-dot의
+   원래 다크 배경용 기본 스타일(이미 위쪽에 정의됨)이 자연히 다시 적용된다 */
 
 @media(max-width:640px){
   /* [Phase] 태그(Domestic/Overseas)는 첫 줄에 단독으로 좌측 정렬, 제목+이동 버튼은 그 아래 줄에
@@ -3189,12 +3188,21 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .foot-logo-img:hover{filter:drop-shadow(0 4px 16px rgba(221,179,103,.55))}
 
-/* ── 티타임 상담 섹션: 실제 폼 카드(.booking-wrap)가 자체 화이트 배경을 가지므로,
-   섹션 자체는 [수정] 순차 배경 배치에서 "AI 추천"과 동일하게 별도 배경 없이 둔다 ── */
-.booking-section .sec-head h2{color:#0A1730}
-.booking-section .sec-head h2 em{color:var(--pine)}
-.booking-section .sec-head p{color:rgba(0,0,0,.7)}
-.booking-section .tag{color:var(--pine);background:rgba(10,23,48,.08);border-color:rgba(10,23,48,.2)}
+/* ── 티타임 상담 섹션: 실제 폼 카드(.booking-wrap)는 계속 자체 화이트 배경을 가지지만,
+   섹션 자체는 탑바와 동일한 배경색 + 황금색 70% 반투명 곡선 라인 패턴으로 변경 —
+   제목/설명/태그는 폼 카드 밖(어두운 섹션 배경 위)에 있으므로 밝은 색으로 맞춘다 ── */
+.booking-section{
+  background-color:rgba(14,21,34,.92);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-size:900px 562px;
+  background-repeat:repeat;
+  border-top:1px solid rgba(221,179,103,.2);
+  border-bottom:1px solid rgba(221,179,103,.2);
+}
+.booking-section .sec-head h2{color:#fff}
+.booking-section .sec-head h2 em{color:var(--gold)}
+.booking-section .sec-head p{color:rgba(247,245,240,.75)}
+.booking-section .tag{color:var(--gold);background:rgba(221,179,103,.12);border-color:rgba(221,179,103,.3)}
 .booking-wrap{background:rgba(255,255,255,.85)!important;border:1px solid rgba(10,23,48,.1);box-shadow:0 8px 40px rgba(10,23,48,.1)}
 .booking-section .pass{background:rgba(255,255,255,.75);border:1px solid rgba(10,23,48,.12)}
 .booking-section .pass-head{background:rgba(10,23,48,.06);border-bottom-color:rgba(10,23,48,.1)}

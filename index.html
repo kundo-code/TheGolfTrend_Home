@@ -3552,34 +3552,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   </ul>
 </nav>
 
-<!-- [수정] 날씨·환율 위젯 — 웹은 탑바 우측 끝에 position:fixed로 그대로 고정되고(기존과 동일),
-     모바일은 nav 바로 다음(문서 순서)에 두어 position:sticky로 메뉴바와 완전히 같은 타이밍에
-     움직인다(JS 스크롤 계산 없이 브라우저 네이티브 sticky라 흔들리지 않는다 — 자세한 설명은
-     CSS .mobile-widget-row 주석 참고). 모바일에서는 손가락으로 좌우로 드래그해 화면 밖에 숨기거나
-     (peek 손잡이만 남음) 다시 꺼낼 수 있다(JS initWidgetDrag/setWidgetHidden 참고). 크기/위치/
-     투명도는 관리자 패널(사이트 아이덴티티 → 위젯 설정)에서 조절 — CSS 커스텀 프로퍼티
-     --weather-*/--currency-* 사용
-     [추가] 모바일 기본 배치: 환율 위젯은 가로 폭 전체, 그 아래 날씨 위젯 2개(서울/일본)를 가로 폭의
-     절반씩 나란히 배치한다(.mobile-weather-pair). 일본 날씨 위젯(#weatherWidgetJapan)은 모바일
-     전용이며 웹(데스크톱)에서는 노출하지 않는다(.weather-widget-jp가 항상 display:none이었다가
-     max-width:780px에서만 block으로 바뀜 — 자세한 설명은 CSS 주석 참고) -->
-<div class="mobile-widget-row" id="mobileWidgetRow">
-  <div class="widget-drag-wrap" id="currencyDragWrap" data-widget="currency">
-    <div class="widget-box currency-widget" id="currencyWidget"></div>
-    <button type="button" class="widget-peek-handle" id="currencyPeekHandle" onclick="setWidgetHidden('currency',false)" aria-label="환율 위젯 다시 보기">›</button>
-  </div>
-  <div class="mobile-weather-pair">
-    <div class="widget-drag-wrap" id="weatherDragWrap" data-widget="weather">
-      <div class="widget-box weather-widget" id="weatherWidget" onclick="toggleWeatherDetail()" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
-      <button type="button" class="widget-peek-handle" id="weatherPeekHandle" onclick="setWidgetHidden('weather',false)" aria-label="날씨 위젯 다시 보기">‹</button>
-    </div>
-    <div class="widget-drag-wrap" id="weatherJapanDragWrap" data-widget="weatherJapan">
-      <div class="widget-box weather-widget-jp" id="weatherWidgetJapan" onclick="toggleJapanWeatherDetail()" role="button" tabindex="0" aria-label="일본 날씨 상세보기"></div>
-      <button type="button" class="widget-peek-handle" id="weatherJapanPeekHandle" onclick="setWidgetHidden('weatherJapan',false)" aria-label="일본 날씨 위젯 다시 보기">›</button>
-    </div>
-  </div>
-</div>
-
 <!-- [Phase] 전체 공지 팝업 — 활성화되고 노출 기간/시간에 해당하는 공지를 최신순 최대 5개까지
      홈 진입 시 가장 먼저 노출. 다른 팝업(요금 항목·EDITOR'S PICK)과는 별개의 독립 스테이지 -->
 <div class="notice-popup-overlay" id="noticePopupStage" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeNoticePopup)"></div>
@@ -3602,6 +3574,39 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 <!-- [Phase 3 Semantic HTML] 히어로부터 예약 문의까지 핵심 콘텐츠를 <main>으로 묶음 (class/id 변경 없음) -->
 <main id="main">
+<!-- [수정] 날씨·환율 위젯을 히어로 섹션과 함께 .hero-widget-scope로 감쌌다 — 웹은 탑바 우측 끝에
+     position:fixed로 그대로 고정되고(기존과 동일), 모바일은 nav 바로 다음(문서 순서)에 두어
+     position:sticky로 메뉴바와 완전히 같은 타이밍에 움직인다(JS 스크롤 계산 없이 브라우저 네이티브
+     sticky라 흔들리지 않는다 — 자세한 설명은 CSS .mobile-widget-row 주석 참고). 모바일에서는
+     손가락으로 좌우로 드래그해 화면 밖에 숨기거나(peek 손잡이만 남음) 다시 꺼낼 수 있다(JS
+     initWidgetDrag/setWidgetHidden 참고). 크기/위치/투명도는 관리자 패널(사이트 아이덴티티 →
+     위젯 설정)에서 조절 — CSS 커스텀 프로퍼티 --weather-*/--currency-* 사용
+     [추가] 모바일 기본 배치: 환율 위젯은 가로 폭 전체, 그 아래 날씨 위젯 2개(서울/일본)를 가로 폭의
+     절반씩 나란히 배치한다(.mobile-weather-pair). 일본 날씨 위젯(#weatherWidgetJapan)은 모바일
+     전용이며 웹(데스크톱)에서는 노출하지 않는다(.weather-widget-jp가 항상 display:none이었다가
+     max-width:780px에서만 block으로 바뀜 — 자세한 설명은 CSS 주석 참고)
+     [추가] .hero-widget-scope로 감싼 이유: position:sticky는 자신을 감싼 블록(이 wrapper)의 높이
+     범위를 벗어나면 같이 스크롤되어 사라진다 — 모바일에서 위젯이 메뉴바처럼 페이지 끝까지 계속
+     붙어있지 않고, 히어로 섹션("완벽한 여행" 카드·EDITOR'S PICK)을 다 지나치는 순간 히어로와
+     함께 스크롤되어 사라지도록 하기 위함이다(메뉴바 자신은 이 wrapper 밖에 그대로 둬 페이지
+     끝까지 계속 고정된다) -->
+<div class="hero-widget-scope">
+<div class="mobile-widget-row" id="mobileWidgetRow">
+  <div class="widget-drag-wrap" id="currencyDragWrap" data-widget="currency">
+    <div class="widget-box currency-widget" id="currencyWidget"></div>
+    <button type="button" class="widget-peek-handle" id="currencyPeekHandle" onclick="setWidgetHidden('currency',false)" aria-label="환율 위젯 다시 보기">›</button>
+  </div>
+  <div class="mobile-weather-pair">
+    <div class="widget-drag-wrap" id="weatherDragWrap" data-widget="weather">
+      <div class="widget-box weather-widget" id="weatherWidget" onclick="toggleWeatherDetail()" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
+      <button type="button" class="widget-peek-handle" id="weatherPeekHandle" onclick="setWidgetHidden('weather',false)" aria-label="날씨 위젯 다시 보기">‹</button>
+    </div>
+    <div class="widget-drag-wrap" id="weatherJapanDragWrap" data-widget="weatherJapan">
+      <div class="widget-box weather-widget-jp" id="weatherWidgetJapan" onclick="toggleJapanWeatherDetail()" role="button" tabindex="0" aria-label="일본 날씨 상세보기"></div>
+      <button type="button" class="widget-peek-handle" id="weatherJapanPeekHandle" onclick="setWidgetHidden('weatherJapan',false)" aria-label="일본 날씨 위젯 다시 보기">›</button>
+    </div>
+  </div>
+</div>
 <!-- HERO -->
 <section class="hero" id="top">
   <div class="hero-bg" id="heroBg" aria-hidden="true"></div>
@@ -3720,6 +3725,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     </aside>
   </div>
 </section>
+</div>
 
 <!-- AI RECOMMEND -->
 <section class="block ai-recommend-section" id="aiRecommend">

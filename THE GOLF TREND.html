@@ -6859,6 +6859,12 @@ function syncWeatherPairHeight(){
   wx.style.height = h + 'px';
   wxJp.style.height = h + 'px';
   syncWeatherPairHeight._syncing = false;
+  // [추가] 실제 사용자 환경에서, 위 보정을 마친 "직후"가 아니라 그보다 조금 더 지난 시점에(이모지
+  // 글꼴 교체, 기기별 폰트 메트릭 확정 등 이 코드가 직접 감지할 수 없는 지연 렌더링 요인으로) 두
+  // 박스의 실제 내용 높이가 다시 미세하게 벌어지는 사례가 보고되었다. 정확한 원인을 이 환경에서는
+  // 재현하지 못했으므로, 원인을 특정하는 대신 일정 시간 동안 여러 차례 다시 확인해 그 사이 어긋난
+  // 것이 있으면 즉시 재보정하는 방식으로 방어한다(멱등 — 이미 같으면 아무 것도 바뀌지 않는다)
+  [100, 400, 1000, 2000].forEach(ms => setTimeout(syncWeatherPairHeight, ms));
 }
 window.addEventListener('resize', syncWeatherPairHeight);
 if (typeof ResizeObserver !== 'undefined'){

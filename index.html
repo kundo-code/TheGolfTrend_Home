@@ -275,6 +275,10 @@ section.block{padding:100px 24px;position:relative}
 .sec-head .left{max-width:640px}
 .sec-head .tag{display:inline-block;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:12px}
 .sec-head h2{font-size:clamp(2rem,4vw,3.2rem);color:var(--pine-deep);font-weight:300}
+/* [추가] "AI 골프 여행 추천"·"여행 이야기" 제목(밝은 배경 위 어두운 글자)에 은은한 음영을 더해
+   가독성을 높임 — 어두운 배경용 강한 흰 그림자와 달리, 밝은 배경에서는 글자를 살짝 띄워 보이게
+   하는 정도의 옅은 그림자만 사용한다 */
+#aiRecommend .sec-head h2,#blog .sec-head h2{text-shadow:0 1px 3px rgba(10,23,48,.12),0 4px 10px rgba(10,23,48,.06)}
 .sec-head h2 em{font-style:italic;color:var(--gold-deep)}
 .sec-head p{color:rgba(10,23,48,.65);margin-top:12px;font-size:1rem;max-width:520px}
 .sec-more{color:var(--gold-deep);font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
@@ -2122,7 +2126,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border-radius:16px;border:1px solid rgba(255,255,255,.55);
   box-shadow:0 8px 24px rgba(10,23,48,.18),inset 0 1px 0 rgba(255,255,255,.5);
-  padding:10px 14px;color:var(--pine-deep);overflow:hidden;box-sizing:border-box;
+  /* [추가] 관리자 패널 "위젯 전체 설정"에서 조절하는 글자 색상 — 미설정 시 기존 색(--pine-deep) 그대로 */
+  padding:10px 14px;color:var(--widget-font-color, var(--pine-deep));overflow:hidden;box-sizing:border-box;
 }
 /* [추가] 위젯을 감싸는 래퍼(.mobile-widget-row/.widget-drag-wrap)는 모바일 전용 레이아웃이다.
    웹에서는 display:contents로 스스로는 박스를 만들지 않아, 자식 .widget-box가 기존처럼
@@ -2338,6 +2343,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .wx-temp{font-size:1.5rem;font-weight:700}
 .wx-label{font-size:.72rem;color:rgba(10,23,48,.7)}
 .wx-sub{font-size:.64rem;color:rgba(10,23,48,.5);margin-top:3px}
+/* [추가] 날씨·환율 작은 위젯(.widget-box) 안의 텍스트만 관리자 글자 색상 설정을 따르도록 범위를
+   좁힘 — 상세 팝업(.widget-detail-card)은 같은 클래스명(.wgt-loading/.cur-name 등)을 재사용하지만
+   .widget-box 밖에 있어 이 규칙의 영향을 받지 않고 항상 기존 색을 유지한다 */
+.widget-box .wgt-loading{color:color-mix(in srgb, var(--widget-font-color, #030D26) 45%, transparent)}
+.widget-box .wx-loc{color:color-mix(in srgb, var(--widget-font-color, #030D26) 55%, transparent)}
+.widget-box .wx-label{color:color-mix(in srgb, var(--widget-font-color, #030D26) 70%, transparent)}
+.widget-box .wx-sub{color:color-mix(in srgb, var(--widget-font-color, #030D26) 50%, transparent)}
 .cur-title{font-size:.8rem;font-weight:700;margin-bottom:4px}
 /* [수정] 위젯 안의 실시간 환율은 국가별 통화 항목 사이에 구분선을 두고 한 줄로 가로로 길게
    배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
@@ -2349,6 +2361,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .cur-list .cur-row:last-child{border-right:none;padding-right:0}
 .cur-flag{font-size:1rem}
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
+.widget-box .cur-name{color:color-mix(in srgb, var(--widget-font-color, #030D26) 70%, transparent)}
 .cur-list .cur-name{flex:none}
 .cur-rate{font-weight:700}
 /* [수정] 세로 길이를 2px 늘리기 위해 상하 padding만 5px→6px로(좌우는 그대로 5px) — 버튼 폭은
@@ -3228,7 +3241,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   border-top:1px solid rgba(221,179,103,.2);
   border-bottom:1px solid rgba(221,179,103,.2);
 }
-.booking-section .sec-head h2{color:#fff}
+.booking-section .sec-head h2{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.65),0 4px 16px rgba(0,0,0,.4)}
 .booking-section .sec-head h2 em{color:var(--gold)}
 .booking-section .sec-head p{color:rgba(247,245,240,.75)}
 .booking-section .tag{color:var(--gold);background:rgba(221,179,103,.12);border-color:rgba(221,179,103,.3)}
@@ -4020,7 +4033,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     <div class="sec-head">
       <div class="left">
         <span class="tag">Boarding Pass</span>
-        <h2>티타임 상담 <em>탑승권</em></h2>
+        <h2>골프 패키지 상담 <em>탑승권</em></h2>
         <p>희망 지역·코스·일정을 남겨주시면, 24시간 이내에 담당 플래너가 연락드립니다.</p>
       </div>
     </div>
@@ -6061,7 +6074,9 @@ const WIDGET_CFG_DEFAULT = {
   // 각 위젯 자신의 값에 곱해지고(기본값 100%는 곱해도 값이 그대로라 아무 효과 없음), 가로·세로
   // 위치는 각 위젯 자신의 값에 더해진다(기본값 0px 역시 더해도 변화 없음) — 즉 기본 상태에서는
   // 전체 설정이 개별 위젯에 아무 영향을 주지 않다가, 관리자가 이 값을 조절하면 3개 위젯이 함께 반응한다
-  globalWidget:{scale:100,opacity:100,x:0,y:0},
+  // [추가] fontColor: null이면 기본 글자색(--pine-deep) 그대로, 값이 있으면 3개 위젯 전체 글자색을
+  // 그 색으로 덮어쓴다(개별 위젯 단위가 아닌 전체 설정에만 존재 — 3개 위젯이 항상 같은 색을 쓰도록)
+  globalWidget:{scale:100,opacity:100,x:0,y:0,fontColor:null},
 };
 let widgetConfig = JSON.parse(JSON.stringify(WIDGET_CFG_DEFAULT));
 try{
@@ -6153,6 +6168,10 @@ function applyWidgetConfigCSS(){
   root.style.setProperty('--currency-x', (c.x+g.x)+'px');
   root.style.setProperty('--currency-y', (c.y+g.y)+'px');
   root.style.setProperty('--popup-opacity', p.opacity/100);
+  // [추가] 위젯 전체 설정의 글자 색상 — 값이 없으면(기본) 변수를 아예 없애 CSS의 기본값
+  // (var(--widget-font-color, var(--pine-deep)))이 그대로 적용되게 한다
+  if (g.fontColor) root.style.setProperty('--widget-font-color', g.fontColor);
+  else root.style.removeProperty('--widget-font-color');
   syncWidgetRowHeight(); // 위젯 크기 조절 시 히어로 배경이 덮는 범위(--widget-row-h)도 함께 갱신
   if (typeof syncWidgetLayoutMode==='function') syncWidgetLayoutMode(); // 환율 위젯 크기 조절 시 로고와의 겹침 여부도 다시 판정
 }
@@ -7205,7 +7224,7 @@ function renderAdminWidgets(){
   };
   const g = widgetConfig.globalWidget;
   const gDefault = WIDGET_CFG_DEFAULT.globalWidget;
-  const gChanged = (g.scale!==gDefault.scale||g.x!==gDefault.x||g.y!==gDefault.y||g.opacity!==gDefault.opacity);
+  const gChanged = (g.scale!==gDefault.scale||g.x!==gDefault.x||g.y!==gDefault.y||g.opacity!==gDefault.opacity||g.fontColor!==gDefault.fontColor);
   const pOpacity = widgetConfig.popup.opacity;
   const pChanged = pOpacity !== WIDGET_CFG_DEFAULT.popup.opacity;
   // [수정] 슬라이더를 조절할 때마다(setWidgetConfig 등) renderAdminWidgets()가 매번 innerHTML을
@@ -7223,6 +7242,11 @@ function renderAdminWidgets(){
       ${xformRow('globalWidget','x','가로 위치',-800,800,g.x,'px')}
       ${xformRow('globalWidget','y','세로 위치',-200,200,g.y,'px')}
       <span class="file-hint" id="widgetXformVals_globalWidget">크기 ${g.scale}% · 투명도 ${g.opacity}% · 가로 ${g.x}px · 세로 ${g.y}px</span>
+      <div class="theme-color-row" style="margin-top:8px">
+        <span class="tc-label">글자 색상</span>
+        <input type="color" value="${escapeAttr(g.fontColor||'#030D26')}" onchange="setWidgetConfig('globalWidget',{fontColor:this.value})">
+        ${g.fontColor?`<button type="button" class="file-btn" onclick="setWidgetConfig('globalWidget',{fontColor:null})">기본값</button>`:''}
+      </div>
       ${gChanged?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('globalWidget')" style="margin-top:6px">전체 설정 초기화</button>`:''}
     </div>
     <div class="ai-logo-xform" style="margin-top:16px">

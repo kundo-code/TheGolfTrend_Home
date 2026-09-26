@@ -2171,6 +2171,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     height:100%;min-height:118px;box-sizing:border-box;
     display:flex;flex-direction:column;justify-content:center;
   }
+  /* [유지] 위젯 줄이 문서 흐름을 차지하는 실제 박스가 되므로, 히어로 섹션의 배경(.hero-bg)을
+     위젯 줄 높이(--widget-row-h)만큼 위로 끌어올려 그 뒤까지 이어지게 한다(배경 전용 보정 —
+     안쪽 콘텐츠와 위젯 사이의 "간격"은 히어로가 flex 세로 중앙 정렬을 쓰고 있어 이 padding-top
+     보정만으로는 항상 정확히 같은 값이 되지 않는다. 그래서 콘텐츠 쪽 간격은 별도로 JS
+     syncHeroWidgetGap()이 .hero-inner에 직접 margin-top을 실측·보정해 항상 같게 맞춘다) */
   body.widgets-compact .hero{
     margin-top:calc(-1 * var(--widget-row-h,0px));
     padding-top:calc(60px + var(--widget-row-h,0px));
@@ -6173,6 +6178,7 @@ function renderWeatherWidget(){
   if (!el) return;
   if (!weatherData || !weatherData.current){
     el.innerHTML = `<div class="wgt-loading">${weatherFetchFailed?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+    syncWeatherPairHeight(); syncHeroWidgetGap();
     return;
   }
   const cur = weatherData.current;
@@ -6183,6 +6189,7 @@ function renderWeatherWidget(){
     <div class="wx-label">${info.label}</div>
     <div class="wx-sub">체감 ${Math.round(cur.apparent_temperature)}° · 습도 ${Math.round(cur.relative_humidity_2m)}%</div>
   `;
+  syncWeatherPairHeight(); syncHeroWidgetGap();
 }
 function toggleWeatherDetail(){
   const overlay = document.getElementById('weatherDetailOverlay');
@@ -6287,6 +6294,7 @@ function renderWeatherWidgetJapan(){
   const data = weatherLocData.japan;
   if (!data || data==='failed' || !data.current){
     el.innerHTML = `<div class="wgt-loading">${data==='failed'?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+    syncWeatherPairHeight(); syncHeroWidgetGap();
     return;
   }
   const cur = data.current;
@@ -6297,6 +6305,7 @@ function renderWeatherWidgetJapan(){
     <div class="wx-label">${info.label}</div>
     <div class="wx-sub">체감 ${Math.round(cur.apparent_temperature)}° · 습도 ${Math.round(cur.relative_humidity_2m)}%</div>
   `;
+  syncWeatherPairHeight(); syncHeroWidgetGap();
 }
 function toggleJapanWeatherDetail(){
   setWeatherDetailLocation('japan');
@@ -6343,6 +6352,7 @@ function renderCurrencyWidget(){
   if (!el) return;
   if (!currencyData){
     el.innerHTML = `<div class="wgt-loading">${currencyFetchFailed?'환율 정보를 불러오지 못했습니다':'환율 정보를 불러오는 중…'}</div>`;
+    syncHeroWidgetGap();
     return;
   }
   el.innerHTML = `
@@ -6354,6 +6364,7 @@ function renderCurrencyWidget(){
     }).join('')}</div>
     <button type="button" class="cur-calc-btn" onclick="toggleCurrencyDetail()">💱 환율 계산기</button>
   `;
+  syncHeroWidgetGap();
 }
 function toggleCurrencyDetail(){
   const overlay = document.getElementById('currencyDetailOverlay');
@@ -6799,10 +6810,59 @@ function syncWidgetLayoutMode(){
   const collides = currencyNaturalLeft < brandRect.right + 24; // 24px 여유
   document.body.classList.toggle('widgets-compact', collides);
   syncWidgetRowHeight(); // 모드가 막 바뀐 직후에도 --widget-row-h가 새 레이아웃 기준으로 즉시 갱신되도록
+  syncWeatherPairHeight();
+  syncHeroWidgetGap();
 }
 window.addEventListener('resize', syncWidgetLayoutMode);
 window.addEventListener('load', syncWidgetLayoutMode);
 syncWidgetLayoutMode();
+// [추가] 날씨 위젯(국내)·날씨 위젯(해외) 두 박스의 실제 내용 길이가 서로 달라 자연 높이가 다를 때,
+// CSS(grid)만으로는 지역/문구 길이 차이나 브라우저별 렌더링 차이까지 완벽히 보장하기 어려울 수
+// 있어, 두 박스 중 실제로 더 필요한 높이(scrollHeight)를 재서 둘 다 그 값으로 명시적으로
+// 맞춘다(웹 compact 모드에서만 — 일반 데스크톱은 고정 118px, 모바일은 기존 자체 방식 그대로 둔다)
+function syncWeatherPairHeight(){
+  const wx = document.getElementById('weatherWidget');
+  const wxJp = document.getElementById('weatherWidgetJapan');
+  if (!wx || !wxJp) return;
+  if (window.innerWidth <= 780 || !document.body.classList.contains('widgets-compact')){
+    wx.style.height = ''; wxJp.style.height = '';
+    return;
+  }
+  wx.style.height = 'auto'; wxJp.style.height = 'auto';
+  const h = Math.max(wx.scrollHeight, wxJp.scrollHeight, 118);
+  wx.style.height = h + 'px';
+  wxJp.style.height = h + 'px';
+}
+window.addEventListener('resize', syncWeatherPairHeight);
+// [추가] 히어로 섹션의 실제 콘텐츠(.hero-inner)와 위젯(환율·날씨) 사이의 세로 간격을, 위젯이
+// 로고 옆에 떠 있는 상태(웹 일반 모드)든 메뉴바 아래로 내려온 상태(compact 모드)든 항상 같은 값
+// (HERO_WIDGET_GAP)으로 맞춘다. 히어로가 flex 세로 중앙 정렬(align-items:center)을 쓰고 있어
+// padding-top 보정만으로는 정확히 같은 간격이 나오지 않으므로, 위젯들의 실제 렌더링된 가장
+// 아래쪽 끝 위치를 직접 측정해 .hero-inner에 필요한 만큼만 margin-top을 더해 보정한다
+function syncHeroWidgetGap(){
+  const HERO_WIDGET_GAP = 60; // 히어로의 기본 padding-top과 동일한 값 — 화면이 좁을 때 자연스럽게 나오는 간격. 함수 안에 두어 위쪽에서(예: applyWidgetConfigCSS → syncWidgetLayoutMode) 이 함수가 먼저 호출되어도 참조 시점 문제가 없게 한다
+  const heroInner = document.querySelector('.hero-inner');
+  if (!heroInner) return;
+  if (window.innerWidth <= 780){ heroInner.style.marginTop=''; return; } // 모바일은 기존 자체 CSS 계산식 그대로 둔다
+  heroInner.style.marginTop = ''; // 이전에 적용해둔 보정값을 지우고 "자연" 위치부터 다시 잰다
+  const naturalTop = heroInner.getBoundingClientRect().top;
+  const row = document.getElementById('mobileWidgetRow');
+  const rowRect = row ? row.getBoundingClientRect() : null;
+  const rowBottom = (rowRect && rowRect.height > 0) ? rowRect.bottom : 0;
+  const widgetEls = ['.currency-widget','.weather-widget','.weather-widget-jp']
+    .map(sel=>document.querySelector(sel))
+    .filter(el=>el && getComputedStyle(el).display!=='none');
+  const widgetsBottom = widgetEls.length ? Math.max(...widgetEls.map(el=>el.getBoundingClientRect().bottom)) : 0;
+  const lowestBottom = Math.max(rowBottom, widgetsBottom);
+  if (lowestBottom <= 0) return;
+  // [수정] 자연 간격이 원하는 값(60px)보다 넓은 경우(웹 일반 모드에서 위젯이 로고 옆에 떠 있을 때
+  // 흔함)에는 콘텐츠를 위로 당겨야 하므로, 델타가 음수여도 그대로 적용한다(양수일 때만 적용하면
+  // "이미 충분히 멀 때"는 좁혀주지 못해 두 모드의 간격이 서로 달라지는 문제가 남는다)
+  const delta = Math.round((lowestBottom + HERO_WIDGET_GAP) - naturalTop);
+  heroInner.style.marginTop = delta + 'px';
+}
+window.addEventListener('resize', syncHeroWidgetGap);
+window.addEventListener('load', syncHeroWidgetGap);
 let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;

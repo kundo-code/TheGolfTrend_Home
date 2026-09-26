@@ -2177,10 +2177,14 @@ body.show-widget-restore .nav-widget-restore{display:flex}
    기본값에 --currency-y/--weather-y를 더한다 */
 @media(min-width:781px){
   .widget-box{display:block}
+  /* [수정] 환율 위젯 박스 높이를 날씨 위젯(118px 고정)과 동일하게 맞춘다 — 내용(제목·환율
+     한 줄·계산기 버튼)은 min-height보다 작아 남는 공간이 생기므로, flex 세로 중앙 정렬로
+     안쪽 내용을 박스 가운데에 예쁘게 배치한다 */
   .currency-widget{
     top:calc(13px + var(--currency-y,0px));
     left:50%;right:auto;
-    width:fit-content;height:auto;
+    width:fit-content;height:auto;min-height:118px;
+    display:flex;flex-direction:column;justify-content:center;
     transform:translateX(calc(-50% + var(--currency-x,0px))) scale(var(--currency-scale,1));
     transform-origin:top center;
     background:rgba(255,255,255,var(--currency-opacity,.92));
@@ -2359,9 +2363,15 @@ body.show-widget-restore .nav-widget-restore{display:flex}
     transform:scale(var(--weather-scale,1));transform-origin:top center;
     background:rgba(255,255,255,var(--weather-opacity,.92));
   }
+  /* [수정] 환율 위젯의 폭을 그 아래 날씨 위젯 2개를 합친 폭(170px×2+간격8px=348px)과 정확히
+     같게 고정해, 위(환율)·아래(날씨 2개) 두 줄이 좌우 끝이 나란히 맞는 하나의 사각형 블록처럼
+     보이게 한다. 높이도 날씨 위젯(118px)과 같게 맞추고(min-height, 부족한 안쪽 공간은 flex
+     세로 중앙 정렬로 채움), 달러·엔화·링깃 3개가 이 폭 안에서 항상 한 줄에 다 들어가도록
+     아래 .cur-list에서 줄바꿈을 막는다(자세한 설명은 .cur-list 주석 참고) */
   .currency-widget{
     position:relative;top:auto;left:auto;right:auto;
-    width:fit-content;max-width:100%;height:auto;min-height:100px;
+    width:348px;max-width:100%;height:auto;min-height:118px;
+    display:flex;flex-direction:column;justify-content:center;
     /* [수정] transform-origin을 top left가 아닌 top center로 — 관리자 패널에서 환율 위젯 크기(배율)를
        100%가 아닌 값으로 조절해뒀을 때, top left 기준으로는 박스가 오른쪽으로만 커져(줄어들어) 왼쪽
        여백은 그대로인데 오른쪽 여백만 줄어드는(또는 화면 밖으로 밀려나는) 비대칭이 생겼다. 중앙을
@@ -2418,17 +2428,18 @@ body.show-widget-restore .nav-widget-restore{display:flex}
    배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
    두 곳에서 공유되므로 .cur-list 안에서만 가로형으로 덮어쓴다) */
 .cur-list{display:flex;align-items:center;justify-content:space-between}
-/* [수정] 환율 위젯이 메뉴바 아래 줄(모바일/컴팩트)에서 원래 탑바 크기 그대로(fit-content)
-   유지되면서, 320~360px 같은 아주 좁은 화면에서는 그 폭에 달러·엔화·링깃 3개가 한 줄로 다
-   들어가지 못해 마지막 항목(링깃)이 잘려 보이는 문제가 있었다 — 줄바꿈을 허용해 안 들어가면
-   2줄로 자연스럽게 내려가며 가운데 정렬되게 한다(폭이 충분하면 기존처럼 한 줄 그대로 유지) */
-.mobile-widget-row .cur-list{flex-wrap:wrap;row-gap:2px;justify-content:center}
+/* [수정] 환율 위젯 폭을 날씨 위젯 2개를 합친 폭(348px)에 고정한 뒤로는, 그 폭 안에 달러·엔화·
+   링깃 3개가 항상 한 줄로 다 들어가도록(요청사항) 줄바꿈을 명시적으로 막는다. 폭이 이보다 더
+   좁아지는 극단적으로 좁은 화면(예: 320px, 환율 위젯 자체가 max-width:100%로 348px보다 줄어드는
+   경우)에서는 내용이 넘치면 위젯 박스의 overflow:hidden(.widget-box 기본 규칙)에 의해 시각적으로
+   잘릴 수 있다 — 폭 고정과 "항상 1줄" 요구사항을 동시에 만족하려면 불가피한 트레이드오프다 */
+.mobile-widget-row .cur-list{flex-wrap:nowrap;justify-content:center}
 .cur-row{display:flex;align-items:center;gap:6px;font-size:.8rem}
 /* [수정] 좌측 첫 항목(달러)은 padding-left만 0으로 지워 위젯 자체 여백(.widget-box padding)에
    맡기고, 우측 마지막 항목(링깃)도 이전에는 padding-right까지 0으로 지워 우측 여백이 좌측보다
    좁아 보였다 — border-right만 지우고 padding-right는 다른 항목과 동일하게 유지해 좌우 여백을
    대칭으로 맞춘다. 대신 늘어난 폭만큼 폰트 크기를 줄여 위젯 전체 폭이 커지지 않도록 한다 */
-.cur-list .cur-row{gap:4px;padding:0 8px;font-size:.74rem;white-space:nowrap;border-right:1px solid rgba(10,23,48,.15)}
+.cur-list .cur-row{gap:2px;padding:0 4px;font-size:.58rem;white-space:nowrap;border-right:1px solid rgba(10,23,48,.15)}
 .cur-list .cur-row:first-child{padding-left:0}
 .cur-list .cur-row:last-child{border-right:none}
 .cur-flag{font-size:1rem}
@@ -6812,6 +6823,7 @@ window.addEventListener('resize', syncTopBarHeight);
   let ticking = false;
   function update(){
     ticking = false;
+    const wasHidden = document.body.classList.contains('mobile-topbar-hidden');
     const isNarrow = window.innerWidth <= 780 || document.body.classList.contains('widgets-compact');
     if (!isNarrow){
       document.body.classList.remove('mobile-topbar-hidden');
@@ -6823,6 +6835,15 @@ window.addEventListener('resize', syncTopBarHeight);
       } else {
         document.body.classList.add('mobile-topbar-hidden');
       }
+    }
+    // [버그 수정] 위젯 줄이 이 클래스 토글과 동시에 position:sticky↔relative로 바뀌는 순간, 브라우저가
+    // 그 직전까지 sticky였던 형제 뒤에 오는 음수 margin-top 요소(.hero-inner)의 위치를 미묘하게 다르게
+    // 계산해(스크롤 위치와 무관하게 계속 어긋난 채로 남는다) syncHeroWidgetGap()이 페이지 맨 위에서
+    // 미리 재둔 보정값이 더는 맞지 않게 된다 — topbar-hidden 상태가 실제로 바뀐 바로 그 순간에만
+    // (스크롤마다가 아니라) 현재 상태 기준으로 즉시 다시 재서 보정하면 그 이후로는 다시 정확히
+    // 들어맞는다(스크롤 중간에 함부로 재는 건 여전히 위험하므로 이 시점 하나로 한정한다)
+    if (document.body.classList.contains('mobile-topbar-hidden') !== wasHidden && typeof syncHeroWidgetGap === 'function'){
+      syncHeroWidgetGap(true);
     }
   }
   window.addEventListener('scroll', () => {
@@ -6840,20 +6861,26 @@ window.addEventListener('resize', syncTopBarHeight);
   // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
   window.addEventListener('load', update);
 })();
-// [추가] 웹 일반(플로팅 위젯) 모드 전용 — 위로 스크롤해 히어로 섹션이 다시 화면에 들어올 때, 문서
-// 흐름을 따르는 히어로 콘텐츠(.hero-inner)가 언젠가는 position:fixed로 항상 같은 자리에 떠 있는
-// 환율·날씨 위젯의 아래쪽 경계와 스쳐 지나가며 겹치는 순간이 생긴다. 그 순간 위젯이 히어로 카드
-// 위에 그냥 얹혀 보이는 어색한 모습 대신, 히어로 콘텐츠 쪽을 메뉴바 방향으로 살짝 끌어올리며
-// 부드럽게 사라지게 해(body.hero-content-hidden, CSS는 .hero-inner 주석 참고) 마치 메뉴바 레이어
-// 밑으로 말려 들어가는 것처럼 보이게 한다. 모바일·위젯 컴팩트 모드는 위젯이 position:fixed가
-// 아니라(sticky/문서흐름) 이런 충돌이 생기지 않으므로 대상에서 제외한다
+// [추가] 위로 스크롤해 히어로 섹션이 다시 화면에 들어올 때, 문서 흐름을 따르는 히어로 콘텐츠
+// (.hero-inner)가 언젠가는 위젯(환율·날씨)의 아래쪽 경계와 스쳐 지나가며 겹치는 순간이 생긴다.
+// 그 순간 위젯이 히어로 카드 위에 그냥 얹혀 보이는 어색한 모습 대신, 히어로 콘텐츠 쪽을 메뉴바
+// 방향으로 살짝 끌어올리며 부드럽게 사라지게 해(body.hero-content-hidden, CSS는 .hero-inner
+// 주석 참고) 마치 메뉴바 레이어 밑으로 말려 들어가는 것처럼 보이게 한다.
+// [버그 수정] 원래는 "모바일·컴팩트 모드는 위젯이 position:fixed가 아니라(sticky/문서흐름) 이런
+// 충돌이 생기지 않는다"는 가정으로 이 둘을 대상에서 제외했었다. 하지만 히어로 자신도
+// @media(max-width:1024px)에서만 1열로 쌓이고, 그보다 넓은 폭(1025px~컴팩트 트리거 폭 사이)
+// 에서는 여전히 2열(본문+EDITOR'S PICK 나란히) 그대로다 — 이 구간에서 컴팩트 모드가 걸리면
+// 위젯 줄은 sticky로 고정된 채, 문서 흐름을 그대로 따르는 히어로 콘텐츠만 계속 위로 스크롤되어
+// 올라오면서 결국 고정된 위젯 아래쪽과 겹치는 순간이 똑같이 생긴다(히어로가 이미 1열로 쌓인
+// 진짜 모바일 폭에서는 EDITOR'S PICK이 훨씬 아래로 내려가 있어 이 충돌이 실질적으로 발생하지
+// 않으므로 모바일만 계속 제외한다) */
 (function initHeroWidgetOverlapHide(){
   let ticking = false;
   function update(){
     ticking = false;
     const heroInner = document.querySelector('.hero-inner');
     if (!heroInner) return;
-    if (window.innerWidth <= 780 || document.body.classList.contains('widgets-compact')){
+    if (window.innerWidth <= 780){
       document.body.classList.remove('hero-content-hidden');
       return;
     }
@@ -7149,7 +7176,7 @@ if (document.fonts && document.fonts.ready){
 // (HERO_WIDGET_GAP)으로 맞춘다. 히어로가 flex 세로 중앙 정렬(align-items:center)을 쓰고 있어
 // padding-top 보정만으로는 정확히 같은 간격이 나오지 않으므로, 위젯들의 실제 렌더링된 가장
 // 아래쪽 끝 위치를 직접 측정해 .hero-inner에 필요한 만큼만 margin-top을 더해 보정한다
-function syncHeroWidgetGap(){
+function syncHeroWidgetGap(force){
   // [수정] 이전에는 모바일(<=780px)을 "이미 자체 CSS 계산식으로 해결되어 있다"고 보고 이 보정에서
   // 제외했었다. 하지만 실제로는 모바일의 자체 계산식(.hero의 margin-top/padding-top 상쇄)은 위젯
   // 줄 배경을 히어로 배경과 이어붙이기 위한 것일 뿐, 콘텐츠와 위젯 사이 "간격" 자체를 이 함수가
@@ -7167,7 +7194,14 @@ function syncHeroWidgetGap(){
   // 그 값이 그대로 남아 메뉴바와 히어로 사이에 큰 빈 공간이 생기는 버그가 있었다. 페이지 맨 위
   // 근처가 아니면 지금 다시 잴 이유도 없으므로, 이전 보정값을 그대로 두고 건너뛴다 — 사용자가
   // 다시 맨 위로 돌아왔을 때 다음 resize/load에서 정상적으로 재계산된다
-  if (window.scrollY > 100) return;
+  // [수정] force=true(initMobileTopbarScroll이 body.mobile-topbar-hidden 토글 직후에만 넘긴다)일
+  // 때는 100px 가드 대신 훨씬 넉넉한 상한선(600px)을 쓴다 — 위젯 줄이 sticky↔relative로 바뀌는
+  // 그 순간(보통 헤드라인 배너 하단, 대략 250~350px 부근) 현재 실제 위치로 다시 재야 정확하지만,
+  // 앵커 링크나 다른 스크립트가 스크롤 이벤트 없이(또는 한 번의 큰 점프로) 이 전환 지점을 건너뛰어
+  // 아주 깊은 스크롤 위치(예: 푸터)에서 클래스가 토글되는 드문 경우까지 신뢰하면 원래 가드가 막던
+  // "한참 내린 상태에서의 garbage 값" 문제가 되살아난다 — 600px는 실제 전환 지점보다 충분히
+  // 여유 있으면서도 그런 극단적인 점프는 걸러내는 절충값이다
+  if (window.scrollY > (force ? 600 : 100)) return;
   heroInner.style.marginTop = ''; // 이전에 적용해둔 보정값을 지우고 "자연" 위치부터 다시 잰다
   const naturalTop = heroInner.getBoundingClientRect().top;
   const row = document.getElementById('mobileWidgetRow');

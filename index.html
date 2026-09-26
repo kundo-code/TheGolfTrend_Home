@@ -2150,10 +2150,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     z-index:201;padding:10px 0;
   }
   body.widgets-compact .widget-peek-handle{display:none}
-  body.widgets-compact .mobile-weather-pair{display:flex;gap:8px}
+  /* [수정] 날씨(국내)·날씨(해외) 두 박스의 높이를 맞출 때, 중첩된 flex(줄→래퍼→박스 2단계)의
+     stretch에 기대는 대신 CSS grid를 쓴다 — grid는 한 행(row) 안의 모든 셀이 그 행에서 가장 큰
+     콘텐츠 높이에 정확히 맞춰지는 것이 규격상 보장되어 있어(각 셀에 실제 픽셀 단위의 확정된
+     행 높이가 주어짐), 두 위젯의 실제 텍스트 길이가 서로 달라 자연 높이가 달라지는 경우에도
+     항상 픽셀 단위로 정확히 같은 높이가 된다 */
+  body.widgets-compact .mobile-weather-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
   body.widgets-compact .widget-drag-wrap{display:block;position:relative;transform:none}
   body.widgets-compact .widget-drag-wrap[data-widget="weather"],
-  body.widgets-compact .widget-drag-wrap[data-widget="weatherJapan"]{flex:1 1 0;min-width:0;margin-top:0}
+  body.widgets-compact .widget-drag-wrap[data-widget="weatherJapan"]{min-width:0;margin-top:0;height:100%}
   body.widgets-compact .currency-widget,
   body.widgets-compact .weather-widget,
   body.widgets-compact .weather-widget-jp{
@@ -2163,7 +2168,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   body.widgets-compact .currency-widget{height:auto}
   body.widgets-compact .weather-widget,
   body.widgets-compact .weather-widget-jp{
-    height:100%;min-height:118px;
+    height:100%;min-height:118px;box-sizing:border-box;
     display:flex;flex-direction:column;justify-content:center;
   }
   body.widgets-compact .hero{

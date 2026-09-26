@@ -2022,6 +2022,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     box-shadow:var(--btn-elevate),var(--btn-shine);
   }
   .tb-booking-fab:hover{transform:scale(1.08)}
+  /* [수정] 스택 순서가 전화하기(맨 위)-문의하기(중간)-관리자(맨 아래)로 바뀌면서, 문의하기
+     아이콘의 툴팁(마우스 오버 시 뜨는 "문의하기" 말풍선)이 기본 여백(자기 박스 위 10px)만으로는
+     바로 위에 있는 전화하기 아이콘과 겹쳐 보이게 됐다. 두 아이콘의 세로 간격(68px)만큼 툴팁 위치를
+     더 밀어 올려, 전화하기 아이콘보다 위쪽에 뜨도록 한다 */
+  .tb-booking-fab::after{bottom:calc(100% + 78px)}
 }
 /* [수정] 날씨·환율 위젯 — 이제 웹·모바일 모두 노출된다. 박스 자체의 너비/높이는 고정값이고,
    관리자 패널(헤드라인 배너 아래 "위젯 설정")에서 조절하는 CSS 커스텀 프로퍼티(--weather-*,
@@ -2069,11 +2074,29 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
   .weather-widget:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
 }
-/* [추가] 일본 날씨 위젯(모바일 전용) — .widget-box를 공유해 웹의 일반 규칙(@media(min-width:781px)
-   {.widget-box{display:block}})에도 걸리므로, 여기서 항상 display:none으로 덮어써 웹에서는 절대
-   보이지 않게 한다(이 규칙이 위 웹 전용 블록보다 소스 순서상 뒤에 있어 우선한다). 모바일에서만
-   아래 @media(max-width:780px) 블록이 다시 block으로 되돌린다 */
+/* [수정] 일본 날씨 위젯 — 원래 모바일 전용이었으나, 웹(데스크톱)에도 "날씨 위젯의 최종 기본값" 하나를
+   더 추가해달라는 요청에 따라 노출한다. .widget-box를 공유해 웹의 일반 규칙(@media(min-width:781px)
+   {.widget-box{display:block}})에도 걸리므로, 우선 여기서 display:none으로 기본을 숨겨두고, 바로
+   아래 웹 전용 블록에서 다시 block으로 되돌려 위치를 잡는다(이 규칙이 그 블록보다 소스 순서상
+   앞에 있어 뒤 규칙이 우선한다) */
 .weather-widget-jp{display:none}
+/* [추가] 웹(데스크톱): 일본 날씨 위젯을 서울 날씨 위젯 바로 아래에 같은 가로 위치로 쌓는다.
+   세로 위치는 서울 날씨 위젯의 기준(4px)+높이(118px×--weather-scale, 상단 기준으로 확대되므로
+   실제 하단 끝)+여백(10px)을 그대로 계산식에 반영해, 관리자가 날씨 위젯의 크기·세로 위치를
+   조절해도 두 위젯이 항상 자동으로 겹치지 않고 붙어 따라온다(가로 위치·투명도도 동일하게 공유) */
+@media(min-width:781px){
+  .weather-widget-jp{
+    display:block;
+    top:calc(4px + var(--weather-y,0px) + (118px * var(--weather-scale,1)) + 10px);
+    left:50%;right:auto;
+    width:200px;height:118px;
+    transform:translateX(calc(-50% + 280px + var(--weather-x,0px))) scale(var(--weather-scale,1));
+    transform-origin:top center;
+    background:rgba(255,255,255,var(--weather-opacity,.92));
+    cursor:pointer;transition:box-shadow .2s;
+  }
+  .weather-widget-jp:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
+}
 /* [수정] 모바일: 날씨·환율 위젯을 더 이상 position:fixed(+ 스크롤마다 JS로 좌표를 다시 계산해
    고정하는 --mobile-widget-anchor)로 띄우지 않는다. 대신 메뉴바(nav)와 완전히 같은 방식 —
    position:sticky — 을 쓰는 줄(.mobile-widget-row)에 넣어, nav 바로 아래(문서 순서상으로도
@@ -2165,7 +2188,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}
-.wx-loc{font-size:.64rem;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-loc{font-size:.704rem;font-weight:700;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wx-main{display:flex;align-items:center;gap:6px;margin-top:2px}
 .wx-icon{font-size:1.6rem;line-height:1}
 .wx-temp{font-size:1.5rem;font-weight:700}
@@ -5862,8 +5885,8 @@ try{ const lx = JSON.parse(localStorage.getItem(LOGO_XFORM_KEY)||'null'); if (lx
 // 우측 상단(탑바 쪽 모서리)을 기준으로 통째로 확대/축소한다
 const WIDGET_CFG_KEY = 'kundo_widget_cfg_v2';
 const WIDGET_CFG_DEFAULT = {
-  weather:{scale:100,x:0,y:0,opacity:92},
-  currency:{scale:100,x:0,y:0,opacity:92},
+  weather:{scale:90,x:0,y:6,opacity:92},
+  currency:{scale:105,x:0,y:-2,opacity:92},
   popup:{opacity:100}, // [추가] 날씨·환율 상세 팝업창(.widget-detail-card) 바탕색 투명도
 };
 let widgetConfig = JSON.parse(JSON.stringify(WIDGET_CFG_DEFAULT));
@@ -6833,7 +6856,8 @@ function renderAdminWidgets(){
       </label>`;
   const xformBlock=(widget,label,xRange,yRange)=>{
     const v=widgetConfig[widget];
-    const changed=(v.scale!==100||v.x!==0||v.y!==0||v.opacity!==WIDGET_CFG_DEFAULT[widget].opacity);
+    const d=WIDGET_CFG_DEFAULT[widget];
+    const changed=(v.scale!==d.scale||v.x!==d.x||v.y!==d.y||v.opacity!==d.opacity);
     return `
     <div class="ai-logo-xform"${widget==='currency'?' style="margin-top:16px"':''}>
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">${label}</span>

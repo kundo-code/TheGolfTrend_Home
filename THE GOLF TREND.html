@@ -2225,9 +2225,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .widget-drag-wrap[data-widget="weather"],.widget-drag-wrap[data-widget="weatherJapan"]{flex:1 1 0}
   .widget-drag-wrap[data-widget="weather"]{margin-top:calc(var(--weather-y,0px))}
   .widget-drag-wrap[data-widget="currency"]{margin-top:calc(var(--currency-y,0px))}
+  /* [수정] 국내/해외 날씨 위젯 높이가 서로 다르게 보이던 근본 원인 — .mobile-weather-pair(flex)가
+     .widget-drag-wrap 래퍼 두 개의 높이는 stretch로 맞춰주지만, 그 안의 실제 박스(.weather-widget/
+     -jp)는 display:block인 래퍼의 자식일 뿐이라 stretch가 전달되지 않아 height:auto인 자기 자신의
+     내용 높이만큼만 차지했다(더 짧은 쪽 박스 아래로 래퍼의 빈 공간만 남아 두 박스가 다른 높이로
+     보임). height:100%를 주어 이미 같은 높이로 맞춰진 래퍼를 박스 자신도 그대로 꽉 채우게 한다 */
   .weather-widget,.weather-widget-jp{
     position:relative;top:auto;left:auto;right:auto;
-    width:100%;height:auto;min-height:118px;
+    width:100%;height:100%;min-height:118px;box-sizing:border-box;
     transform:scale(var(--weather-scale,1));transform-origin:top left;
     background:rgba(255,255,255,var(--weather-opacity,.92));
   }
@@ -6825,6 +6830,12 @@ syncWidgetLayoutMode();
 // ResizeObserver로 직접 관찰해 어떤 이유로든(폰트 로딩, 데이터 재갱신 등) 자연 높이가 달라질 때마다
 // 스스로 다시 맞추도록 한다. syncing 플래그는 이 함수 자신이 만든 높이 변경 때문에 옵저버가 다시
 // 불려 무한 반복되는 것을 막기 위함이다
+// [수정] 이전에는 이 JS 보정을 "웹에서 화면이 좁아진 compact 모드"에만 적용하고, 실제 모바일
+// (<=780px)은 "이미 자체 flex 구조로 해결되어 있다"고 보고 제외해뒀었다. 하지만 실제로는 모바일에서
+// .mobile-weather-pair(flex)가 .widget-drag-wrap 래퍼 두 개의 높이는 stretch로 맞춰도, 그 안의
+// .weather-widget/-jp 박스 자신은 display:block 래퍼의 자식이라 stretch가 전달되지 않아 높이가
+// 서로 달라 보이는 문제가 계속 있었다(위 CSS의 height:100% 수정과 별개로, 이 JS 레벨에서도 모바일을
+// 제외하지 않고 똑같이 강제 동일화해 이중으로 보장한다)
 function syncWeatherPairHeight(){
   // [수정] 이 플래그를 파일 상단의 별도 let 변수로 두면, syncWidgetLayoutMode()의 즉시 실행
   // 호출(파일 순서상 이 함수보다 앞)이 이 함수를 먼저 부르는 시점에 아직 그 let 선언 줄에
@@ -6835,7 +6846,10 @@ function syncWeatherPairHeight(){
   const wxJp = document.getElementById('weatherWidgetJapan');
   if (!wx || !wxJp) return;
   syncWeatherPairHeight._syncing = true;
-  if (window.innerWidth <= 780 || !document.body.classList.contains('widgets-compact')){
+  const isMobile = window.innerWidth <= 780;
+  const isCompact = document.body.classList.contains('widgets-compact');
+  if (!isMobile && !isCompact){
+    // 웹 일반(플로팅) 모드: 두 박스 모두 CSS에서 고정 118px이라 별도 보정이 필요 없다
     wx.style.height = ''; wxJp.style.height = '';
     syncWeatherPairHeight._syncing = false;
     return;

@@ -473,6 +473,9 @@ section.block{padding:100px 24px;position:relative}
    따로 잡아줘서 호버 확대(줌) 시에도 둥근 모서리 밖으로 삐져나오지 않고 항상 프레임에 맞게 노출된다 */
 .product-visual .pv-clip{position:absolute;inset:0;overflow:hidden;border-radius:inherit}
 .product-visual .pv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
+/* [추가][성능] 지연 로딩 대상(.lazy-bg)은 실제 사진이 채워지기 전까지 카드가 완전히 비어 보이지
+   않도록 옅은 배경색만 우선 깔아둔다(로딩 스켈레톤과 같은 색 톤) */
+.pv-bg.lazy-bg{background-color:rgba(10,23,48,.06)}
 .product-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .product:hover .product-visual .pv-bg,.product:hover .product-visual video{transform:scale(1.06)}
 /* [수정] 상품 카드 이미지 위 하트 모양 "찜하기" 버튼은 더 이상 노출하지 않음(하이드) —
@@ -8038,10 +8041,14 @@ function cardLabelOverlayHTML(cardLabels){
 }
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
-  const bgStyle=getCatBgStyle(cat);
   // If product has titleMedia image, use that instead
   const useMedia = p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url;
-  const visualStyle = useMedia ? `background-image:url('${p.titleMedia.url}');background-size:cover;background-position:center` : bgStyle;
+  // [수정][성능] 카드 사진은 인라인 style="background-image:url(...)"로 즉시 박아넣는 대신
+  // data-bg-src에만 URL을 담아두고, 실제 background-image 지정은 lazyBgObserver가 카드가
+  // 화면(또는 캐러셀 가시 영역) 근처에 들어올 때 한다(아래 initLazyBg 참고). 상품이 많을 때
+  // 화면에 보이지도 않는 카드의 사진까지 전부 즉시 디코딩하지 않아도 되므로 초기 렌더링 부담이 준다.
+  // .pv-bg의 background-size/position은 이미 CSS 클래스에 있으므로 여기서는 url만 다룬다
+  const visualUrl = useMedia ? p.titleMedia.url : getImage(cat.id);
   const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
   const displayPrice = getDisplayPrice(p);
   const cardTags = [p.cardTag1, p.cardTag2, p.cardTag3, p.cardTag4].filter(t=>t && t.trim());
@@ -8090,7 +8097,7 @@ function productCardHTML(p, catId, idx){
   return `<article class="product" onclick="openProductDetail('${catId}',${idx})">
     <div class="product-visual${cardLabelOverlay.hasOutside?' pv-label-overflow':''}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       <div class="pv-clip">
-        <div class="pv-bg" style="${visualStyle}"></div>
+        <div class="pv-bg lazy-bg" data-bg-src="${escapeAttr(visualUrl)}"></div>
         ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop preload="metadata" aria-hidden="true"></video>`:''}
       </div>
       ${cardLabelOverlay.html}
@@ -8116,6 +8123,54 @@ function productCardHTML(p, catId, idx){
       <span class="details">자세히 →</span>
     </div>
   </article>`;
+}
+// [추가][성능] 상품 카드 사진(.pv-bg.lazy-bg) 지연 로딩 — data-bg-src를 가진 요소가 화면(또는
+// 캐러셀의 실제 보이는 영역) 근처로 들어올 때만 background-image를 지정한다. 카드가 많은
+// 카테고리를 펼쳐도 화면에 보이지도 않는 카드의 사진까지 한꺼번에 디코딩하지 않아 초기 렌더링
+// 부담이 준다. IntersectionObserver는 캐러셀처럼 overflow:hidden으로 가려진 카드도 실제 화면
+// 노출 여부를 정확히 판정하므로, 캐러셀을 넘겨 카드가 실제로 보이는 순간 자연스럽게 로딩된다.
+// MutationObserver로 이후에 새로 생기는 카드(카테고리 전환, 필터, 캐러셀 재구성 등)도 자동으로
+// 감시 대상에 포함시켜, 렌더 함수마다 일일이 훅을 걸 필요가 없게 한다
+function attachLazyBg(el){
+  if (!el || !el.dataset || !el.dataset.bgSrc) return;
+  if (attachLazyBg._io){
+    attachLazyBg._io.observe(el);
+  } else {
+    // IntersectionObserver 미지원 환경: 지연 없이 바로 채운다(기능 저하 없이 동작)
+    el.style.backgroundImage = `url('${el.dataset.bgSrc}')`;
+    delete el.dataset.bgSrc;
+  }
+}
+function scanLazyBg(root){
+  (root||document).querySelectorAll('[data-bg-src]').forEach(attachLazyBg);
+}
+function initLazyBg(){
+  if (typeof IntersectionObserver !== 'undefined'){
+    attachLazyBg._io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        if (el.dataset.bgSrc){
+          el.style.backgroundImage = `url('${el.dataset.bgSrc}')`;
+          delete el.dataset.bgSrc;
+        }
+        attachLazyBg._io.unobserve(el);
+      });
+    }, { rootMargin: '600px 0px' }); // 스크롤/캐러셀 이동으로 실제 보이기 조금 전에 미리 불러와 튀어 보이지 않게 함
+  }
+  scanLazyBg();
+  if (typeof MutationObserver !== 'undefined'){
+    const lazyBgMutationObserver = new MutationObserver(mutations=>{
+      mutations.forEach(m=>{
+        m.addedNodes.forEach(node=>{
+          if (node.nodeType !== 1) return;
+          if (node.matches && node.matches('[data-bg-src]')) attachLazyBg(node);
+          if (node.querySelectorAll) scanLazyBg(node);
+        });
+      });
+    });
+    lazyBgMutationObserver.observe(document.body, { childList:true, subtree:true });
+  }
 }
 
 // [수정] 특정 카테고리(id)의 상품 목록만 갱신 — 해외/국내 각각 독립적으로 열려있는 패널을 지원하기 위해
@@ -13037,6 +13092,7 @@ function renderAll(){
 // INIT
 safeRender(()=>applySeasonTheme(getSeasonTheme(), false));
 try{ applyTheme(); }catch(e){}
+safeRender(initLazyBg);
 
 // ══ 여행 스타일 드롭다운 다중선택 ════════════════════════════════
 function toggleStyleMenu(){

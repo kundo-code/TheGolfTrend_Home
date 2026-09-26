@@ -2084,7 +2084,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .currency-widget{
     top:calc(13px + var(--currency-y,0px));
     left:50%;right:auto;
-    width:340px;height:100px;
+    width:fit-content;height:auto;
     transform:translateX(calc(-50% + var(--currency-x,0px))) scale(var(--currency-scale,1));
     transform-origin:top center;
     background:rgba(255,255,255,var(--currency-opacity,.92));
@@ -2122,6 +2122,39 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     cursor:pointer;transition:box-shadow .2s;
   }
   .weather-widget-jp:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
+}
+/* [추가] 웹(데스크톱)이라도 화면 가로폭이 좁아져 위젯 클러스터가 로고 영역과 겹칠 정도가 되면,
+   JS(syncWidgetLayoutMode)가 body에 widgets-compact 클래스를 붙여 모바일과 같은 방식(메뉴바 바로
+   아래 별도 줄)으로 위젯을 내려서 배치한다. 이미 모바일 레이아웃에 쓰던 .mobile-widget-row/
+   .mobile-weather-pair/.widget-drag-wrap 구조를 그대로 재사용하되, 모바일처럼 화면 폭 전체로
+   늘어나지 않고 내용물 폭(날씨 위젯 2개를 합친 폭)에 딱 맞게 오그라들어 화면 중앙에 놓인다.
+   날씨 위젯(국내)·날씨 위젯(해외)는 flex의 기본 stretch 동작으로 자동으로 같은 높이가 되고,
+   그 안 내용은 세로 중앙 정렬한다(justify-content:center). 환율 위젯은 날씨 위젯 두 개를 합친
+   폭(형제 중 가장 넓은 내용물)에 맞춰 같은 세로 flex 컨테이너 안에서 가로로 꽉 채워진다(별도
+   JS 폭 계산 없이 flex stretch만으로 정확히 들어맞는다) */
+@media(min-width:781px){
+  body.widgets-compact .mobile-widget-row{
+    display:inline-flex;flex-direction:column;align-items:stretch;gap:8px;
+    position:sticky;top:calc(var(--topbar-h,108px) + 54px);left:50%;
+    transform:translateX(-50%);z-index:201;padding:10px 0;
+  }
+  body.widgets-compact .widget-peek-handle{display:none}
+  body.widgets-compact .mobile-weather-pair{display:flex;gap:8px}
+  body.widgets-compact .widget-drag-wrap{display:block;position:relative;transform:none}
+  body.widgets-compact .widget-drag-wrap[data-widget="weather"],
+  body.widgets-compact .widget-drag-wrap[data-widget="weatherJapan"]{width:200px;flex:none;margin-top:0}
+  body.widgets-compact .currency-widget,
+  body.widgets-compact .weather-widget,
+  body.widgets-compact .weather-widget-jp{
+    position:relative;top:auto;left:auto;right:auto;
+    transform:none;width:100%;
+  }
+  body.widgets-compact .currency-widget{height:auto}
+  body.widgets-compact .weather-widget,
+  body.widgets-compact .weather-widget-jp{
+    height:100%;min-height:118px;
+    display:flex;flex-direction:column;justify-content:center;
+  }
 }
 /* [수정] 모바일: 날씨·환율 위젯을 더 이상 position:fixed(+ 스크롤마다 JS로 좌표를 다시 계산해
    고정하는 --mobile-widget-anchor)로 띄우지 않는다. 대신 메뉴바(nav)와 완전히 같은 방식 —
@@ -2214,33 +2247,35 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}
-.wx-loc{font-size:.704rem;font-weight:700;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-loc{font-size:.78rem;font-weight:700;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wx-main{display:flex;align-items:center;gap:6px;margin-top:2px}
 .wx-icon{font-size:1.6rem;line-height:1}
 .wx-temp{font-size:1.5rem;font-weight:700}
 .wx-label{font-size:.72rem;color:rgba(10,23,48,.7)}
 .wx-sub{font-size:.64rem;color:rgba(10,23,48,.5);margin-top:3px}
-.cur-title{font-size:.72rem;font-weight:700;margin-bottom:4px}
+.cur-title{font-size:.8rem;font-weight:700;margin-bottom:4px}
 /* [수정] 위젯 안의 실시간 환율은 국가별 통화 항목 사이에 구분선을 두고 한 줄로 가로로 길게
    배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
    두 곳에서 공유되므로 .cur-list 안에서만 가로형으로 덮어쓴다) */
 .cur-list{display:flex;align-items:center;justify-content:space-between}
-.cur-row{display:flex;align-items:center;gap:6px;font-size:.72rem}
+.cur-row{display:flex;align-items:center;gap:6px;font-size:.8rem}
 .cur-list .cur-row{gap:4px;padding:0 8px;white-space:nowrap;border-right:1px solid rgba(10,23,48,.15)}
 .cur-list .cur-row:first-child{padding-left:0}
 .cur-list .cur-row:last-child{border-right:none;padding-right:0}
-.cur-flag{font-size:.9rem}
+.cur-flag{font-size:1rem}
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
 .cur-list .cur-name{flex:none}
 .cur-rate{font-weight:700}
 /* [수정] 세로 길이를 2px 늘리기 위해 상하 padding만 5px→6px로(좌우는 그대로 5px) — 버튼 폭은
    부모(.currency-widget)의 padding box(좌우 여백이 이제 항상 대칭)를 100% 그대로 채운다 */
-.cur-calc-btn{margin-top:6px;width:100%;padding:6px 5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:600;cursor:pointer}
+.cur-calc-btn{margin-top:6px;width:100%;padding:6px 5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.75rem;font-weight:600;cursor:pointer}
 .cur-calc-btn:hover{background:var(--gold-deep)}
 /* 날씨·환율 상세 오버레이(클릭 시 팝업) */
 .widget-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
 .widget-detail-overlay.show{display:flex}
-.widget-detail-card{background:rgba(255,255,255,var(--popup-opacity,1));color:var(--pine-deep);border-radius:20px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+/* [수정] 위젯 상세 팝업창도 다른 위젯 박스(.widget-box)와 동일하게 반투명 테두리·안쪽 상단
+   하이라이트를 더해 리퀴드글래스 느낌을 준다 */
+.widget-detail-card{background:rgba(255,255,255,var(--popup-opacity,1));color:var(--pine-deep);border-radius:20px;border:1px solid rgba(255,255,255,.55);max-width:480px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.5)}
 .widget-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .widget-detail-head h4{font-size:1.1rem;color:var(--pine-deep)}
 .widget-detail-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:rgba(10,23,48,.5)}
@@ -6012,6 +6047,7 @@ function applyWidgetConfigCSS(){
   root.style.setProperty('--currency-y', (c.y+g.y)+'px');
   root.style.setProperty('--popup-opacity', p.opacity/100);
   syncWidgetRowHeight(); // 위젯 크기 조절 시 히어로 배경이 덮는 범위(--widget-row-h)도 함께 갱신
+  if (typeof syncWidgetLayoutMode==='function') syncWidgetLayoutMode(); // 환율 위젯 크기 조절 시 로고와의 겹침 여부도 다시 판정
 }
 // [추가] 날씨·환율 상세 팝업창 바탕색 투명도 — 위젯 크기/위치 조절과 같은 preview(즉시 미리보기)/
 // set(저장) 패턴
@@ -6724,6 +6760,28 @@ function syncWidgetRowHeight(){
 window.addEventListener('resize', syncWidgetRowHeight);
 window.addEventListener('load', syncWidgetRowHeight);
 syncWidgetRowHeight();
+// [추가] 웹(데스크톱)에서 화면 가로폭이 좁아져 위젯 클러스터(환율·날씨)가 좌측 로고 영역과 겹칠
+// 정도가 되면, body에 widgets-compact 클래스를 붙여 메뉴바 아래 별도 줄로 내려서 배치한다(CSS는
+// @media(min-width:781px){body.widgets-compact ...} 참고). 실제 DOM에 떠 있는 위젯 요소를
+// 그대로 측정하면 이미 compact 모드로 전환된 뒤에는 폭이 달라져 버려(모드가 바뀔 때마다 값이
+// 흔들리는) 판정이 꼬이므로, 대신 "정상 배치일 때"의 폭을 --currency-scale 등 알려진 CSS 값으로
+// 직접 계산해 로고 우측 끝과 비교한다
+function syncWidgetLayoutMode(){
+  if (window.innerWidth <= 780){ document.body.classList.remove('widgets-compact'); return; } // 모바일은 항상 자체 레이아웃 사용
+  const topBar = document.querySelector('.top-bar');
+  const brand = document.getElementById('topBarBrand');
+  if (!topBar || !brand) return;
+  const topBarRect = topBar.getBoundingClientRect();
+  const brandRect = brand.getBoundingClientRect();
+  const centerX = (topBarRect.left + topBarRect.right) / 2;
+  const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--currency-scale')) || 1;
+  const currencyNaturalLeft = centerX - (340 * scale) / 2; // 환율 위젯 기본 폭(340px) 기준 근사치
+  const collides = currencyNaturalLeft < brandRect.right + 24; // 24px 여유
+  document.body.classList.toggle('widgets-compact', collides);
+}
+window.addEventListener('resize', syncWidgetLayoutMode);
+window.addEventListener('load', syncWidgetLayoutMode);
+syncWidgetLayoutMode();
 let aboutBannerVideoObjectUrl=null;
 function renderAboutBanner(){
   const c=document.getElementById('aboutBannerMedia');if(!c)return;

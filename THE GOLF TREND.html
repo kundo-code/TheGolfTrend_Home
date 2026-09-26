@@ -38,8 +38,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://zjanojlayndtgmzohpyb.supabase.co" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<!-- [수정][성능] 두 폰트 스타일시트를 일반 rel=stylesheet로 두면 다운로드가 끝날 때까지 첫 렌더링을
+     막는다(Lighthouse 렌더링 차단 리소스로 측정, 각 230ms). media="print"로 불러오면 브라우저가
+     렌더링을 막지 않고 백그라운드에서 받아오고, onload에서 media를 all로 바꿔 받아온 즉시 적용한다
+     (display:swap이 이미 있어 폰트 로딩 전에도 대체 글꼴로 텍스트가 바로 보이므로 체감상 문제 없음).
+     JS가 꺼진 경우를 위한 noscript 대체 링크는 그대로 렌더링 차단 방식으로 둔다 -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Noto+Serif+KR:wght@400;600;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" media="print" onload="this.media='all'">
+<noscript>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Noto+Serif+KR:wght@400;600;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+</noscript>
 <style>
 :root{
   --fairway:#142544;--pine:#0A1730;--pine-deep:#030D26;
@@ -4050,7 +4059,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <div class="foot-grid">
     <div>
       <div class="foot-brand">
-      <a href="#top" class="foot-logo-link"><img src="assets/foot-logo.png" class="foot-logo-img" alt="THE GOLF TREND 로고"></a>
+      <a href="#top" class="foot-logo-link"><img src="assets/foot-logo.png" class="foot-logo-img" alt="THE GOLF TREND 로고" loading="lazy" decoding="async"></a>
       <a href="#top" class="logo"><span class="logo-text">THE GOLF TREND</span><span class="logo-sub">Curated Golf Travel &amp; Lifestyle</span></a>
     </div>
       <p>골프를 여행의 중심에 둔 종합 여행사. 필드 위의 시간부터 그 후의 저녁 식사까지, 모든 순간을 설계합니다.</p>
@@ -8023,7 +8032,7 @@ function cardLabelOverlayHTML(cardLabels){
     (groups[corner]=groups[corner]||[]).push(l);
   });
   const html = Object.keys(groups).map(corner=>
-    `<div class="card-label-stack" data-corner="${corner}">${groups[corner].map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true">`).join('')}</div>`
+    `<div class="card-label-stack" data-corner="${corner}">${groups[corner].map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true" loading="lazy" decoding="async">`).join('')}</div>`
   ).join('');
   return { html, hasOutside: active.some(l=>l.outside) };
 }
@@ -8678,7 +8687,7 @@ function postTagBadgeHTML(tag){
     text = 'T-Story';
     cls = 'post-tag-yellow';
   }
-  return `<div class="post-tag-row"><span class="post-tag-badge ${cls}">${icon?`<img class="post-tag-icon" src="${icon}" alt="">`:''}${escapeAttr(text)}</span></div>`;
+  return `<div class="post-tag-row"><span class="post-tag-badge ${cls}">${icon?`<img class="post-tag-icon" src="${icon}" alt="" loading="lazy" decoding="async">`:''}${escapeAttr(text)}</span></div>`;
 }
 function postCardHTML(b){
   const bg = b.image || getImage(b.fallbackCat) || '';
@@ -9184,13 +9193,13 @@ function linkIconEl(it){
     // ICON_DATA(인라인 base64)를 우선 사용, 없으면 파일 경로로 폴백
     const src = (typeof ICON_DATA !== 'undefined' && ICON_DATA[it.img]) ? ICON_DATA[it.img] : `images/${it.img}.png`;
     const badge = it.region ? `<span class="region-tag">${it.region}</span>` : '';
-    return `<span class="lico lico-img"><img src="${src}" alt=""/>${badge}</span>`;
+    return `<span class="lico lico-img"><img src="${src}" alt="" loading="lazy" decoding="async"/>${badge}</span>`;
   }
   return `<span class="lico ${it.cls||''}">${it.ico||''}</span>`;
 }
 function entryExitIconEl(it){
   const badge = it.visaRequired ? `<span class="region-tag ee-visa-badge">비자필요</span>` : '';
-  if (it.iconUrl) return `<span class="lico lico-img"><img src="${escapeAttr(it.iconUrl)}" alt=""/>${badge}</span>`;
+  if (it.iconUrl) return `<span class="lico lico-img"><img src="${escapeAttr(it.iconUrl)}" alt="" loading="lazy" decoding="async"/>${badge}</span>`;
   return `<span class="lico ee-icon-fallback">🛂${badge}</span>`;
 }
 function renderEntryExitGroup(){
@@ -10890,6 +10899,12 @@ function pkgMeasure(type){
   const track = document.getElementById('pkgTrack_'+type);
   const wrap  = track?.parentElement;
   if(!track || !wrap) return;
+  // [수정][성능] wrap.clientWidth는 resize/measure 때만 여기서 한 번 재고 캐시해둔다 — 이전에는
+  // pkgUpdateActiveCard()가 자동 스크롤 rAF 루프에서 매 프레임(초당 60회)마다 직접 clientWidth를
+  // 읽어 그때마다 강제 레이아웃을 유발했다(Lighthouse forced-reflow 실측상 이 페이지에서 가장 무거운
+  // 단일 지점 중 하나). 래퍼 폭은 리사이즈가 아니면 프레임마다 달라질 이유가 없으므로, 여기서만
+  // 재고 캐시된 값을 재사용해도 정확도 손실 없이 매 프레임 리플로우를 없앨 수 있다
+  pkgState[type].wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
   const list = getPkgDisplayList(type);
   if(!list.length) return;
 
@@ -10958,7 +10973,9 @@ function pkgUpdateActiveCard(type){
   const wrap  = track?.parentElement;
   const st = pkgState[type];
   if(!track || !wrap || !st.listLen || !st.widths.length) return;
-  const wrapW = wrap.clientWidth || wrap.offsetWidth || 300;
+  // [수정][성능] pkgMeasure()가 미리 재둔 값을 쓴다 — 이 함수는 자동 스크롤 rAF 루프에서 매 프레임
+  // 호출되므로, 여기서 매번 clientWidth를 직접 읽으면 프레임마다 강제 레이아웃이 발생한다
+  const wrapW = st.wrapW || wrap.clientWidth || wrap.offsetWidth || 300;
   const targetContentX = st.posPx + wrapW/2;
   const totalCards = st.listLen*3;
   let nearestIdx = 0, nearestDist = Infinity;

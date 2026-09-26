@@ -1069,22 +1069,46 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    [수정] 유리 배경·테두리·그림자를 버튼 자신이 아니라 ::before 가상요소로 옮기고 그 가상요소에만
    opacity:.5를 줘 "원형 바탕만" 정확히 50% 투명하게 만든다(버튼에 직접 opacity를 주면 안쪽 아이콘
    글자까지 같이 흐려진다). ::before는 z-index:-1로 아이콘(.fab-icon, z-index:1)보다 뒤에 그려진다 */
+/* [수정][설정 버튼 컴포넌트] "관리자"(⚙️) FAB를 참고 이미지(황금빛 반투명 유리구슬 + 검은 톱니바퀴)에
+   맞춰 다듬었다. 유리 질감(하이라이트·그림자·테두리·블러)은 문의하기·전화하기 FAB와 그대로 공유하되,
+   "안쪽 색"만 아래 --admin-fab-* 커스텀 프로퍼티로 분리해뒀다 — .admin-fab 규칙 안의 이 5개 값만
+   바꾸면 다른 두 FAB(문의하기·전화하기)에는 전혀 영향 없이 이 버튼의 색만 바뀐다(기본값은 기존
+   색상 그대로라 지금 당장은 시각적으로 달라지는 것이 없다). 크기를 바꾸려면 아래 width/height
+   (현재 56px, 모바일은 781px 미만 미디어쿼리에서 44.8px로 축소됨)만 수정하면 된다 */
 .admin-fab{position:fixed;width:56px;height:56px;border-radius:50%;
   background:none;border:none;color:#fff;cursor:pointer;font-size:1.4rem;
-  transition:transform .2s}
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s;
+  --admin-fab-highlight:rgba(255,255,255,.95);
+  --admin-fab-color-1:rgba(255,214,140,.95);  /* 안쪽 밝은 노랑 */
+  --admin-fab-color-2:rgba(233,168,60,.9);    /* 중간 톤 */
+  --admin-fab-color-3:rgba(196,128,35,.9);    /* 바깥쪽 진한 호박색 */
+  --admin-fab-shadow-tint:rgba(150,90,20,.5); /* 우하단 음영 색 */
+  --admin-fab-inset-tint:rgba(120,60,10,.4);  /* 안쪽 아래 그림자 색 */
+}
 .admin-fab::before,.tb-booking-fab::before,.mobile-call-fab::before{
   content:'';position:absolute;inset:0;border-radius:50%;z-index:-1;
   background:
-    radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
-    radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
-    radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
+    radial-gradient(ellipse 55% 38% at 30% 22%, var(--admin-fab-highlight,rgba(255,255,255,.95)) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
+    radial-gradient(circle at 78% 82%, var(--admin-fab-shadow-tint,rgba(150,90,20,.5)) 0%, rgba(150,90,20,0) 60%),
+    radial-gradient(circle at 50% 55%, var(--admin-fab-color-1,rgba(255,214,140,.95)) 0%, var(--admin-fab-color-2,rgba(233,168,60,.9)) 55%, var(--admin-fab-color-3,rgba(196,128,35,.9)) 100%);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   border:1px solid rgba(255,255,255,.5);
-  box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
+  box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px var(--admin-fab-inset-tint,rgba(120,60,10,.4)),0 8px 20px rgba(10,23,48,.25);
   opacity:.5;
 }
 .admin-fab:hover{transform:scale(1.08) rotate(30deg)}
+/* [추가] 눌렀을 때 살짝 눌리는 듯한 피드백(active) — reduced-motion 사용자는 전역 규칙(1931번째
+   줄 부근)이 transition을 꺼서 순간적으로 바뀌어 보이며, 애니메이션 자체가 없어 문제없다 */
+.admin-fab:active{transform:scale(.94)}
+/* [추가] 전역 :focus-visible 규칙(122번째 줄)이 border-radius:4px를 지정해, 원형 버튼에 적용되면
+   포커스 중에만 모서리가 각지게 보이는 문제가 있었다 — 이 버튼은 항상 원형을 유지하도록 재지정 */
+.admin-fab:focus-visible{border-radius:50%;outline-offset:3px}
 .fab-icon{display:inline-block;position:relative;z-index:1}
+/* [설정 버튼 컴포넌트] 톱니바퀴 SVG 크기 — em 단위라 .admin-fab의 font-size(모바일/데스크톱 미디어
+   쿼리에서 각각 정해짐)를 그대로 따라가 버튼 크기가 바뀌어도 별도 수정 없이 함께 스케일된다.
+   색은 참고 이미지처럼 짙은 검정 고정(버튼 색상이 바뀌어도 아이콘은 항상 또렷하게 보이도록 유지) */
+.admin-fab-icon{width:.92em;height:.92em;fill:#181818}
 /* [추가] 아이콘 위에 마우스를 올리면 aria-label 텍스트를 작은 말풍선으로 보여주는 커스텀 툴팁 —
    네이티브 title 속성 툴팁(스타일 지정 불가·지연 발생)을 대체한다. 아이콘들이 화면 하단에 있어
    말풍선은 항상 아이콘 위쪽에 뜨게 한다 */
@@ -4138,7 +4162,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <a href="#booking" class="tb-booking-fab" aria-label="문의하기"><span class="fab-icon">⛳</span></a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기"><span class="fab-icon">📞</span></button>
 <!-- ADMIN -->
-<button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자"><span class="fab-icon">⚙️</span></button>
+<!-- [수정][설정 버튼 컴포넌트] 이모지(⚙️)는 OS·브라우저마다 색·굵기가 달라 참고 이미지의 "선명한
+     검은 톱니바퀴"를 재현할 수 없어, 직접 그린 8개 톱니 SVG로 교체 — 크기는 CSS(.admin-fab-icon)에서
+     조절한다. 버튼 자체가 이미 aria-label="관리자"를 갖고 있어 아이콘은 장식 요소로 처리
+     (aria-hidden, focusable="false")해 스크린리더가 중복으로 읽지 않게 한다 -->
+<button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자"><svg class="fab-icon admin-fab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.21 5.26 L10.05 2.19 L13.95 2.19 L14.79 5.26 L17.56 3.69 L20.31 6.44 L18.74 9.21 L21.81 10.05 L21.81 13.95 L18.74 14.79 L20.31 17.56 L17.56 20.31 L14.79 18.74 L13.95 21.81 L10.05 21.81 L9.21 18.74 L6.44 20.31 L3.69 17.56 L5.26 14.79 L2.19 13.95 L2.19 10.05 L5.26 9.21 L3.69 6.44 L6.44 3.69 Z M8.60 12.00 A3.40 3.40 0 1 0 15.40 12.00 A3.40 3.40 0 1 0 8.60 12.00 Z"/></svg></button>
 
 <div class="widget-detail-overlay" id="weatherDetailOverlay">
   <div class="widget-detail-card">

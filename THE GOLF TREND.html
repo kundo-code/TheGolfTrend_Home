@@ -263,10 +263,10 @@ section.block{padding:100px 24px;position:relative}
    황금색 70% 반투명으로 변경 — .sec-bg-pattern은 #links(SNS 링크) 섹션과 공유하는 클래스라
    ID 선택자로 이 섹션에만 덮어써서 #links는 기존 화이트 배경 그대로 유지한다 */
 #destinations{
-  background-color:rgba(14,21,34,.5);
+  background-color:rgba(14,21,34,.6);
   background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
 }
-#destinations .sec-head h2{color:#fff}
+#destinations .sec-head h2{color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.65),0 4px 16px rgba(0,0,0,.4)}
 #destinations .sec-head p{color:rgba(247,245,240,.75)}
 #destinations .dest-region-divider{color:var(--gold)}
 #destinations .dest-region-divider::before,#destinations .dest-region-divider::after{background:rgba(221,179,103,.3)}
@@ -2933,7 +2933,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 순차 배경 배치에서 화이트+패턴 톤 — 기본 배경과 같은 곡선 라인 패턴(#faf4e9)을 재사용, 유리질감 강화(saturate) */
 .pkg-poster-section{
   padding:80px 0;
-  background-color:rgba(14,21,34,.5);
+  background-color:rgba(14,21,34,.6);
   background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
   background-size:900px 562px;
   background-repeat:repeat;
@@ -2952,16 +2952,22 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   margin-bottom:24px;
 }
 .pkg-group-title-area{ display:flex;align-items:center;justify-content:space-between;gap:14px;flex:1;min-width:0; }
+/* [수정] DOMESTIC/OVERSEAS 배지 박스·텍스트 크기를 3단계 키우고, 텍스트에 음영을 넣어
+   어두운 패턴 배경 위에서도 가독성이 높도록 함 */
 .pkg-tag{
-  display:inline-block;padding:4px 14px;font-size:.68rem;font-weight:700;
-  letter-spacing:.15em;text-transform:uppercase;
+  display:inline-block;padding:8px 22px;font-size:1.05rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
   background:rgba(221,179,103,.15);border:1px solid rgba(221,179,103,.35);
   border-radius:100px;color:var(--gold);
+  text-shadow:0 1px 3px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.4);
+  box-shadow:0 2px 10px rgba(0,0,0,.2);
 }
+/* [수정] 제목 폰트 크기를 2단계 키우고, 어두운 패턴 배경 위에서 잘 읽히도록 텍스트 음영 추가 */
 .pkg-group-title{
   font-family:'Bebas Neue','Noto Sans KR',sans-serif;
-  font-size:clamp(1.2rem,2vw,1.6rem);color:#fff;
+  font-size:clamp(1.5rem,2.6vw,2.1rem);color:#fff;
   font-weight:600;margin:0;letter-spacing:-.01em;
+  text-shadow:0 2px 6px rgba(0,0,0,.65),0 4px 16px rgba(0,0,0,.4);
 }
 
 /* 네비게이션 버튼 */
@@ -3008,11 +3014,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   max-width:min(85vw,420px); /* 안전장치: 극단적으로 가로로 긴 이미지가 레이아웃을 깨지 않도록 상한 */
   position:relative;cursor:pointer;
   border-radius:12px;overflow:hidden;
-  /* [수정] 이미지 영역(카드 자체) 배경을 어두운 남색 대신 밝은 색으로 변경 — 실제 포스터
-     이미지는 어차피 꽉 채워지지만, 레터박스/빈 슬롯("상품 준비중")에서 이 배경이 드러난다 */
+  /* [수정] 이미지 영역(카드 자체) 배경을 어두운 남색 대신 밝은 색으로 변경 — JS(pkgMeasure)가
+     카드 크기를 각 이미지의 실제 비율에 맞춰 계산하므로 이 배경은 이미지 뒤에 거의 가려지고,
+     레터박스/빈 슬롯("상품 준비중")에서만 드러난다 */
   background:#f5f0e8;
-  box-shadow:0 4px 20px rgba(0,0,0,.35);
-  border:1px solid rgba(10,23,48,.1);
+  /* [수정] 이미지 외곽 테두리를 리퀴드 글래스 느낌으로 — 얇은 반투명 흰 테두리 + 위쪽 유리
+     하이라이트(inset)와 아래쪽 은은한 그림자(inset)로 입체적인 유리 프레임 느낌을 낸다 */
+  border:1.5px solid rgba(255,255,255,.55);
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.65),
+    inset 0 -10px 18px rgba(0,0,0,.16),
+    0 4px 20px rgba(0,0,0,.35);
   transition:transform .25s, box-shadow .25s, opacity var(--pkg-hover-fade-ms,1000ms) ease;
   will-change:transform;
 }
@@ -3032,8 +3044,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    위로 자연스럽게 부각되어 보인다. z-index로 옆 카드에 가리지 않게 위로 띄운다 */
 .pkg-card:hover{
   transform:translateY(-4px) scale(1.2);
-  box-shadow:0 14px 40px rgba(0,0,0,.5);
-  border-color:rgba(221,179,103,.3);
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.75),
+    inset 0 -10px 18px rgba(0,0,0,.16),
+    0 14px 40px rgba(0,0,0,.5);
+  border-color:rgba(221,179,103,.5);
   z-index:5;
 }
 .pkg-img{
@@ -3042,9 +3057,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   display:block;width:100%;height:100%;object-fit:contain;
   /* [수정] 드래그로 트랙을 밀 때 브라우저 기본 이미지-드래그(고스트)가 끼어들지 않도록 방지 */
   -webkit-user-drag:none;user-select:none;-webkit-user-select:none;
-  opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease;
+  /* [수정] 기본 opacity:.9로 살짝 투명하게 두면 카드 배경(밝은 크림색)이 이미지 전체에 옅게
+     비쳐 보여("워시아웃") 백그라운드가 이미지 밖으로 삐져나온 것처럼 보인다 — 항상 1(완전 불투명)로
+     둬서 배경이 이미지 크기에 딱 맞게 가려지고, 포커스 흐림 효과는 .pkg-dim::after 오버레이가 담당한다 */
+  opacity:1;
 }
-.pkg-card:hover .pkg-img{ opacity:1; }
 .pkg-label{
   position:absolute;bottom:0;left:0;right:0;
   padding:10px 12px;
@@ -3156,7 +3173,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* 반응형 */
 @media(max-width:640px){
-  .pkg-group-title{ font-size:1.1rem; }
+  .pkg-group-title{ font-size:1.4rem; }
   .plb-prev{ left:8px; }
   .plb-next{ right:8px; }
   .pkg-card{ max-width:88vw; } /* [Phase] 카드 실제 폭은 JS(pkgTargetHeight)가 계산하는 값을 따르고, 이 상한은 극단적으로 가로로 넓은 이미지가 화면을 벗어나지 않도록 막는 안전장치 역할만 한다 */
@@ -3204,7 +3221,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    섹션 자체는 탑바와 동일한 배경색 + 황금색 70% 반투명 곡선 라인 패턴으로 변경 —
    제목/설명/태그는 폼 카드 밖(어두운 섹션 배경 위)에 있으므로 밝은 색으로 맞춘다 ── */
 .booking-section{
-  background-color:rgba(14,21,34,.5);
+  background-color:rgba(14,21,34,.6);
   background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
   background-size:900px 562px;
   background-repeat:repeat;

@@ -1053,18 +1053,26 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    맞춰 좌상단에 크고 또렷한 타원형 하이라이트, 우하단에 짙은 그림자를 얹은 방사형 그라데이션
    조합으로 볼록하고 반짝이는 유리 질감을 낸다. 안쪽 테두리의 밝은 림라이트(inset)·어두운
    그림자(inset)로 두께감을 더한다. 관리자/문의하기/전화하기 3개 아이콘 모두 이 배경·그림자·테두리
-   조합을 공유하며, 아이콘 자체(이모지)는 원래 색상 그대로 유지한다(.fab-icon은 크기/정렬용) */
+   조합을 공유하며, 아이콘 자체(이모지)는 원래 색상 그대로 유지한다.
+   [수정] 유리 배경·테두리·그림자를 버튼 자신이 아니라 ::before 가상요소로 옮기고 그 가상요소에만
+   opacity:.5를 줘 "원형 바탕만" 정확히 50% 투명하게 만든다(버튼에 직접 opacity를 주면 안쪽 아이콘
+   글자까지 같이 흐려진다). ::before는 z-index:-1로 아이콘(.fab-icon, z-index:1)보다 뒤에 그려진다 */
 .admin-fab{position:fixed;width:56px;height:56px;border-radius:50%;
+  background:none;border:none;color:#fff;cursor:pointer;font-size:1.4rem;
+  transition:transform .2s}
+.admin-fab::before,.tb-booking-fab::before,.mobile-call-fab::before{
+  content:'';position:absolute;inset:0;border-radius:50%;z-index:-1;
   background:
     radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
     radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
     radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;
-  border:1px solid rgba(255,255,255,.5);cursor:pointer;font-size:1.4rem;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.5);
   box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
-  transition:transform .2s}
+  opacity:.5;
+}
 .admin-fab:hover{transform:scale(1.08) rotate(30deg)}
-.fab-icon{display:inline-block}
+.fab-icon{display:inline-block;position:relative;z-index:1}
 /* [추가] 아이콘 위에 마우스를 올리면 aria-label 텍스트를 작은 말풍선으로 보여주는 커스텀 툴팁 —
    네이티브 title 속성 툴팁(스타일 지정 불가·지연 발생)을 대체한다. 아이콘들이 화면 하단에 있어
    말풍선은 항상 아이콘 위쪽에 뜨게 한다 */
@@ -2004,14 +2012,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     display:flex;align-items:center;justify-content:center;
     position:fixed;top:auto;bottom:calc(16px + env(safe-area-inset-bottom));right:16px;
     width:44.8px;height:44.8px;border-radius:50%;
-    background:
-      radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
-      radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
-      radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.5);
+    background:none;border:none;
     color:var(--pine-deep);
-    font-size:1.2rem;box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
+    font-size:1.2rem;
     transition:transform .2s;
   }
   .mobile-call-fab:hover,.mobile-call-fab:active{transform:scale(1.08) rotate(30deg)}
@@ -2030,7 +2033,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .tb-booking-fab,.mobile-call-fab,.admin-fab{
     position:fixed;top:auto;right:40px;
     width:56px;height:56px;border-radius:50%;
-    font-size:2.2rem;box-shadow:0 8px 24px rgba(10,23,48,.25);
+    font-size:2.2rem;
     transition:transform .2s;
     z-index:202;
   }
@@ -2038,14 +2041,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .tb-booking-fab{bottom:calc(40px + 68px + env(safe-area-inset-bottom))}
   .mobile-call-fab{bottom:calc(40px + 136px + env(safe-area-inset-bottom))}
   .tb-booking-fab,.mobile-call-fab{
-    background:
-      radial-gradient(ellipse 55% 38% at 30% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 35%, rgba(255,255,255,0) 62%),
-      radial-gradient(circle at 78% 82%, rgba(150,90,20,.5) 0%, rgba(150,90,20,0) 60%),
-      radial-gradient(circle at 50% 55%, rgba(255,214,140,.95) 0%, rgba(233,168,60,.9) 55%, rgba(196,128,35,.9) 100%);
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.5);
+    background:none;border:none;
     color:var(--pine-deep);
-    box-shadow:inset 0 3px 6px rgba(255,255,255,.85),inset 0 -10px 16px rgba(120,60,10,.4),0 8px 20px rgba(10,23,48,.25);
   }
   .tb-booking-fab{
     text-decoration:none;
@@ -2057,10 +2054,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    관리자 패널(헤드라인 배너 아래 "위젯 설정")에서 조절하는 CSS 커스텀 프로퍼티(--weather-*,
    --currency-*)로 스케일(각 박스의 정렬 기준 모서리 쪽으로 확대/축소)·위치·바탕박스 투명도를
    제어한다. 배치 순서는 "실시간 환율 위젯" → "날씨 위젯" */
+/* [수정] 위젯 바탕 박스에 리퀴드글래스 느낌의 반투명 테두리와 안쪽 상단 하이라이트 라인을 추가 —
+   유리 가장자리가 빛을 받아 살짝 밝게 도드라져 보이는 효과로, 안에 담긴 텍스트 가독성은 그대로
+   유지하면서 유리 재질감만 더한다 */
 .widget-box{
   display:none;position:fixed;z-index:202;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border-radius:16px;box-shadow:0 8px 24px rgba(10,23,48,.18);
+  border-radius:16px;border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 8px 24px rgba(10,23,48,.18),inset 0 1px 0 rgba(255,255,255,.5);
   padding:10px 14px;color:var(--pine-deep);overflow:hidden;box-sizing:border-box;
 }
 /* [추가] 위젯을 감싸는 래퍼(.mobile-widget-row/.widget-drag-wrap)는 모바일 전용 레이아웃이다.
@@ -2105,18 +2106,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    아래 웹 전용 블록에서 다시 block으로 되돌려 위치를 잡는다(이 규칙이 그 블록보다 소스 순서상
    앞에 있어 뒤 규칙이 우선한다) */
 .weather-widget-jp{display:none}
-/* [수정] 웹(데스크톱): 일본 날씨 위젯(해외)은 서울 날씨 위젯(국내)의 기준(4px)+높이(118px×
-   --weather-scale, 상단 기준으로 확대되므로 실제 하단 끝)+여백(10px)을 기본 배치 자리로 삼아
-   그 자리에서 시작하되, 이후로는 관리자 패널의 "날씨 위젯(해외)" 전용 컨트롤(--weather-jp-*)로
-   국내 위젯과 별개로 크기·위치·투명도를 다시 조절할 수 있다(국내 위젯을 옮기면 기본 자리도 같이
-   따라오고, 그 위에 해외 위젯 자신의 오프셋이 더해지는 구조) */
+/* [수정] 웹(데스크톱): 일본 날씨 위젯(해외)은 국내 날씨 위젯과 완전히 독립적인 자기 자신의 기준
+   위치(세로 132px, 가로 280px — 국내 위젯이 기본값일 때 그 바로 아래에 오는 자리)를 가진다.
+   국내 위젯의 CSS 변수(--weather-*)를 참조하지 않으므로, 관리자 패널에서 국내 위젯의 크기·위치를
+   조절해도 해외 위젯은 전혀 영향받지 않고 오직 자기 자신의 컨트롤(--weather-jp-*)에만 반응한다 */
 @media(min-width:781px){
   .weather-widget-jp{
     display:block;
-    top:calc(4px + var(--weather-y,0px) + (118px * var(--weather-scale,1)) + 10px + var(--weather-jp-y,0px));
+    top:calc(132px + var(--weather-jp-y,0px));
     left:50%;right:auto;
     width:200px;height:118px;
-    transform:translateX(calc(-50% + 280px + var(--weather-x,0px) + var(--weather-jp-x,0px))) scale(var(--weather-jp-scale,1));
+    transform:translateX(calc(-50% + 280px + var(--weather-jp-x,0px))) scale(var(--weather-jp-scale,1));
     transform-origin:top center;
     background:rgba(255,255,255,var(--weather-jp-opacity,.92));
     cursor:pointer;transition:box-shadow .2s;
@@ -5911,10 +5911,15 @@ try{ const lx = JSON.parse(localStorage.getItem(LOGO_XFORM_KEY)||'null'); if (lx
 // 우측 상단(탑바 쪽 모서리)을 기준으로 통째로 확대/축소한다
 const WIDGET_CFG_KEY = 'kundo_widget_cfg_v2';
 const WIDGET_CFG_DEFAULT = {
-  weather:{scale:90,x:0,y:6,opacity:92}, // 날씨 위젯(국내, 서울)
-  weatherJp:{scale:100,x:195,y:-115,opacity:92}, // 날씨 위젯(해외, 일본) — 국내 위젯과 별도로 크기·위치 조절
-  currency:{scale:105,x:0,y:-2,opacity:92},
+  weather:{scale:100,x:0,y:0,opacity:50}, // 날씨 위젯(국내, 서울)
+  weatherJp:{scale:100,x:0,y:0,opacity:50}, // 날씨 위젯(해외, 일본) — 국내 위젯과 완전히 독립된 자체 기준 위치를 가짐
+  currency:{scale:100,x:0,y:0,opacity:50},
   popup:{opacity:100}, // [추가] 날씨·환율 상세 팝업창(.widget-detail-card) 바탕색 투명도
+  // [추가] 환율·날씨(국내)·날씨(해외) 3개 위젯 전체를 한 번에 조절하는 상위 설정 — 크기·투명도는
+  // 각 위젯 자신의 값에 곱해지고(기본값 100%는 곱해도 값이 그대로라 아무 효과 없음), 가로·세로
+  // 위치는 각 위젯 자신의 값에 더해진다(기본값 0px 역시 더해도 변화 없음) — 즉 기본 상태에서는
+  // 전체 설정이 개별 위젯에 아무 영향을 주지 않다가, 관리자가 이 값을 조절하면 3개 위젯이 함께 반응한다
+  globalWidget:{scale:100,opacity:100,x:0,y:0},
 };
 let widgetConfig = JSON.parse(JSON.stringify(WIDGET_CFG_DEFAULT));
 try{
@@ -5924,6 +5929,7 @@ try{
     widgetConfig.weatherJp = Object.assign({}, WIDGET_CFG_DEFAULT.weatherJp, wc.weatherJp);
     widgetConfig.currency = Object.assign({}, WIDGET_CFG_DEFAULT.currency, wc.currency);
     widgetConfig.popup = Object.assign({}, WIDGET_CFG_DEFAULT.popup, wc.popup);
+    widgetConfig.globalWidget = Object.assign({}, WIDGET_CFG_DEFAULT.globalWidget, wc.globalWidget);
   }
 }catch(e){}
 const HERO_BG_MAX = 4; // 히어로 배경 최대 등록 개수 — 이 값을 바꾸면 등록 가능 개수도 함께 바뀜
@@ -5987,18 +5993,23 @@ function resetLogoTransform(){
 function applyWidgetConfigCSS(){
   const root = document.documentElement;
   const w = widgetConfig.weather, wj = widgetConfig.weatherJp, c = widgetConfig.currency, p = widgetConfig.popup;
-  root.style.setProperty('--weather-scale', w.scale/100);
-  root.style.setProperty('--weather-opacity', w.opacity/100);
-  root.style.setProperty('--weather-x', w.x+'px');
-  root.style.setProperty('--weather-y', w.y+'px');
-  root.style.setProperty('--weather-jp-scale', wj.scale/100);
-  root.style.setProperty('--weather-jp-opacity', wj.opacity/100);
-  root.style.setProperty('--weather-jp-x', wj.x+'px');
-  root.style.setProperty('--weather-jp-y', wj.y+'px');
-  root.style.setProperty('--currency-scale', c.scale/100);
-  root.style.setProperty('--currency-opacity', c.opacity/100);
-  root.style.setProperty('--currency-x', c.x+'px');
-  root.style.setProperty('--currency-y', c.y+'px');
+  // [수정] "위젯 전체 설정"(globalWidget) — 크기·투명도는 각 위젯 자신의 값에 곱하고, 가로·세로
+  // 위치는 각 위젯 자신의 값에 더한다. 기본값(크기100%·투명도100%·위치0px)일 때는 곱해도/더해도
+  // 값이 그대로라 개별 위젯에 전혀 영향을 주지 않는다
+  const g = widgetConfig.globalWidget;
+  const gScale = g.scale/100, gOpacity = g.opacity/100;
+  root.style.setProperty('--weather-scale', (w.scale/100)*gScale);
+  root.style.setProperty('--weather-opacity', (w.opacity/100)*gOpacity);
+  root.style.setProperty('--weather-x', (w.x+g.x)+'px');
+  root.style.setProperty('--weather-y', (w.y+g.y)+'px');
+  root.style.setProperty('--weather-jp-scale', (wj.scale/100)*gScale);
+  root.style.setProperty('--weather-jp-opacity', (wj.opacity/100)*gOpacity);
+  root.style.setProperty('--weather-jp-x', (wj.x+g.x)+'px');
+  root.style.setProperty('--weather-jp-y', (wj.y+g.y)+'px');
+  root.style.setProperty('--currency-scale', (c.scale/100)*gScale);
+  root.style.setProperty('--currency-opacity', (c.opacity/100)*gOpacity);
+  root.style.setProperty('--currency-x', (c.x+g.x)+'px');
+  root.style.setProperty('--currency-y', (c.y+g.y)+'px');
   root.style.setProperty('--popup-opacity', p.opacity/100);
   syncWidgetRowHeight(); // 위젯 크기 조절 시 히어로 배경이 덮는 범위(--widget-row-h)도 함께 갱신
 }
@@ -6886,12 +6897,12 @@ function renderAdminWidgets(){
           <span class="ai-xform-unit">${unit}</span>
         </span>
       </label>`;
-  const xformBlock=(widget,label,xRange,yRange)=>{
+  const xformBlock=(widget,label,xRange,yRange,first)=>{
     const v=widgetConfig[widget];
     const d=WIDGET_CFG_DEFAULT[widget];
     const changed=(v.scale!==d.scale||v.x!==d.x||v.y!==d.y||v.opacity!==d.opacity);
     return `
-    <div class="ai-logo-xform"${widget==='currency'?' style="margin-top:16px"':''}>
+    <div class="ai-logo-xform"${first?'':' style="margin-top:16px"'}>
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">${label}</span>
       ${xformRow(widget,'scale','크기',50,200,v.scale,'%')}
       ${xformRow(widget,'opacity','배경 투명도',20,100,v.opacity,'%')}
@@ -6901,13 +6912,23 @@ function renderAdminWidgets(){
       ${changed?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('${widget}')" style="margin-top:6px">${label} 초기화</button>`:''}
     </div>`;
   };
+  const g = widgetConfig.globalWidget;
+  const gDefault = WIDGET_CFG_DEFAULT.globalWidget;
+  const gChanged = (g.scale!==gDefault.scale||g.x!==gDefault.x||g.y!==gDefault.y||g.opacity!==gDefault.opacity);
   const pOpacity = widgetConfig.popup.opacity;
   const pChanged = pOpacity !== WIDGET_CFG_DEFAULT.popup.opacity;
   c.innerHTML = `
     <span class="file-hint" style="display:block;margin-bottom:10px">웹은 탑바 우측 끝, 모바일은 메뉴바 바로 아래에 나란히 노출되는 실시간 날씨·환율 위젯의 크기·위치·바탕박스 투명도를 조절합니다. 슬라이더를 끌거나, 옆 칸에 숫자를 직접 입력해도 됩니다.</span>
-    ${xformBlock('currency','💱 환율 위젯',[-800,800],[-100,100])}
-    ${xformBlock('weather','🌤️ 날씨 위젯(국내)',[-800,800],[-100,100])}
-    ${xformBlock('weatherJp','🌏 날씨 위젯(해외)',[-800,800],[-200,200])}
+    <div class="ai-logo-xform">
+      <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🧭 위젯 전체 설정</span>
+      <span class="file-hint" style="display:block;margin-bottom:6px">환율·날씨(국내)·날씨(해외) 3개 위젯 전체를 한 번에 같은 비율로 확대/축소하거나 같은 방향으로 이동시킵니다. 아래 개별 위젯 설정에 곱해지거나 더해집니다.</span>
+      ${xformRow('globalWidget','scale','크기',50,200,g.scale,'%')}
+      ${xformRow('globalWidget','opacity','배경 투명도',20,100,g.opacity,'%')}
+      ${xformRow('globalWidget','x','가로 위치',-800,800,g.x,'px')}
+      ${xformRow('globalWidget','y','세로 위치',-200,200,g.y,'px')}
+      <span class="file-hint" id="widgetXformVals_globalWidget">크기 ${g.scale}% · 투명도 ${g.opacity}% · 가로 ${g.x}px · 세로 ${g.y}px</span>
+      ${gChanged?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('globalWidget')" style="margin-top:6px">전체 설정 초기화</button>`:''}
+    </div>
     <div class="ai-logo-xform" style="margin-top:16px">
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🗂️ 상세 팝업창</span>
       <label class="ai-xform-row">
@@ -6923,6 +6944,14 @@ function renderAdminWidgets(){
       <span class="file-hint" id="popupOpacityVal">투명도 ${pOpacity}%</span>
       ${pChanged?`<button type="button" class="file-btn danger" onclick="resetPopupOpacity()" style="margin-top:6px">팝업창 초기화</button>`:''}
     </div>
+    <details class="admin-info-collapse" style="margin-top:16px">
+      <summary>🎛️ 개별 위젯 설정 (환율 · 날씨 국내 · 날씨 해외)</summary>
+      <div class="admin-collapse-body">
+        ${xformBlock('currency','💱 환율 위젯',[-800,800],[-100,100],true)}
+        ${xformBlock('weather','🌤️ 날씨 위젯(국내)',[-800,800],[-100,100])}
+        ${xformBlock('weatherJp','🌏 날씨 위젯(해외)',[-800,800],[-200,200])}
+      </div>
+    </details>
   `;
 }
 // [추가] 화면 테마(탑바·내비게이션바 배경/폰트 색상, 사이트 전체 배경) 관리자 UI

@@ -2241,8 +2241,16 @@ body.show-widget-restore .nav-widget-restore{display:flex}
   }
   /* [수정] 웹 컴팩트 모드에서도 모바일과 동일하게, topbar가 사라지고 메뉴바가 최상단으로 붙는
      순간(body.mobile-topbar-hidden) 위젯 줄의 sticky를 풀어 보통 문서 흐름으로 되돌린다 — 그
-     시점부터 히어로 콘텐츠와 같은 속도로 스크롤되어 빠르게 화면 밖으로 사라진다 */
-  body.widgets-compact.mobile-topbar-hidden .mobile-widget-row{position:static}
+     시점부터 히어로 콘텐츠와 같은 속도로 스크롤되어 빠르게 화면 밖으로 사라진다.
+     [버그 수정] position:static으로 바꾸면 레이아웃은 원하는 대로 되지만, static 요소는
+     z-index가 전혀 적용되지 않는다(포지셔닝된 요소에서만 z-index가 동작) — 그 결과 이 규칙
+     아래에 있는 .mobile-widget-row의 z-index:201이 무효화되어, 위젯 줄이 히어로의 배경
+     (.hero-bg, 음수 margin-top으로 위젯 줄 영역까지 겹쳐 확장됨)보다 아래에 깔려버려 위젯이
+     거의 즉시 안 보이게 되고 그 결과 메뉴바와 히어로 사이에 넓은 빈 공간이 생겨 보였다.
+     position:relative는 static과 똑같이 문서 흐름 안에 머물지만(top/left 등을 안 줬으므로
+     레이아웃 변화 없음) z-index는 그대로 적용되므로, 위젯이 여전히 히어로 배경 위에 그려져
+     스크롤에 따라 자연스럽게 사라진다 */
+  body.widgets-compact.mobile-topbar-hidden .mobile-widget-row{position:relative}
   /* [추가] 웹 컴팩트 모드에서도 모바일과 동일하게, 스크롤로 topbar가 사라지는 순간(JS
      initMobileTopbarScroll이 붙이는 body.mobile-topbar-hidden) topbar를 위로 접고 nav를 화면
      맨 위(top:0)로 붙인다 — .top-bar의 transition은 이제 기본 규칙(공통)에 있으므로 여기서는
@@ -2318,28 +2326,36 @@ body.show-widget-restore .nav-widget-restore{display:flex}
      지나칠 때까지 계속 sticky로 붙어있었는데, 이제 topbar가 사라지고 메뉴바가 최상단으로 붙는
      바로 그 순간(body.mobile-topbar-hidden) sticky를 풀어 보통의 문서 흐름 요소로 되돌린다.
      위젯 줄의 문서상 위치는 페이지 맨 위 근처라, 그 시점 이후로는 히어로 콘텐츠와 완전히 같은
-     속도로 스크롤되어 화면 밖으로 빠르게 사라진다(별도 JS 계산 없이 순수 CSS 전환만으로 동작) */
-  body.mobile-topbar-hidden .mobile-widget-row{position:static}
+     속도로 스크롤되어 화면 밖으로 빠르게 사라진다(별도 JS 계산 없이 순수 CSS 전환만으로 동작)
+     [버그 수정] position:static은 z-index를 무시한다(포지셔닝된 요소에서만 z-index가 동작) —
+     그래서 이 규칙의 z-index:201이 무효화돼 위젯 줄이 히어로 배경(.hero-bg, 음수 margin-top으로
+     위젯 줄 영역까지 겹쳐 확장됨)보다 아래에 깔려 스크롤을 조금만 해도 위젯이 사라진 것처럼 보이고
+     메뉴바와 히어로 사이에 넓은 빈 공간만 남는 버그가 있었다. position:relative는 문서 흐름 안에
+     그대로 머물면서도(top/left를 안 줬으므로 레이아웃은 static과 동일) z-index는 정상 적용되어
+     위젯이 히어로 배경 위에 계속 그려진 채로 자연스럽게 스크롤되어 사라진다 */
+  body.mobile-topbar-hidden .mobile-widget-row{position:relative}
   .mobile-weather-pair{display:flex;flex-direction:row;gap:8px;min-width:0}
   .widget-drag-wrap{
     display:block;position:relative;touch-action:pan-y;min-width:0;
     transform:translateX(var(--drag-x,0px));
   }
   .widget-drag-wrap:not(.dragging){transition:transform .25s cubic-bezier(.2,.8,.3,1)}
-  /* [수정] 날씨 위젯 2개를 감싼 래퍼는 기본 200px을 "원하되"(flex-basis) 화면이 좁아 둘이 나란히
-     다 들어가지 못할 때는 줄어들 수 있도록(flex-shrink:1) 한다 — min-width:0을 같이 둬야 내용
-     크기에 막혀 줄어들지 못하는 flex 기본 동작을 풀 수 있다 */
+  /* [수정] 모바일에서는 환율(맨 왼쪽) 폭이 넓어(fit-content) 날씨 2개(오른쪽 묶음)가 원래 탑바
+     크기(200px)로는 화면 폭 안에서 안정적으로 한 줄(2단: 환율 위/날씨 2개 아래 나란히)로 들어가지
+     못하고 날씨 하나가 또 다음 줄로 밀려 3단이 되는 경우가 있었다 — 날씨 위젯의 기본 목표 크기를
+     200px→170px로 조금 줄여(스케일 다운) 대부분의 모바일 폭에서 안정적으로 2단에 맞도록 한다.
+     flex-shrink는 그래도 남겨둬, 170px로도 부족한 아주 좁은 화면에서는 추가로 더 줄어든다 —
+     min-width:0을 같이 둬야 내용 크기에 막혀 줄어들지 못하는 flex 기본 동작을 풀 수 있다 */
   .widget-drag-wrap[data-widget="weather"],
-  .widget-drag-wrap[data-widget="weatherJapan"]{flex:0 1 200px;min-width:0}
+  .widget-drag-wrap[data-widget="weatherJapan"]{flex:0 1 170px;min-width:0}
   .widget-drag-wrap[data-widget="weather"]{margin-top:calc(var(--weather-y,0px))}
   .widget-drag-wrap[data-widget="currency"]{margin-top:calc(var(--currency-y,0px))}
-  /* [수정] 위젯이 메뉴바 아래(모바일 자체 줄)로 내려와도 원래 탑바에 떠 있을 때와 똑같은 크기
-     (환율 위젯은 fit-content, 날씨 위젯은 200×118px 고정)를 유지한다. 날씨 위젯은 이제 래퍼 폭을
-     100% 채우는 방식(width:100%;max-width:200px)으로 바꿔, 화면이 좁아 래퍼 자체가 200px보다
-     줄어드는 경우에도(위 flex-shrink) 그 줄어든 폭에 맞춰 같이 줄어들며 화면 밖으로 잘리지 않는다 */
+  /* [수정] 날씨 위젯은 래퍼 폭을 100% 채우는 방식(width:100%;max-width:170px)으로 바꿔, 화면이
+     좁아 래퍼 자체가 170px보다 줄어드는 경우에도(위 flex-shrink) 그 줄어든 폭에 맞춰 같이
+     줄어들며 화면 밖으로 잘리지 않는다 */
   .weather-widget,.weather-widget-jp{
     position:relative;top:auto;left:auto;right:auto;
-    width:100%;max-width:200px;height:auto;min-height:118px;box-sizing:border-box;
+    width:100%;max-width:170px;height:auto;min-height:118px;box-sizing:border-box;
     transform:scale(var(--weather-scale,1));transform-origin:top center;
     background:rgba(255,255,255,var(--weather-opacity,.92));
   }
@@ -7139,7 +7155,7 @@ function syncHeroWidgetGap(){
   // 줄 배경을 히어로 배경과 이어붙이기 위한 것일 뿐, 콘텐츠와 위젯 사이 "간격" 자체를 이 함수가
   // 만드는 60px 기준으로 맞추지는 않아서 모바일에서만 간격이 9px 정도로 좁게 나오는 불일치가 있었다.
   // 이제 모바일도 똑같이 이 보정을 적용해 화면 폭과 무관하게 항상 같은 간격이 되도록 한다
-  const HERO_WIDGET_GAP = 60; // 히어로의 기본 padding-top과 동일한 값 — 화면이 좁을 때 자연스럽게 나오는 간격. 함수 안에 두어 위쪽에서(예: applyWidgetConfigCSS → syncWidgetLayoutMode) 이 함수가 먼저 호출되어도 참조 시점 문제가 없게 한다
+  const HERO_WIDGET_GAP = 30; // 위젯(또는 메뉴바)과 히어로 콘텐츠 사이 간격 — 함수 안에 두어 위쪽에서(예: applyWidgetConfigCSS → syncWidgetLayoutMode) 이 함수가 먼저 호출되어도 참조 시점 문제가 없게 한다
   const heroInner = document.querySelector('.hero-inner');
   if (!heroInner) return;
   // [버그 수정] naturalTop은 getBoundingClientRect() 기반이라 "뷰포트 기준" 좌표 — 스크롤 위치에

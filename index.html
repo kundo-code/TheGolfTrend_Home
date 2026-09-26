@@ -1994,10 +1994,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 /* [수정] 웹(데스크톱)에서 "전화하기"·"문의하기"·"관리자" 3개를 화면 우측 최하단 코너에 세로로
    쌓는다(가로 한 줄이 아니라 모바일과 같은 세로 스택) — 스크롤과 무관하게 항상 같은 화면 위치
-   (position:fixed + bottom/right)에 떠 있다. 코너에서 가장 가까운 자리(맨 아래)에 "전화하기",
-   그 다음이 "문의하기"(두 아이콘 사이), 가장 안쪽(맨 위)에 "관리자". 버튼 박스 크기(56px)는
-   기존 관리자 아이콘 그대로 유지하되 박스 안 아이콘 글자 크기만 가독성을 위해 최대한 키운다
-   (1.4rem→2.2rem) */
+   (position:fixed + bottom/right)에 떠 있다. [수정] 순서를 뒤집어 코너에서 가장 가까운 자리
+   (맨 아래)에 "관리자", 그 다음이 "문의하기"(두 아이콘 사이), 가장 안쪽(맨 위)에 "전화하기" —
+   고객이 실제로 누를 확률이 가장 높은 "전화하기"를 가장 눈에 띄는 맨 위 자리로 옮긴 것. 버튼
+   박스 크기(56px)는 기존 관리자 아이콘 그대로 유지하되 박스 안 아이콘 글자 크기만 가독성을
+   위해 최대한 키운다(1.4rem→2.2rem). 바탕 원형박스 투명도는 페이지 콘텐츠를 덜 가리도록
+   82%→50%로 낮춘다(모바일은 기존 82% 그대로 유지) */
 @media(min-width:781px){
   .tb-booking-fab,.mobile-call-fab{display:flex;align-items:center;justify-content:center}
   .tb-booking-fab,.mobile-call-fab,.admin-fab{
@@ -2007,11 +2009,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     transition:transform .2s;
     z-index:202;
   }
-  .mobile-call-fab{bottom:calc(40px + env(safe-area-inset-bottom));opacity:1}
+  .admin-fab{bottom:calc(40px + env(safe-area-inset-bottom));opacity:1;background:linear-gradient(135deg,rgba(221,179,103,.5) 0%,rgba(202,142,63,.5) 100%)}
   .tb-booking-fab{bottom:calc(40px + 68px + env(safe-area-inset-bottom))}
-  .admin-fab{bottom:calc(40px + 136px + env(safe-area-inset-bottom))}
+  .mobile-call-fab{bottom:calc(40px + 136px + env(safe-area-inset-bottom))}
   .tb-booking-fab,.mobile-call-fab{
-    background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,0) 55%),rgba(221,179,103,.82);
+    background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,0) 55%),rgba(221,179,103,.5);
     backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
     color:var(--pine-deep);
   }
@@ -2040,17 +2042,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    위젯을 세로로 쌓는다(--topbar-h 기준). 순서는 환율 위젯이 위, 날씨 위젯이 그 아래 — 환율
    위젯의 높이(100px)에 그 자신의 스케일을 곱한 값만큼 아래로 내려 날씨 위젯을 배치해, 관리자가
    환율 위젯 크기를 조절해도 두 위젯이 겹치지 않는다 */
-/* [수정] 위젯 기본 위치 기준점을 "탑바 우측 하단"에서 "탑바 가로 폭 중앙의 최상단(topbar 자체의
-   top:0 지점)"으로 변경 — 이 지점을 (0px,0px)로 두고, 환율 위젯은 그 자리 그대로(0,0), 날씨
-   위젯은 그 아래 340px(0,340) 지점을 기본 위치로 삼는다. 가로는 항상 화면 중앙에 맞춘 뒤
-   --currency-x/--weather-x만큼 좌우로, 세로는 위 기준점에서 --currency-y/--weather-y(또는 날씨는
-   +340px 기준)만큼 위아래로 관리자 설정값을 더한다. x가 커질수록 오른쪽으로, y가 커질수록
-   아래로 이동하는 기존 부호 규칙은 그대로 유지(전에는 right:를 줄이는 방식으로 우측 이동을
-   표현했다면, 이제는 translateX를 늘리는 방식으로 동일하게 표현) */
+/* [수정] 위젯 기본 위치 기준점("탑바 가로 폭 중앙의 최상단"을 (0px,0px)으로 삼는 좌표계)은 그대로
+   두고, 그 기준점에서의 실제 기본 배치 값만 다시 조정 — 관리자 설정값(--currency-x/y,
+   --weather-x/y)이 모두 0일 때 환율 위젯은 기준점에서 세로 13px만큼, 날씨 위젯은 가로 280px·
+   세로 -336px(기준점이던 340px에서 위로 336px 올려 4px 지점)만큼 이동한 자리를 기본 위치로 삼는다.
+   가로는 항상 화면 중앙 기준(--currency-x/--weather-x는 그 중앙에서 좌우로 추가 이동), 세로는 위
+   기본값에 --currency-y/--weather-y를 더한다 */
 @media(min-width:781px){
   .widget-box{display:block}
   .currency-widget{
-    top:calc(0px + var(--currency-y,0px));
+    top:calc(13px + var(--currency-y,0px));
     left:50%;right:auto;
     width:340px;height:100px;
     transform:translateX(calc(-50% + var(--currency-x,0px))) scale(var(--currency-scale,1));
@@ -2058,10 +2059,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     background:rgba(255,255,255,var(--currency-opacity,.92));
   }
   .weather-widget{
-    top:calc(340px + var(--weather-y,0px));
+    top:calc(4px + var(--weather-y,0px));
     left:50%;right:auto;
     width:200px;height:118px;
-    transform:translateX(calc(-50% + var(--weather-x,0px))) scale(var(--weather-scale,1));
+    transform:translateX(calc(-50% + 280px + var(--weather-x,0px))) scale(var(--weather-scale,1));
     transform-origin:top center;
     background:rgba(255,255,255,var(--weather-opacity,.92));
     cursor:pointer;transition:box-shadow .2s;
@@ -4011,7 +4012,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <a href="#booking" class="tb-booking-fab" aria-label="문의하기">⛳</a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기">📞</button>
 <!-- ADMIN -->
-<button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자 패널 열기">⚙️</button>
+<button class="admin-fab" onclick="toggleAdmin()" aria-label="관리자">⚙️</button>
 
 <div class="widget-detail-overlay" id="weatherDetailOverlay">
   <div class="widget-detail-card">
@@ -6848,8 +6849,8 @@ function renderAdminWidgets(){
   const pChanged = pOpacity !== WIDGET_CFG_DEFAULT.popup.opacity;
   c.innerHTML = `
     <span class="file-hint" style="display:block;margin-bottom:10px">웹은 탑바 우측 끝, 모바일은 메뉴바 바로 아래에 나란히 노출되는 실시간 날씨·환율 위젯의 크기·위치·바탕박스 투명도를 조절합니다. 슬라이더를 끌거나, 옆 칸에 숫자를 직접 입력해도 됩니다.</span>
-    ${xformBlock('currency','💱 환율 위젯',[-150,150],[-100,250])}
-    ${xformBlock('weather','🌤️ 날씨 위젯',[-150,150],[-100,250])}
+    ${xformBlock('currency','💱 환율 위젯',[-800,800],[-100,100])}
+    ${xformBlock('weather','🌤️ 날씨 위젯',[-800,800],[-100,100])}
     <div class="ai-logo-xform" style="margin-top:16px">
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">🗂️ 상세 팝업창</span>
       <label class="ai-xform-row">

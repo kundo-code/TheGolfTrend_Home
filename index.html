@@ -265,8 +265,8 @@ section.block{padding:100px 24px;position:relative}
    황금색 70% 반투명으로 변경 — .sec-bg-pattern은 #links(SNS 링크) 섹션과 공유하는 클래스라
    ID 선택자로 이 섹션에만 덮어써서 #links는 기존 화이트 배경 그대로 유지한다 */
 #destinations{
-  background-color:rgba(14,21,34,.92);
-  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-color:rgba(14,21,34,.5);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.3%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
 }
 #destinations .sec-head h2{color:#fff}
 #destinations .sec-head p{color:rgba(247,245,240,.75)}
@@ -343,7 +343,10 @@ section.block{padding:100px 24px;position:relative}
 
 /* CATEGORY VIEW + PRODUCT GRID */
 /* [수정] 카드 바로 아래가 아닌, 해외/국내 카드 그룹 하단에 상품 목록 패널이 펼쳐진다 */
-.category-view{margin-top:32px;padding:40px;background:rgba(255,255,255,.72);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08)}
+/* [수정] #destinations 배경이 어두운 황금 곡선 패턴으로 바뀌면서, 반투명(.72) 흰색 패널로는
+   그 패턴이 은은하게 비쳐 보였다 — 상품 카드 영역에는 패턴이 보이지 않아야 하므로 패널 자체를
+   불투명하게 바꿔 안쪽 상품 카드·칩들이 항상 순수한 흰 배경 위에 놓이도록 한다 */
+.category-view{margin-top:32px;padding:40px;background:#FDFBF6;backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid rgba(10,23,48,.08);border-radius:32px;box-shadow:0 10px 32px rgba(10,23,48,.08)}
 .cv-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(10,23,48,.10);margin-bottom:20px}
 .cv-head .left h3{font-size:2rem;color:var(--pine-deep);font-weight:400}
 .cv-head .left h3 em{font-style:italic;color:var(--gold-deep);margin-right:4px}
@@ -1052,8 +1055,8 @@ section.block{padding:100px 24px;position:relative}
    읽히도록 밝은 톤(rgba(247,245,240,X))으로 함께 뒤집었다 */
 footer{
   padding:80px 24px 40px;border-top:1px solid rgba(221,179,103,.2);
-  background-color:rgba(14,21,34,.92);
-  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-color:rgba(14,21,34,.5);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.3%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
   background-size:900px 562px;
   background-repeat:repeat;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -1852,10 +1855,13 @@ footer{
 
 /* FOOTER TERMS/POLICY LINKS (상단부) */
 .foot-terms{max-width:1280px;margin:24px auto 0;padding:20px 0;border-top:1px solid rgba(221,179,103,.15);display:flex;flex-wrap:wrap;gap:12px 14px}
-.foot-terms a{display:inline-flex;align-items:center;padding:7px 14px;font-size:.82rem;color:rgba(247,245,240,.7);border-radius:100px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);transition:all .2s;cursor:pointer}
-.foot-terms a:hover{background:rgba(221,179,103,.22);border-color:var(--gold);color:#fff;transform:translateY(-1px)}
-.foot-terms a.hi{background:rgba(221,179,103,.18);color:var(--gold);border-color:rgba(221,179,103,.4);font-weight:600}
-.foot-terms a.hi:hover{background:rgba(221,179,103,.3);color:#fff}
+/* [수정] 배경이 투명에 가까우면 푸터의 황금 곡선 패턴이 버튼(칩) 안으로 비쳐 보인다 —
+   불투명한 남색을 바탕에 깔고 그 위에 같은 반투명 톤을 겹쳐 유리질감은 유지하면서
+   패턴은 버튼 영역에서 제외되도록 한다 */
+.foot-terms a{display:inline-flex;align-items:center;padding:7px 14px;font-size:.82rem;color:rgba(247,245,240,.7);border-radius:100px;background:linear-gradient(rgba(255,255,255,.06),rgba(255,255,255,.06)),#0A1730;border:1px solid rgba(255,255,255,.15);transition:all .2s;cursor:pointer}
+.foot-terms a:hover{background:linear-gradient(rgba(221,179,103,.22),rgba(221,179,103,.22)),#0A1730;border-color:var(--gold);color:#fff;transform:translateY(-1px)}
+.foot-terms a.hi{background:linear-gradient(rgba(221,179,103,.18),rgba(221,179,103,.18)),#0A1730;color:var(--gold);border-color:rgba(221,179,103,.4);font-weight:600}
+.foot-terms a.hi:hover{background:linear-gradient(rgba(221,179,103,.3),rgba(221,179,103,.3)),#0A1730;color:#fff}
 
 /* LINKS AUTO-FIT */
 .link-groups{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:20px!important}
@@ -2937,8 +2943,8 @@ footer{
 /* [수정] 순차 배경 배치에서 화이트+패턴 톤 — 기본 배경과 같은 곡선 라인 패턴(#faf4e9)을 재사용, 유리질감 강화(saturate) */
 .pkg-poster-section{
   padding:80px 0;
-  background-color:rgba(14,21,34,.92);
-  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-color:rgba(14,21,34,.5);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.3%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
   background-size:900px 562px;
   background-repeat:repeat;
   backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
@@ -2971,14 +2977,19 @@ footer{
 /* 네비게이션 버튼 */
 .pkg-nav{ display:flex;gap:8px; }
 /* FIX: 40px → 44px로 키워 터치 표준(최소 44x44px) 충족 */
+/* [수정] 배경색을 rgba(255,255,255,.08)처럼 완전히 투명하게 두면 섹션의 황금 곡선 패턴이
+   버튼 안으로 비쳐 보인다 — 불투명한 남색을 바탕에 깔고 그 위에 같은 반투명 톤을 겹쳐,
+   기존과 같은 유리질감은 유지하면서 패턴은 버튼 영역에서 제외되도록 한다 */
 .pkg-nav-btn{
   width:44px;height:44px;border-radius:50%;
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,.08)),#0A1730;
+  border:1px solid rgba(255,255,255,.22);
   color:#fff;font-size:1.3rem;cursor:pointer;transition:all .2s;
   display:grid;place-items:center;line-height:1;
 }
 .pkg-nav-btn:hover{
-  background:rgba(221,179,103,.25);border-color:var(--gold);color:var(--gold);
+  background:linear-gradient(rgba(221,179,103,.25),rgba(221,179,103,.25)),#0A1730;
+  border-color:var(--gold);color:var(--gold);
   transform:scale(1.08);
 }
 
@@ -3013,7 +3024,17 @@ footer{
   transition:transform .25s, box-shadow .25s, opacity var(--pkg-hover-fade-ms,1000ms) ease;
   will-change:transform;
 }
-.pkg-card.pkg-dim{ opacity:.6; }
+/* [수정] 기존에는 .pkg-dim에 카드 전체 opacity를 낮췄는데, 이 카드는 섹션 배경(어두운 황금
+   곡선 패턴) 위에 놓여 있어 카드 자체가 반투명해지면 그 패턴이 카드 이미지 영역 안으로 그대로
+   비쳐 보이는 문제가 있었다. 카드의 opacity는 1로 유지(자체 불투명 배경이 패턴을 계속 가리도록)
+   하고, 대신 카드 위에 반투명 검정 오버레이(::after)만 얹어 같은 "흐려짐" 느낌을 낸다 */
+.pkg-card.pkg-dim{ opacity:1; }
+.pkg-card.pkg-dim::after{
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:rgba(3,13,38,.45);
+  transition:opacity var(--pkg-hover-fade-ms,1000ms) ease;
+}
+.pkg-card.pkg-dim:hover::after{ opacity:0; }
 /* [수정] 선택(호버)한 카드만 이미지가 담긴 틀(프레임) 자체가 120%로 커지도록 변경 — 기존에는
    카드 크기는 고정한 채 내부 이미지만 확대·크롭했지만, 이제 카드 전체가 함께 커져 이웃 카드
    위로 자연스럽게 부각되어 보인다. z-index로 옆 카드에 가리지 않게 위로 띄운다 */
@@ -3032,7 +3053,6 @@ footer{
   opacity:.9;transition:opacity var(--pkg-hover-fade-ms,1000ms) ease;
 }
 .pkg-card:hover .pkg-img{ opacity:1; }
-.pkg-card.pkg-dim:hover{ opacity:1; }
 .pkg-label{
   position:absolute;bottom:0;left:0;right:0;
   padding:10px 12px;
@@ -3192,8 +3212,8 @@ footer{
    섹션 자체는 탑바와 동일한 배경색 + 황금색 70% 반투명 곡선 라인 패턴으로 변경 —
    제목/설명/태그는 폼 카드 밖(어두운 섹션 배경 위)에 있으므로 밝은 색으로 맞춘다 ── */
 .booking-section{
-  background-color:rgba(14,21,34,.92);
-  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.7%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
+  background-color:rgba(14,21,34,.5);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.3%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
   background-size:900px 562px;
   background-repeat:repeat;
   border-top:1px solid rgba(221,179,103,.2);

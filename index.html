@@ -2241,21 +2241,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      히어로 콘텐츠가 위젯과 겹쳐 갑자기 사라지는 등) 근본적으로 정리했다. 이제 위젯 줄은 nav
      바로 다음의 평범한 블록이라 히어로 콘텐츠와 완전히 같은 속도로, 브라우저 네이티브 스크롤만으로
      함께 나타나고 사라진다(자세한 이유는 아래 모바일 .mobile-widget-row 규칙 주석 참고) */
-  /* [수정] 위젯 줄에 "권역별·국가별 골프 여행지"(#destinations) 섹션과 동일한 바탕(탑바 계열
-     남색 반투명 + 금색 곡선 패턴)을 적용해 시각적으로 통일한다 — 폭도 그 섹션처럼 화면 전체
-     (edge-to-edge)로 펼치고, 위젯 클러스터 자체는 justify-content:center로 그 안에서 가운데
-     정렬한다(#destinations의 .wrap{max-width:1280px} 중앙정렬과 같은 원리). padding-top을
-     20px로 둬 메뉴바 바로 아래 붙지 않고 20px만큼 떨어진 자리에 위젯이 오도록 한다.
-     [버그 수정] 히어로 섹션과의 간격(기존 30px)을 margin-bottom으로 뒀더니, margin은 배경이
-     칠해지지 않는 박스 바깥 영역이라 그 구간만 배경이 끊겨 옅은 색 이음매(seam)가 보였다 —
-     margin을 없애고 그만큼을 padding-bottom(16+30=46px)으로 흡수해, 히어로가 시작되기 직전까지
-     배경이 끊김없이 이어지게 한다(위젯과 히어로 사이의 실제 간격은 그대로 46px 유지) */
+  /* [수정] 위젯 줄 자체는 배경을 갖지 않는 투명한 박스로 두고, 대신 히어로 섹션의 배경
+     이미지(.hero-bg)를 위젯 줄 영역까지 끌어올려 하나로 이어 보이게 한다 — 자세한 설명은 아래
+     body.widgets-compact .hero 규칙 주석 참고. padding-top을 20px로 둬 메뉴바 바로 아래 붙지
+     않고 20px만큼 떨어진 자리에 위젯이 오도록 하고, 히어로와의 간격은 그대로 46px 유지한다.
+     position:relative;z-index:1로 줄 전체를 하나의 스태킹 컨텍스트로 승격시켜, 안의 위젯이
+     어떤 이유로든(예: 내부 요소의 transform) z-index가 트랩돼도 줄 전체는 항상 히어로 배경보다
+     위에 그려지게 한다(자세한 이유는 위 모바일 .mobile-widget-row 규칙 주석 참고) */
   body.widgets-compact .mobile-widget-row{
     display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:28px;
     width:100%;margin:0;padding:20px 24px 46px;
-    background-color:rgba(14,21,34,.6);
-    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
-    background-size:900px 562px;background-repeat:repeat;
+    position:relative;z-index:1;
   }
   /* [유지] 웹 컴팩트 모드에서도 모바일과 동일하게, 스크롤로 topbar가 사라지는 순간(JS
      initMobileTopbarScroll이 붙이는 body.mobile-topbar-hidden) topbar를 위로 접고 nav를 화면
@@ -2298,8 +2294,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   /* [수정] 위젯 줄이 히어로 위에 얹힌 별도의 실제 블록이 되어 그만큼 페이지 전체 길이가 늘어나므로,
      히어로 자신을 더 이상 최소 한 화면 높이(100vh)로 강제하지 않고 콘텐츠 높이에 맞춰 줄어들게
      한다 — 위젯 줄 높이만큼 페이지가 무한정 길어지는 대신, 히어로가 그만큼 짧아져 전체 길이가
-     콘텐츠에 맞게 유지된다 */
-  body.widgets-compact .hero{min-height:auto}
+     콘텐츠에 맞게 유지된다.
+     [추가] 히어로에서 쓰는 배경 이미지(.hero-bg)를 위젯 줄 영역까지 확장 — margin-top을 위젯 줄
+     실측 높이(--widget-row-h)만큼 음수로 줘서 히어로 박스 자체를 위로 끌어올리고, 동시에 같은
+     값만큼 padding-top을 늘려 안쪽 콘텐츠("완벽한 여행" 카드·EDITOR'S PICK)는 원래 있던 화면
+     위치 그대로 유지한다(margin·padding이 정확히 상쇄되어 콘텐츠는 전혀 움직이지 않고, 그 뒤에
+     깔린 배경 이미지만 위젯 줄 뒤까지 넓어져 보인다). 위젯 줄 자체는 더 이상 sticky가 아니라
+     보통의 문서 흐름 블록이라(이전처럼 sticky↔relative 전환 시점을 노려 재계산할 필요가 없다)
+     JS(syncWidgetRowHeight)가 resize/load 시점에 --widget-row-h를 갱신하기만 하면 항상 정확히
+     들어맞는다 */
+  body.widgets-compact .hero{
+    min-height:auto;
+    margin-top:calc(-1 * var(--widget-row-h,0px));
+    padding-top:calc(60px + var(--widget-row-h,0px));
+  }
 }
 /* [수정] 모바일: 날씨·환율 위젯을 더 이상 position:fixed(+ 스크롤마다 JS로 좌표를 다시 계산해
    고정하는 --mobile-widget-anchor)로 띄우지 않는다. nav 바로 다음(문서 순서상으로도 실제로 nav
@@ -2328,18 +2336,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    다 들어간다) */
 @media(max-width:780px){
   .widget-box{display:block}
-  /* [수정] 위젯 줄에 "권역별·국가별 골프 여행지"(#destinations) 섹션과 동일한 바탕(탑바 계열
-     남색 반투명 + 금색 곡선 패턴)을 적용해 시각적으로 통일한다. padding-top을 20px로 둬 메뉴바
-     바로 아래 붙지 않고 20px만큼 떨어진 자리에 위젯이 오도록 한다.
-     [버그 수정] 히어로 섹션과의 간격(기존 30px)을 margin-bottom으로 뒀더니, margin은 배경이
-     칠해지지 않는 박스 바깥 영역이라 그 구간만 배경이 끊겨 옅은 색 이음매(seam)가 보였다 —
-     margin을 없애고 그만큼을 padding-bottom(16+30=46px)으로 흡수해, 히어로가 시작되기 직전까지
-     배경이 끊김없이 이어지게 한다(위젯과 히어로 사이의 실제 간격은 그대로 46px 유지) */
+  /* [수정] 위젯 줄 자체는 배경을 갖지 않는 투명한 박스로 두고, 대신 히어로 섹션의 배경
+     이미지(.hero-bg)를 위젯 줄 영역까지 끌어올려 하나로 이어 보이게 한다 — 자세한 설명은 아래
+     .hero 규칙 주석 참고. padding-top을 20px로 둬 메뉴바 바로 아래 붙지 않고 20px만큼 떨어진
+     자리에 위젯이 오도록 하고, 히어로와의 간격은 그대로 46px 유지한다.
+     [버그 수정] 히어로 배경(.hero-bg, z-index:0)이 위젯 줄 영역까지 확장되자, 위젯이 오히려 그
+     배경에 가려 안 보이는 문제가 있었다 — 원인은 안의 .widget-drag-wrap이 항상(드래그하지 않을
+     때도 translateX(0px)로) transform을 갖고 있어 자신만의 별도 스태킹 컨텍스트를 만들고, 그
+     안에 갇힌 위젯의 z-index(200대)가 바깥(.hero와 같은 레벨)으로 전혀 비교되지 못했기 때문이다.
+     위젯 줄 자체에 z-index를 줘서(position:relative 필요 — static 요소는 z-index가 무시된다)
+     줄 전체를 하나의 스태킹 컨텍스트로 승격시키면, 안에 무엇이 갇혀있든 줄 전체가 히어로(z-index
+     없음=0 취급)보다 위에 그려진다 */
   .mobile-widget-row{
     display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:16px;
-    background-color:rgba(14,21,34,.6);
-    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201440%20900%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23DDB367%27%20stroke-opacity%3D%270.1%27%20stroke-width%3D%272%27%3E%3Cpath%20d%3D%27M0%2C180%20Q360%2C80%20720%2C220%20T1440%2C180%27/%3E%3Cpath%20d%3D%27M0%2C280%20Q360%2C180%20720%2C320%20T1440%2C280%27/%3E%3Cpath%20d%3D%27M0%2C420%20Q360%2C340%20720%2C460%20T1440%2C420%27/%3E%3Cpath%20d%3D%27M0%2C560%20Q360%2C480%20720%2C600%20T1440%2C560%27/%3E%3Cpath%20d%3D%27M0%2C700%20Q360%2C620%20720%2C740%20T1440%2C700%27/%3E%3C/g%3E%3C/svg%3E");
-    background-size:900px 562px;background-repeat:repeat;
+    position:relative;z-index:1;
     /* [수정] 좌우 여백을 12px→20px로 넓힘 — iOS Safari는 화면 가장자리 근처(대략 20px 이내)에서
        시작되는 가로 드래그를 "뒤로 가기"/탭 전환 같은 시스템 제스처로 가로채는 경우가 있어, 날씨
        위젯(왼쪽으로 숨김)이나 환율·일본 날씨 위젯(오른쪽으로 숨김)을 드래그할 때 화면 전체가
@@ -2405,10 +2415,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   .widget-drag-wrap[data-widget="weatherJapan"] .widget-peek-handle{left:0;border-radius:10px 0 0 10px}
   .widget-drag-wrap[data-widget="currency"].hidden-right .widget-peek-handle{left:0;right:auto;border-radius:10px 0 0 10px}
   .widget-drag-wrap[data-widget="currency"].hidden-left .widget-peek-handle{right:0;left:auto;border-radius:0 10px 10px 0}
-  /* [수정] 위젯 줄이 히어로 위에 얹힌 별도의 실제 블록(margin-bottom:30px로 간격까지 확보)이
-     되어 그만큼 페이지 전체 길이가 늘어나므로, 히어로 자신을 더 이상 최소 한 화면 높이(100vh)로
-     강제하지 않고 콘텐츠 높이에 맞춰 줄어들게 한다 */
-  .hero{min-height:auto}
+  /* [수정] 위젯 줄이 히어로 위에 얹힌 별도의 실제 블록이 되어 그만큼 페이지 전체 길이가 늘어나므로,
+     히어로 자신을 더 이상 최소 한 화면 높이(100vh)로 강제하지 않고 콘텐츠 높이에 맞춰 줄어들게
+     한다.
+     [추가] 히어로에서 쓰는 배경 이미지(.hero-bg)를 위젯 줄 영역까지 확장 — margin-top을 위젯 줄
+     실측 높이(--widget-row-h)만큼 음수로 줘서 히어로 박스 자체를 위로 끌어올리고, 동시에 같은
+     값만큼 padding-top을 늘려 안쪽 콘텐츠("완벽한 여행" 카드)는 원래 있던 화면 위치 그대로
+     유지한다(margin·padding이 정확히 상쇄되어 콘텐츠는 전혀 움직이지 않고, 그 뒤에 깔린 배경
+     이미지만 위젯 줄 뒤까지 넓어져 보인다). JS(syncWidgetRowHeight)가 resize/load 시점에
+     --widget-row-h를 갱신한다 */
+  .hero{
+    min-height:auto;
+    margin-top:calc(-1 * var(--widget-row-h,0px));
+    padding-top:calc(32px + var(--widget-row-h,0px));
+  }
 }
 .wgt-loading{font-size:.72rem;color:rgba(10,23,48,.45);text-align:center;padding:20px 0}
 .wx-loc{font-size:.78rem;font-weight:700;color:rgba(10,23,48,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -6983,11 +7003,33 @@ function syncWidgetLayoutMode(){
   const currencyNaturalLeft = centerX - (340 * scale) / 2; // 환율 위젯 기본 폭(340px) 기준 근사치
   const collides = currencyNaturalLeft < brandRect.right + 24; // 24px 여유
   document.body.classList.toggle('widgets-compact', collides);
+  syncWidgetRowHeight(); // 모드가 막 바뀐 직후에도 --widget-row-h가 새 레이아웃 기준으로 즉시 갱신되도록
   scheduleWidgetSync();
 }
 window.addEventListener('resize', syncWidgetLayoutMode);
 window.addEventListener('load', syncWidgetLayoutMode);
 safeRender(syncWidgetLayoutMode);
+// [추가] 히어로 섹션의 배경이미지를 위젯 줄 영역까지 확장 — .mobile-widget-row는 히어로 바깥의
+// 별도 요소라 히어로 자신의 배경(.hero-bg, position:absolute;inset:0)이 원래는 히어로 박스
+// 시작점(=위젯 줄이 끝나는 지점)부터만 깔린다. .hero에 위젯 줄 실측 높이(--widget-row-h)만큼
+// margin-top을 음수로 줘서 히어로 박스 자체를 위로 끌어올려 위젯 줄 영역까지 겹치게 하고,
+// 동시에 같은 값만큼 padding-top을 늘려 안쪽 콘텐츠(텍스트 등)는 원래 위치 그대로 유지한다
+// — margin과 padding이 정확히 상쇄되므로 콘텐츠는 안 움직이고 배경(그 뒤에 깔린 이미지)만
+// 위젯 줄 뒤까지 넓어져 보인다. 위젯 자체는 각 위젯 박스에 걸린 z-index(200 이상)로 히어로
+// 배경(z-index:0)보다 항상 위에 그려지므로 배경이 확장되어도 위젯을 가리지 않는다.
+// [수정][이력] 이전에는 위젯 줄이 position:sticky였고, topbar가 사라지는 순간 sticky→relative로
+// 전환되는 타이밍에 맞춰 이 계산을 다시 재는 로직이 있었는데, 그 전환 시점을 노린 보정이 여러
+// 겹으로 꼬여 반복적으로 버그를 냈다(스크롤 위치에 따라 큰 빈 공간이 생기는 등). 지금은 위젯
+// 줄이 처음부터 sticky 없는 보통의 문서 흐름 블록이라 높이가 스크롤과 무관하게 항상 안정적으로
+// 유지되므로, resize/load 시점에만 다시 재면 충분하다
+function syncWidgetRowHeight(){
+  const row = document.getElementById('mobileWidgetRow');
+  if (!row) return;
+  document.documentElement.style.setProperty('--widget-row-h', Math.round(row.getBoundingClientRect().height)+'px');
+}
+window.addEventListener('resize', syncWidgetRowHeight);
+window.addEventListener('load', syncWidgetRowHeight);
+safeRender(syncWidgetRowHeight);
 // [추가] 날씨 위젯(국내)·날씨 위젯(해외) 두 박스의 실제 내용 길이가 서로 달라 자연 높이가 다를 때,
 // CSS(grid)만으로는 지역/문구 길이 차이나 브라우저별 렌더링 차이까지 완벽히 보장하기 어려울 수
 // 있어, 두 박스 중 실제로 더 필요한 높이(scrollHeight)를 재서 둘 다 그 값으로 명시적으로
@@ -7108,6 +7150,7 @@ function scheduleWidgetSync(){
   requestAnimationFrame(()=>{
     scheduleWidgetSync._scheduled = false;
     syncWeatherPairHeight();
+    syncWidgetRowHeight(); // 위젯 콘텐츠(로딩중→실제 데이터) 렌더링으로 위젯 줄 높이가 바뀔 때마다 --widget-row-h도 함께 갱신
     syncHeroWidgetGap();
   });
 }

@@ -848,8 +848,17 @@ section.block{padding:100px 24px;position:relative}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
 .pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
+/* [추가] 요금 항목 ↔ 공통값 상속 — 공통 섹션에서 한 번 보여준 값은 각 요금 항목 카드에서 숨기는데,
+   카드 한 장을 이미지로 공유할 때는 공통값까지 모두 담겨야 하므로 화면용(pe-only-screen)·캡처용
+   (pe-only-capture) 두 벌을 렌더링해두고 캡처 복제본(pe-capture-full)에서만 캡처용으로 바꿔 보여준다 */
+.pd-price-entry:not(.pe-capture-full) .pe-only-capture{display:none!important}
+.pd-price-entry.pe-capture-full .pe-only-screen{display:none!important}
+/* 공통값과 다른 값을 쓰는 요금 항목이 있을 때 공통 섹션 하단에 붙는 안내 문구 */
+.pd-common-note{font-size:.74rem;line-height:1.5;color:rgba(10,23,48,.55)}
+.pd-slot > .pd-common-note{margin:-10px 20px 16px}
 .pd-label-row{display:flex;gap:10px;font-size:.85rem;line-height:1.5}
-.pd-label-row .k{flex-shrink:0;color:rgba(10,23,48,.5);min-width:96px}
+/* [수정] 공통 항공/이동 정보에 "✈️ 항공 포함 여부"(가장 긴 라벨)가 추가되면서 값 열이 어긋나지 않도록 폭을 넓힘 */
+.pd-label-row .k{flex-shrink:0;color:rgba(10,23,48,.5);min-width:112px}
 .pd-label-row .v{color:rgba(10,23,48,.82);font-weight:500}
 /* 포함사항/불포함사항/공통 안내/참고사항/예약·결제·취소 규정 — 동일한 체크리스트 서식 */
 .pd-check-list{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
@@ -1749,6 +1758,19 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 공통 일정 요약 타임라인과 요금 항목(항목1/2...) 묶음 사이 구분선 — 간격을 넓혀 가독성 향상 */
 .pe-group-divider{display:flex;align-items:center;gap:12px;margin:30px 0 16px;color:var(--nm-text-soft);font-size:.78rem;font-weight:700;letter-spacing:.05em}
 .pe-group-divider::before,.pe-group-divider::after{content:'';flex:1;height:1px;background:rgba(10,23,48,.15)}
+/* [추가] 요금 항목 ↔ 공통값 상속 — 관리자 안내 배너, 섹션 제목 보조문구, 필드별 상태 안내줄 */
+.pe-inh-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:10px;background:rgba(47,111,237,.07);border:1px solid rgba(47,111,237,.22);font-size:.78rem;line-height:1.55;color:var(--nm-text)}
+.pe-inh-banner-text{flex:1;min-width:220px}
+.pe-inh-banner-text b{color:#2F6FED}
+.pe-inh-promote{flex-shrink:0;white-space:nowrap}
+.pe-inh-sum{font-size:.68rem;font-weight:400;color:var(--nm-text-soft);letter-spacing:0}
+.pe-inh-hint{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:4px 0 8px;padding:5px 9px;border-radius:7px;font-size:.7rem;line-height:1.45;font-weight:400;text-transform:none;letter-spacing:0}
+.pe-inh-hint > span{flex:1;min-width:160px;word-break:keep-all}
+.pe-inh-hint.inherit{background:rgba(47,111,237,.08);color:#2553B8}
+.pe-inh-hint.same{background:rgba(22,184,166,.10);color:#0E7C70}
+.pe-inh-hint.override{background:rgba(240,166,58,.13);color:#9A5F0B}
+.pe-inh-btn{flex-shrink:0;border:1px solid currentColor;background:#fff;color:inherit;border-radius:6px;padding:3px 8px;font-size:.68rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.pe-inh-btn:hover{color:#fff;background:#2F6FED;border-color:#2F6FED}
 .tee-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
 /* [수정] 국내 상품은 항공정보가 불필요하므로 자동 비활성화 — 입력은 막되 내용은 흐리게 계속 보이도록 함 */
 .pe-labels.pe-disabled{opacity:.55}
@@ -4825,6 +4847,107 @@ function ensureExtended(p){
   if (!Array.isArray(p.commonHolidayPrices)) p.commonHolidayPrices = [];
   p.commonHolidayPrices.forEach(h=>{ if (h.date===undefined) h.date=''; if (h.price===undefined) h.price=0; if (h.type===undefined) h.type='single'; if (h.endDate===undefined) h.endDate=''; });
   return p;
+}
+
+// ===== 요금 항목 ↔ 공통값 상속 =====
+// 요금 항목(항목01/02...)의 아래 필드는 "비워두면 상품 공통값을 그대로 사용"한다 — 항목마다 같은
+// 내용을 반복 입력하지 않아도 되고, 공통값을 고치면 상속 중인 모든 항목에 즉시 반영된다(값을 복사해
+// 두는 방식이 아니라 표시할 때마다 공통값을 참조하므로). 상세페이지는 공통 정보를 한 번만 보여주고,
+// 각 항목 카드에는 공통과 "다른" 값만 표시한다(pdCommonPlan/peShowField 참고).
+// key(): 비교·빈값 판정용 정규화 문자열 — ''이면 "값 없음"(=공통값 상속)으로 본다
+function _peStrKey(v){ return String(v==null?'':v).trim(); }
+function _peArrKey(a){ return (Array.isArray(a)?a:[]).filter(Boolean).slice().sort().join('|'); }
+function _peNoneKey(v){ return (v && v!=='none') ? String(v) : ''; }
+// 리치 텍스트(HTML)·일반 텍스트 모두 "줄 단위 순수 텍스트"로 정규화 — 서식(굵게 등)만 다른 경우는
+// 같은 내용으로 본다. DOMParser는 스크립트·이미지 로딩이 일어나지 않는 비활성 문서를 만든다
+function _peTextKey(v){
+  const s = String(v||'');
+  if (!/[<&]/.test(s)) return s.split('\n').map(x=>x.trim()).filter(Boolean).join('\n');
+  const doc = new DOMParser().parseFromString(s.replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|tr|li)>/gi,'\n'), 'text/html');
+  return (doc.body.textContent||'').split('\n').map(x=>x.replace(/ /g,' ').trim()).filter(Boolean).join('\n');
+}
+function _peDayKey(list){ return (list||[]).filter(d=>d.day && d.price).map(d=>d.day+':'+Number(d.price)).join('|'); }
+function _peHolKey(list){
+  return (list||[]).filter(h=>h.date && h.price)
+    .map(h=>[h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':')).join('|');
+}
+// 일정은 Tee Off Time(레이블에 저장됨)과 한 묶음으로 비교한다. 노출 체크를 끈 일정은 "값 없음"
+function _peSchKey(v){
+  const S = v && v.s;
+  if (!S || !S.enabled || !S.days || !S.days.length) return '';
+  const t = (v.t && typeof v.t==='object') ? Object.keys(v.t).sort().filter(k=>v.t[k]).map(k=>k+'='+v.t[k]).join(',') : '';
+  return JSON.stringify(S.days)+'#'+t;
+}
+// 상품 레벨의 항공 포함 여부는 공통 레이블(p.labels.airfare)이 우선, 없으면 카드용 airfareIncluded
+function _peCommonAirfare(p){
+  const L = p.labels||{};
+  if (L.airfare && L.airfare!=='none') return L.airfare;
+  return (p.airfareIncluded && p.airfareIncluded!=='none') ? p.airfareIncluded : 'none';
+}
+const PE_INHERIT = {
+  minPeople:        {label:'최소 인원',    pe:pe=>pe.minPeople,              cm:p=>p.minPeople,              key:_peStrKey},
+  rounds:           {label:'라운드',       pe:pe=>pe.rounds,                 cm:p=>p.rounds,                 key:_peStrKey},
+  stay:             {label:'숙박',         pe:pe=>pe.stay,                   cm:p=>p.stay,                   key:_peStrKey},
+  meals:            {label:'식사',         pe:pe=>pe.meals,                  cm:p=>p.meals,                  key:_peStrKey},
+  airfare:          {label:'항공 포함 여부', pe:pe=>pe.labels.airfare,       cm:_peCommonAirfare,            key:_peNoneKey},
+  airPattern:       {label:'항공 패턴',    pe:pe=>pe.labels.airPattern,       cm:p=>p.labels.airPattern,       key:_peArrKey},
+  departureAirport: {label:'출발 공항',    pe:pe=>pe.labels.departureAirport, cm:p=>p.labels.departureAirport, key:_peArrKey},
+  arrAirport:       {label:'도착 공항',    pe:pe=>pe.labels.arrAirport,       cm:p=>p.labels.arrAirport,       key:_peStrKey},
+  flightNo:         {label:'항공편',       pe:pe=>pe.labels.flightNo,         cm:p=>p.labels.flightNo,         key:_peStrKey},
+  stayDuration:     {label:'체류일',       pe:pe=>pe.labels.stayDuration,     cm:p=>p.labels.stayDuration,     key:_peNoneKey},
+  departureDay:     {label:'출발 요일',    pe:pe=>pe.labels.departureDay,     cm:p=>p.labels.departureDay,     key:_peArrKey},
+  dayPrices:        {label:'출발 요일별 요금', pe:pe=>pe.dayPrices,          cm:p=>p.commonDayPrices,         key:_peDayKey},
+  holidayPrices:    {label:'공휴일 지정 요금', pe:pe=>pe.holidayPrices,      cm:p=>p.commonHolidayPrices,     key:_peHolKey},
+  included:         {label:'포함사항',     pe:pe=>pe.included,               cm:p=>p.commonIncluded,         key:_peTextKey},
+  notIncluded:      {label:'불포함사항',   pe:pe=>pe.notIncluded,            cm:p=>p.commonNotIncluded,      key:_peTextKey},
+  precautions:      {label:'참고사항',     pe:pe=>pe.precautions,            cm:p=>p.commonPrecautions,      key:_peTextKey},
+  schedule:         {label:'일정 요약 타임라인', pe:pe=>({s:pe.schedule,t:pe.labels.teeOffTimes}), cm:p=>({s:p.schedule,t:p.labels.teeOffTimes}), key:_peSchKey},
+};
+const PE_INHERIT_KEYS = Object.keys(PE_INHERIT);
+// 이 요금 항목에서 실제로 적용되는 값 — 항목 값이 비어 있으면 공통값
+function peEff(p, pe, f){
+  const F = PE_INHERIT[f];
+  const own = F.pe(pe);
+  return F.key(own) ? own : F.cm(p);
+}
+function peEffKey(p, pe, f){ return PE_INHERIT[f].key(peEff(p, pe, f)); }
+// 'inherit' = 비워둬서 공통값 사용 중 / 'same' = 직접 입력했지만 공통과 같음 / 'override' = 공통과 다른
+// 별도 값 / 'none' = 항목·공통 모두 비어 있음
+function peInheritState(p, pe, f){
+  const F = PE_INHERIT[f];
+  const ownK = F.key(F.pe(pe)), cmK = F.key(F.cm(p));
+  if (!ownK) return cmK ? 'inherit' : 'none';
+  if (!cmK) return 'override';
+  return ownK===cmK ? 'same' : 'override';
+}
+// 상세페이지에서 "공통으로 한 번만" 보여줄 값 — 공통값이 있으면 그 값, 없으면 노출 중인 요금 항목이
+// 2개 이상이고 모두 같은 값일 때 그 값을 공통으로 끌어올린다(기존에 항목마다 같은 내용을 복사해 둔
+// 상품도 저장값을 건드리지 않고 바로 중복 없이 보이게 하기 위함). 항목이 하나뿐이면 반복이 없으므로
+// 끌어올리지 않고 기존처럼 항목 카드에 그대로 둔다
+function pdCommonPlan(p, visibleEntries){
+  const plan = {};
+  PE_INHERIT_KEYS.forEach(f=>{
+    const F = PE_INHERIT[f];
+    const cmV = F.cm(p), cmK = F.key(cmV);
+    if (cmK){ plan[f] = {value:cmV, key:cmK, source:'common'}; return; }
+    if (visibleEntries.length >= 2){
+      const k0 = F.key(F.pe(visibleEntries[0]));
+      if (k0 && visibleEntries.every(pe=>F.key(F.pe(pe))===k0)){
+        plan[f] = {value:F.pe(visibleEntries[0]), key:k0, source:'promoted'}; return;
+      }
+    }
+    plan[f] = {value:null, key:'', source:null};
+  });
+  return plan;
+}
+// 이 항목 카드에 따로 표시해야 하는지 — 적용값이 있고, 공통으로 한 번 보여주는 값과 다를 때만
+function peShowField(plan, p, pe, f){
+  const k = peEffKey(p, pe, f);
+  return !!k && k!==plan[f].key;
+}
+// 공통으로 보여주는 값이 있는데 일부 항목이 다른 값을 쓰는 경우 — 공통 섹션에 안내 문구를 붙인다
+function pdHasOverride(plan, p, visibleEntries, fields){
+  return fields.some(f=>plan[f].key && visibleEntries.some(pe=>peShowField(plan, p, pe, f)));
 }
 // 전역 활성 팝업 카운트
 function countActivePopups(){
@@ -8773,8 +8896,9 @@ function renderSpotlightSlot(slot, layer, entry){
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째, 숨김 제외)의 레이블에서 가져온다
+  // [수정] 요금 항목에서 비워둔 경우 공통값을 상속하므로 실제 적용값(peEff)을 사용
   const firstPe = (p.priceEntries && p.priceEntries.find(pe=>!pe.hidden)) || null;
-  const airfare = firstPe && firstPe.labels && firstPe.labels.airfare;
+  const airfare = firstPe ? peEff(p, firstPe, 'airfare') : _peCommonAirfare(p);
   const meta=[
     p.nights?`🗓 ${p.nights}`:'',
     p.rounds?`⛳ ${p.rounds}`:'',
@@ -9962,6 +10086,8 @@ function updateGalleryDisplay(){
 }
 
 const AIRFARE_TXT={included:'항공 포함',excluded:'항공 불포함',none:''};
+// 최소 인원 표기 — 숫자만 입력했으면 "N인 이상", 이미 "2인"·"2인 이상"처럼 입력했으면 그대로
+function fmtMinPeople(v){ const s=String(v||'').trim(); return /^\d+$/.test(s) ? s+'인 이상' : s; }
 // 요금 항목(또는 상품 공통) 레이블(L)을 상품 상세페이지에 노출할 [라벨, 값] 행 목록으로 변환.
 // 값이 채워진 항목만 반환 — 비어있는 필드는 상세페이지에 노출하지 않는다.
 // [수정] "항공 포함 여부"·"체류일"은 가격 정보 옆 배지로, "출발 요일"은 포함사항 바로 위 레이블로
@@ -10089,14 +10215,26 @@ function renderProductDetail(p,cat,idx){
 
   // [수정] "상품 정보" → "상품기본정보"로 명칭 변경, 이미지 갤러리 아래로 이동.
   // 연결 링크(p.linkUrl)는 여기서 빼서 요금표 하단 우측(브랜드 인식 버튼)으로 이동
+  // [추가] 요금 항목 ↔ 공통값 상속 — 공통으로 한 번만 보여줄 값과, 각 항목 카드에 따로 보여줄 값을
+  // 미리 계산해 둔다(pdCommonPlan/peShowField 참고). 관리자가 "화면에서 숨기기"로 숨긴 요금 항목은
+  // 고객 화면에서 완전히 제외 — 삭제하지 않고도 노출만 끌 수 있음. 원래 요금 항목 순서(i)도 함께
+  // 보관 — 관리자 패널에서 그 항목에 지정된 accent 색상(PE_ACCENT_COLORS)을 일정에도 반영하기 위함
+  const visiblePriceEntries = (p.priceEntries||[]).map((pe,i)=>({pe,i})).filter(({pe})=>!pe.hidden);
+  const visiblePes = visiblePriceEntries.map(x=>x.pe);
+  const plan = pdCommonPlan(p, visiblePes);
+  const commonOverrideNote = fields => pdHasOverride(plan, p, visiblePes, fields)
+    ? `<div class="pd-common-note">※ 일부 요금 항목은 해당 항목에 따로 표기된 내용이 적용됩니다</div>` : '';
   const infoRows=[];
   if (p.title) infoRows.push(['제목', p.title]);
   if (p.nights) infoRows.push(['기간', p.nights]);
-  if (p.stay) infoRows.push(['숙박', p.stay]);
-  if (p.meals) infoRows.push(['식사', p.meals]);
+  if (plan.minPeople.key) infoRows.push(['최소 인원', escapeAttr(fmtMinPeople(plan.minPeople.value))]);
+  if (plan.rounds.key) infoRows.push(['라운드', escapeAttr(plan.rounds.value)]);
+  if (plan.stay.key) infoRows.push(['숙박', escapeAttr(plan.stay.value)]);
+  if (plan.meals.key) infoRows.push(['식사', escapeAttr(plan.meals.value)]);
   if (infoRows.length){
     html += `<div class="pd-slot"><div class="pd-section-title">📋 상품기본정보</div>
       <div class="pd-info-table">${infoRows.map(([k,v])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>
+      ${commonOverrideNote(['minPeople','rounds','stay','meals'])}
     </div>`;
   }
 
@@ -10112,16 +10250,26 @@ function renderProductDetail(p,cat,idx){
   if (notesRows){
     html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
   }
-  const commonLabelRows = labelRowsHTML(p.labels);
-  if (commonLabelRows){
-    html += `<div class="pd-slot"><div class="pd-section-title">🏷️ 항공/이동 정보</div>${commonLabelRows}</div>`;
+  // [수정] 공통 항공/이동 정보 — 공통 레이블(또는 모든 요금 항목이 같은 값)을 여기서 한 번만 보여준다.
+  // 항공 포함 여부·체류일·출발 요일은 원래 요금 항목 카드에만 배지로 나왔는데, 이제 공통값이면 여기로
+  // 모아서 보여주고 각 항목 카드에서는 공통과 다를 때만 표시한다
+  const commonLabelRowsList = [];
+  const planArr = f => (Array.isArray(plan[f].value) ? plan[f].value : []).filter(Boolean).join(', ');
+  if (plan.departureAirport.key) commonLabelRowsList.push(['🛫 출발 공항', planArr('departureAirport')]);
+  if (plan.airPattern.key) commonLabelRowsList.push(['🕐 항공 패턴', planArr('airPattern')]);
+  if (plan.arrAirport.key) commonLabelRowsList.push(['🛬 도착 공항', plan.arrAirport.value]);
+  if (plan.flightNo.key) commonLabelRowsList.push(['🎫 항공편', plan.flightNo.value]);
+  if (plan.airfare.key) commonLabelRowsList.push(['✈️ 항공 포함 여부', AIRFARE_TXT[plan.airfare.value]||plan.airfare.value]);
+  if (plan.stayDuration.key) commonLabelRowsList.push(['🏨 체류일', plan.stayDuration.value]);
+  if (plan.departureDay.key) commonLabelRowsList.push(['📅 출발 요일', planArr('departureDay')]);
+  if (commonLabelRowsList.length){
+    html += `<div class="pd-slot"><div class="pd-section-title">🏷️ 항공/이동 정보</div>
+      <div class="pd-label-rows">${commonLabelRowsList.map(([k,v])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${escapeAttr(v)}</span></div>`).join('')}</div>
+      ${commonOverrideNote(['departureAirport','airPattern','arrAirport','flightNo','airfare','stayDuration','departureDay'])}
+    </div>`;
   }
 
   // [수정] 요금표를 갤러리 아래로 이동
-  // [추가] 관리자가 "화면에서 숨기기"로 숨긴 요금 항목은 고객 화면에서 완전히 제외 — 삭제하지 않고도 노출만 끌 수 있음
-  // [수정] 원래 요금 항목 순서(i)도 함께 보관 — 관리자 패널의 "+요금 항목 추가"에서 그 항목에
-  // 지정된 accent 색상(PE_ACCENT_COLORS)과 같은 색을 일정 요약 타임라인에도 반영하기 위함
-  const visiblePriceEntries = (p.priceEntries||[]).map((pe,i)=>({pe,i})).filter(({pe})=>!pe.hidden);
   if (visiblePriceEntries.length){
     const linkBrand = p.linkUrl ? detectLinkBrand(p.linkUrl) : null;
     html += `<div class="pd-slot">
@@ -10139,22 +10287,79 @@ function renderProductDetail(p,cat,idx){
           const sameCurrency = (pe.saleCurrency||'KRW')===(pe.originalCurrency||'KRW');
           const discount = (sale && orig && orig>sale && sameCurrency) ? Math.round((1-sale/orig)*100) : 0;
           const linkVisible = pe.link && pe.linkVisible!==false;
-          // [Phase 3 상품등록 개선 v3→v6] "상세보기" 클릭 시 이 요금 항목의 레이블·일정과
-          // 이 요금 항목의 포함/불포함/참고사항을 함께 펼쳐서 보여준다(항목별 개별 입력)
-          const labelRows = labelRowsHTML(pe.labels);
-          const hasPeSchedule = pe.schedule && pe.schedule.enabled && pe.schedule.days && pe.schedule.days.length;
-          // [수정] 공백/줄바꿈만 입력된 경우 bulletRows()가 빈 문자열을 반환하므로, 원본 값이
-          // 아니라 실제로 표시할 내용이 있는지로 노출 여부를 판단한다(빈 제목만 노출되는 문제 방지)
-          const includedRows = bulletRowsRich(pe.included||'','✓');
-          const notIncludedRows = bulletRowsRich(pe.notIncluded||'','✕');
-          const precautionsRows = bulletRowsRich(pe.precautions||'','•');
-          // [수정] "출발 요일"에서 선택한 내용을 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출 —
-          // 항공 포함 여부·체류일은 가격 정보 옆 배지로, 출발 요일은 여기로 각각 자리를 옮겨 눈에 더 잘 띄게 한다
-          const peDepartureDay = (pe.labels && pe.labels.departureDay && pe.labels.departureDay.length) ? pe.labels.departureDay.join(', ') : '';
-          const departureDayLabelHTML = peDepartureDay ? `<div class="pd-pe-departure-day-label"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(peDepartureDay)}</span></div>` : '';
-          // [수정] 포함사항·불포함사항은 이미 가격 정보 바로 아래 미리보기 박스(includedPreviewHTML/
-          // notIncludedPreviewHTML)로 항상 노출되므로, "상세보기"를 펼쳤을 때 같은 내용이 다시
-          // 보이지 않도록 여기(moreBody)에는 참고사항만 남긴다 — 참고사항은 옅은 회색 박스로 구분
+          // [수정] 요금 항목 ↔ 공통값 상속 — 이 항목에 실제로 적용되는 값(비워둔 필드는 공통값)을 구하고,
+          // 공통 섹션에서 이미 한 번 보여주는 값과 같으면 이 카드에서는 숨겨 반복 노출을 없앤다.
+          // 다만 "📤 공유"로 이 카드만 이미지로 내보낼 때는 공통값까지 모두 담겨야 하므로, 숨긴 값이
+          // 있는 블록은 화면용(pe-only-screen)과 캡처용(pe-only-capture · 전체 값) 두 벌을 렌더링한다
+          const eff = f => peEff(p, pe, f);
+          const show = f => peShowField(plan, p, pe, f);
+          const pick = (f, full) => (full || show(f)) ? eff(f) : null;
+          const arrTxt = a => (Array.isArray(a)?a:[]).filter(Boolean).join(', ');
+          const peMW = pe.metaWide||{};
+          // 카드에 항상 보이는 블록들 — full=true면 공통값 포함 전체, false면 공통과 다른 값만
+          const buildBlocks = (full, cls) => {
+            // [수정] "항공 포함 여부"·"체류일" 선택 내용을 "2인 이상" 레이블 오른쪽에 배지로 함께 노출
+            const minPeople = _peStrKey(pick('minPeople', full));
+            const airfare = _peNoneKey(pick('airfare', full));
+            const stayDur = _peNoneKey(pick('stayDuration', full));
+            const badges = (minPeople||airfare||stayDur) ? `<div class="pd-pe-badges ${cls}">
+                ${minPeople?`<span class="min-people">👥 ${escapeAttr(fmtMinPeople(minPeople))}</span>`:''}
+                ${airfare?`<span class="pe-flag-badge ${airfare==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(AIRFARE_TXT[airfare]||airfare)}</span>`:''}
+                ${stayDur?`<span class="pe-flag-badge">🏨 ${escapeAttr(stayDur)}</span>`:''}
+              </div>` : '';
+            // [수정] 요금 항목별 라운드·숙박·식사 — 금액/최소 인원 바로 아래 구분선을 두고 노출.
+            // "한 줄로" 토글(pe.metaWide)을 켠 항목은 혼자 한 줄 전체를 차지하고, 같은 줄에 있는
+            // 항목 사이에만 구분선을 넣는다(상품 카드 meta 그리드와 같은 방식)
+            const metaData = [
+              {full:!!peMW.rounds, v:_peStrKey(pick('rounds', full)), ic:'⛳'},
+              {full:!!peMW.stay,   v:_peStrKey(pick('stay', full)),   ic:'🏨'},
+              {full:!!peMW.meals,  v:_peStrKey(pick('meals', full)),  ic:'🍽'},
+            ].filter(m=>m.v);
+            const metaItems = metaData.map((item,mi)=>{
+              const next = metaData[mi+1];
+              const border = !item.full && next && !next.full;
+              const mcls = [item.full?'pd-pe-meta-full':'', border?'pd-pe-meta-border-r':''].filter(Boolean).join(' ');
+              return `<span class="${mcls}">${item.ic} <b class="pd-pe-meta-value">${escapeAttr(item.v)}</b></span>`;
+            }).join('');
+            const meta = metaItems ? `<div class="pd-pe-meta ${cls}">${metaItems}</div>` : '';
+            // [수정] 판매가와 별도인 출발 요일별 요금 — 토요일은 파란색, 일요일은 빨간색으로 강조
+            const dayCells = (pick('dayPrices', full)||[]).filter(d=>d.day && d.price).map(d=>{
+              const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
+              return `<div class="pd-day-price-cell ${dcls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
+            }).join('');
+            const dayTable = dayCells ? `<div class="pd-day-price-table ${cls}">${dayCells}</div>` : '';
+            // [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 한 줄로
+            const holItems = (pick('holidayPrices', full)||[]).filter(h=>h.date && h.price).map(h=>{
+              const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
+              return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
+            });
+            const holRow = holItems.length ? `<div class="pd-holiday-price-row ${cls}">${holItems.join('')}</div>` : '';
+            // [수정] "출발 요일"은 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출
+            const dd = arrTxt(pick('departureDay', full));
+            const ddLabel = dd ? `<div class="pd-pe-departure-day-label ${cls}"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(dd)}</span></div>` : '';
+            // [수정] "포함사항"은 옅은 초록색, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로 아래에
+            // 나란히 미리보기 노출. 공백/줄바꿈만 입력된 경우는 표시할 내용이 없는 것으로 본다
+            const incRows = bulletRowsRich(pick('included', full)||'','✓');
+            const inc = incRows ? `<div class="pd-pe-included-preview ${cls}"><div class="t">✅ 포함사항</div><div class="pd-check-list included">${incRows}</div></div>` : '';
+            const notRows = bulletRowsRich(pick('notIncluded', full)||'','✕');
+            const notInc = notRows ? `<div class="pd-pe-notincluded-preview ${cls}"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notRows}</div></div>` : '';
+            return {badges, meta, dayTable, holRow, ddLabel, inc, notInc};
+          };
+          const blkDedup = buildBlocks(false, ''), blkFull = buildBlocks(true, '');
+          const blkScreen = buildBlocks(false, 'pe-only-screen'), blkCapture = buildBlocks(true, 'pe-only-capture');
+          const blk = k => blkDedup[k]===blkFull[k] ? blkDedup[k] : blkScreen[k]+blkCapture[k];
+          // [Phase 3 상품등록 개선 v3→v6] "상세보기" 클릭 시 이 요금 항목의 항공/이동 정보·일정·참고사항을
+          // 펼쳐서 보여준다 — 공통과 같은 값은 위 공통 섹션에 이미 있으므로 여기서는 다른 값만
+          const labelRowsList = [];
+          if (show('departureAirport')) labelRowsList.push(['🛫 출발 공항', arrTxt(eff('departureAirport'))]);
+          if (show('airPattern')) labelRowsList.push(['🕐 항공 패턴', arrTxt(eff('airPattern'))]);
+          if (show('arrAirport')) labelRowsList.push(['🛬 도착 공항', eff('arrAirport')]);
+          if (show('flightNo')) labelRowsList.push(['🎫 항공편', eff('flightNo')]);
+          const labelRows = labelRowsList.length ? `<div class="pd-label-rows">${labelRowsList.map(([k,v])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${escapeAttr(v)}</span></div>`).join('')}</div>` : '';
+          const peSch = show('schedule') ? eff('schedule') : null;
+          const hasPeSchedule = !!peSch;
+          const precautionsRows = show('precautions') ? bulletRowsRich(eff('precautions')||'','•') : '';
+          // [수정] 참고사항은 옅은 회색 박스로 구분
           const peNotesHTML = precautionsRows ? `<div class="pd-pe-notes-group">
             <div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>
           </div>` : '';
@@ -10166,52 +10371,12 @@ function renderProductDetail(p,cat,idx){
             // [수정] "+요금 항목 추가"에서 이 항목에 지정된 accent 색상(PE_ACCENT_COLORS)과 같은
             // 색으로 왼쪽에 라인을 그어, 상세보기의 일정 요약 타임라인이 어느 요금 항목의 일정인지
             // 한눈에 구분되도록 함
-            hasPeSchedule?`<div class="pd-pe-more-sub pd-pe-sch-accent" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]};--pe-accent-pale:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .28)}"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(pe.schedule.days, pe.labels.teeOffTimes)}</div></div>`:'',
+            hasPeSchedule?`<div class="pd-pe-more-sub pd-pe-sch-accent" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]};--pe-accent-pale:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .28)}"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(peSch.s.days, peSch.t)}</div></div>`:'',
             peNotesHTML
           ].join('');
-          // [수정] "포함사항"은 옅은 초록색 박스, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로
-          // 아래에 나란히 미리보기 노출 — 상세보기를 펼치지 않아도 둘 다 한눈에 비교하며 볼 수 있다
-          const includedPreviewHTML = includedRows?`<div class="pd-pe-included-preview"><div class="t">✅ 포함사항</div><div class="pd-check-list included">${includedRows}</div></div>`:'';
-          const notIncludedPreviewHTML = notIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notIncludedRows}</div></div>`:'';
-          // [수정] "항공 포함 여부"·"체류일" 선택 내용을 "2인 이상" 레이블 오른쪽에 배지로 함께 노출
-          const peAirfareTxt = (pe.labels && pe.labels.airfare && pe.labels.airfare!=='none') ? (AIRFARE_TXT[pe.labels.airfare]||pe.labels.airfare) : '';
-          const peStayTxt = (pe.labels && pe.labels.stayDuration && pe.labels.stayDuration!=='none') ? pe.labels.stayDuration : '';
-          // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 변경 — 외부 링크(🔗)로 바로
-          // 이동하던 카드 전체 클릭 동작은 제거하고, 외부 링크는 별도 버튼으로만 이동하게 분리한다.
-          // [수정] 요금 항목의 "상세보기"는 항목 수가 많을 때 화면을 너무 길게 만들어, 이제는
-          // 모든 항목을 기본으로 접어둔다(클릭해서 펼쳐야 상세 내용이 보임).
+          // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 — 외부 링크는 별도 버튼으로만
+          // 이동. 요금 항목의 "상세보기"는 항목 수가 많을 때 화면을 너무 길게 만들어 모두 기본으로 접어둔다
           const clickAttr = moreBody ? `onclick="togglePeMore(this)"` : '';
-          // [수정] 판매가와 별도인 출발 요일별 요금 — 요금표(.prices) 바로 아래에 노출.
-          // 토요일은 파란색, 일요일은 빨간색으로 요일명과 금액을 함께 강조한다
-          const dayPriceCells = (pe.dayPrices||[]).filter(d=>d.day && d.price).map(d=>{
-            const cls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
-            return `<div class="pd-day-price-cell ${cls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
-          }).join('');
-          // [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 한 줄로,
-          // 여러 개인 경우 항목 사이에 구분선을 두어 가독성을 높인다. 모두 빨간색으로 강조
-          const holidayItems = (pe.holidayPrices||[]).filter(h=>h.date && h.price).map(h=>{
-            const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
-            return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
-          });
-          const holidayPriceRow = holidayItems.length ? `<div class="pd-holiday-price-row">${holidayItems.join('')}</div>` : '';
-          // [수정] 요금 항목별 라운드·숙박·식사 — 금액/최소 인원 바로 아래 구분선을 두고 노출.
-          // 항목 사이사이에도 구분선을 넣고, "한 줄로" 토글(pe.metaWide)을 켠 항목은 내용이 길어도
-          // 줄바꿈 없이 혼자 한 줄 전체를 차지하도록 한다 — 상품 카드 meta 그리드와 같은 방식으로,
-          // "한 줄로" 항목은 줄이 끊기므로 그 앞뒤로는 구분선을 넣지 않는다(같은 줄에 있을 때만 표시)
-          const peMW = pe.metaWide||{};
-          const peMetaData = [
-            {full: !!peMW.rounds, html: pe.rounds?`⛳ <b class="pd-pe-meta-value">${escapeAttr(pe.rounds)}</b>`:''},
-            {full: !!peMW.stay, html: pe.stay?`🏨 <b class="pd-pe-meta-value">${escapeAttr(pe.stay)}</b>`:''},
-            {full: !!peMW.meals, html: pe.meals?`🍽 <b class="pd-pe-meta-value">${escapeAttr(pe.meals)}</b>`:''},
-          ].filter(item=>item.html);
-          const peMetaItems = peMetaData.map((item,mi)=>{
-            const next = peMetaData[mi+1];
-            const border = !item.full && next && !next.full;
-            const cls = [item.full?'pd-pe-meta-full':'', border?'pd-pe-meta-border-r':''].filter(Boolean).join(' ');
-            return `<span class="${cls}">${item.html}</span>`;
-          }).join('');
-          // [Phase 3 상품등록 개선 v3] 항목별 요금표에는 포함사항 관련 정보만 노출 — 출발요일·항공패턴·추가요금안내는
-          // 요금표에서 분리해 공통 안내 아래로 이동 (renderProductDetail 하단 참고)
           return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
             ${emphArr.length?`<span class="emph-group">${emphArr.map(t=>`<span class="emph ${emphCls(t)}">${escapeAttr(t)}</span>`).join('')}</span>`:''}
             ${pe.headline?`<div class="pe-headline">${pe.headline}</div>`:''}
@@ -10219,18 +10384,14 @@ function renderProductDetail(p,cat,idx){
               ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:''}
               ${orig&&orig>sale?`<span class="price-original">${fmtPrice(orig)}${origSym}${origFrom}</span>`:''}
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
-              ${(pe.minPeople||peAirfareTxt||peStayTxt)?`<div class="pd-pe-badges">
-                ${pe.minPeople?`<span class="min-people">👥 ${escapeAttr(pe.minPeople)}인 이상</span>`:''}
-                ${peAirfareTxt?`<span class="pe-flag-badge ${pe.labels.airfare==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(peAirfareTxt)}</span>`:''}
-                ${peStayTxt?`<span class="pe-flag-badge">🏨 ${escapeAttr(peStayTxt)}</span>`:''}
-              </div>`:''}
+              ${blk('badges')}
             </div>
-            ${peMetaItems?`<div class="pd-pe-meta">${peMetaItems}</div>`:''}
-            ${dayPriceCells?`<div class="pd-day-price-table">${dayPriceCells}</div>`:''}
-            ${holidayPriceRow}
-            ${departureDayLabelHTML}
-            ${includedPreviewHTML}
-            ${notIncludedPreviewHTML}
+            ${blk('meta')}
+            ${blk('dayTable')}
+            ${blk('holRow')}
+            ${blk('ddLabel')}
+            ${blk('inc')}
+            ${blk('notInc')}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
                  값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저, 공통 링크가 그 다음.
                  옅은 회색 카드와 구분되도록 로고색 음영 버튼으로 스타일링하고, "상세보기" 토글 아래
@@ -10250,14 +10411,13 @@ function renderProductDetail(p,cat,idx){
     </div>`;
   }
 
-  // [추가] 공통(요금 항목과 무관) 출발 요일별 · 공휴일 요금 — "공통 안내" 바로 위에 노출.
-  // 요금 항목별 렌더링(위 dayPriceCells/holidayItems)과 동일한 방식이나, p.commonDayPrices/
-  // commonHolidayPrices를 사용한다
-  const commonDayPriceCells = (p.commonDayPrices||[]).filter(d=>d.day && d.price).map(d=>{
+  // [추가] 공통 출발 요일별 · 공휴일 요금 — 공통값(또는 모든 요금 항목이 같은 값)을 여기서 한 번만
+  // 보여준다. 요금 항목별 렌더링과 동일한 방식
+  const commonDayPriceCells = (plan.dayPrices.value||[]).filter(d=>d.day && d.price).map(d=>{
     const cls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
     return `<div class="pd-day-price-cell ${cls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
   }).join('');
-  const commonHolidayItems = (p.commonHolidayPrices||[]).filter(h=>h.date && h.price).map(h=>{
+  const commonHolidayItems = (plan.holidayPrices.value||[]).filter(h=>h.date && h.price).map(h=>{
     const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
     return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
   });
@@ -10267,43 +10427,42 @@ function renderProductDetail(p,cat,idx){
       <div style="padding:0 20px 18px">
         ${commonDayPriceCells?`<div class="pd-day-price-table">${commonDayPriceCells}</div>`:''}
         ${commonHolidayPriceRow}
+        ${commonOverrideNote(['dayPrices','holidayPrices'])}
       </div>
     </div>`;
   }
-  // [추가] 공통(요금 항목과 무관) 포함 · 불포함 · 참고사항 — "공통 안내" 바로 위에 노출.
+  // [추가] 공통 포함 · 불포함 · 참고사항 — 공통값(또는 모든 요금 항목이 같은 값)을 한 번만 노출.
   // 포함사항은 옅은 초록색, 불포함사항은 옅은 빨간색 박스로(요금 항목별 미리보기와 동일한 스타일)
-  const commonIncludedRows = bulletRowsRich(p.commonIncluded||'','✓');
-  const commonNotIncludedRows = bulletRowsRich(p.commonNotIncluded||'','✕');
-  // [수정] "체크포인트2(참고사항)"와 값을 서로 동기화하는 필드라, 체크포인트2가 일반 텍스트로
-  // 노출되는 것과 맞춰 이 필드는 리치 텍스트로 전환하지 않고 그대로 유지한다
-  const commonPrecautionsRows = bulletRows(p.commonPrecautions||'','•');
+  const commonIncludedRows = bulletRowsRich(plan.included.value||'','✓');
+  const commonNotIncludedRows = bulletRowsRich(plan.notIncluded.value||'','✕');
+  // [수정] 공통 참고사항은 "체크포인트2(참고사항)"와 값을 서로 동기화하는 일반 텍스트 필드라 그대로
+  // 일반 텍스트로 렌더링하고, 요금 항목들에서 끌어올린 값(리치 텍스트)일 때만 리치 텍스트로 렌더링한다
+  const commonPrecautionsRows = plan.precautions.source==='common'
+    ? bulletRows(plan.precautions.value||'','•')
+    : bulletRowsRich(plan.precautions.value||'','•');
   if (commonIncludedRows || commonNotIncludedRows || commonPrecautionsRows){
     html += `<div class="pd-slot"><div class="pd-section-title">💰 포함 · 불포함 · 참고사항</div>
       <div style="padding:0 20px 18px;display:flex;flex-direction:column;gap:10px">
         ${commonIncludedRows?`<div class="pd-pe-included-preview"><div class="t">✅ 포함사항</div><div class="pd-check-list included">${commonIncludedRows}</div></div>`:''}
         ${commonNotIncludedRows?`<div class="pd-pe-notincluded-preview"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${commonNotIncludedRows}</div></div>`:''}
         ${commonPrecautionsRows?`<div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${commonPrecautionsRows}</div></div>`:''}
+        ${commonOverrideNote(['included','notIncluded','precautions'])}
       </div>
     </div>`;
   }
-  // [수정] 포함사항 · 불포함사항 · 참고사항은 더 이상 상품 공통으로 항상 노출하지 않는다 — 요금 항목별로
-  // 개별 입력하며, 요금표의 각 항목 "상세보기 →"를 클릭했을 때만 노출된다 (위 pd-price-entries 참고)
-  // ("공통 안내"·"항공/이동 정보"는 상품기본정보 바로 아래로 이동됨 — 위쪽 참고)
-
-  // [수정] 요금 항목별 일정("이 요금 항목의 일정 타임라인을 상세페이지 요금표에 노출")은 더 이상 이
-  // 별도 섹션에 노출하지 않고, 각 요금 항목 자신의 "상세보기" 안에서만 보여준다(위 pd-price-entries
-  // moreBody 참고). 이 "별도 일정 요약 타임라인" 섹션은 이제 관리자 패널의 "공통 일정 요약
-  // 타임라인"(요금 항목과 무관, p.schedule)을 켰을 때만 노출된다.
-  const hasCommonSchedule = p.schedule && p.schedule.enabled && p.schedule.days && p.schedule.days.length;
-  if (hasCommonSchedule){
+  // [수정] 공통 일정 요약 타임라인 — 공통 일정(또는 모든 요금 항목이 같은 일정)을 여기서 한 번만
+  // 보여준다. 공통과 다른 일정을 쓰는 요금 항목은 그 항목의 "상세보기" 안에서 따로 보여준다
+  if (plan.schedule.key){
+    const cs = plan.schedule.value;
     html += `<div class="pd-section-divider"></div><div class="pd-slot"><div class="pd-section-title">🗓️ 일정 요약 타임라인</div>
       <div class="pd-schedule">
         ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
         <div class="pd-sch-group">
           <div class="pd-sch-group-head"><div class="t">공통 일정</div><div class="h"></div></div>
-          <div class="pd-sch-days">${scheduleDaysHTML(p.schedule.days, p.labels.teeOffTimes)}</div>
+          <div class="pd-sch-days">${scheduleDaysHTML(cs.s.days, cs.t)}</div>
         </div>
         ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
+        ${commonOverrideNote(['schedule'])}
       </div>
     </div>`;
   }
@@ -10629,9 +10788,15 @@ function sharePriceEntryImage(btn){
     target, btn,
     title,
     fileNameBase: title+'_요금표',
-    canvasOpts:{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:prepareCloneForCapture(target)},
-    beforeCapture(){ btn.style.visibility='hidden'; },
-    afterCapture(){ btn.style.visibility=''; },
+    // [추가] 화면에서는 공통 섹션과 겹쳐 숨겨둔 값(공통값 상속분)도 이 카드 이미지에는 모두 담기도록,
+    // 캡처용 복제본에만 pe-capture-full을 붙여 전체 값 블록(pe-only-capture)으로 바꿔 보여준다
+    canvasOpts:{backgroundColor:'#ffffff',scale:2,useCORS:true,imageTimeout:8000,onclone:(doc, clonedTarget)=>{
+      prepareCloneForCapture(target)(doc, clonedTarget);
+      const el = doc.querySelector('.pd-price-entry[data-pe-capture="1"]');
+      if (el) el.classList.add('pe-capture-full');
+    }},
+    beforeCapture(){ btn.style.visibility='hidden'; target.setAttribute('data-pe-capture','1'); },
+    afterCapture(){ btn.style.visibility=''; target.removeAttribute('data-pe-capture'); },
     restart(){ sharePriceEntryImage(btn); },
   });
 }
@@ -12207,15 +12372,15 @@ function advBasicHTML(p){
     <div class="grid-2">
       <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
       <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-      <div class="full"><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>라운드 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
+      <div class="full"><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출 · 요금 항목 기본값)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>라운드 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출 · 요금 항목 기본값)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
       <div class="full"><div class="mw-label-row"><label>항공 포함 여부 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역 및 "2인 이상" 옆에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
         <select onchange="updateAdvField('airfareIncluded',this.value)">
           ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
         </select>
       </div>
-      <div class="full"><div class="mw-label-row"><label>숙박 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>식사 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>숙박 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출 · 요금 항목 기본값)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+      <div class="full"><div class="mw-label-row"><label>식사 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출 · 요금 항목 기본값)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
       <div class="full"><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span> ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
       <div class="full"><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
       <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'} <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
@@ -12254,7 +12419,7 @@ function advBasicHTML(p){
          "+요금 항목 추가"를 하지 않아도 미리 입력해둘 수 있고, 요금 항목별 값과는 별도로 상품
          상세 페이지의 "공통 안내" 바로 위에 노출된다 -->
     <details class="pe-labels" open>
-      <summary>🗓️ 출발 요일별 · 공휴일 요금 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <summary>🗓️ 출발 요일별 · 공휴일 요금 (공통 — 요금 항목에서 비워두면 이 값이 적용됨)</summary>
       <div class="pe-labels-body">
         <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
         <div class="dp-list">
@@ -12288,7 +12453,7 @@ function advBasicHTML(p){
       </div>
     </details>
     <details class="pe-labels" open>
-      <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목에서 비워두면 이 값이 적용됨)</summary>
       <div class="pe-labels-body">
         <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
         <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
@@ -12322,25 +12487,35 @@ function advBasicHTML(p){
          특정 요금 항목에 종속되지 않는 "공통" 레이블·일정 입력 영역을 상시 노출한다.
          요금 항목을 이후에 추가해도 이 공통 값은 그대로 유지되며, 상세페이지에는 요금 항목별 정보와 함께 노출된다 -->
     <details class="pe-labels" ${isDomestic?'':'open'}>
-      <summary>🏷 항공/이동 정보 (항공·공항·항공편·티오프 등 — 요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <summary>🏷 항공/이동 정보 (공통 — 요금 항목에서 비워두면 이 값이 적용됨)</summary>
       ${labelsHTML(p, -1, false)}
     </details>
     <!-- [수정] "출발 요일"을 공통 레이블에서 완전히 분리해 별도 섹션으로 — 공통 레이블·공통 일정
          요약 타임라인과 같은 레벨(형제 <details>)로 두되 그 사이에 배치. 노출 조건(요금 항목과
          무관하게 상품 상세에 항상 노출)은 이전과 동일하게 유지 -->
     <details class="pe-labels" open>
-      <summary>📅 공통 출발 요일 (요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <summary>📅 공통 출발 요일 (요금 항목에서 비워두면 이 값이 적용됨)</summary>
       <div class="pe-labels-body">${departureDayFieldHTML(p.labels, -1)}</div>
     </details>
     <details class="pe-labels" id="schDetails-1" open>
-      <summary>🗓 공통 일정 요약 타임라인 (요금 항목과 무관하게 상품 상세에 노출)</summary>
+      <summary>🗓 공통 일정 요약 타임라인 (요금 항목에서 비워두면 이 일정이 적용됨)</summary>
       ${scheduleHTML(p, -1)}
     </details>
 
     <!-- [수정] 공통 일정 요약 타임라인과 요금 항목(항목1/2...) 묶음 사이에 구분선 + 넓은 간격을 두어 가독성 향상 -->
     <div class="pe-group-divider"><span>요금 항목</span></div>
 
-    ${p.priceEntries.length ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount)).join('')
+    <!-- [추가] 요금 항목 ↔ 공통값 상속 안내 + 일괄 정리 버튼 -->
+    <div class="pe-inh-banner">
+      <div class="pe-inh-banner-text">
+        <b>💡 요금 항목에서 비워둔 칸은 위 공통값이 자동으로 적용됩니다.</b><br>
+        항목마다 다른 내용(판매가·대표 문구 등)만 입력하세요. 상세페이지에는 공통 정보가 한 번만 보이고,
+        각 항목에는 공통과 다른 내용만 표시됩니다.
+      </div>
+      ${p.priceEntries.length ? `<button type="button" class="apc-btn-sm pe-inh-promote" onclick="promoteEntriesToCommon()" title="모든 요금 항목에 똑같이 들어 있는 값은 공통으로 옮기고, 공통값과 같은 값은 항목에서 비웁니다">⇪ 반복 입력된 값 공통으로 올리기</button>` : ''}
+    </div>
+
+    ${p.priceEntries.length ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount,p)).join('')
       : `<div style="color:rgba(247,245,240,.5);padding:20px;text-align:center;background:rgba(0,0,0,.15);border:1px dashed rgba(255,255,255,.15);border-radius:10px;margin:6px 0">등록된 요금 항목이 없습니다</div>`}
     <button class="add-product-btn" onclick="addPriceEntry()">+ 요금 항목 추가</button>
   `;
@@ -12452,7 +12627,136 @@ function chipMultiHTML(opts, selectedArr, buildOnclick){
 // [수정] 요금 항목(항목1/2/3...)이 여러 개 등록됐을 때 카드 좌측 강조선 색을 항목마다 다르게 순환시켜
 // 한눈에 구분되도록 함 — 기존에는 2색 교대(홀/짝)뿐이라 3개 이상일 때 구분이 어려웠음
 const PE_ACCENT_COLORS = ['#2F6FED','#16B8A6','#F0A63A','#EE5A6F','#8E5FE0','#33B36F'];
-function priceEntryHTML(pe, i, popupCount){
+
+// ===== 요금 항목 ↔ 공통값 상속: 관리자 UI =====
+// 각 요금 항목 필드 아래에 지금 이 항목에 어떤 값이 적용되는지 알려준다 —
+// "비워둠 · 공통값 적용 중" / "공통값과 같은 내용(비우기 권장)" / "이 항목만 별도 값(되돌리기 가능)"
+function peInhPreview(f, v){
+  switch(f){
+    case 'airfare': return AIRFARE_TXT[v]||'';
+    case 'stayDuration': return (v && v!=='none') ? v : '';
+    case 'airPattern': case 'departureAirport': case 'departureDay': return (v||[]).filter(Boolean).join(', ');
+    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${d.day} ${fmtPrice(d.price)}원`).join(' / ');
+    case 'holidayPrices': return (v||[]).filter(h=>h.date && h.price)
+      .map(h=>`${(h.type==='range' && h.endDate) ? fmtHolidayDate(h.date)+'~'+fmtHolidayDate(h.endDate) : fmtHolidayDate(h.date)} ${fmtPrice(h.price)}원`).join(' / ');
+    case 'included': case 'notIncluded': case 'precautions': {
+      const lines = _peTextKey(v).split('\n').filter(Boolean);
+      const s = lines.slice(0,2).join(' · ');
+      return (s.length>60 ? s.slice(0,60)+'…' : s) + (lines.length>2 ? ` 외 ${lines.length-2}줄` : '');
+    }
+    case 'schedule': return (v && v.s && v.s.days) ? `${v.s.days.length}일 일정` : '';
+    case 'minPeople': return fmtMinPeople(v);
+    default: return String(v==null?'':v);
+  }
+}
+function peInhHintHTML(p, pe, i, f, withCopy){
+  const F = PE_INHERIT[f];
+  const cmV = F.cm(p);
+  if (!F.key(cmV)) return ''; // 공통값이 없으면 기존처럼 항목별 입력 — 안내 불필요
+  const st = peInheritState(p, pe, f);
+  const prev = escapeAttr(peInhPreview(f, cmV));
+  if (st==='inherit') return `<div class="pe-inh-hint inherit"><span>↳ 비워둠 · <b>공통값 적용 중</b>: ${prev}</span>${withCopy?`<button type="button" class="pe-inh-btn" onclick="peCopyCommon(${i},'${f}')">✏️ 공통 내용 가져와 이 항목만 수정</button>`:''}</div>`;
+  if (st==='same') return `<div class="pe-inh-hint same"><span>= 공통값과 같은 내용 — 비워두면 공통값을 자동으로 따라갑니다</span><button type="button" class="pe-inh-btn" onclick="peClearToCommon(${i},'${f}')">비우기</button></div>`;
+  return `<div class="pe-inh-hint override"><span>✎ <b>이 항목만 별도 값</b> 사용 중 (공통: ${prev})</span><button type="button" class="pe-inh-btn" onclick="peClearToCommon(${i},'${f}')">공통값으로 되돌리기</button></div>`;
+}
+// 입력란 placeholder — 비워두면 적용될 공통값을 흐리게 미리 보여준다
+function peInhPlaceholder(p, f, fallback){
+  const F = PE_INHERIT[f], cmV = F.cm(p);
+  return F.key(cmV) ? `공통값 사용: ${peInhPreview(f, cmV)}` : fallback;
+}
+const PE_EMPTY_TEE = () => ({day1:'',day2:'',day3:'',day4:''});
+function peClearField(pe, f){
+  switch(f){
+    case 'airfare': case 'stayDuration': pe.labels[f]='none'; break;
+    case 'airPattern': case 'departureAirport': case 'departureDay': pe.labels[f]=[]; break;
+    case 'arrAirport': case 'flightNo': pe.labels[f]=''; break;
+    case 'dayPrices': case 'holidayPrices': pe[f]=[]; break;
+    case 'schedule': pe.schedule=newSchedule(); pe.labels.teeOffTimes=PE_EMPTY_TEE(); break;
+    default: pe[f]='';
+  }
+}
+function peSetField(pe, f, v){
+  const c = JSON.parse(JSON.stringify(v));
+  switch(f){
+    case 'airfare': case 'stayDuration': case 'airPattern': case 'departureAirport':
+    case 'departureDay': case 'arrAirport': case 'flightNo': pe.labels[f]=c; break;
+    case 'schedule': pe.schedule=ensureSchedule(c.s); pe.labels.teeOffTimes=Object.assign(PE_EMPTY_TEE(), c.t||{}); break;
+    default: pe[f]=c;
+  }
+}
+function commonSetField(p, f, v){
+  const c = JSON.parse(JSON.stringify(v));
+  switch(f){
+    case 'minPeople': case 'rounds': case 'stay': case 'meals': p[f]=c; break;
+    case 'airfare': case 'stayDuration': case 'airPattern': case 'departureAirport':
+    case 'departureDay': case 'arrAirport': case 'flightNo': p.labels[f]=c; break;
+    case 'dayPrices': p.commonDayPrices=c; break;
+    case 'holidayPrices': p.commonHolidayPrices=c; break;
+    case 'included': p.commonIncluded=c; break;
+    case 'notIncluded': p.commonNotIncluded=c; break;
+    // 공통 참고사항은 체크포인트2와 동기화되는 일반 텍스트 필드라 줄 단위 텍스트로 옮긴다
+    case 'precautions': p.commonPrecautions=_peTextKey(c); p.checkpoint2=p.commonPrecautions; break;
+    case 'schedule': p.schedule=ensureSchedule(c.s); p.labels.teeOffTimes=Object.assign(PE_EMPTY_TEE(), c.t||{}); break;
+  }
+}
+// "✏️ 공통 내용 가져와 이 항목만 수정" — 공통값을 이 항목에 복사해 넣어, 이 항목만 조금 바꿔 쓸 수 있게 한다
+function peCopyCommon(i, f){
+  const p=getAdvProduct(); if (!p) return;
+  peSetField(p.priceEntries[i], f, PE_INHERIT[f].cm(p));
+  saveAdvChange(); renderAdvBody();
+}
+// "비우기"/"공통값으로 되돌리기" — 이 항목의 값을 지워 다시 공통값을 따라가게 한다
+function peClearToCommon(i, f){
+  const p=getAdvProduct(); if (!p) return;
+  peClearField(p.priceEntries[i], f);
+  saveAdvChange(); renderAdvBody();
+}
+// "⇪ 공통으로 올리기" — 이미 항목마다 같은 내용을 반복 입력해 둔 상품을 한 번에 정리한다.
+// ① 공통값이 비어 있고 모든 요금 항목이 같은 값이면 → 그 값을 공통으로 옮기고 항목에서는 비운다
+// ② 공통값이 있고 어떤 항목이 공통과 같은 값이면 → 그 항목에서만 비운다(공통값을 따라가게)
+// 항목마다 값이 다른 필드는 건드리지 않는다
+const PE_CARD_FIELDS = ['minPeople','rounds','stay','meals','stayDuration']; // 공통값이 상품 카드에도 노출되는 필드
+function promoteEntriesToCommon(){
+  const p=getAdvProduct(); if (!p) return;
+  const entries=p.priceEntries||[];
+  if (!entries.length){ alert('등록된 요금 항목이 없습니다.'); return; }
+  const toPromote=[], toClear=[], skipped=[];
+  PE_INHERIT_KEYS.forEach(f=>{
+    const F=PE_INHERIT[f];
+    const cmK=F.key(F.cm(p));
+    if (cmK){
+      const n = entries.filter(pe=>F.key(F.pe(pe))===cmK).length;
+      if (n) toClear.push({f, n});
+      return;
+    }
+    const k0=F.key(F.pe(entries[0]));
+    if (!k0 || !entries.every(pe=>F.key(F.pe(pe))===k0)) return;
+    // 공통 참고사항은 일반 텍스트 필드라 표(<table>)를 옮기면 서식이 사라진다 — 데이터 보존을 위해 건너뜀
+    if (f==='precautions' && /<table/i.test(String(F.pe(entries[0])||''))){ skipped.push(F.label); return; }
+    toPromote.push(f);
+  });
+  if (!toPromote.length && !toClear.length){
+    alert('모든 요금 항목에 똑같이 들어 있는 값이 없습니다.\n(항목마다 값이 다르거나, 이미 공통값으로 정리된 상태입니다)');
+    return;
+  }
+  const lines=[];
+  if (toPromote.length) lines.push('▶ 공통으로 옮길 항목 (모든 요금 항목에 같은 값)\n   '+toPromote.map(f=>PE_INHERIT[f].label).join(', '));
+  if (toClear.length) lines.push('▶ 공통값과 같아서 요금 항목에서 비울 항목\n   '+toClear.map(x=>`${PE_INHERIT[x.f].label}(${x.n}개 항목)`).join(', '));
+  const cardFields = toPromote.filter(f=>PE_CARD_FIELDS.includes(f));
+  if (cardFields.length) lines.push(`※ ${cardFields.map(f=>PE_INHERIT[f].label).join('·')} 공통값은 상품 카드에도 표시됩니다.`);
+  if (skipped.length) lines.push('※ 표가 들어 있는 참고사항은 서식 보존을 위해 옮기지 않습니다.');
+  if (!confirm(lines.join('\n\n')+'\n\n요금 항목마다 반복 입력된 내용을 공통으로 정리합니다. 계속할까요?')) return;
+  toPromote.forEach(f=>{
+    commonSetField(p, f, PE_INHERIT[f].pe(entries[0]));
+    entries.forEach(pe=>peClearField(pe, f));
+  });
+  toClear.forEach(({f})=>{
+    const F=PE_INHERIT[f], cmK=F.key(F.cm(p));
+    entries.forEach(pe=>{ if (F.key(F.pe(pe))===cmK) peClearField(pe, f); });
+  });
+  saveAdvChange(); renderAdvBody();
+}
+function priceEntryHTML(pe, i, popupCount, p){
   const emphOpts = ['일반','실속','특가 (기간한정)','특가 (하계)','특가 (동계)','특가 (긴급)'];
   const layoutOpts = [['card','카드형'],['hero','대형']];
   const currencySelect = (field, val) => `<select onchange="updatePriceEntry(${i},'${field}',this.value)" class="curr-sel">${CURRENCIES.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
@@ -12513,10 +12817,12 @@ function priceEntryHTML(pe, i, popupCount){
           </label>
         </div>
       </div>
-      <div class="full"><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="예: 2" oninput="updatePriceEntry(${i},'minPeople',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="예: 2R" oninput="updatePriceEntry(${i},'rounds',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updatePriceEntry(${i},'stay',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="예: 조식 3회" oninput="updatePriceEntry(${i},'meals',this.value)"></div>
+      <!-- [수정] 최소 인원·라운드·숙박·식사는 비워두면 상품 공통값(상단 기본 정보)을 그대로 사용 —
+           placeholder로 적용될 공통값을 미리 보여주고, 아래 안내줄로 현재 상태를 알려준다 -->
+      <div class="full"><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'minPeople','예: 2'))}" oninput="updatePriceEntry(${i},'minPeople',this.value)">${peInhHintHTML(p,pe,i,'minPeople')}</div>
+      <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'rounds','예: 2R'))}" oninput="updatePriceEntry(${i},'rounds',this.value)">${peInhHintHTML(p,pe,i,'rounds')}</div>
+      <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'stay','예: 4성급 호텔 3박'))}" oninput="updatePriceEntry(${i},'stay',this.value)">${peInhHintHTML(p,pe,i,'stay')}</div>
+      <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'meals','예: 조식 3회'))}" oninput="updatePriceEntry(${i},'meals',this.value)">${peInhHintHTML(p,pe,i,'meals')}</div>
       <div class="full"><label>정가 (할인 전)</label>
         <div class="price-row">
           <input type="number" value="${pe.originalPrice||''}" placeholder="1200000" oninput="updatePriceEntry(${i},'originalPrice',this.value,'number')">
@@ -12535,15 +12841,16 @@ function priceEntryHTML(pe, i, popupCount){
     <!-- 이 요금표 항목에 종속된 레이블 -->
     <details class="pe-labels ${isDomestic?'pe-disabled':''}" ${isDomestic?'':'open'}>
       <summary>✈️ 항공정보${isDomestic?' <span class="pe-disabled-note">(국내 상품은 입력이 필요하지 않아 비활성화됨)</span>':''}</summary>
-      <fieldset ${isDomestic?'disabled':''} style="border:none;margin:0;padding:0">${labelsHTML(pe, i)}</fieldset>
+      <fieldset ${isDomestic?'disabled':''} style="border:none;margin:0;padding:0">${labelsHTML(pe, i, true, p)}</fieldset>
     </details>
 
     <!-- [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 특정 요일(구간)·날짜의 금액을 함께 안내.
          상세페이지 요금표 하단에 "월~목 출발 / 금 출발 / 토 출발 / 일 출발" 식의 표로 노출된다 -->
     <details class="pe-labels" open>
-      <summary>🗓️ 출발 요일별 · 공휴일 요금</summary>
+      <summary>🗓️ 출발 요일별 · 공휴일 요금 <span class="pe-inh-sum">(비워두면 공통값 적용)</span></summary>
       <div class="pe-labels-body">
         <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
+        ${peInhHintHTML(p,pe,i,'dayPrices',true)}
         <div class="dp-list">
           ${(pe.dayPrices||[]).map((d,di)=>`
           <div class="dp-row">
@@ -12558,6 +12865,7 @@ function priceEntryHTML(pe, i, popupCount){
         <button class="apc-btn-sm" onclick="addDayPrice(${i})">+ 요일별 요금 추가</button>
 
         <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
+        ${peInhHintHTML(p,pe,i,'holidayPrices',true)}
         <div class="dp-list">
           ${(pe.holidayPrices||[]).map((h,hi)=>`
           <div class="dp-row dp-row-holiday">
@@ -12577,17 +12885,18 @@ function priceEntryHTML(pe, i, popupCount){
 
     <!-- [수정] 포함사항/불포함사항/참고사항 — 요금 항목별 개별 입력 (상세페이지 요금표 "상세보기→"에서 노출) -->
     <details class="pe-labels" open>
-      <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항</summary>
+      <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항 <span class="pe-inh-sum">(비워두면 공통값 적용)</span></summary>
       <div class="pe-labels-body">
-        <label>✅ 포함사항</label>${richTextFieldHTML(pe.included, `updatePriceEntry(${i},'included',__HTML__)`, {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
-        <label>❌ 불포함사항</label>${richTextFieldHTML(pe.notIncluded, `updatePriceEntry(${i},'notIncluded',__HTML__)`, {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
-        <label>🌟 참고사항</label>${richTextFieldHTML(pe.precautions, `updatePriceEntry(${i},'precautions',__HTML__)`, {placeholder:'예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가', minHeight:'200px'})}
+        <label>✅ 포함사항</label>${peInhHintHTML(p,pe,i,'included',true)}${richTextFieldHTML(pe.included, `updatePriceEntry(${i},'included',__HTML__)`, {cls:'included-field', placeholder:peInhPlaceholder(p,'included',INCLUDED_GUIDE), minHeight:'250px'})}
+        <label>❌ 불포함사항</label>${peInhHintHTML(p,pe,i,'notIncluded',true)}${richTextFieldHTML(pe.notIncluded, `updatePriceEntry(${i},'notIncluded',__HTML__)`, {cls:'notincluded-field', placeholder:peInhPlaceholder(p,'notIncluded',NOT_INCLUDED_GUIDE), minHeight:'250px'})}
+        <label>🌟 참고사항</label>${peInhHintHTML(p,pe,i,'precautions',true)}${richTextFieldHTML(pe.precautions, `updatePriceEntry(${i},'precautions',__HTML__)`, {placeholder:peInhPlaceholder(p,'precautions','예: 노옵션·노쇼핑 상품 · 연운항 화과산CC 변경 시 80,000원/인 추가 · 우천/천재지변 라운드 불가 시 환불 불가'), minHeight:'200px'})}
       </div>
     </details>
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->
     <details class="pe-labels" id="schDetails${i}" open>
-      <summary>🗓 일정 요약 타임라인</summary>
+      <summary>🗓 일정 요약 타임라인 <span class="pe-inh-sum">(비워두면 공통 일정 적용)</span></summary>
+      ${peInhHintHTML(p,pe,i,'schedule',true)}
       ${scheduleHTML(pe, i)}
     </details>
     </div>
@@ -12610,20 +12919,30 @@ const DAY_OPTS=[['월','월'],['화','화'],['수','수'],['목','목'],['금','
 function departureDayFieldHTML(L, peIdx){
   return `<label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}`;
 }
-function labelsHTML(pe, peIdx, showDepartureDay){
+function labelsHTML(pe, peIdx, showDepartureDay, p){
   if (showDepartureDay===undefined) showDepartureDay=true;
   const L = pe.labels;
-  const sel=(opts,val,field)=>`<select onchange="updatePriceEntryLabel(${peIdx},'${field}',this.value)">${opts.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select>`;
+  // [추가] 요금 항목(peIdx>=0)이면 비워둔 필드에 적용될 공통값을 안내 — "없음" 선택지는 공통값이
+  // 있을 때 "공통값 사용 (…)"으로 표기해, 비워둬도 공통값이 적용된다는 것을 드러낸다
+  const isEntry = peIdx>=0 && !!p;
+  const hint = f => isEntry ? peInhHintHTML(p, pe, peIdx, f) : '';
+  const ph = (f, fallback) => isEntry ? peInhPlaceholder(p, f, fallback) : fallback;
+  const noneLabel = (f, dflt) => {
+    if (!isEntry) return dflt;
+    const cmV = PE_INHERIT[f].cm(p);
+    return PE_INHERIT[f].key(cmV) ? `공통값 사용 (${peInhPreview(f, cmV)})` : dflt;
+  };
+  const sel=(opts,val,field)=>`<select onchange="updatePriceEntryLabel(${peIdx},'${field}',this.value)">${opts.map(o=>`<option value="${o[0]}" ${val===o[0]?'selected':''}>${escapeAttr(o[0]==='none'?noneLabel(field,o[1]):o[1])}</option>`).join('')}</select>`;
   return `
   <div class="grid-2 pe-labels-body">
-    <div><label>항공 포함 여부</label>${sel(AIRFARE_OPTS,L.airfare,'airfare')}</div>
-    <div class="full"><label>항공 패턴 (복수 선택 가능)</label>${chipMultiHTML(PATTERN_OPTS,L.airPattern,val=>`toggleLabelMulti(${peIdx},'airPattern','${val}')`)}</div>
-    <div class="full"><label>출발 공항 (복수 선택 가능)</label>${chipMultiHTML(AIRPORT_OPTS,L.departureAirport,val=>`toggleLabelMulti(${peIdx},'departureAirport','${val}')`)}</div>
-    <div><label>도착 공항</label><input type="text" value="${escapeAttr(L.arrAirport||'')}" placeholder="예: 시즈오카" oninput="updatePriceEntryLabel(${peIdx},'arrAirport',this.value)"></div>
-    <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="예: NH862 / JAL 편명 자유 입력" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)"></div>
-    <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}</div>
+    <div><label>항공 포함 여부</label>${sel(AIRFARE_OPTS,L.airfare,'airfare')}${hint('airfare')}</div>
+    <div class="full"><label>항공 패턴 (복수 선택 가능)</label>${chipMultiHTML(PATTERN_OPTS,L.airPattern,val=>`toggleLabelMulti(${peIdx},'airPattern','${val}')`)}${hint('airPattern')}</div>
+    <div class="full"><label>출발 공항 (복수 선택 가능)</label>${chipMultiHTML(AIRPORT_OPTS,L.departureAirport,val=>`toggleLabelMulti(${peIdx},'departureAirport','${val}')`)}${hint('departureAirport')}</div>
+    <div><label>도착 공항</label><input type="text" value="${escapeAttr(L.arrAirport||'')}" placeholder="${escapeAttr(ph('arrAirport','예: 시즈오카'))}" oninput="updatePriceEntryLabel(${peIdx},'arrAirport',this.value)">${hint('arrAirport')}</div>
+    <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="${escapeAttr(ph('flightNo','예: NH862 / JAL 편명 자유 입력'))}" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)">${hint('flightNo')}</div>
+    <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}${hint('stayDuration')}</div>
   </div>
-  ${showDepartureDay?`<div class="pe-labels-departure-day">${departureDayFieldHTML(L, peIdx)}</div>`:''}`;
+  ${showDepartureDay?`<div class="pe-labels-departure-day">${departureDayFieldHTML(L, peIdx)}${hint('departureDay')}</div>`:''}`;
 }
 
 // ===== 요금 항목에 종속된 "일정 요약 타임라인" UI =====

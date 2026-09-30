@@ -571,7 +571,19 @@ section.block{padding:100px 24px;position:relative}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
 /* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
 .product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
-.card-tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.card-tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.card-tag-editor .card-tag-grid{padding:10px}
+.ctag-cell{display:flex;align-items:center;gap:4px;min-width:0}
+/* 편집 칸을 실제 카드 태그(.tag-inline)와 같은 모양으로 — 서식·박스 색상 결과를 바로 확인 */
+.rtf-editable.ctag-edit{flex:1;min-width:0;min-height:0;padding:5px 12px;border-radius:100px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);color:#4B5563;font-size:.8rem;font-weight:700;letter-spacing:.03em;line-height:1.4;white-space:normal;overflow:hidden}
+.rtf-editable.ctag-edit:focus{box-shadow:0 0 0 2px var(--nm-blue)}
+.rtf-editable.ctag-edit:empty:before{font-weight:500}
+.adv-body label.ctag-bg{display:block;position:relative;flex-shrink:0;width:26px;height:26px;margin:0;border-radius:50%;overflow:hidden;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);text-transform:none}
+.ctag-bg input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:none}
+.ctag-bg span{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:.8rem;pointer-events:none}
+.ctag-bg-reset{flex-shrink:0;height:22px;padding:0 6px;border:none;border-radius:100px;background:var(--nm-surface-light);color:var(--nm-text-soft);cursor:pointer;font-size:.62rem;font-weight:700;line-height:1;white-space:nowrap;box-shadow:var(--nm-shadow-raised-sm)}
+.tag-inline .rtf-table{width:auto;margin:0}
+.tag-inline .rtf-table td{font-size:inherit;padding:1px 6px;border-color:currentColor}
 .product-tag-row .tag-inline{display:inline-block;background:rgba(22,163,74,.12);color:#4B5563;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(22,163,74,.3);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.869rem;color:var(--pine-deep);font-weight:500}
@@ -1565,6 +1577,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .adv-body input.gallery-set-sub{flex:1;min-width:160px;width:auto;padding:7px 10px;font-size:.82rem}
 .gallery-set-count{display:block;margin:6px 0 2px;font-size:.7rem;color:var(--gold);letter-spacing:.03em}
 .gallery-set-add{margin-top:12px;width:100%}
+.gallery-set-move{display:inline-flex;gap:4px}
+.gallery-set-move .apc-btn-sm{min-width:30px;padding:4px 8px}
+.gallery-set-move .apc-btn-sm:disabled{opacity:.35;cursor:default}
 .gallery-thumb.video-thumb video{width:100%;height:100%;object-fit:cover;display:block} /* [Phase 3 상품등록 개선] 동영상 갤러리 */
 .gallery-thumb .g-actions{position:absolute;inset:0;background:rgba(10,23,48,.55);display:none;align-items:center;justify-content:center;gap:4px}
 .gallery-thumb:hover .g-actions{display:flex}
@@ -7989,7 +8004,13 @@ function richTextFieldHTML(value, onchangeAttr, opts){
   const initial = plainToRichInit(value);
   const oninput = onchangeAttr.replace('__HTML__', 'this.innerHTML');
   return `<div class="rtf-wrap">
-    <div class="rtf-toolbar" onmousedown="rtfSaveSelection()">
+    ${rtfToolbarHTML()}
+    <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
+  </div>`;
+}
+// 서식 툴바(크기·글꼴·줄간격·B·I·U·표·서식✕·색상) — 장문 필드와 카드 태그 편집기가 함께 사용
+function rtfToolbarHTML(){
+  return `<div class="rtf-toolbar" onmousedown="rtfSaveSelection()">
       <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
         <option value="">크기</option>
         <option value="1">작게</option>
@@ -8018,9 +8039,7 @@ function richTextFieldHTML(value, onchangeAttr, opts){
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
       <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"><span class="rtf-color-t">T</span></label>
-    </div>
-    <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
-  </div>`;
+    </div>`;
 }
 // 리치 텍스트 툴바 버튼 — execCommand는 실행 대상(contenteditable)에 포커스·선택영역이 있어야
 // 하므로, 버튼 클릭 시 같은 .rtf-wrap 안의 편집 영역을 찾아 포커스한 뒤 명령을 실행한다.
@@ -8030,15 +8049,21 @@ function richTextFieldHTML(value, onchangeAttr, opts){
 // contenteditable 안의 텍스트 선택영역(Range)이 사라진다. 이를 막기 위해 툴바 위에서
 // mousedown이 발생하는 즉시(포커스가 옮겨가기 전) 현재 선택영역을 저장해두고,
 // 이후 rtfCmd 실행 시 그 선택영역을 편집영역에 복원한 뒤 명령을 적용한다
-let _rtfSavedRange = null;
+let _rtfSavedRange = null, _rtfActiveEditable = null;
 function rtfSaveSelection(){
   const sel = window.getSelection();
   if (sel && sel.rangeCount > 0){
     const r = sel.getRangeAt(0);
     if (r.commonAncestorContainer && document.activeElement && document.activeElement.closest && document.activeElement.closest('.rtf-editable')){
       _rtfSavedRange = r.cloneRange();
+      _rtfActiveEditable = document.activeElement.closest('.rtf-editable');
     }
   }
+}
+// [추가] 툴바 하나가 여러 편집 영역을 함께 쓰는 경우(카드 태그 10개) — 마지막으로 편집하던 영역에 적용
+function rtfTarget(wrap){
+  if (_rtfActiveEditable && wrap.contains(_rtfActiveEditable) && _rtfActiveEditable.isConnected) return _rtfActiveEditable;
+  return wrap.querySelector('.rtf-editable');
 }
 function rtfRestoreSelection(editable){
   if (_rtfSavedRange && editable.contains(_rtfSavedRange.commonAncestorContainer)){
@@ -8049,7 +8074,7 @@ function rtfRestoreSelection(editable){
 }
 function rtfCmd(btnEl, cmd, val){
   const wrap = btnEl.closest('.rtf-wrap');
-  const editable = wrap.querySelector('.rtf-editable');
+  const editable = rtfTarget(wrap);
   editable.focus();
   rtfRestoreSelection(editable);
   if (cmd==='fontSize'){
@@ -8092,7 +8117,7 @@ function rtfCmd(btnEl, cmd, val){
 function rtfLineHeight(selEl, val){
   if (!val) return;
   const wrap = selEl.closest('.rtf-wrap');
-  const editable = wrap.querySelector('.rtf-editable');
+  const editable = rtfTarget(wrap);
   editable.focus();
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
@@ -8117,7 +8142,7 @@ function rtfLineHeight(selEl, val){
 // 표 뒤에 <br>을 붙여 bulletRowsRich()가 표를 별도의 한 줄(불릿 없이)로 인식하게 한다
 function rtfInsertTable(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
-  const editable = wrap.querySelector('.rtf-editable');
+  const editable = rtfTarget(wrap);
   const rows = parseInt(prompt('행(줄) 개수를 입력하세요', '2'), 10);
   const cols = parseInt(prompt('열(칸) 개수를 입력하세요', '2'), 10);
   if (!rows || !cols || rows<1 || cols<1 || rows>20 || cols>10){
@@ -8457,10 +8482,30 @@ function cardLabelOverlayHTML(cardLabels){
 }
 // [추가] 카드 태그는 최대 10개(cardTag1~cardTag10) — 입력된 것만 순서대로 반환
 const CARD_TAG_MAX = 10;
-function cardTagsOf(p){
+// [추가] 카드 태그는 서식(글자 크기·글꼴·굵게·색상 등)이 들어간 HTML일 수 있다 — 화면 표시용 HTML과
+// 검색·요약용 일반 텍스트를 나눠서 쓴다
+function richToPlain(v){
+  const t=String(v==null?'':v);
+  if (t.indexOf('<')<0) return t.replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&amp;/g,'&').trim();
+  const d=document.createElement('div'); d.innerHTML=sanitizeRichHTML(t);
+  return (d.textContent||'').replace(/\u00a0/g,' ').trim();
+}
+function cardTagEntries(p){
   const out=[];
-  for (let n=1;n<=CARD_TAG_MAX;n++){ const t=p['cardTag'+n]; if (t && String(t).trim()) out.push(String(t).trim()); }
+  for (let n=1;n<=CARD_TAG_MAX;n++){
+    const t=p['cardTag'+n]; if (!t) continue;
+    const plain=richToPlain(t); if (!plain && !/<table/i.test(String(t))) continue;
+    out.push({n, html:String(t).indexOf('<')<0?escapeAttr(String(t).trim()):sanitizeRichHTML(String(t)), plain, bg:p['cardTagBg'+n]||''});
+  }
   return out;
+}
+function cardTagsOf(p){ return cardTagEntries(p).map(e=>e.plain); }
+// 태그 박스 색상 — 어두운 색이면 글자를 흰색으로 자동 전환(글자 색을 직접 지정한 부분은 그대로)
+function cardTagBoxStyle(bg){
+  if (!bg || !/^#[0-9a-f]{6}$/i.test(bg)) return '';
+  const r=parseInt(bg.slice(1,3),16), g=parseInt(bg.slice(3,5),16), b=parseInt(bg.slice(5,7),16);
+  const dark=(0.299*r+0.587*g+0.114*b)/255 < 0.6;
+  return `background:${bg};border-color:${bg};${dark?'color:#fff;':''}`;
 }
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
@@ -8474,7 +8519,7 @@ function productCardHTML(p, catId, idx){
   const visualUrl = useMedia ? p.titleMedia.url : getImage(cat.id);
   const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
   const displayPrice = getDisplayPrice(p);
-  const cardTags = cardTagsOf(p);
+  const cardTags = cardTagEntries(p);
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
   // [추가] "2인 이상" 배지 옆에 항공포함여부·체류일을 함께 노출 — 체류일은 요금 항목과 무관한
   // 공통 레이블(p.labels.stayDuration)을 사용한다
@@ -8540,7 +8585,7 @@ function productCardHTML(p, catId, idx){
       ${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}
       ${cardStayText?`<span class="product-minpeople-box">🏨 ${escapeAttr(cardStayText)}</span>`:''}
     </div>`:''}
-    ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline">${escapeAttr(t)}</span>`).join('')}</div>`:''}
+    ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     <div class="product-foot">
       <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
       <span class="details">자세히 →</span>
@@ -12115,7 +12160,9 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
         <div><div class="mw-label-row"><label>${transferFieldLabel} <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
         <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
-        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~10은 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
+        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~10은 고급 편집에서 입력</span></label>${/<[a-z]/i.test(p.cardTag1||'')
+          ? `<input type="text" value="${escapeAttr(richToPlain(p.cardTag1))}" readonly title="서식이 적용된 태그는 고급 편집에서 수정할 수 있습니다" style="opacity:.75;cursor:not-allowed">`
+          : `<input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)">`}</div>
         <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
         <div class="full"><label>체크포인트1(주의사항) (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
         <div class="full"><label>체크포인트2(참고사항) (자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
@@ -12687,9 +12734,23 @@ function advBasicHTML(p){
             </label>
           </div>
         </div>
-        <label>카드 태그 ${hint(`(상품 카드의 요금 위쪽에 노출, 최대 ${CARD_TAG_MAX}개 · 입력한 순서대로 표시)`)}</label>
-        <div class="card-tag-grid">
-          ${Array.from({length:CARD_TAG_MAX},(_,k)=>k+1).map(n=>`<input type="text" value="${escapeAttr(p['cardTag'+n]||'')}" placeholder="태그${n}${n===1?' · 예: BEST':''}" oninput="updateAdvField('cardTag${n}',this.value)">`).join('')}
+        <label>카드 태그 ${hint(`(상품 카드의 요금 위쪽에 노출, 최대 ${CARD_TAG_MAX}개 · 입력한 순서대로 표시 · 태그를 클릭한 뒤 위 서식 도구로 꾸미고, 🎨로 태그 박스 색상 변경)`)}</label>
+        <!-- [추가] 카드 태그 서식 편집 — 서식 툴바 하나를 태그 10개가 함께 쓰고(마지막으로 클릭한 태그에 적용),
+             태그마다 박스 색상을 따로 지정한다. 편집 칸 자체가 실제 태그 모양이라 결과를 바로 확인할 수 있다 -->
+        <div class="rtf-wrap card-tag-editor">
+          ${rtfToolbarHTML()}
+          <div class="card-tag-grid">
+            ${Array.from({length:CARD_TAG_MAX},(_,k)=>k+1).map(n=>{
+              const bg=p['cardTagBg'+n]||'';
+              return `<div class="ctag-cell">
+                <div class="rtf-editable ctag-edit" contenteditable="true" data-placeholder="태그${n}${n===1?' · 예: BEST':''}" style="${cardTagBoxStyle(bg)}"
+                     oninput="updateAdvField('cardTag${n}', this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()"
+                     onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(p['cardTag'+n]||'')}</div>
+                <label class="ctag-bg" title="태그 박스 색상"><input type="color" value="${bg||'#e3f3e8'}" oninput="previewCardTagBg(this)" onchange="setCardTagBg(${n},this.value)"><span>🎨</span></label>
+                ${bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setCardTagBg(${n},'')">기본</button>`:''}
+              </div>`;
+            }).join('')}
+          </div>
         </div>
         <label>체크포인트1(주의사항) ${hint('(상품 카드의 기간 위 강조 박스에 노출)')}</label>
         <textarea class="cp1-field" style="min-height:120px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
@@ -12832,6 +12893,15 @@ function advBasicHTML(p){
   `;
 }
 // 값이 실제로 입력돼 있는지 — 리치 텍스트는 태그를 뺀 내용으로, 'none'은 미입력으로 본다
+function previewCardTagBg(inp){
+  const ed=inp.closest('.ctag-cell').querySelector('.ctag-edit');
+  ed.setAttribute('style', cardTagBoxStyle(inp.value));
+}
+function setCardTagBg(n, color){
+  const p=getAdvProduct(); if (!p) return;
+  if (color) p['cardTagBg'+n]=color; else delete p['cardTagBg'+n];
+  saveAdvChange(); renderAdvBody();
+}
 function advFilled(v){
   if (v==null || v===false) return false;
   if (typeof v==='number') return v>0;
@@ -13749,6 +13819,10 @@ function galleryEditorHTML(p, set){
       <div class="gallery-set-head">
         <span class="gallery-set-title">🖼️ 이미지 갤러리 ${set+1}</span>
         <input type="text" class="gallery-set-sub" value="${escapeAttr(subtitle)}" placeholder="부제 (선택) · 예: 레이크 코스" oninput="updateGallerySubtitle(${set},this.value)">
+        ${galSetCount(p)>1?`<span class="gallery-set-move">
+          <button type="button" class="apc-btn-sm" title="이 세트를 위로" onclick="moveGallerySet(${set},-1)" ${set===0?'disabled':''}>▲</button>
+          <button type="button" class="apc-btn-sm" title="이 세트를 아래로" onclick="moveGallerySet(${set},1)" ${set>=galSetCount(p)-1?'disabled':''}>▼</button>
+        </span>`:''}
         ${set?`<button type="button" class="apc-btn-sm apc-delete" onclick="removeGallerySet(${set})">세트 삭제</button>`:''}
       </div>
       <span class="gallery-set-count">${n}/${GALLERY_IMG_MAX} · 드래그하여 순서 변경${GALLERY_SET_MAX>1?' · 다른 세트로 끌어 옮기기 가능':''}</span>
@@ -13776,6 +13850,18 @@ function galleryEditorHTML(p, set){
         </div>
       </div>
     </div>`;
+}
+function galSetCount(p){ return 1 + Math.min((p.extraGalleries||[]).length, GALLERY_SET_MAX-1); }
+// [추가] 이미지 갤러리 세트 단위 순서 변경 — 세트(부제 + 사진 묶음)를 통째로 위/아래와 맞바꾼다.
+// 1번 세트는 기존 p.gallery/p.gallerySubtitle에 저장되므로, 세트 목록으로 펼쳤다가 순서를 바꿔 다시 나눠 담는다
+function moveGallerySet(set, dir){
+  const p=getAdvProduct(); if (!p) return;
+  const sets=[{subtitle:p.gallerySubtitle||'', items:p.gallery||[]}].concat((p.extraGalleries||[]).map(g=>({subtitle:g.subtitle||'', items:g.items||[]})));
+  const j=set+dir; if (j<0 || j>=sets.length) return;
+  [sets[set], sets[j]] = [sets[j], sets[set]];
+  p.gallery=sets[0].items; p.gallerySubtitle=sets[0].subtitle;
+  p.extraGalleries=sets.slice(1);
+  saveAdvChange(); renderAdvBody();
 }
 function updateGallerySubtitle(set, val){
   const p=getAdvProduct(); if (!p) return;
@@ -14199,7 +14285,7 @@ function renderAiResults(results){
     return `<div class="ai-result-card">
       <div class="ai-result-img" style="background-image:url('${img}')"></div>
       <div class="ai-result-body">
-        <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${r.p.cardTag1?`<span class="ai-result-tag">${escapeAttr(r.p.cardTag1)}</span>`:''}</div>
+        <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${cardTagsOf(r.p)[0]?`<span class="ai-result-tag">${escapeAttr(cardTagsOf(r.p)[0])}</span>`:''}</div>
         <h4>${r.p.title}</h4>
         <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${fmtPrice(r.p.from)}원~</div>
         <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>

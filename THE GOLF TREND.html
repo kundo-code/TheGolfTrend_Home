@@ -1333,6 +1333,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-period-badge{flex-shrink:0;font-size:.7rem;font-weight:600;color:var(--nm-blue-deep);background:rgba(56,200,244,.14);padding:3px 10px;border-radius:100px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 .apc-chevron{flex-shrink:0;font-size:.75rem;color:var(--nm-text-soft);transition:transform .2s}
 .admin-product-card:not([open]) .apc-chevron{transform:rotate(-90deg)}
+/* [추가] 마지막으로 작업한 상품 — 관리자 패널을 다시 열면 이 카드가 펼쳐진 채로 보이고 "최근 작업" 표시 */
+.admin-product-card.apc-last{box-shadow:var(--nm-shadow-raised-sm),0 0 0 2px rgba(221,179,103,.55)}
+.apc-last-badge{flex-shrink:0;padding:2px 8px;border-radius:100px;background:var(--nm-gold-grad, #DDB367);color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}
 .apc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
 .apc-btn-sm{padding:6px 12px;border-radius:var(--nm-r-pill);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;border:none}
 .apc-edit-btn{background:var(--nm-surface);color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-raised-sm)}
@@ -4618,7 +4621,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
       <button data-atab="media" onclick="switchAdvTab('media')">갤러리/요금포스터</button>
       <button data-atab="contact" onclick="switchAdvTab('contact')">연락처·캘린더</button>
     </div>
-    <div class="adv-body" id="advBody"></div>
+    <div class="adv-body" id="advBody" onscroll="advRememberScroll(this)"></div>
     <div class="adv-foot">
       <button class="cancel" onclick="closeAdvEditor()">닫기</button>
       <button class="save" onclick="closeAdvEditor()">완료 (자동 저장됨)</button>
@@ -10899,7 +10902,7 @@ async function toggleAdmin(){
   if (isOpen){
     await refreshAdminSession();
     renderAdminAuthGate();
-    if (adminSession) refreshCurrentAdminTab();
+    if (adminSession) adminEnterTabs();
   }
 }
 function renderAdminAuthGate(){
@@ -10934,7 +10937,7 @@ async function handleAdminLoginClick(e){
   if (!result.ok){ errEl.textContent=result.message||'로그인에 실패했습니다.'; return; }
   passEl.value='';
   renderAdminAuthGate();
-  refreshCurrentAdminTab();
+  adminEnterTabs();
 }
 async function handleForgotPasswordClick(e){
   if (e) e.preventDefault();
@@ -11759,8 +11762,60 @@ function closePkgLightbox(){
   }, {passive:true});
 })();
 
+// [추가] 관리자 패널 "마지막 작업 위치" 기억 — 탭 → 국가/권역 → 상품 → (고급편집을 열어 둔 상태였다면)
+// 고급편집 탭·스크롤 위치까지 저장해 두고, 새로고침 후 관리자 패널을 다시 열면 그 위치에서 이어서
+// 시작한다. 상품은 순서 변경·삭제로 인덱스가 바뀔 수 있어 제목도 함께 저장해 다시 찾는다
+const ADMIN_POS_KEY='kundo_admin_pos_v1';
+let adminPos=(()=>{ try{ return JSON.parse(localStorage.getItem(ADMIN_POS_KEY)||'{}')||{}; }catch(e){ return {}; } })();
+let adminPosRestored=false, adminPosScrollPending=false;
+function adminPosSave(patch){
+  Object.assign(adminPos, patch);
+  try{ localStorage.setItem(ADMIN_POS_KEY, JSON.stringify(adminPos)); }catch(e){}
+}
+function adminPosRememberProduct(catId, idx){
+  const p=getProducts(catId)[idx];
+  adminPosSave({cat:catId, idx, title:p?(p.title||''):''});
+}
+// 저장해 둔 상품이 지금 몇 번째인지 — 같은 자리의 제목이 같으면 그대로, 아니면 제목으로 다시 찾고,
+// 그래도 없으면(제목을 바꾼 경우 등) 같은 순번(범위를 넘으면 마지막 상품)
+let advScrollSaveTimer=null;
+function advRememberScroll(el){
+  if (!currentAdv) return;
+  clearTimeout(advScrollSaveTimer);
+  advScrollSaveTimer=setTimeout(()=>{ if (currentAdv) adminPosSave({advScroll:el.scrollTop}); }, 250);
+}
+function adminPosResolveIdx(catId){
+  if (adminPos.cat!==catId || adminPos.idx==null) return -1;
+  const ps=getProducts(catId); if (!ps.length) return -1;
+  const idx=adminPos.idx, title=adminPos.title;
+  if (ps[idx] && (!title || ps[idx].title===title)) return idx;
+  const k = title ? ps.findIndex(x=>x.title===title) : -1;
+  return k>=0 ? k : Math.min(idx, ps.length-1);
+}
+// 관리자 패널을 열거나 로그인한 직후 호출 — 첫 진입 때만 저장된 위치를 복원하고, 이후엔 현재 탭만 새로 그린다
+function adminEnterTabs(){
+  if (adminPosRestored){ refreshCurrentAdminTab(); return; }
+  adminPosRestored=true;
+  if (adminPos.cat && findCat(adminPos.cat)) activeProductCat=adminPos.cat;
+  const tab=adminPos.tab;
+  if (!tab || !document.getElementById('tab'+tab[0].toUpperCase()+tab.slice(1))){ refreshCurrentAdminTab(); return; }
+  adminPosScrollPending = tab==='products';
+  switchTab(tab);
+  // 고급편집을 연 채로 새로고침했다면 같은 상품의 고급편집을 같은 탭·스크롤 위치로 다시 연다
+  if (tab==='products' && adminPos.adv){
+    const idx=adminPosResolveIdx(activeProductCat);
+    if (idx>=0){
+      const advTab=adminPos.advTab, advScroll=adminPos.advScroll||0;
+      openAdvEditor(activeProductCat, idx);
+      if (advTab && advTab!=='basic') switchAdvTab(advTab);
+      const body=document.getElementById('advBody');
+      requestAnimationFrame(()=>{ body.scrollTop=advScroll; setTimeout(()=>{ body.scrollTop=advScroll; }, 300); });
+    }
+  }
+}
 function switchTab(tab){
   activeAdminTab=tab;
+  adminPosSave({tab});
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads','tabNotices'].forEach(id=>{
     document.getElementById(id).style.display=(id==='tab'+tab[0].toUpperCase()+tab.slice(1))?'block':'none';
@@ -11928,7 +11983,8 @@ function moveProduct(idx, targetCatId){
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
 function renderProductAdmin(catId){
-  if (catId) activeProductCat=catId;
+  if (catId && catId!==activeProductCat){ activeProductCat=catId; adminPosSave({cat:catId, idx:null, title:''}); }
+  else if (catId) activeProductCat=catId;
   const list=document.getElementById('productList');
   const products=getProducts(activeProductCat);
   const catObj=findCat(activeProductCat);
@@ -11944,7 +12000,7 @@ function renderProductAdmin(catId){
   const dropAttrs = i=>`data-idx="${i}" ondragover="productDragOver(event)" ondragleave="productDragLeave(event)" ondrop="productDrop(event,${i})"`;
   const handleAttrs = i=>`draggable="true" ondragstart="productDragStart(event,${i})" ondragend="productDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
   list.innerHTML=products.map((p,i)=>`
-    <details class="admin-product-card" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)}>
+    <details class="admin-product-card" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
       <summary class="apc-head">
         <span class="apc-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</span>
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
@@ -11985,6 +12041,24 @@ function renderProductAdmin(catId){
         <div class="full"><label>체크포인트2(참고사항) (자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
       </div>
     </details>`).join('');
+  adminFocusLastProduct(list);
+}
+// [추가] 마지막으로 작업한 상품 카드를 펼쳐 두고 "최근 작업" 표시 — 관리자 패널 첫 진입(복원) 때는
+// 그 카드가 보이도록 스크롤까지 이동한다
+function adminFocusLastProduct(list){
+  const fi=adminPosResolveIdx(activeProductCat);
+  if (fi<0) return;
+  const card=list.querySelector(`.admin-product-card[data-idx="${fi}"]`);
+  if (!card) return;
+  card.open=true;
+  card.classList.add('apc-last');
+  const title=card.querySelector('.apc-title-preview');
+  if (title) title.insertAdjacentHTML('afterend','<span class="apc-last-badge">최근 작업</span>');
+  if (adminPosScrollPending){
+    adminPosScrollPending=false;
+    const body=document.querySelector('.admin-body');
+    requestAnimationFrame(()=>{ if (body) body.scrollTop += card.getBoundingClientRect().top - body.getBoundingClientRect().top - 12; });
+  }
 }
 
 function updateProduct(idx,field,value){
@@ -11993,6 +12067,7 @@ function updateProduct(idx,field,value){
   }
   if (field==='from') value=parseInt(value)||0;
   productOverrides[activeProductCat][idx][field]=value;
+  adminPosRememberProduct(activeProductCat, idx);
   // [추가] "체크포인트2(참고사항)"과 공통 "참고사항"은 같은 값으로 취급 — 고급편집의 참고사항
   // 입력란과 자동으로 맞춰진다
   if (field==='checkpoint2') productOverrides[activeProductCat][idx].commonPrecautions = value;
@@ -12243,6 +12318,7 @@ function renderLinkAdminGroup(group){
 // ========== ADVANCED PRODUCT EDITOR ==========
 function openAdvEditor(catId, idx){
   currentAdv={catId, idx}; activeAdvTab='basic';
+  adminPosRememberProduct(catId, idx); adminPosSave({tab:'products', adv:true, advTab:'basic', advScroll:0});
   advResetEntryOpenState(); // 요금 항목 펼침 상태는 상품마다 따로 — 다른 상품을 열면 초기화
   const cat=findCat(catId);
   const products=getProducts(catId);
@@ -12256,6 +12332,8 @@ function openAdvEditor(catId, idx){
 }
 function closeAdvEditor(){
   document.getElementById('advOverlay').classList.remove('show');
+  if (currentAdv) adminPosRememberProduct(currentAdv.catId, currentAdv.idx);
+  adminPosSave({adv:false});
   currentAdv=null;
   renderProductAdmin();
   renderCategoryGrid();
@@ -12263,6 +12341,7 @@ function closeAdvEditor(){
 }
 function switchAdvTab(tab){
   activeAdvTab=tab;
+  adminPosSave({advTab:tab, advScroll:0});
   document.querySelectorAll('.adv-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.atab===tab));
   renderAdvBody();
 }

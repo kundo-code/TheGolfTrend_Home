@@ -571,6 +571,7 @@ section.block{padding:100px 24px;position:relative}
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
 /* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
 .product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
+.card-tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
 .product-tag-row .tag-inline{display:inline-block;background:rgba(22,163,74,.12);color:#4B5563;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(22,163,74,.3);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.869rem;color:var(--pine-deep);font-weight:500}
@@ -732,6 +733,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-thumbs::-webkit-scrollbar-thumb{background:rgba(10,23,48,.15);border-radius:3px}
 .pd-thumb{width:70px;height:52px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;cursor:pointer;border:2px solid transparent;transition:border-color .2s;opacity:.7}
 .pd-thumb.active{border-color:var(--gold);opacity:1}
+.pd-thumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;pointer-events:none}
+/* [추가] 이미지 갤러리 부제 — 대문자·넓은 자간인 섹션 제목과 구분되도록 일반 서체로 */
+.pd-gallery-sub{margin-left:8px;font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.84rem;font-weight:600;letter-spacing:.01em;text-transform:none;color:#4B5563}
+.pd-gallery-sub::before{content:'· ';color:var(--gold-deep)}
 .pd-thumb:hover{opacity:1}
 /* [수정] 동영상 갤러리 — 이미지 갤러리 위, 마우스 오버 시 자동 재생.
    [수정] 작은 가로 스크롤 썸네일(고정 200px) 대신, 이미지 갤러리와 비슷한 비중으로 각 영상이
@@ -1552,6 +1557,14 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    개수만큼만 가운데 정렬되도록 함 */
 .video-gallery-list{grid-template-columns:repeat(auto-fit, 120px);justify-content:center}
 .gallery-thumb{position:relative;aspect-ratio:1;border-radius:var(--nm-r-sm);overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--nm-shadow-raised-sm)}
+.gallery-thumb > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+/* [추가] 이미지 갤러리 세트(최대 3) — 세트 제목 옆 부제 입력 */
+.gallery-set{margin-top:18px;padding:12px 14px 4px;border-radius:var(--nm-r-md);background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset)}
+.gallery-set-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gallery-set-title{font-size:.86rem;font-weight:800;color:var(--nm-blue-deep);white-space:nowrap}
+.adv-body input.gallery-set-sub{flex:1;min-width:160px;width:auto;padding:7px 10px;font-size:.82rem}
+.gallery-set-count{display:block;margin:6px 0 2px;font-size:.7rem;color:var(--gold);letter-spacing:.03em}
+.gallery-set-add{margin-top:12px;width:100%}
 .gallery-thumb.video-thumb video{width:100%;height:100%;object-fit:cover;display:block} /* [Phase 3 상품등록 개선] 동영상 갤러리 */
 .gallery-thumb .g-actions{position:absolute;inset:0;background:rgba(10,23,48,.55);display:none;align-items:center;justify-content:center;gap:4px}
 .gallery-thumb:hover .g-actions{display:flex}
@@ -4782,6 +4795,9 @@ function ensureSchedule(S){
 function ensureExtended(p){
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
+  // [추가] 이미지 갤러리 부제 + 추가 갤러리 세트(최대 2개: [{subtitle, items:[{url}]}])
+  if (p.gallerySubtitle===undefined) p.gallerySubtitle='';
+  if (!Array.isArray(p.extraGalleries)) p.extraGalleries=[];
   if (!p.videoGallery) p.videoGallery=[]; // [Phase 3 상품등록 개선]
   if (p.pkgPoster===undefined) p.pkgPoster=null; // [Phase 3 상품등록 개선]
   if (p.editorsPick===undefined) p.editorsPick=false; // [Phase 3 상품등록 개선]
@@ -4882,6 +4898,7 @@ function ensureExtended(p){
   if (p.cardTag2===undefined) p.cardTag2 = '';
   if (p.cardTag3===undefined) p.cardTag3 = '';
   if (p.cardTag4===undefined) p.cardTag4 = '';
+  // (카드태그5~10은 최대 10개로 늘리면서 추가 — 비어 있는 값은 저장하지 않고 cardTagsOf()에서 ''로 취급)
   delete p.tag;
   // [수정] 상품 카드에 노출할 항공 포함 여부·최소 인원 — 여러 요금 항목에 종속시키지 않고 상품 단위로 단순화
   if (p.airfareIncluded===undefined) p.airfareIncluded = '';
@@ -8229,7 +8246,10 @@ let pdShareToken=0;
 let currentAdv=null; // {catId, idx}
 let activeAdvTab='basic';
 let productResetSelection = new Set(); // "상품 초기화" 모달에서 선택된 권역/국가 catId 목록
+const GALLERY_SET_MAX=3, GALLERY_IMG_MAX=20; // 이미지 갤러리 세트 수(기본 1 + 추가 2) · 세트당 최대 사진 수
 let pdGalleryIdx=0, pdGalleryTimer=null;
+// [추가] 이미지 갤러리 여러 세트(최대 3) — 세트별 현재 사진 순번·마지막 수동 조작 시각, 화면에 보이는 세트 목록
+let pdGalleryIdxs=[], pdGalleryTouchedAt=[], pdGalleryVisible=new Set(), pdGalleryObserver=null;
 // [수정] 상품 상세보기 안에서 이전/다음 상품으로 이동하기 위한 탐색 순서.
 // 같은 권역(국내: 강원권→충청권→호남권→영남권→수도권→제주, 해외: 등록 순서)을 순환(loop)한다
 let pdSequence=null, pdSeqPos=0;
@@ -8435,6 +8455,13 @@ function cardLabelOverlayHTML(cardLabels){
   ).join('');
   return { html, hasOutside: active.some(l=>l.outside) };
 }
+// [추가] 카드 태그는 최대 10개(cardTag1~cardTag10) — 입력된 것만 순서대로 반환
+const CARD_TAG_MAX = 10;
+function cardTagsOf(p){
+  const out=[];
+  for (let n=1;n<=CARD_TAG_MAX;n++){ const t=p['cardTag'+n]; if (t && String(t).trim()) out.push(String(t).trim()); }
+  return out;
+}
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
   // If product has titleMedia image, use that instead
@@ -8447,7 +8474,7 @@ function productCardHTML(p, catId, idx){
   const visualUrl = useMedia ? p.titleMedia.url : getImage(cat.id);
   const hasVideo = p.titleMedia && p.titleMedia.type==='video' && p.titleMedia.url;
   const displayPrice = getDisplayPrice(p);
-  const cardTags = [p.cardTag1, p.cardTag2, p.cardTag3, p.cardTag4].filter(t=>t && t.trim());
+  const cardTags = cardTagsOf(p);
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
   // [추가] "2인 이상" 배지 옆에 항공포함여부·체류일을 함께 노출 — 체류일은 요금 항목과 무관한
   // 공통 레이블(p.labels.stayDuration)을 사용한다
@@ -9805,6 +9832,8 @@ function closeProductDetail(){
   document.getElementById('pdOverlay').classList.remove('show');
   document.body.style.overflow='';
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
+  if (pdGalleryObserver){ pdGalleryObserver.disconnect(); pdGalleryObserver=null; }
+  pdGalleryVisible=new Set();
   currentPd=null; pdSequence=null; pdSeqPos=0;
   // [메모리/성능 안정화] 상세보기를 닫아도 타이틀·갤러리 동영상이 화면 밖에서 계속 재생/디코딩되며
   // 화면을 오래 켜둘수록 메모리가 누적되던 백지 현상의 원인이 될 수 있어, 닫을 때 확실히 정지하고
@@ -9821,7 +9850,7 @@ function closeProductDetail(){
 function pdRenderAt(catId, idx, opts){
   opts = opts || {};
   pdShareToken++; // 화면이 새로 그려지므로 이전 렌더에서 시작된 공유 작업은 더 이상 화면에 반영하지 않음
-  currentPd={catId,idx}; pdGalleryIdx=0;
+  currentPd={catId,idx}; pdGalleryIdx=0; pdGalleryIdxs=[]; pdGalleryTouchedAt=[];
   const products=getProducts(catId);
   const p=products[idx]; if (!p) return;
   const cat=findCat(catId);
@@ -9961,7 +9990,8 @@ let pdGalleryTouch=null;
 function pdGalleryTouchStart(e){
   if (e.touches.length!==1) return;
   const t=e.touches[0];
-  pdGalleryTouch={startX:t.clientX, startY:t.clientY, dx:0, locked:false, horizontal:false};
+  const g=e.target.closest && e.target.closest('.pd-gallery[data-gset]');
+  pdGalleryTouch={startX:t.clientX, startY:t.clientY, dx:0, locked:false, horizontal:false, set:g?+g.dataset.gset:0};
 }
 function pdGalleryTouchMove(e){
   if (!pdGalleryTouch) return;
@@ -9979,8 +10009,8 @@ function pdGalleryTouchMove(e){
 }
 function pdGalleryTouchEnd(){
   if (!pdGalleryTouch) return;
-  const {horizontal,dx}=pdGalleryTouch;
-  if (horizontal && Math.abs(dx)>40) pdGalleryNext(dx<0?1:-1);
+  const {horizontal,dx,set}=pdGalleryTouch;
+  if (horizontal && Math.abs(dx)>40) pdGalleryNext(dx<0?1:-1, set);
   pdGalleryTouch=null;
 }
 function pdTouchStart(e){
@@ -10104,25 +10134,58 @@ function pdWheelHandler(e){
 function pdMediaList(p){
   return (p.gallery||[]).map(g=>({url:g.url,type:'image'}));
 }
+// [추가] 이미지 갤러리 세트 — 기본 갤러리(p.gallery) + 추가 세트(p.extraGalleries, 최대 2개).
+// 사진이 1장 이상 있는 세트만 순서대로 반환한다(골프장 2색·3색 구성을 코스별로 나눠 보여주기 위함)
+function pdGallerySets(p){
+  const sets=[{subtitle:p.gallerySubtitle||'', items:pdMediaList(p)}];
+  (p.extraGalleries||[]).slice(0, GALLERY_SET_MAX-1).forEach(g=>sets.push({subtitle:(g&&g.subtitle)||'', items:((g&&g.items)||[]).map(x=>({url:x.url,type:'image'}))}));
+  return sets.filter(g=>g.items.length);
+}
+function pdGalleryEl(k){ return document.querySelector(`#pdContent .pd-gallery[data-gset="${k}"]`); }
+// [성능] 자동 슬라이드 타이머는 세트 수와 무관하게 하나만 돌리고, 화면에 보이는 세트만 넘긴다
+// (IntersectionObserver) — 화면 밖 갤러리는 사진을 새로 불러오지도, 전환 애니메이션을 돌리지도 않는다
 function startGalleryAutoSlide(p){
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
-  if (p.galleryConfig && p.galleryConfig.autoSlide && pdMediaList(p).length>1){
-    pdGalleryTimer=setInterval(()=>pdGalleryNext(1),4000);
+  pdGalleryTimer=null;
+  if (p.galleryConfig && p.galleryConfig.autoSlide && pdGallerySets(p).some(g=>g.items.length>1)){
+    pdGalleryTimer=setInterval(pdGalleryAutoTick,4000);
   }
 }
-function pdGalleryNext(dir){
-  if (!currentPd) return;
-  const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
-  const n=pdMediaList(p).length; if (n<=1) return;
-  pdGalleryIdx=(pdGalleryIdx+dir+n)%n;
-  updateGalleryDisplay();
+function pdGalleryAutoTick(){
+  const now=Date.now();
+  pdGalleryVisible.forEach(k=>{
+    if (now-(pdGalleryTouchedAt[k]||0) < 4000) return; // 방금 직접 넘긴 세트는 한 박자 쉬고
+    pdGalleryStep(1, k);
+  });
 }
-function pdGalleryGo(i){
-  pdGalleryIdx=i; updateGalleryDisplay();
-  if (currentPd){
-    const p=getProducts(currentPd.catId)[currentPd.idx];
-    startGalleryAutoSlide(p);
-  }
+function pdObserveGalleries(){
+  if (pdGalleryObserver) pdGalleryObserver.disconnect();
+  pdGalleryVisible=new Set();
+  const els=document.querySelectorAll('#pdContent .pd-gallery[data-gset]');
+  if (!els.length) return;
+  if (!('IntersectionObserver' in window)){ els.forEach(el=>pdGalleryVisible.add(+el.dataset.gset)); return; }
+  pdGalleryObserver=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{ const k=+en.target.dataset.gset; if (en.isIntersecting){ pdGalleryVisible.add(k); updateGalleryDisplay(k); } else pdGalleryVisible.delete(k); });
+  }, {threshold:0.35});
+  els.forEach(el=>pdGalleryObserver.observe(el));
+}
+function pdGalleryStep(dir, k){
+  const g=pdGalleryEl(k); if (!g) return;
+  const n=g.querySelectorAll('.pd-gallery-main img').length; if (n<=1) return;
+  pdGalleryIdxs[k]=((pdGalleryIdxs[k]||0)+dir+n)%n;
+  if (k===0) pdGalleryIdx=pdGalleryIdxs[0];
+  updateGalleryDisplay(k);
+}
+function pdGalleryNext(dir, k){
+  k=k||0;
+  pdGalleryTouchedAt[k]=Date.now();
+  pdGalleryStep(dir, k);
+}
+function pdGalleryGo(i, k){
+  k=k||0;
+  pdGalleryIdxs[k]=i; if (k===0) pdGalleryIdx=i;
+  pdGalleryTouchedAt[k]=Date.now();
+  updateGalleryDisplay(k);
 }
 // [수정] 요금 항목 박스를 어디를 클릭하든 그 항목의 "상세보기"가 펼쳐지도록 함
 function togglePeMore(cardEl){
@@ -10137,14 +10200,22 @@ function pdToggleVideoPlay(el){
   if (v.paused){ v.play().catch(()=>{}); el.classList.add('playing'); }
   else { v.pause(); el.classList.remove('playing'); }
 }
-function updateGalleryDisplay(){
-  document.querySelectorAll('#pdContent .pd-gallery-main img').forEach((el,i)=>el.classList.toggle('active',i===pdGalleryIdx));
-  document.querySelectorAll('#pdContent .pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===pdGalleryIdx));
-  const counter=document.querySelector('#pdContent .pd-gallery-counter');
-  if (counter){
-    const total=document.querySelectorAll('#pdContent .pd-gallery-main img').length;
-    counter.textContent=`${pdGalleryIdx+1} / ${total}`;
-  }
+// [성능] 갤러리 사진은 첫 장만 src를 넣어 그리고, 나머지는 data-src로 두었다가 지금 사진과 바로 앞·뒤
+// 사진만 그때그때 불러온다 — 세트가 3개·사진이 수십 장이어도 처음 열 때 받는 사진은 세트당 1장뿐
+function updateGalleryDisplay(k){
+  if (k===undefined){ document.querySelectorAll('#pdContent .pd-gallery[data-gset]').forEach(g=>updateGalleryDisplay(+g.dataset.gset)); return; }
+  const g=pdGalleryEl(k); if (!g) return;
+  const idx=pdGalleryIdxs[k]||0;
+  const imgs=g.querySelectorAll('.pd-gallery-main img'), n=imgs.length;
+  imgs.forEach((el,i)=>{
+    el.classList.toggle('active',i===idx);
+    // 앞·뒤 사진은 그 세트가 화면에 보일 때만 미리 불러온다(화면 밖 세트는 지금 사진 1장만)
+    const near = i===idx || (pdGalleryVisible.has(k) && (i===(idx+1)%n || i===(idx-1+n)%n));
+    if (el.dataset.src && near){ el.src=el.dataset.src; el.removeAttribute('data-src'); }
+  });
+  g.querySelectorAll('.pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  const counter=g.querySelector('.pd-gallery-counter');
+  if (counter) counter.textContent=`${idx+1} / ${n}`;
 }
 
 const AIRFARE_TXT={included:'항공 포함',excluded:'항공 불포함',none:''};
@@ -10259,21 +10330,29 @@ function renderProductDetail(p,cat,idx){
   }
 
   // [수정] "갤러리" → "이미지 갤러리"로 명칭 변경, 동영상 분리로 이미지만 노출
-  const pdMedia = pdMediaList(p);
-  if (pdMedia.length){
-    html += `<div class="pd-slot pd-gallery">
-      <div class="pd-section-title">🖼️ 이미지 갤러리</div>
+  // [추가] 이미지 갤러리 최대 3세트(골프장 2색·3색 코스별 등) + 세트별 부제 — 사진이 있는 세트만 노출
+  const gSets = pdGallerySets(p);
+  const thumbLayout = !p.galleryConfig || p.galleryConfig.layout==='thumb';
+  const altBase = escapeAttr(productImgAlt(cat,p));
+  gSets.forEach((g,k)=>{
+    const items=g.items, n=items.length;
+    const sub = g.subtitle ? `<span class="pd-gallery-sub">${escapeAttr(g.subtitle)}</span>` : '';
+    const num = gSets.length>1 && !g.subtitle ? ` ${k+1}` : '';
+    html += `<div class="pd-slot pd-gallery" data-gset="${k}">
+      <div class="pd-section-title">🖼️ 이미지 갤러리${num}${sub}</div>
       <div class="pd-gallery-main">
-        ${pdMedia.map((m,i)=>`<img src="${escapeAttr(m.url)}" class="${i===0?'active':''}" alt="${escapeAttr(productImgAlt(cat,p))} - 사진 ${i+1}" loading="${i===0?'eager':'lazy'}" decoding="async">`).join('')}
-        ${pdMedia.length>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryNext(-1)" aria-label="이전">‹</button>
-        <button class="pd-gallery-nav next" onclick="pdGalleryNext(1)" aria-label="다음">›</button>
-        <span class="pd-gallery-counter">1 / ${pdMedia.length}</span>`:''}
+        ${items.map((m,i)=> i===0
+          ? `<img src="${escapeAttr(m.url)}" class="active" alt="${altBase}${g.subtitle?' '+escapeAttr(g.subtitle):''} - 사진 1" loading="${k===0?'eager':'lazy'}" decoding="async">`
+          : `<img data-src="${escapeAttr(m.url)}" alt="${altBase}${g.subtitle?' '+escapeAttr(g.subtitle):''} - 사진 ${i+1}" decoding="async">`).join('')}
+        ${n>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryNext(-1,${k})" aria-label="이전">‹</button>
+        <button class="pd-gallery-nav next" onclick="pdGalleryNext(1,${k})" aria-label="다음">›</button>
+        <span class="pd-gallery-counter">1 / ${n}</span>`:''}
       </div>
-      ${(!p.galleryConfig || p.galleryConfig.layout==='thumb') && pdMedia.length>1 ? `<div class="pd-thumbs">
-        ${pdMedia.map((m,i)=>`<div class="pd-thumb ${i===0?'active':''}" style="background-image:url('${escapeAttr(m.url)}')" onclick="pdGalleryGo(${i})"></div>`).join('')}
+      ${thumbLayout && n>1 ? `<div class="pd-thumbs">
+        ${items.map((m,i)=>`<div class="pd-thumb ${i===0?'active':''}" onclick="pdGalleryGo(${i},${k})"><img src="${escapeAttr(m.url)}" alt="" loading="lazy" decoding="async"></div>`).join('')}
       </div>` : ''}
     </div>`;
-  }
+  });
 
   // [수정] "상품 정보" → "상품기본정보"로 명칭 변경, 이미지 갤러리 아래로 이동.
   // 연결 링크(p.linkUrl)는 여기서 빼서 요금표 하단 우측(브랜드 인식 버튼)으로 이동
@@ -10306,12 +10385,6 @@ function renderProductDetail(p,cat,idx){
   const bulletRows = (txt, icon) => txt.split('\n').map(s=>s.trim()).filter(Boolean)
     .map(line=>`<div class="row"><span class="ic">${icon}</span><span>${escapeAttr(line)}</span></div>`).join('');
 
-  // [수정] "공통 안내"·"항공/이동 정보"(구 "여행 정보")를 상품기본정보 바로 아래로 이동 —
-  // 요금표보다 먼저 노출되도록 순서를 옮긴다
-  const notesRows = bulletRowsRich(p.notes||'','•');
-  if (notesRows){
-    html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
-  }
   // [수정] 공통 항공/이동 정보 — 공통 레이블(또는 모든 요금 항목이 같은 값)을 여기서 한 번만 보여준다.
   // 항공 포함 여부·체류일·출발 요일은 원래 요금 항목 카드에만 배지로 나왔는데, 이제 공통값이면 여기로
   // 모아서 보여주고 각 항목 카드에서는 공통과 다를 때만 표시한다
@@ -10350,6 +10423,12 @@ function renderProductDetail(p,cat,idx){
         ${commonOverrideNote(['included','notIncluded','precautions'])}
       </div>
     </div>`;
+  }
+  // [수정] "공통 안내"는 요금표 바로 위(포함·불포함·참고사항 다음)에 노출 — 요금표를 보기 직전에
+  // 꼭 확인해야 하는 안내이므로 요금표와 붙여 둔다
+  const notesRows = bulletRowsRich(p.notes||'','•');
+  if (notesRows){
+    html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
   }
   // [수정] 요금표를 갤러리 아래로 이동
   if (visiblePriceEntries.length){
@@ -10589,7 +10668,8 @@ function renderProductDetail(p,cat,idx){
   const pdTitleVideo = c.querySelector('.pd-title-media video');
   if (pdTitleVideo) pdTitleVideo.play().catch(()=>{});
   // Sync gallery display
-  setTimeout(updateGalleryDisplay,50);
+  setTimeout(()=>updateGalleryDisplay(),50);
+  pdObserveGalleries();
 }
 
 // [버그 수정] html2canvas는 일정 요약 타임라인의 원형/알약 배지(.pd-sch-day-num, .pd-sch-opt .tag,
@@ -10793,8 +10873,8 @@ function offerShare(btn, origLabel, file, title, restart){
 // 등 메신저에서도 그 사진 그대로 미리보기에 노출된다
 function pdShareImageUrl(p, catId){
   if (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
-  const gallery = pdMediaList(p);
-  if (gallery.length && gallery[0].url) return gallery[0].url;
+  const gallery = pdGallerySets(p);
+  if (gallery.length && gallery[0].items[0].url) return gallery[0].items[0].url;
   return getImage(catId) || '';
 }
 async function shareProductImage(btn){
@@ -12035,7 +12115,7 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
         <div><div class="mw-label-row"><label>${transferFieldLabel} <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
         <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
-        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~4는 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
+        <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~10은 고급 편집에서 입력</span></label><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)"></div>
         <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
         <div class="full"><label>체크포인트1(주의사항) (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
         <div class="full"><label>체크포인트2(참고사항) (자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
@@ -12518,7 +12598,7 @@ function advBasicHTML(p){
   const f = v => advFilled(v) ? 1 : 0;
   // ── 상태 배지 계산 ──
   const exposeN = f(p.editorsPick) + f((p.months||[]).length ? 'y' : '');
-  const cardKeys = [p.titleMedia&&p.titleMedia.url, p.title, p.nights, p.from, p.checkpoint1, p.cardTag1||p.cardTag2||p.cardTag3||p.cardTag4];
+  const cardKeys = [p.titleMedia&&p.titleMedia.url, p.title, p.nights, p.from, p.checkpoint1, cardTagsOf(p).length?'y':''];
   const cardN = cardKeys.filter(advFilled).length;
   const basicN = [p.minPeople, p.rounds, (p.airfareIncluded&&p.airfareIncluded!=='none')?'y':'', p.stay, p.meals].filter(advFilled).length;
   const moveN = [isDomestic?'':p.flightTime, p.hotelToGolfTime, p.transferTime].filter(advFilled).length;
@@ -12607,12 +12687,9 @@ function advBasicHTML(p){
             </label>
           </div>
         </div>
-        <label>카드 태그 ${hint('(상품 카드의 요금 위쪽에 노출, 최대 4개)')}</label>
-        <div class="grid-2">
-          <div><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="카드태그1 · 예: BEST" oninput="updateAdvField('cardTag1',this.value)"></div>
-          <div><input type="text" value="${escapeAttr(p.cardTag2||'')}" placeholder="카드태그2" oninput="updateAdvField('cardTag2',this.value)"></div>
-          <div><input type="text" value="${escapeAttr(p.cardTag3||'')}" placeholder="카드태그3" oninput="updateAdvField('cardTag3',this.value)"></div>
-          <div><input type="text" value="${escapeAttr(p.cardTag4||'')}" placeholder="카드태그4" oninput="updateAdvField('cardTag4',this.value)"></div>
+        <label>카드 태그 ${hint(`(상품 카드의 요금 위쪽에 노출, 최대 ${CARD_TAG_MAX}개 · 입력한 순서대로 표시)`)}</label>
+        <div class="card-tag-grid">
+          ${Array.from({length:CARD_TAG_MAX},(_,k)=>k+1).map(n=>`<input type="text" value="${escapeAttr(p['cardTag'+n]||'')}" placeholder="태그${n}${n===1?' · 예: BEST':''}" oninput="updateAdvField('cardTag${n}',this.value)">`).join('')}
         </div>
         <label>체크포인트1(주의사항) ${hint('(상품 카드의 기간 위 강조 박스에 노출)')}</label>
         <textarea class="cp1-field" style="min-height:120px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
@@ -12648,10 +12725,6 @@ function advBasicHTML(p){
     <details class="adv-group" ${advDetailsAttrs('g-detail', true)}>
       <summary><span class="adv-g-title">📄 자세히 보기 (공통)</span><span class="adv-where">상세 페이지 · 요금 항목에서 비워두면 이 값 적용</span>${advFillBadge(detailSecN, 8)}</summary>
       <div class="adv-group-body">
-        <details class="pe-labels" ${advDetailsAttrs('d-notes', false)}>
-          <summary>✳️ 공통 안내 ${advFillBadge(f(p.notes),1)}</summary>
-          <div class="pe-labels-body">${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'160px'})}</div>
-        </details>
         <!-- [수정] 항공/이동 정보와 출발 요일을 한 섹션으로 — 상세 페이지 "항공/이동 정보"에 함께 노출된다 -->
         <details class="pe-labels" ${advDetailsAttrs('d-air', false)}>
           <summary>🏷 항공/이동 정보 · 출발 요일 ${advFillBadge(airN,7)}</summary>
@@ -12667,6 +12740,11 @@ function advBasicHTML(p){
             <label>🌟 참고사항 ${hint('(= 체크포인트2 · 불포함사항 바로 아래에 노출)')}</label>
             <textarea class="auto-grow" style="min-height:140px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
           </div>
+        </details>
+        <!-- 상세 페이지에서 요금표 바로 위에 노출 -->
+        <details class="pe-labels" ${advDetailsAttrs('d-notes', false)}>
+          <summary>✳️ 공통 안내 ${advFillBadge(f(p.notes),1)}</summary>
+          <div class="pe-labels-body">${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'160px'})}</div>
         </details>
         <details class="pe-labels" ${advDetailsAttrs('d-dp', false)}>
           <summary>🗓️ 출발 요일별 · 공휴일 요금 ${advFillBadge(dpN,2)}</summary>
@@ -13552,30 +13630,10 @@ function advMediaHTML(p){
       <span class="file-hint">세로형 포스터 이미지 권장 · 10MB 이하 · 클릭 시 원본 크기로 보기 + 상품 상세로 이동 가능</span>
     </div>
 
-    <label>갤러리 이미지 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(${p.gallery.length}/20 · 드래그하여 순서 변경)</span></label>
-    <div class="media-slot">
-      <div class="media-controls" style="margin-bottom:10px">
-        <label class="media-btn ${p.gallery.length >= 20 ? 'disabled':''}">📷 이미지 추가 (다중 선택)<input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this)" ${p.gallery.length >= 20 ? 'disabled':''}></label>
-        <span style="font-size:.72rem;color:rgba(247,245,240,.5);margin-left:8px">최대 20장 · 권장 1200×750px (16:10 비율)</span>
-      </div>
-      <div class="gallery-list" id="galleryList">
-        ${p.gallery.map((g,i)=>`
-        <div class="gallery-thumb" draggable="true" data-idx="${i}"
-             ondragstart="galDragStart(event,${i})" ondragover="galDragOver(event)"
-             ondrop="galDrop(event,${i})" ondragend="galDragEnd(event)" ondragleave="galDragLeave(event)"
-             style="background-image:url('${escapeAttr(g.url)}')">
-          <span class="g-order">${i+1}</span>
-          <div class="g-actions">
-            <button class="g-btn del" onclick="removeGallery(${i})" title="삭제">×</button>
-          </div>
-        </div>`).join('')}
-        ${p.gallery.length < 20 ? `<label class="gallery-add-slot" title="빈 슬롯 · 클릭하여 이미지 추가">
-          <input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this)">
-          <span class="add-icon">+</span>
-          <span class="add-lbl">Add</span>
-        </label>` : ''}
-      </div>
-    </div>
+    <!-- [추가] 이미지 갤러리 최대 3세트 — 골프장 2색·3색 구성처럼 코스별로 사진을 나눠 등록하고,
+         세트마다 제목 옆에 부제(예: "레이크 코스")를 붙일 수 있다. 사진은 세트 사이로도 드래그해 옮길 수 있다 -->
+    ${[0].concat((p.extraGalleries||[]).map((_,k)=>k+1)).slice(0,GALLERY_SET_MAX).map(set=>galleryEditorHTML(p,set)).join('')}
+    ${(p.extraGalleries||[]).length < GALLERY_SET_MAX-1 ? `<button type="button" class="apc-btn-sm gallery-set-add" onclick="addGallerySet()">+ 이미지 갤러리 세트 추가 (${1+(p.extraGalleries||[]).length}/${GALLERY_SET_MAX})</button>` : ''}
 
     <label>갤러리 레이아웃</label>
     <select onchange="updateAdvField('galleryConfig.layout',this.value)">
@@ -13675,24 +13733,90 @@ function toggleCardLabelOutside(i, checked){
   saveAdvChange();renderAdvBody();
 }
 
+// [추가] 이미지 갤러리 세트(set 0 = 기본 p.gallery, 1·2 = p.extraGalleries[set-1].items)
+function galItems(p, set){
+  if (!set) return p.gallery;
+  const g=(p.extraGalleries||[])[set-1];
+  if (!g) return [];
+  if (!Array.isArray(g.items)) g.items=[];
+  return g.items;
+}
+function galleryEditorHTML(p, set){
+  const items=galItems(p,set), n=items.length, full=n>=GALLERY_IMG_MAX;
+  const subtitle = set ? ((p.extraGalleries[set-1]||{}).subtitle||'') : (p.gallerySubtitle||'');
+  return `
+    <div class="gallery-set" data-gset="${set}">
+      <div class="gallery-set-head">
+        <span class="gallery-set-title">🖼️ 이미지 갤러리 ${set+1}</span>
+        <input type="text" class="gallery-set-sub" value="${escapeAttr(subtitle)}" placeholder="부제 (선택) · 예: 레이크 코스" oninput="updateGallerySubtitle(${set},this.value)">
+        ${set?`<button type="button" class="apc-btn-sm apc-delete" onclick="removeGallerySet(${set})">세트 삭제</button>`:''}
+      </div>
+      <span class="gallery-set-count">${n}/${GALLERY_IMG_MAX} · 드래그하여 순서 변경${GALLERY_SET_MAX>1?' · 다른 세트로 끌어 옮기기 가능':''}</span>
+      <div class="media-slot">
+        <div class="media-controls" style="margin-bottom:10px">
+          <label class="media-btn ${full?'disabled':''}">📷 이미지 추가 (다중 선택)<input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this,${set})" ${full?'disabled':''}></label>
+          <span style="font-size:.72rem;color:rgba(247,245,240,.5);margin-left:8px">최대 ${GALLERY_IMG_MAX}장 · 권장 1200×750px (16:10 비율)</span>
+        </div>
+        <div class="gallery-list"${set?'':' id="galleryList"'}>
+          ${items.map((g,i)=>`
+          <div class="gallery-thumb" draggable="true" data-idx="${i}"
+               ondragstart="galDragStart(event,${i},${set})" ondragover="galDragOver(event)"
+               ondrop="galDrop(event,${i},${set})" ondragend="galDragEnd(event)" ondragleave="galDragLeave(event)">
+            <img src="${escapeAttr(g.url)}" alt="" loading="lazy" decoding="async">
+            <span class="g-order">${i+1}</span>
+            <div class="g-actions">
+              <button class="g-btn del" onclick="removeGallery(${i},${set})" title="삭제">×</button>
+            </div>
+          </div>`).join('')}
+          ${!full ? `<label class="gallery-add-slot" title="빈 슬롯 · 클릭하여 이미지 추가 (다른 세트의 사진을 여기로 끌어 옮길 수도 있음)" ondragover="galDragOver(event)" ondragleave="galDragLeave(event)" ondrop="galDrop(event,${n},${set})">
+            <input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this,${set})">
+            <span class="add-icon">+</span>
+            <span class="add-lbl">Add</span>
+          </label>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+function updateGallerySubtitle(set, val){
+  const p=getAdvProduct(); if (!p) return;
+  if (!set) p.gallerySubtitle=val;
+  else if (p.extraGalleries[set-1]) p.extraGalleries[set-1].subtitle=val;
+  saveAdvChange();
+}
+function addGallerySet(){
+  const p=getAdvProduct(); if (!p) return;
+  if (!Array.isArray(p.extraGalleries)) p.extraGalleries=[];
+  if (p.extraGalleries.length >= GALLERY_SET_MAX-1) return;
+  p.extraGalleries.push({subtitle:'', items:[]});
+  saveAdvChange(); renderAdvBody();
+}
+function removeGallerySet(set){
+  const p=getAdvProduct(); if (!p || !p.extraGalleries[set-1]) return;
+  const n=galItems(p,set).length;
+  if (!confirm(`이미지 갤러리 ${set+1}${n?`(사진 ${n}장)`:''}을(를) 삭제하시겠습니까?`)) return;
+  p.extraGalleries.splice(set-1,1);
+  saveAdvChange(); renderAdvBody();
+}
 // 갤러리 업로드 · 삭제 · 드래그&드롭
-async function handleGalleryUpload(inputEl){
+async function handleGalleryUpload(inputEl, set){
+  set=set||0;
   const files=Array.from(inputEl.files||[]); if (!files.length) return;
   const p=getAdvProduct(); if (!p) return;
-  const remaining = 20 - p.gallery.length;
-  if (remaining <= 0){ alert('갤러리는 최대 20장까지만 등록 가능합니다.'); inputEl.value=''; return; }
+  const items=galItems(p,set);
+  const remaining = GALLERY_IMG_MAX - items.length;
+  if (remaining <= 0){ alert(`갤러리는 세트당 최대 ${GALLERY_IMG_MAX}장까지만 등록 가능합니다.`); inputEl.value=''; return; }
   const toAdd = files.slice(0, remaining);
   if (files.length > remaining){ alert(`잔여 슬롯 ${remaining}장만 추가됩니다 (선택된 ${files.length}장 중).`); }
   for (const file of toAdd){
     if (file.size>10*1024*1024){alert(`${file.name} 는 10MB를 초과합니다.`);continue}
-    try{const url=await uploadToStorage(file, 'products');p.gallery.push({url})}catch(e){alert(`${file.name} 업로드 실패: `+(e.message||e))}
+    try{const url=await uploadToStorage(file, 'products');items.push({url})}catch(e){alert(`${file.name} 업로드 실패: `+(e.message||e))}
   }
   saveAdvChange();renderAdvBody();
   inputEl.value='';
 }
-function removeGallery(i){
+function removeGallery(i, set){
   const p=getAdvProduct(); if (!p) return;
-  p.gallery.splice(i,1); saveAdvChange(); renderAdvBody();
+  galItems(p,set||0).splice(i,1); saveAdvChange(); renderAdvBody();
 }
 // [Phase 3 상품등록 개선] 동영상 갤러리 업로드 · 삭제
 async function handleVideoGalleryUpload(inputEl){
@@ -13730,16 +13854,17 @@ function removePkgPoster(){
   const p=getAdvProduct(); if (!p) return;
   p.pkgPoster=null; saveAdvChange();renderAdvBody();
 }
-function moveGallery(i,dir){
+function moveGallery(i,dir,set){
   const p=getAdvProduct(); if (!p) return;
-  const j=i+dir; if (j<0||j>=p.gallery.length) return;
-  [p.gallery[i],p.gallery[j]]=[p.gallery[j],p.gallery[i]];
+  const items=galItems(p,set||0);
+  const j=i+dir; if (j<0||j>=items.length) return;
+  [items[i],items[j]]=[items[j],items[i]];
   saveAdvChange();renderAdvBody();
 }
-// HTML5 드래그 앤 드롭
-let galDragIdx = null;
-function galDragStart(e, idx){
-  galDragIdx = idx;
+// HTML5 드래그 앤 드롭 — 같은 세트 안에서는 순서 변경, 다른 세트에 놓으면 그 세트로 옮긴다
+let galDragIdx = null, galDragSet = 0;
+function galDragStart(e, idx, set){
+  galDragIdx = idx; galDragSet = set||0;
   e.dataTransfer.effectAllowed = 'move';
   e.currentTarget.classList.add('dragging');
 }
@@ -13749,12 +13874,17 @@ function galDragEnd(e){
   document.querySelectorAll('.gallery-thumb').forEach(t=>{ t.classList.remove('dragging'); t.classList.remove('drag-over'); });
   galDragIdx = null;
 }
-function galDrop(e, targetIdx){
+function galDrop(e, targetIdx, set){
   e.preventDefault();
-  if (galDragIdx === null || galDragIdx === targetIdx) return;
+  set=set||0;
+  if (galDragIdx === null || (galDragIdx === targetIdx && galDragSet === set)) return;
   const p = getAdvProduct(); if (!p) return;
-  const item = p.gallery.splice(galDragIdx, 1)[0];
-  p.gallery.splice(targetIdx, 0, item);
+  const src=galItems(p,galDragSet), dst=galItems(p,set);
+  if (set!==galDragSet && dst.length>=GALLERY_IMG_MAX){ alert(`이미지 갤러리 ${set+1}은(는) 이미 ${GALLERY_IMG_MAX}장이 가득 찼습니다.`); galDragIdx=null; return; }
+  const item = src.splice(galDragIdx, 1)[0];
+  if (!item){ galDragIdx=null; return; }
+  dst.splice(Math.min(targetIdx, dst.length), 0, item);
+  galDragIdx = null;
   saveAdvChange(); renderAdvBody();
 }
 
@@ -14041,7 +14171,7 @@ function computeAiRecommendations(criteria){
       if (criteria.duration==='any') score += 10;
       else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
       else score += 5;
-      const haystack = [p.cardTag1||'', p.cardTag2||'', p.cardTag3||'', p.cardTag4||'', p.title||''].concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
+      const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
       criteria.styles.forEach(styleVal=>{
         const kws = STYLE_KEYWORDS[styleVal]||[];
         if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }

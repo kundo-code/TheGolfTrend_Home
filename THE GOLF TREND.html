@@ -315,6 +315,11 @@ section.block{padding:100px 24px;position:relative}
 .cat-card .divider::before,.cat-card .divider::after{content:'';height:1px;background:var(--gold);flex:1;max-width:60px;opacity:.7}
 .cat-card .name-ko{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,3.6vw,3rem);color:#fff;line-height:1.05;letter-spacing:.02em;text-shadow:0 4px 20px rgba(0,0,0,.4);word-break:keep-all}
 .cat-card .name-en{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:500;color:var(--gold);font-size:.95rem;letter-spacing:.25em;margin-top:6px;text-transform:uppercase}
+/* [추가] 타이틀 이미지 위 "상품 준비중" 문구 — 이미지 가로·세로 정중앙. 글꼴·굵기·크기·그림자는 권역별·
+   국가별 카드의 지역명(.cat-card .name-ko)과 동일(모바일도 아래 미디어쿼리에서 같은 크기로 맞춘다).
+   글자가 사진 위에서도 잘 읽히도록 이미지 전체를 살짝 어둡게 덮는다 */
+.prep-overlay{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:8px;background:rgba(0,0,0,.32);border-radius:inherit;pointer-events:none;text-align:center}
+.prep-overlay-text{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,3.6vw,3rem);color:#fff;line-height:1.05;letter-spacing:.02em;text-shadow:0 4px 20px rgba(0,0,0,.4);word-break:keep-all}
 /* [Phase] 모바일에서는 국가별/권역별 선택 카드를 한 줄에 3개씩 고정으로 배치한다 — 국내 6개는
    3열×2줄, 해외 9개는 3열×3줄(열 개수 자체는 아래 RESPONSIVE 섹션에서 지정 — 1024px 구간
    규칙보다 뒤에 있어야 우선 적용되므로 그쪽으로 모아둠). 자세한 문구(태그라인·상품 수 배지·
@@ -343,6 +348,14 @@ section.block{padding:100px 24px;position:relative}
    넘기므로, 이 구간만 3줄이 되지 않는 한도 내에서 최대치(약 104%)로 살짝 낮춘다 */
 @media(max-width:329px){
   .cat-card .name-ko{font-size:14.352vw;font-size:15.6cqw}
+}
+/* 모바일: 권역·국가 카드 한 장의 폭 = (100vw - 좌우 여백·간격 합계 46px) / 3 (실측),
+   지역명 글자 크기 = 그 폭의 15.75%(329px 이하 15.6%) — 같은 계산으로 문구 크기를 맞춘다 */
+@media(max-width:780px){
+  .prep-overlay-text{font-size:calc((100vw - 46px) * .0525);line-height:1.15;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+}
+@media(max-width:329px){
+  .prep-overlay-text{font-size:calc((100vw - 46px) * .052)}
 }
 
 /* CATEGORY VIEW + PRODUCT GRID */
@@ -573,6 +586,12 @@ section.block{padding:100px 24px;position:relative}
 .product-tag-row{margin-bottom:8px;text-align:left;display:flex;flex-wrap:wrap;gap:6px}
 .card-tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .card-tag-editor .card-tag-grid{padding:10px}
+.prep-preview-wrap{position:relative;display:block;width:fit-content;max-width:100%;margin:0 auto 10px;border-radius:8px;overflow:hidden;line-height:0}
+.prep-preview-wrap .media-preview{display:block;margin:0}
+.prep-preview-wrap .prep-overlay-text{font-size:1.6rem;line-height:1.1}
+.prep-overlay-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset)}
+.adv-body input.prep-overlay-input{flex:1;min-width:160px;width:auto}
+.prep-overlay-row .adv-badge{margin-left:0}
 .ctag-cell{display:flex;align-items:center;gap:4px;min-width:0}
 /* 편집 칸을 실제 카드 태그(.tag-inline)와 같은 모양으로 — 서식·박스 색상 결과를 바로 확인 */
 .rtf-editable.ctag-edit{flex:1;min-width:0;min-height:0;padding:5px 12px;border-radius:100px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);color:#4B5563;font-size:.8rem;font-weight:700;letter-spacing:.03em;line-height:1.4;white-space:normal;overflow:hidden}
@@ -4927,6 +4946,9 @@ function ensureExtended(p){
   // [수정] meta 정보(라운드/숙박/식사/항공포함여부/비행시간/소요시간) 개별 항목을 상품 카드에서
   // 한 줄 전체 폭으로 표시할지 여부 — 관리자 패널의 각 항목 "한 줄로" 토글로 설정
   if (!p.metaWide) p.metaWide = {};
+  // [추가] 타이틀 이미지 위 "상품 준비중" 문구 — 토글(prepOverlay)과 문구(prepOverlayText)
+  if (p.prepOverlay===undefined) p.prepOverlay = false;
+  if (p.prepOverlayText===undefined) p.prepOverlayText = '';
   // [추가] "요금 항목 추가" 전에도 미리 입력해둘 수 있는 공통(요금 항목과 무관) 버전 — 상품
   // 상세 페이지의 "공통 안내" 바로 위에 노출된다. 요금 항목별 값과는 별도로 보관한다
   if (p.commonIncluded===undefined) p.commonIncluded = '';
@@ -8507,6 +8529,14 @@ function cardTagBoxStyle(bg){
   const dark=(0.299*r+0.587*g+0.114*b)/255 < 0.6;
   return `background:${bg};border-color:${bg};${dark?'color:#fff;':''}`;
 }
+// [추가] 타이틀 이미지 위 안내 문구(기본 "상품 준비중") — 관리자 토글로 켜고 끈다. 이미지 가로·세로
+// 정중앙에, 권역별·국가별 카드 이미지의 지역명(.cat-card .name-ko)과 같은 글꼴·크기로 표시한다
+const PREP_OVERLAY_DEFAULT = '상품 준비중';
+function prepOverlayHTML(p){
+  if (!p || !p.prepOverlay) return '';
+  const txt = (p.prepOverlayText||'').trim() || PREP_OVERLAY_DEFAULT;
+  return `<div class="prep-overlay" aria-label="${escapeAttr(txt)}"><span class="prep-overlay-text">${escapeAttr(txt)}</span></div>`;
+}
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
   // If product has titleMedia image, use that instead
@@ -8568,6 +8598,7 @@ function productCardHTML(p, catId, idx){
         <div class="pv-bg lazy-bg" data-bg-src="${escapeAttr(visualUrl)}"></div>
         ${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop preload="metadata" aria-hidden="true"></video>`:''}
       </div>
+      ${prepOverlayHTML(p)}
       ${cardLabelOverlay.html}
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
@@ -9026,7 +9057,7 @@ function renderSpotlightSlot(slot, layer, entry){
   // [Phase] 상품 카드와 동일하게 "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 노출
   const spotLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   visualEl.classList.toggle('pv-label-overflow', spotLabelOverlay.hasOutside);
-  visualEl.innerHTML = `<div class="sv-clip"><div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}</div>${spotLabelOverlay.html}`;
+  visualEl.innerHTML = `<div class="sv-clip"><div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}</div>${prepOverlayHTML(p)}${spotLabelOverlay.html}`;
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째, 숨김 제외)의 레이블에서 가져온다
@@ -12700,12 +12731,22 @@ function advBasicHTML(p){
         <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 카드·자세히 보기 상단 대표 이미지 -->
         <label>타이틀 이미지</label>
         <div class="media-slot">
-          ${tm&&tm.url?(tm.type==='video'?`<video src="${escapeAttr(tm.url)}" class="media-preview" controls muted></video>`:`<img src="${escapeAttr(tm.url)}" class="media-preview">`):`<div style="color:var(--nm-text-soft);padding:20px 0">타이틀 이미지를 업로드하세요</div>`}
+          ${tm&&tm.url?(tm.type==='video'?`<video src="${escapeAttr(tm.url)}" class="media-preview" controls muted></video>`:`<div class="prep-preview-wrap"><img src="${escapeAttr(tm.url)}" class="media-preview">${prepOverlayHTML(p)}</div>`):`<div style="color:var(--nm-text-soft);padding:20px 0">타이틀 이미지를 업로드하세요</div>`}
           <div class="media-controls">
             <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
             ${tm&&tm.url?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
           </div>
           <span class="file-hint">권장(원본) 1080×810px (4:3 비율) · 10MB 이하</span>
+        </div>
+        <!-- [추가] 타이틀 이미지 위 안내 문구 — 켜면 상품 카드(·EDITOR'S PICK·팝업) 이미지 정중앙에 표시 -->
+        <div class="prep-overlay-row">
+          <label class="popup-toggle" title="상품 카드 이미지 정중앙에 문구 표시">
+            <input type="checkbox" ${p.prepOverlay?'checked':''} onchange="updateAdvField('prepOverlay',this.checked);renderAdvBody()">
+            <span class="toggle-slider"></span>
+            <span class="pt-lbl">이미지 위 문구</span>
+          </label>
+          <input type="text" class="prep-overlay-input" value="${escapeAttr(p.prepOverlayText||'')}" placeholder="${PREP_OVERLAY_DEFAULT}" oninput="updateAdvField('prepOverlayText',this.value);prepPreviewText(this.value)">
+          ${advBadge(p.prepOverlay?'ON · 카드에 표시 중':'OFF', p.prepOverlay?'ovr':'empty')}
         </div>
         <!-- [Phase] 상품 카드 이미지 위에 얹는 "신상품" 등 레이블(코너 태그) 이미지 -->
         <details class="adv-collapsible" ${advDetailsAttrs('card-labels', false)}>
@@ -12893,6 +12934,10 @@ function advBasicHTML(p){
   `;
 }
 // 값이 실제로 입력돼 있는지 — 리치 텍스트는 태그를 뺀 내용으로, 'none'은 미입력으로 본다
+function prepPreviewText(v){
+  const el=document.querySelector('#advBody .prep-preview-wrap .prep-overlay-text');
+  if (el) el.textContent=(v||'').trim()||PREP_OVERLAY_DEFAULT;
+}
 function previewCardTagBg(inp){
   const ed=inp.closest('.ctag-cell').querySelector('.ctag-edit');
   ed.setAttribute('style', cardTagBoxStyle(inp.value));
@@ -14478,6 +14523,7 @@ function showEntryPopups(){
       <button class="popup-close" onclick="closeSinglePopup(this)" aria-label="닫기">×</button>
       <div class="popup-visual${popupLabelOverlay.hasOutside?' pv-label-overflow':''}">
         <div class="pv-clip"><div class="pv-bg" style="${bgStyle}"></div></div>
+        ${prepOverlayHTML(p)}
         ${popupLabelOverlay.html}
         ${emphFirst?`<span class="popup-emph ${emphCls}">${escapeAttr(emphFirst)}</span>`:''}
       </div>
@@ -14580,6 +14626,7 @@ function epSlideCardHTML(item, active){
   return `<div class="ep-popup-slide${active?' active':''}">
     <div class="popup-visual${epLabelOverlay.hasOutside?' pv-label-overflow':''}">
       <div class="pv-clip"><div class="pv-bg" style="${bgStyle}"></div></div>
+      ${prepOverlayHTML(p)}
       ${epLabelOverlay.html}
     </div>
     <div class="popup-body">

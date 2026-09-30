@@ -1794,6 +1794,52 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .adv-collapsible summary::before{content:'▸ ';color:var(--nm-blue)}
 .adv-collapsible[open] summary::before{content:'▾ '}
 .adv-collapsible-body{padding:4px 14px 14px}
+/* [추가] 고급편집 "기본 · 요금표" 그룹 정리 — 노출 위치(상품 카드 / 자세히 보기 / 요금 항목)별로
+   큰 그룹(.adv-group)으로 묶고 각 그룹·세부 섹션을 접을 수 있게 함. 상단 빠른 이동 바는 스크롤해도 고정 */
+.adv-quicknav{position:sticky;top:-22px;z-index:6;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-22px -26px 16px;padding:10px 26px;background:var(--nm-surface);border-bottom:1px solid rgba(10,23,48,.08);box-shadow:0 6px 12px -8px rgba(10,23,48,.18)}
+.adv-quicknav button{border:none;background:var(--nm-white);color:var(--nm-text);font-family:inherit;font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:var(--nm-r-pill);cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);white-space:nowrap;transition:all .15s}
+.adv-quicknav button:hover{background:var(--nm-blue);color:#fff}
+.adv-quicknav button b{color:var(--nm-blue);font-weight:800}
+.adv-quicknav button:hover b{color:#fff}
+.adv-qn-sp{flex:1}
+.adv-quicknav .adv-qn-mini{background:transparent;box-shadow:none;color:var(--nm-text-soft);font-size:.7rem;padding:5px 8px;text-decoration:underline;text-underline-offset:3px}
+.adv-quicknav .adv-qn-mini:hover{background:transparent;color:var(--nm-blue)}
+.adv-group{margin:0 0 16px;border-radius:var(--nm-r-md);background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);scroll-margin-top:60px}
+.adv-group > summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;cursor:pointer;list-style:none;user-select:none;border-radius:var(--nm-r-md)}
+.adv-group > summary::-webkit-details-marker{display:none}
+.adv-group > summary::before{content:'▸';color:var(--nm-blue);font-size:.9rem;transition:transform .2s;display:inline-block}
+.adv-group[open] > summary::before{transform:rotate(90deg)}
+.adv-group[open] > summary{border-bottom:1px solid rgba(10,23,48,.08);border-radius:var(--nm-r-md) var(--nm-r-md) 0 0}
+.adv-group > summary:hover{background:rgba(47,111,237,.04)}
+.adv-g-title{font-size:.98rem;font-weight:800;color:var(--nm-blue-deep);letter-spacing:.02em}
+.adv-where{flex:1;min-width:140px;font-size:.72rem;color:var(--nm-text-soft);font-weight:500}
+.adv-group-body{padding:14px 18px 18px}
+.adv-group-body > .pe-labels:first-child,.adv-group-body > .adv-sub-title:first-child{margin-top:0}
+.adv-sub-title{margin:22px 0 4px;padding-bottom:6px;border-bottom:1px solid rgba(10,23,48,.1);font-size:.86rem;font-weight:800;color:var(--nm-text)}
+.adv-sub-note{font-size:.7rem;font-weight:500;color:var(--nm-text-soft)}
+.adv-badge{display:inline-block;vertical-align:middle;margin-left:6px;padding:2px 8px;border-radius:var(--nm-r-pill);font-size:.66rem;font-weight:700;letter-spacing:0;text-transform:none;white-space:nowrap;line-height:1.5}
+.adv-badge.ok{background:rgba(22,184,166,.13);color:#0E7C70}
+.adv-badge.empty{background:rgba(10,23,48,.06);color:var(--nm-text-soft);font-weight:600}
+.adv-badge.inh{background:rgba(47,111,237,.10);color:#2553B8}
+.adv-badge.ovr{background:rgba(240,166,58,.16);color:#9A5F0B}
+.adv-badge.same{background:rgba(22,184,166,.08);color:#0E7C70;font-weight:600}
+.adv-group > summary .adv-badge{margin-left:0}
+.pe-sec{margin-top:10px}
+.pe-sec + .pe-sec{margin-top:8px}
+/* 요금 항목 머리줄 — 접힌 상태에서도 대표 문구를 알아볼 수 있게 최소 폭을 확보하고, 공간이 부족하면 버튼 묶음을 아랫줄로 */
+.pe-item > summary.pe-head{flex-wrap:wrap;row-gap:8px}
+.pe-item > summary.pe-head .pe-title-preview{min-width:130px}
+.pe-item > summary.pe-head .pe-head-right{margin-left:auto}
+.pe-sum-price{flex-shrink:0;font-size:.78rem;font-weight:700;color:var(--nm-blue-deep);white-space:nowrap}
+@media(max-width:640px){
+  .adv-quicknav{padding:8px 26px;gap:4px}
+  .adv-quicknav button{font-size:.7rem;padding:5px 9px}
+  .adv-group-body{padding:12px 12px 14px}
+  .adv-where{flex-basis:100%;order:3;min-width:0}
+  /* 좁은 화면에서는 요금 항목 머리줄의 버튼(팝업 노출·숨기기·복제·삭제)을 아랫줄로 내려 가로 넘침 방지 */
+  .pe-item > summary.pe-head{flex-wrap:wrap;row-gap:8px}
+  .pe-item > summary.pe-head .pe-head-right{flex-basis:100%;justify-content:flex-end;flex-wrap:wrap;gap:6px}
+}
 .sd-info{font-size:.75rem;color:var(--nm-text-soft)}
 
 /* 갤러리 D&D + 빈 슬롯 */
@@ -12183,6 +12229,7 @@ function renderLinkAdminGroup(group){
 // ========== ADVANCED PRODUCT EDITOR ==========
 function openAdvEditor(catId, idx){
   currentAdv={catId, idx}; activeAdvTab='basic';
+  advResetEntryOpenState(); // 요금 항목 펼침 상태는 상품마다 따로 — 다른 상품을 열면 초기화
   const cat=findCat(catId);
   const products=getProducts(catId);
   const p=products[idx];
@@ -12230,7 +12277,8 @@ function renderAdvBody(){
   // [수정] 강조태그·+요일별 요금 추가·+공휴일 요금 추가 등은 renderAdvBody()로 전체를 다시 그리는데,
   // <details>는 다시 그려지면 기본(닫힘) 상태로 초기화된다 — 편집 중이던 요금 항목이 매번 다시
   // 접혀버리지 않도록, 렌더링 전 열려 있던 항목의 인덱스를 기억해뒀다가 렌더링 후 복원한다
-  const openPeIdx = Array.from(body.querySelectorAll('.pe-block.pe-item[open]')).map(d=>d.dataset.idx);
+  // (요금 항목·세부 섹션·그룹의 펼침 상태는 advDetailsAttrs()/advRememberToggle()이 data-ck 키로 기억해
+  //  렌더링 시 그대로 그려준다 — 항목 순서 변경·삭제·복제 시에는 advRemapEntryState()로 함께 옮긴다)
   // [수정] 일정 요약 타임라인의 일자 카드(sch-day-block)도 같은 이유로 재렌더링 전 열려 있던
   // 일자만 골라 기억해뒀다가 렌더링 후 복원 — data-sch-key(peIdx:일자인덱스)로 식별
   const openSchKeys = Array.from(body.querySelectorAll('.sch-day-block[open]')).map(d=>d.dataset.schKey);
@@ -12245,7 +12293,6 @@ function renderAdvBody(){
   else if (activeAdvTab==='media') body.innerHTML=advMediaHTML(p);
   else if (activeAdvTab==='contact') body.innerHTML=advContactHTML(p);
   body.querySelectorAll('textarea.auto-grow').forEach(autoGrowTextarea); // 기존에 입력돼 있던 내용에 맞춰 초기 높이도 조정
-  openPeIdx.forEach(idx=>{ const el=body.querySelector(`.pe-block.pe-item[data-idx="${idx}"]`); if (el) el.open=true; });
   openSchKeys.forEach(key=>{ const el=body.querySelector(`.sch-day-block[data-sch-key="${key}"]`); if (el) el.open=true; });
   openCollapsibleKeys.forEach(key=>{ const el=body.querySelector(`.adv-collapsible[data-ck="${key}"]`); if (el) el.open=true; });
   body.scrollTop = scrollTop;
@@ -12320,205 +12367,307 @@ const CHECKPOINT_GUIDE = `⛳️ 그린피 + 카트비 포함
 const CHECKPOINT1_GUIDE = `💰 2인 단독 출발 시 150,000원 추가
 💰 3인 단독 출발 시 1인당 100,000원 추가`;
 
+// ===== 고급편집 "기본 · 요금표" 탭 — 접이식 그룹 =====
+// 입력 항목이 많아 스크롤 피로가 커서, 노출 위치별(노출 설정 / 상품 카드 / 자세히 보기 / 요금 항목)로
+// 묶고 접을 수 있게 했다. 각 접이식 섹션(details[data-ck])의 열림 상태는 기억해둬서, 칩 선택·항목
+// 추가처럼 화면을 다시 그리는 동작 뒤에도 그대로 유지된다. 공통 섹션은 localStorage에 저장해 다음에
+// 고급편집을 열 때도 이어지고, 요금 항목 안의 하위 섹션(키가 'pe'로 시작 — 항목 순서 기반)은
+// 지금 편집 중인 상품에 대해서만 메모리에 둔다
+const ADV_OPEN_KEY = 'kundo_adv_open_v1';
+let advOpenState = (()=>{ try{ return JSON.parse(localStorage.getItem(ADV_OPEN_KEY)||'{}')||{}; }catch(e){ return {}; } })();
+let advEntryOpenState = {};
+function advIsOpen(key, dflt){
+  const st = key.startsWith('pe') ? advEntryOpenState : advOpenState;
+  return Object.prototype.hasOwnProperty.call(st, key) ? !!st[key] : !!dflt;
+}
+function advDetailsAttrs(key, dflt){
+  return `data-ck="${key}" ${advIsOpen(key, dflt)?'open':''} ontoggle="advRememberToggle(this)"`;
+}
+function advRememberToggle(el){
+  const key = el.dataset.ck; if (!key) return;
+  if (key.startsWith('pe')){ advEntryOpenState[key] = el.open; return; }
+  advOpenState[key] = el.open;
+  try{ localStorage.setItem(ADV_OPEN_KEY, JSON.stringify(advOpenState)); }catch(e){}
+}
+// 요금 항목을 삭제·복제·순서변경하면 인덱스 기반 키가 다른 항목을 가리키게 되므로 초기화
+function advResetEntryOpenState(){ advEntryOpenState = {}; }
+// 접힌 상태에서도 무엇이 입력돼 있는지 보이도록 섹션 제목 옆에 붙이는 상태 배지
+function advBadge(text, kind){ return `<span class="adv-badge ${kind||''}">${escapeAttr(text)}</span>`; }
+function advFillBadge(n, total){
+  if (!n) return advBadge('비어 있음','empty');
+  return advBadge(total>1 ? `✓ ${n}/${total} 입력` : '✓ 입력됨', 'ok');
+}
+// 상단 빠른 이동 — 해당 그룹을 펼치고 그 위치로 스크롤
+function advJump(key){
+  const body = document.getElementById('advBody');
+  const el = body && body.querySelector(`details[data-ck="${key}"]`);
+  if (!el) return;
+  if (!el.open) el.open = true;
+  const nav = body.querySelector('.adv-quicknav');
+  const top = body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav ? nav.offsetHeight : 0) - 8;
+  body.scrollTo({top, behavior:'smooth'});
+}
+// 모두 펼치기: 그룹과 그 하위 섹션만(요금 항목 내부는 제외 — 한꺼번에 열면 오히려 너무 길어진다)
+// 모두 접기: 요금 항목·일정 일자 카드까지 전부
+function advToggleAll(open){
+  const body = document.getElementById('advBody'); if (!body) return;
+  body.querySelectorAll('details[data-ck]').forEach(d=>{ if (open && d.closest('.pe-item')) return; d.open = open; });
+  if (!open) body.querySelectorAll('.pe-block.pe-item[open], .sch-day-block[open]').forEach(d=>{ d.open = false; });
+}
+
 function advBasicHTML(p){
   const popupCount = countActivePopups();
   const tm = p.titleMedia;
-  // [수정] 국내 상품은 항공정보가 불필요하므로, 공통 레이블 섹션을 기본으로 접어서 항목만 보이게 한다
+  // [수정] 국내 상품은 항공정보가 불필요하므로 비행시간 입력을 비활성화
   const isDomestic = currentAdv && isDomesticCat(currentAdv.catId);
+  const sub = (t, note) => `<div class="adv-sub-title">${t}${note?` <span class="adv-sub-note">${note}</span>`:''}</div>`;
+  const hint = t => `<span style="color:var(--nm-text-soft);font-weight:400;font-size:.7rem;text-transform:none;letter-spacing:0">${t}</span>`;
+  const f = v => advFilled(v) ? 1 : 0;
+  // ── 상태 배지 계산 ──
+  const exposeN = f(p.editorsPick) + f((p.months||[]).length ? 'y' : '');
+  const cardKeys = [p.titleMedia&&p.titleMedia.url, p.title, p.nights, p.from, p.checkpoint1, p.cardTag1||p.cardTag2||p.cardTag3||p.cardTag4];
+  const cardN = cardKeys.filter(advFilled).length;
+  const basicN = [p.minPeople, p.rounds, (p.airfareIncluded&&p.airfareIncluded!=='none')?'y':'', p.stay, p.meals].filter(advFilled).length;
+  const moveN = [isDomestic?'':p.flightTime, p.hotelToGolfTime, p.transferTime].filter(advFilled).length;
+  const L = p.labels;
+  const airN = [_peNoneKey(L.airfare), _peArrKey(L.airPattern), _peArrKey(L.departureAirport), L.arrAirport, L.flightNo, _peNoneKey(L.stayDuration), _peArrKey(L.departureDay)].filter(advFilled).length;
+  const dpN = (_peDayKey(p.commonDayPrices)?1:0) + (_peHolKey(p.commonHolidayPrices)?1:0);
+  const incN = f(p.commonIncluded) + f(p.commonNotIncluded) + f(p.commonPrecautions);
+  const schOn = !!_peSchKey({s:p.schedule, t:p.labels.teeOffTimes});
+  const schN = (schOn?1:0) + f(p.scheduleOverview) + f(p.scheduleNote);
+  const feeN = (p.extraFees||[]).filter(x=> x.kind==='group' ? x.title : (x.label||x.amount)).length;
+  const detailSecN = [f(p.notes), airN, dpN, incN, schN, feeN, f(p.bookingPolicy), f(p.linkUrl)].filter(Boolean).length;
+  const nEntries = p.priceEntries.length;
   return `
-    <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px">
-        <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
-        <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
-      </label>
-      <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
-      <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
-        <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
-        <span class="toggle-slider"></span>
-        <span class="pt-lbl">팝업 노출</span>
-      </label>
+    <!-- [추가] 빠른 이동 — 스크롤 위치와 무관하게 상단에 고정, 그룹으로 바로 이동·펼치기/접기 -->
+    <div class="adv-quicknav">
+      <button type="button" onclick="advJump('g-expose')">⚙️ 노출 설정</button>
+      <button type="button" onclick="advJump('g-card')">🃏 상품 카드</button>
+      <button type="button" onclick="advJump('g-detail')">📄 자세히 보기</button>
+      <button type="button" onclick="advJump('g-entries')">💳 요금 항목 <b>${nEntries}</b></button>
+      <span class="adv-qn-sp"></span>
+      <button type="button" class="adv-qn-mini" onclick="advToggleAll(true)">모두 펼치기</button>
+      <button type="button" class="adv-qn-mini" onclick="advToggleAll(false)">모두 접기</button>
     </div>
 
-    <!-- [수정] "요금표 항목·레이블·팝업" → "항목별 요금표 팝업"으로 명칭 변경, 제목 상단으로 위치 이동 -->
-    <div class="section-divider">
-      <span class="sd-title">항목별 요금표 팝업</span>
-      <span class="sd-info">활성 팝업: <b>${popupCount}</b>/${POPUP_MAX}</span>
-    </div>
-
-    <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 미디어 탭에서 이동, 이미지 전용으로 명칭 변경 -->
-    <label>타이틀 이미지</label>
-    <div class="media-slot">
-      ${tm&&tm.url?(tm.type==='video'?`<video src="${escapeAttr(tm.url)}" class="media-preview" controls muted></video>`:`<img src="${escapeAttr(tm.url)}" class="media-preview">`):`<div style="color:rgba(247,245,240,.5);padding:20px 0">타이틀 이미지를 업로드하세요</div>`}
-      <div class="media-controls">
-        <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
-        ${tm&&tm.url?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
-      </div>
-      <span class="file-hint">권장(원본) 1080×810px (4:3 비율) · 10MB 이하</span>
-    </div>
-
-    <!-- [Phase] 상품 카드 이미지 위에 얹는 "신상품" 등 레이블(코너 태그) 이미지 — 여러 개 등록해두고
-         항목별 "카드에 노출" 토글을 켠 것만 카드 좌측 하단에 노출한다 -->
-    <details class="adv-collapsible" data-ck="card-labels">
-      <summary>레이블 이미지 (${(p.cardLabels||[]).length}개 등록)</summary>
-      <div class="adv-collapsible-body">
-        <span class="file-hint" style="display:block;margin-bottom:8px">권장 사이즈 200×200px 이상(1:1 정사각형 비율) · 배경이 비치는 투명 PNG 권장 · 2MB 이하 · "카드에 노출"을 켠 레이블만 상품 카드 이미지에 노출되며, 항목별로 노출 위치(모서리)와 이미지 밖으로 배치할지 개별 설정할 수 있습니다</span>
-        ${cardLabelsHTML(p)}
-        <label class="media-btn" style="margin-top:10px">+ 레이블 이미지 추가하기<input type="file" accept="image/*" onchange="addCardLabel(this)"></label>
-      </div>
-    </details>
-
-    <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
-    <div class="grid-2">
-      <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
-      <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-      <div class="full"><label>최소 인원 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드의 기간 우측에 노출 · 요금 항목 기본값)</span></label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>라운드 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출 · 요금 항목 기본값)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" oninput="updateAdvField('rounds',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>항공 포함 여부 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역 및 "2인 이상" 옆에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
-        <select onchange="updateAdvField('airfareIncluded',this.value)">
-          ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-        </select>
-      </div>
-      <div class="full"><div class="mw-label-row"><label>숙박 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출 · 요금 항목 기본값)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>식사 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출 · 요금 항목 기본값)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span> ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
-      <div class="full"><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
-      <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'} <span style="color:rgba(247,245,240,.5);font-weight:400;font-size:.7rem">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
-    </div>
-    <label>추천 판매 시기 <span style="color:var(--nm-text-soft);font-weight:400;font-size:.7rem">(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>
-    ${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsMulti(${val})`)}
-    <!-- [수정] 연결 링크·URL을 체크포인트1 위쪽으로 이동 -->
-    <label>🔗 연결 링크 · URL</label>
-    <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateAdvField('linkUrl',this.value)">
-    <label>체크포인트1(주의사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 기간 위 강조 박스에 노출)</span></label>
-    <textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
-    <label>체크포인트2(참고사항) <span style="color:rgba(247,245,240,.5);font-weight:400">(자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</span></label>
-    <textarea class="cp2-field" style="min-height:225px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea>
-
-    <!-- [Phase 3 상품등록 개선 v2] 카드표시최저가·카드태그 위치를 체크포인트 아래로 이동 -->
-    <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
-    <div class="cardprice-box">
-      <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
-      <div class="price-row">
-        <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
-        <label class="from-toggle" title="'~부터' 표시 여부">
-          <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
-          <span>~부터</span>
-        </label>
-      </div>
-    </div>
-    <label>카드 태그 <span style="color:rgba(247,245,240,.5);font-weight:400">(상품 카드의 요금 위쪽에 노출, 최대 4개)</span></label>
-    <div class="grid-2">
-      <div><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="카드태그1 · 예: BEST" oninput="updateAdvField('cardTag1',this.value)"></div>
-      <div><input type="text" value="${escapeAttr(p.cardTag2||'')}" placeholder="카드태그2" oninput="updateAdvField('cardTag2',this.value)"></div>
-      <div><input type="text" value="${escapeAttr(p.cardTag3||'')}" placeholder="카드태그3" oninput="updateAdvField('cardTag3',this.value)"></div>
-      <div><input type="text" value="${escapeAttr(p.cardTag4||'')}" placeholder="카드태그4" oninput="updateAdvField('cardTag4',this.value)"></div>
-    </div>
-
-    <!-- [추가] "출발 요일별 공휴일 요금"과 "포함·불포함·참고사항"의 공통(요금 항목과 무관) 버전 —
-         "+요금 항목 추가"를 하지 않아도 미리 입력해둘 수 있고, 요금 항목별 값과는 별도로 상품
-         상세 페이지의 "공통 안내" 바로 위에 노출된다 -->
-    <details class="pe-labels" open>
-      <summary>🗓️ 출발 요일별 · 공휴일 요금 (공통 — 요금 항목에서 비워두면 이 값이 적용됨)</summary>
-      <div class="pe-labels-body">
-        <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
-        <div class="dp-list">
-          ${(p.commonDayPrices||[]).map((d,di)=>`
-          <div class="dp-row">
-            <select onchange="updateCommonDayPrice(${di},'day',this.value)">
-              <option value="">요일 선택</option>
-              ${DAY_OPTS.map(o=>`<option value="${o[0]}" ${d.day===o[0]?'selected':''}>${o[1]} 출발</option>`).join('')}
-            </select>
-            <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">
-            <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
-          </div>`).join('')}
+    <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-expose', false)}>
+      <summary><span class="adv-g-title">⚙️ 노출 · 분류 설정</span><span class="adv-where">EDITOR'S PICK · 추천 판매 시기</span>${advFillBadge(exposeN, 2)}</summary>
+      <div class="adv-group-body">
+        <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px;margin:0">
+            <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
+            <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
+          </label>
+          <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
+          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
+            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
+            <span class="toggle-slider"></span>
+            <span class="pt-lbl">팝업 노출</span>
+          </label>
         </div>
-        <button class="apc-btn-sm" onclick="addCommonDayPrice()">+ 요일별 요금 추가</button>
+        <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
+        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsMulti(${val})`)}
+      </div>
+    </details>
 
-        <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
-        <div class="dp-list">
-          ${(p.commonHolidayPrices||[]).map((h,hi)=>`
-          <div class="dp-row dp-row-holiday">
-            <select onchange="updateCommonHolidayPrice(${hi},'type',this.value)">
-              <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
-              <option value="range" ${h.type==='range'?'selected':''}>기간 지정</option>
-            </select>
-            <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateCommonHolidayPrice(${hi},'date',this.value)">
-            <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateCommonHolidayPrice(${hi},'endDate',this.value)">
-            <input type="number" value="${h.price||''}" placeholder="890000" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">
-            <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
-          </div>`).join('')}
+    <!-- ═══ 🃏 상품 카드 — 상품 목록 카드에 노출되는 항목 ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-card', true)}>
+      <summary><span class="adv-g-title">🃏 상품 카드</span><span class="adv-where">상품 목록 카드에 노출</span>${advFillBadge(cardN, cardKeys.length)}</summary>
+      <div class="adv-group-body">
+        ${sub('🖼 이미지')}
+        <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 카드·자세히 보기 상단 대표 이미지 -->
+        <label>타이틀 이미지</label>
+        <div class="media-slot">
+          ${tm&&tm.url?(tm.type==='video'?`<video src="${escapeAttr(tm.url)}" class="media-preview" controls muted></video>`:`<img src="${escapeAttr(tm.url)}" class="media-preview">`):`<div style="color:var(--nm-text-soft);padding:20px 0">타이틀 이미지를 업로드하세요</div>`}
+          <div class="media-controls">
+            <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handleTitleMediaUpload(this,'image')"></label>
+            ${tm&&tm.url?`<button class="media-btn danger" onclick="removeTitleMedia()">제거</button>`:''}
+          </div>
+          <span class="file-hint">권장(원본) 1080×810px (4:3 비율) · 10MB 이하</span>
         </div>
-        <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
+        <!-- [Phase] 상품 카드 이미지 위에 얹는 "신상품" 등 레이블(코너 태그) 이미지 -->
+        <details class="adv-collapsible" ${advDetailsAttrs('card-labels', false)}>
+          <summary>레이블 이미지 ${advBadge(`${(p.cardLabels||[]).length}개 등록`, (p.cardLabels||[]).length?'ok':'empty')}</summary>
+          <div class="adv-collapsible-body">
+            <span class="file-hint" style="display:block;margin-bottom:8px">권장 사이즈 200×200px 이상(1:1 정사각형 비율) · 배경이 비치는 투명 PNG 권장 · 2MB 이하 · "카드에 노출"을 켠 레이블만 상품 카드 이미지에 노출되며, 항목별로 노출 위치(모서리)와 이미지 밖으로 배치할지 개별 설정할 수 있습니다</span>
+            ${cardLabelsHTML(p)}
+            <label class="media-btn" style="margin-top:10px">+ 레이블 이미지 추가하기<input type="file" accept="image/*" onchange="addCardLabel(this)"></label>
+          </div>
+        </details>
+
+        ${sub('📝 제목 · 가격 · 태그')}
+        <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
+        <div class="grid-2">
+          <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
+          <div><label>박수 ${hint('(카드의 기간 옆에 노출)')}</label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
+        </div>
+        <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
+        <div class="cardprice-box">
+          <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
+          <div class="price-row">
+            <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
+            <label class="from-toggle" title="'~부터' 표시 여부">
+              <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
+              <span>~부터</span>
+            </label>
+          </div>
+        </div>
+        <label>카드 태그 ${hint('(상품 카드의 요금 위쪽에 노출, 최대 4개)')}</label>
+        <div class="grid-2">
+          <div><input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="카드태그1 · 예: BEST" oninput="updateAdvField('cardTag1',this.value)"></div>
+          <div><input type="text" value="${escapeAttr(p.cardTag2||'')}" placeholder="카드태그2" oninput="updateAdvField('cardTag2',this.value)"></div>
+          <div><input type="text" value="${escapeAttr(p.cardTag3||'')}" placeholder="카드태그3" oninput="updateAdvField('cardTag3',this.value)"></div>
+          <div><input type="text" value="${escapeAttr(p.cardTag4||'')}" placeholder="카드태그4" oninput="updateAdvField('cardTag4',this.value)"></div>
+        </div>
+        <label>체크포인트1(주의사항) ${hint('(상품 카드의 기간 위 강조 박스에 노출)')}</label>
+        <textarea class="cp1-field" style="min-height:120px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
+
+        ${sub('📋 기본 정보', '카드 + 자세히 보기 "상품기본정보" + 요금 항목 기본값')}
+        <div class="grid-2">
+          <div><label>최소 인원</label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
+          <div><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 3R" oninput="updateAdvField('rounds',this.value)"></div>
+          <div class="full"><div class="mw-label-row"><label>항공 포함 여부 ${hint('(카드 하단 · "2인 이상" 옆)')}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
+            <select onchange="updateAdvField('airfareIncluded',this.value)">
+              ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+            </select>
+          </div>
+          <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+          <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+        </div>
+        <span class="mw-hint" style="margin-top:6px">"한 줄로"를 켜면 카드 하단 meta 영역에서 그 항목이 한 줄 전체를 차지합니다</span>
+
+        <details class="adv-collapsible" ${advDetailsAttrs('card-move', false)}>
+          <summary>✈️ 비행 · 이동 시간 ${hint('(카드 하단 meta 영역)')} ${advFillBadge(moveN, isDomestic?2:3)}</summary>
+          <div class="adv-collapsible-body">
+            <div class="grid-2">
+              <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
+              <div class="full"><div class="mw-label-row"><label>호텔→골프장 이동시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
+              <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+            </div>
+          </div>
+        </details>
       </div>
     </details>
-    <details class="pe-labels" open>
-      <summary>💰 포함 · 불포함 · 참고사항 (공통 — 요금 항목에서 비워두면 이 값이 적용됨)</summary>
-      <div class="pe-labels-body">
-        <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'250px'})}
-        <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'250px'})}
-        <label>🌟 참고사항</label><textarea class="auto-grow" style="min-height:200px" placeholder="예: 노옵션·노쇼핑 상품 ..." oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
+
+    <!-- ═══ 📄 자세히 보기 — 상품 상세 페이지의 공통 정보 (상세 페이지 노출 순서대로) ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-detail', true)}>
+      <summary><span class="adv-g-title">📄 자세히 보기 (공통)</span><span class="adv-where">상세 페이지 · 요금 항목에서 비워두면 이 값 적용</span>${advFillBadge(detailSecN, 8)}</summary>
+      <div class="adv-group-body">
+        <details class="pe-labels" ${advDetailsAttrs('d-notes', false)}>
+          <summary>✳️ 공통 안내 ${advFillBadge(f(p.notes),1)}</summary>
+          <div class="pe-labels-body">${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'160px'})}</div>
+        </details>
+        <!-- [수정] 항공/이동 정보와 출발 요일을 한 섹션으로 — 상세 페이지 "항공/이동 정보"에 함께 노출된다 -->
+        <details class="pe-labels" ${advDetailsAttrs('d-air', false)}>
+          <summary>🏷 항공/이동 정보 · 출발 요일 ${advFillBadge(airN,7)}</summary>
+          ${labelsHTML(p, -1, false)}
+          <div class="pe-labels-departure-day">${departureDayFieldHTML(p.labels, -1)}</div>
+        </details>
+        <details class="pe-labels" ${advDetailsAttrs('d-dp', false)}>
+          <summary>🗓️ 출발 요일별 · 공휴일 요금 ${advFillBadge(dpN,2)}</summary>
+          <div class="pe-labels-body">
+            <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
+            <div class="dp-list">
+              ${(p.commonDayPrices||[]).map((d,di)=>`
+              <div class="dp-row">
+                <select onchange="updateCommonDayPrice(${di},'day',this.value)">
+                  <option value="">요일 선택</option>
+                  ${DAY_OPTS.map(o=>`<option value="${o[0]}" ${d.day===o[0]?'selected':''}>${o[1]} 출발</option>`).join('')}
+                </select>
+                <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">
+                <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
+              </div>`).join('')}
+            </div>
+            <button class="apc-btn-sm" onclick="addCommonDayPrice()">+ 요일별 요금 추가</button>
+
+            <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
+            <div class="dp-list">
+              ${(p.commonHolidayPrices||[]).map((h,hi)=>`
+              <div class="dp-row dp-row-holiday">
+                <select onchange="updateCommonHolidayPrice(${hi},'type',this.value)">
+                  <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
+                  <option value="range" ${h.type==='range'?'selected':''}>기간 지정</option>
+                </select>
+                <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateCommonHolidayPrice(${hi},'date',this.value)">
+                <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateCommonHolidayPrice(${hi},'endDate',this.value)">
+                <input type="number" value="${h.price||''}" placeholder="890000" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">
+                <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
+              </div>`).join('')}
+            </div>
+            <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
+          </div>
+        </details>
+        <details class="pe-labels" ${advDetailsAttrs('d-inc', false)}>
+          <summary>💰 포함 · 불포함 · 참고사항 ${advFillBadge(incN,3)}</summary>
+          <div class="pe-labels-body">
+            <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'200px'})}
+            <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'200px'})}
+            <!-- [수정] 체크포인트2와 참고사항은 같은 값으로 자동 동기화되는 필드라, 입력란을 하나로 합쳤다 -->
+            <label>🌟 참고사항 ${hint('(= 체크포인트2 · 불포함사항 바로 아래에 노출)')}</label>
+            <textarea class="auto-grow" style="min-height:140px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
+          </div>
+        </details>
+        <details class="pe-labels" id="schDetails-1" ${advDetailsAttrs('d-sch', false)}>
+          <summary>🗓 일정 요약 타임라인 ${advFillBadge(schN,3)}</summary>
+          <div class="pe-labels-body">
+            <label>상단 개요 문구</label>
+            <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
+            <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
+            <textarea style="min-height:70px" placeholder="예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다." oninput="updateAdvField('scheduleNote',this.value)">${escapeAttr(p.scheduleNote||'')}</textarea>
+            <label>공통 일정</label>
+            ${scheduleHTML(p, -1)}
+          </div>
+        </details>
+        <details class="pe-labels" ${advDetailsAttrs('d-fee', false)}>
+          <summary>💰 추가 요금 안내 ${feeN?advBadge(`✓ ${feeN}건`,'ok'):advBadge('비어 있음','empty')}</summary>
+          <div class="pe-labels-body">
+            <span class="mw-hint">항목 · 금액을 나눠 입력 — 자세히 화면에서 표 형식으로 노출</span>
+            ${extraFeesHTML(p)}
+          </div>
+        </details>
+        <details class="pe-labels" ${advDetailsAttrs('d-policy', false)}>
+          <summary>⏰ 예약 · 결제 · 취소 규정 ${advFillBadge(f(p.bookingPolicy),1)}</summary>
+          <div class="pe-labels-body">${richTextFieldHTML(p.bookingPolicy, "updateAdvField('bookingPolicy',__HTML__)", {placeholder:'예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ...', minHeight:'120px'})}</div>
+        </details>
+        <details class="pe-labels" ${advDetailsAttrs('d-link', false)}>
+          <summary>🔗 연결 링크 · URL ${advFillBadge(f(p.linkUrl),1)}</summary>
+          <div class="pe-labels-body">
+            <span class="mw-hint">각 요금 항목 카드 하단에 "블로그에서 보기 →" 버튼으로 노출</span>
+            <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://..." oninput="updateAdvField('linkUrl',this.value)">
+          </div>
+        </details>
       </div>
     </details>
 
-    <!-- [수정] 포함사항 · 불포함사항 · 참고사항은 상품 공통이 아니라 요금 항목(항목1/2...)별로
-         개별 입력하도록 이관 — 아래 각 요금 항목 카드에서 입력한다. 여기(공통사항)에는 모든 요금
-         항목에 공통으로 적용되는 공통 안내·추가 요금 안내만 남긴다 -->
-    <details class="adv-collapsible" data-ck="common-notes" open>
-      <summary>공통사항 — 공통 안내 · 추가 요금</summary>
-      <div class="adv-collapsible-body">
-        <label>✳️ 공통 안내</label>${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'210px'})}
-        <label>💰 추가 요금 안내 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(항목 · 금액을 나눠 입력 — 자세히 화면에서 표 형식으로 노출)</span></label>
-        ${extraFeesHTML(p)}
+    <!-- ═══ 💳 요금 항목 ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-entries', true)}>
+      <summary><span class="adv-g-title">💳 요금 항목 ${nEntries}개</span><span class="adv-where">자세히 보기 "요금표" · 활성 팝업 ${popupCount}/${POPUP_MAX}</span></summary>
+      <div class="adv-group-body">
+        <!-- [추가] 요금 항목 ↔ 공통값 상속 안내 + 일괄 정리 버튼 -->
+        <div class="pe-inh-banner">
+          <div class="pe-inh-banner-text">
+            <b>💡 요금 항목에서 비워둔 칸은 위 공통값이 자동으로 적용됩니다.</b><br>
+            항목마다 다른 내용(판매가·대표 문구 등)만 입력하세요. 공통값만 쓰는 섹션은 접혀 있습니다.
+          </div>
+          ${nEntries ? `<button type="button" class="apc-btn-sm pe-inh-promote" onclick="promoteEntriesToCommon()" title="모든 요금 항목에 똑같이 들어 있는 값은 공통으로 옮기고, 공통값과 같은 값은 항목에서 비웁니다">⇪ 반복 입력된 값 공통으로 올리기</button>` : ''}
+        </div>
+        ${nEntries ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount,p)).join('')
+          : `<div style="color:var(--nm-text-soft);padding:20px;text-align:center;border:1px dashed rgba(10,23,48,.18);border-radius:10px;margin:6px 0">등록된 요금 항목이 없습니다</div>`}
+        <button class="add-product-btn" onclick="addPriceEntry()">+ 요금 항목 추가</button>
       </div>
     </details>
-
-    <!-- [Phase 3 상품등록 개선] 예약·결제·취소 규정 -->
-    <label>⏰ 예약 · 결제 · 취소 규정</label>
-    ${richTextFieldHTML(p.bookingPolicy, "updateAdvField('bookingPolicy',__HTML__)", {placeholder:'예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ...', minHeight:'120px'})}
-
-    <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구 (요금 항목별 일정 그룹을 아우르는 문구) -->
-    <label>일정 요약 타임라인 — 상단 개요 문구</label>
-    <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
-    <label>일정 요약 타임라인 — 안내 박스 (예: 시즌별 항공편 설명)</label>
-    <textarea style="min-height:70px" placeholder="예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다." oninput="updateAdvField('scheduleNote',this.value)">${escapeAttr(p.scheduleNote||'')}</textarea>
-
-    <!-- [수정] 요금 항목(항목1/2...)을 아직 추가하지 않은 상품도 레이블·일정 요약 타임라인을 입력할 수 있도록,
-         특정 요금 항목에 종속되지 않는 "공통" 레이블·일정 입력 영역을 상시 노출한다.
-         요금 항목을 이후에 추가해도 이 공통 값은 그대로 유지되며, 상세페이지에는 요금 항목별 정보와 함께 노출된다 -->
-    <details class="pe-labels" ${isDomestic?'':'open'}>
-      <summary>🏷 항공/이동 정보 (공통 — 요금 항목에서 비워두면 이 값이 적용됨)</summary>
-      ${labelsHTML(p, -1, false)}
-    </details>
-    <!-- [수정] "출발 요일"을 공통 레이블에서 완전히 분리해 별도 섹션으로 — 공통 레이블·공통 일정
-         요약 타임라인과 같은 레벨(형제 <details>)로 두되 그 사이에 배치. 노출 조건(요금 항목과
-         무관하게 상품 상세에 항상 노출)은 이전과 동일하게 유지 -->
-    <details class="pe-labels" open>
-      <summary>📅 공통 출발 요일 (요금 항목에서 비워두면 이 값이 적용됨)</summary>
-      <div class="pe-labels-body">${departureDayFieldHTML(p.labels, -1)}</div>
-    </details>
-    <details class="pe-labels" id="schDetails-1" open>
-      <summary>🗓 공통 일정 요약 타임라인 (요금 항목에서 비워두면 이 일정이 적용됨)</summary>
-      ${scheduleHTML(p, -1)}
-    </details>
-
-    <!-- [수정] 공통 일정 요약 타임라인과 요금 항목(항목1/2...) 묶음 사이에 구분선 + 넓은 간격을 두어 가독성 향상 -->
-    <div class="pe-group-divider"><span>요금 항목</span></div>
-
-    <!-- [추가] 요금 항목 ↔ 공통값 상속 안내 + 일괄 정리 버튼 -->
-    <div class="pe-inh-banner">
-      <div class="pe-inh-banner-text">
-        <b>💡 요금 항목에서 비워둔 칸은 위 공통값이 자동으로 적용됩니다.</b><br>
-        항목마다 다른 내용(판매가·대표 문구 등)만 입력하세요. 상세페이지에는 공통 정보가 한 번만 보이고,
-        각 항목에는 공통과 다른 내용만 표시됩니다.
-      </div>
-      ${p.priceEntries.length ? `<button type="button" class="apc-btn-sm pe-inh-promote" onclick="promoteEntriesToCommon()" title="모든 요금 항목에 똑같이 들어 있는 값은 공통으로 옮기고, 공통값과 같은 값은 항목에서 비웁니다">⇪ 반복 입력된 값 공통으로 올리기</button>` : ''}
-    </div>
-
-    ${p.priceEntries.length ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount,p)).join('')
-      : `<div style="color:rgba(247,245,240,.5);padding:20px;text-align:center;background:rgba(0,0,0,.15);border:1px dashed rgba(255,255,255,.15);border-radius:10px;margin:6px 0">등록된 요금 항목이 없습니다</div>`}
-    <button class="add-product-btn" onclick="addPriceEntry()">+ 요금 항목 추가</button>
   `;
+}
+// 값이 실제로 입력돼 있는지 — 리치 텍스트는 태그를 뺀 내용으로, 'none'은 미입력으로 본다
+function advFilled(v){
+  if (v==null || v===false) return false;
+  if (typeof v==='number') return v>0;
+  if (v===true) return true;
+  const s = String(v);
+  if (s==='none') return false;
+  return !!_peTextKey(s);
 }
 
 // [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액을 분리 입력하는 표 형식 리스트
@@ -12606,6 +12755,9 @@ function peDrop(e, targetIdx){
   e.currentTarget.classList.remove('drag-over');
   if (peDragIdx === null || peDragIdx === targetIdx) return;
   const p = getAdvProduct(); if (!p) return;
+  const order = p.priceEntries.map((_,k)=>k);
+  order.splice(targetIdx, 0, order.splice(peDragIdx, 1)[0]);
+  advRemapEntryState(order);
   const item = p.priceEntries.splice(peDragIdx, 1)[0];
   p.priceEntries.splice(targetIdx, 0, item);
   saveAdvChange(); renderAdvBody();
@@ -12756,6 +12908,33 @@ function promoteEntriesToCommon(){
   });
   saveAdvChange(); renderAdvBody();
 }
+// [추가] 요금 항목 안의 세부 섹션(인원·항공·요일별 요금·포함사항·일정)마다 "이 항목에 직접 입력한 값이
+// 있는지 / 공통값을 그대로 쓰는지"를 배지로 요약 — 직접 입력한 값이 있는 섹션만 기본으로 펼친다
+function peSecState(p, pe, fields){
+  let own=0, same=0, inh=0;
+  fields.forEach(f=>{ const s=peInheritState(p, pe, f); if (s==='override') own++; else if (s==='same') same++; else if (s==='inherit') inh++; });
+  const b=[];
+  if (own) b.push(advBadge(`✎ 이 항목 값 ${own}`, 'ovr'));
+  if (same) b.push(advBadge(`= 공통과 같음 ${same}`, 'same'));
+  if (!own && !same) b.push(inh ? advBadge('공통값 사용', 'inh') : advBadge('비어 있음', 'empty'));
+  return { badges: b.join(''), hasOwn: !!(own||same) };
+}
+function peSumPrice(pe){
+  if (!pe.salePrice) return '<span class="pe-sum-price" style="color:var(--nm-text-soft);font-weight:500">판매가 미입력</span>';
+  const c = CURRENCIES.find(x=>x[0]===(pe.saleCurrency||'KRW'));
+  const sym = c ? c[1].split(' ')[1] : '';
+  return `<span class="pe-sum-price">${escapeAttr(sym)}${fmtPrice(pe.salePrice)}${pe.saleFromLabel?'~':''}</span>`;
+}
+// 요금 항목 순서가 바뀌거나(드래그) 삭제·복제될 때, 펼쳐 두었던 항목·세부 섹션이 엉뚱한 항목에서
+// 열리지 않도록 기억해 둔 펼침 상태도 같은 순서로 옮긴다 — order[새 위치] = 이전 위치
+function advRemapEntryState(order){
+  const next = {};
+  Object.keys(advEntryOpenState).forEach(k=>{
+    const m = k.match(/^pe(\d+)(.*)$/); if (!m) return;
+    order.forEach((o, ni)=>{ if (o===+m[1]) next['pe'+ni+m[2]] = advEntryOpenState[k]; });
+  });
+  advEntryOpenState = next;
+}
 function priceEntryHTML(pe, i, popupCount, p){
   const emphOpts = ['일반','실속','특가 (기간한정)','특가 (하계)','특가 (동계)','특가 (긴급)'];
   const layoutOpts = [['card','카드형'],['hero','대형']];
@@ -12767,12 +12946,21 @@ function priceEntryHTML(pe, i, popupCount, p){
   // [수정] 항목 간 드래그로 순서 변경 — 손잡이(⠿)에만 draggable 지정(추가요금안내와 동일한 방식)
   const dropAttrs = `data-idx="${i}" ondragover="peDragOver(event)" ondragleave="peDragLeave(event)" ondrop="peDrop(event,${i})"`;
   const handleAttrs = `draggable="true" ondragstart="peDragStart(event,${i})" ondragend="peDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
+  // [추가] 세부 섹션별 상속 상태 — 직접 입력한 값이 있는 섹션만 기본으로 펼침
+  const sMeta = peSecState(p, pe, ['minPeople','rounds','stay','meals']);
+  const sAir  = peSecState(p, pe, ['airfare','airPattern','departureAirport','arrAirport','flightNo','stayDuration','departureDay']);
+  const sDp   = peSecState(p, pe, ['dayPrices','holidayPrices']);
+  const sInc  = peSecState(p, pe, ['included','notIncluded','precautions']);
+  const sSch  = peSecState(p, pe, ['schedule']);
+  const linkOn = !!(pe.link && String(pe.link).trim());
+  const layoutLbl = (layoutOpts.find(o=>o[0]===pe.layout)||layoutOpts[0])[1];
   return `
-  <details class="pe-block pe-item ${i%2?'pe-item-b':''}${pe.hidden?' admin-item-hidden':''}" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs}>
+  <details class="pe-block pe-item ${i%2?'pe-item-b':''}${pe.hidden?' admin-item-hidden':''}" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs} ${advDetailsAttrs(`pe${i}`, false)}>
     <summary class="pe-head">
       <span class="pe-drag-handle" title="드래그하여 순서 변경" ${handleAttrs}>⠿</span>
       <span class="pe-idx">— 항목 ${String(i+1).padStart(2,'0')}</span>
       <span class="pe-title-preview">${pe.hidden?'<span class="admin-item-hidden-badge">숨김</span> ':''}${pe.headline?escapeAttr(pe.headline):'(제목 없음)'}</span>
+      ${peSumPrice(pe)}
       <span class="pe-chevron">▾</span>
       <!-- [수정] preventDefault()로 <summary> 펼침만 막고, 체크박스 클릭은 blockSummaryToggle()이 직접 대신 처리 -->
       <div class="pe-head-right" onclick="blockSummaryToggle(event)">
@@ -12787,23 +12975,10 @@ function priceEntryHTML(pe, i, popupCount, p){
       </div>
     </summary>
     <div class="pe-body">
+    <!-- [수정] 항목마다 꼭 입력하는 값(대표 문구·강조 태그·판매가·정가)만 항상 보이게 두고,
+         나머지는 아래 접이식 섹션으로 정리 — 비워두면 공통값이 적용되는 섹션은 기본으로 접혀 있다 -->
     <div class="grid-2">
       <div class="full"><label>대표 문구 · Headline</label><input type="text" value="${escapeAttr(pe.headline||'')}" placeholder="예: 2박3일 골프 패키지" oninput="updatePriceEntry(${i},'headline',this.value)"></div>
-      <div class="full">
-        <label>연결 링크 · URL</label>
-        <div class="link-visible-row">
-          <label class="from-toggle" title="상세페이지 요금표에 이 링크로 이동하는 '바로가기 →' 버튼을 노출할지 선택">
-            <input type="checkbox" ${pe.linkVisible!==false?'checked':''} onchange="updatePriceEntry(${i},'linkVisible',this.checked,'bool')">
-            <span>버튼 노출</span>
-          </label>
-          <input type="url" value="${escapeAttr(pe.link||'')}" placeholder="https://..." oninput="updatePriceEntry(${i},'link',this.value)">
-        </div>
-      </div>
-      <div><label>레이아웃</label>
-        <select onchange="updatePriceEntry(${i},'layout',this.value)">
-          ${layoutOpts.map(o=>`<option value="${o[0]}" ${pe.layout===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-        </select>
-      </div>
       <div class="full"><label>강조 태그 (복수 선택 가능)</label>
         ${chipMultiHTML(emphOpts.map(o=>[o,o]), emphasisArr, val=>`toggleEmphasisMulti(${i},'${val}')`)}
       </div>
@@ -12817,12 +12992,6 @@ function priceEntryHTML(pe, i, popupCount, p){
           </label>
         </div>
       </div>
-      <!-- [수정] 최소 인원·라운드·숙박·식사는 비워두면 상품 공통값(상단 기본 정보)을 그대로 사용 —
-           placeholder로 적용될 공통값을 미리 보여주고, 아래 안내줄로 현재 상태를 알려준다 -->
-      <div class="full"><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'minPeople','예: 2'))}" oninput="updatePriceEntry(${i},'minPeople',this.value)">${peInhHintHTML(p,pe,i,'minPeople')}</div>
-      <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'rounds','예: 2R'))}" oninput="updatePriceEntry(${i},'rounds',this.value)">${peInhHintHTML(p,pe,i,'rounds')}</div>
-      <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'stay','예: 4성급 호텔 3박'))}" oninput="updatePriceEntry(${i},'stay',this.value)">${peInhHintHTML(p,pe,i,'stay')}</div>
-      <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'meals','예: 조식 3회'))}" oninput="updatePriceEntry(${i},'meals',this.value)">${peInhHintHTML(p,pe,i,'meals')}</div>
       <div class="full"><label>정가 (할인 전)</label>
         <div class="price-row">
           <input type="number" value="${pe.originalPrice||''}" placeholder="1200000" oninput="updatePriceEntry(${i},'originalPrice',this.value,'number')">
@@ -12835,19 +13004,29 @@ function priceEntryHTML(pe, i, popupCount, p){
       </div>
     </div>
 
-    <!-- [수정] 관리자 입력 순서를 "공통 레이블(항공·공항·항공편·티오프 등) → 출발 요일별·공휴일 요금
-         → 포함/불포함/참고사항 → 일정 요약 타임라인" 순으로 재배치 — 항공 관련 기본 정보를 먼저 입력한
-         뒤 요금·포함사항을 입력하는 흐름이 더 자연스럽다 -->
-    <!-- 이 요금표 항목에 종속된 레이블 -->
-    <details class="pe-labels ${isDomestic?'pe-disabled':''}" ${isDomestic?'':'open'}>
-      <summary>✈️ 항공정보${isDomestic?' <span class="pe-disabled-note">(국내 상품은 입력이 필요하지 않아 비활성화됨)</span>':''}</summary>
+    <!-- [수정] 최소 인원·라운드·숙박·식사는 비워두면 상품 공통값(상품 카드 > 기본 정보)을 그대로 사용 —
+         placeholder로 적용될 공통값을 미리 보여주고, 안내줄로 현재 상태를 알려준다 -->
+    <details class="pe-labels pe-sec" ${advDetailsAttrs(`pe${i}-meta`, sMeta.hasOwn)}>
+      <summary>👥 인원 · 라운드 · 숙박 · 식사 ${sMeta.badges}</summary>
+      <div class="grid-2 pe-labels-body">
+        <div class="full"><label>최소 인원 (요금 옆에 노출, 예: 2)</label><input type="text" value="${escapeAttr(pe.minPeople||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'minPeople','예: 2'))}" oninput="updatePriceEntry(${i},'minPeople',this.value)">${peInhHintHTML(p,pe,i,'minPeople')}</div>
+        <div class="full"><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.rounds),`updatePriceEntry(${i},'metaWide.rounds',this.checked,'bool')`)}</div><span class="mw-hint">이 요금 항목의 금액 아래 노출</span><input type="text" value="${escapeAttr(pe.rounds||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'rounds','예: 2R'))}" oninput="updatePriceEntry(${i},'rounds',this.value)">${peInhHintHTML(p,pe,i,'rounds')}</div>
+        <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.stay),`updatePriceEntry(${i},'metaWide.stay',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.stay||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'stay','예: 4성급 호텔 3박'))}" oninput="updatePriceEntry(${i},'stay',this.value)">${peInhHintHTML(p,pe,i,'stay')}</div>
+        <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(pe.metaWide&&pe.metaWide.meals),`updatePriceEntry(${i},'metaWide.meals',this.checked,'bool')`)}</div><input type="text" value="${escapeAttr(pe.meals||'')}" placeholder="${escapeAttr(peInhPlaceholder(p,'meals','예: 조식 3회'))}" oninput="updatePriceEntry(${i},'meals',this.value)">${peInhHintHTML(p,pe,i,'meals')}</div>
+      </div>
+    </details>
+
+    <!-- [수정] 관리자 입력 순서를 "항공정보 → 출발 요일별·공휴일 요금 → 포함/불포함/참고사항 →
+         일정 요약 타임라인" 순으로 배치 — 상세페이지 노출 순서와 같다 -->
+    <details class="pe-labels pe-sec ${isDomestic?'pe-disabled':''}" ${advDetailsAttrs(`pe${i}-air`, !isDomestic && sAir.hasOwn)}>
+      <summary>✈️ 항공정보 ${isDomestic?advBadge('국내 상품 · 입력 불필요','empty'):sAir.badges}</summary>
       <fieldset ${isDomestic?'disabled':''} style="border:none;margin:0;padding:0">${labelsHTML(pe, i, true, p)}</fieldset>
     </details>
 
     <!-- [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 특정 요일(구간)·날짜의 금액을 함께 안내.
          상세페이지 요금표 하단에 "월~목 출발 / 금 출발 / 토 출발 / 일 출발" 식의 표로 노출된다 -->
-    <details class="pe-labels" open>
-      <summary>🗓️ 출발 요일별 · 공휴일 요금 <span class="pe-inh-sum">(비워두면 공통값 적용)</span></summary>
+    <details class="pe-labels pe-sec" ${advDetailsAttrs(`pe${i}-dp`, sDp.hasOwn)}>
+      <summary>🗓️ 출발 요일별 · 공휴일 요금 ${sDp.badges}</summary>
       <div class="pe-labels-body">
         <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
         ${peInhHintHTML(p,pe,i,'dayPrices',true)}
@@ -12884,8 +13063,8 @@ function priceEntryHTML(pe, i, popupCount, p){
     </details>
 
     <!-- [수정] 포함사항/불포함사항/참고사항 — 요금 항목별 개별 입력 (상세페이지 요금표 "상세보기→"에서 노출) -->
-    <details class="pe-labels" open>
-      <summary>💰 이 요금 항목의 포함 · 불포함 · 참고사항 <span class="pe-inh-sum">(비워두면 공통값 적용)</span></summary>
+    <details class="pe-labels pe-sec" ${advDetailsAttrs(`pe${i}-inc`, sInc.hasOwn)}>
+      <summary>💰 포함 · 불포함 · 참고사항 ${sInc.badges}</summary>
       <div class="pe-labels-body">
         <label>✅ 포함사항</label>${peInhHintHTML(p,pe,i,'included',true)}${richTextFieldHTML(pe.included, `updatePriceEntry(${i},'included',__HTML__)`, {cls:'included-field', placeholder:peInhPlaceholder(p,'included',INCLUDED_GUIDE), minHeight:'250px'})}
         <label>❌ 불포함사항</label>${peInhHintHTML(p,pe,i,'notIncluded',true)}${richTextFieldHTML(pe.notIncluded, `updatePriceEntry(${i},'notIncluded',__HTML__)`, {cls:'notincluded-field', placeholder:peInhPlaceholder(p,'notIncluded',NOT_INCLUDED_GUIDE), minHeight:'250px'})}
@@ -12894,10 +13073,32 @@ function priceEntryHTML(pe, i, popupCount, p){
     </details>
 
     <!-- [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 -->
-    <details class="pe-labels" id="schDetails${i}" open>
-      <summary>🗓 일정 요약 타임라인 <span class="pe-inh-sum">(비워두면 공통 일정 적용)</span></summary>
+    <details class="pe-labels pe-sec" id="schDetails${i}" ${advDetailsAttrs(`pe${i}-sch`, sSch.hasOwn)}>
+      <summary>🗓 일정 요약 타임라인 ${sSch.badges}</summary>
       ${peInhHintHTML(p,pe,i,'schedule',true)}
       ${scheduleHTML(pe, i)}
+    </details>
+
+    <!-- [수정] 연결 링크·레이아웃은 자주 바꾸지 않는 설정이라 맨 아래 접이식으로 이동 -->
+    <details class="pe-labels pe-sec" ${advDetailsAttrs(`pe${i}-link`, false)}>
+      <summary>🔗 연결 링크 · 레이아웃 ${linkOn?advBadge('✓ 링크 입력됨','ok'):advBadge('링크 없음','empty')} ${advBadge(layoutLbl,'same')}</summary>
+      <div class="grid-2 pe-labels-body">
+        <div class="full">
+          <label>연결 링크 · URL</label>
+          <div class="link-visible-row">
+            <label class="from-toggle" title="상세페이지 요금표에 이 링크로 이동하는 '바로가기 →' 버튼을 노출할지 선택">
+              <input type="checkbox" ${pe.linkVisible!==false?'checked':''} onchange="updatePriceEntry(${i},'linkVisible',this.checked,'bool')">
+              <span>버튼 노출</span>
+            </label>
+            <input type="url" value="${escapeAttr(pe.link||'')}" placeholder="https://..." oninput="updatePriceEntry(${i},'link',this.value)">
+          </div>
+        </div>
+        <div><label>레이아웃</label>
+          <select onchange="updatePriceEntry(${i},'layout',this.value)">
+            ${layoutOpts.map(o=>`<option value="${o[0]}" ${pe.layout===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+          </select>
+        </div>
+      </div>
     </details>
     </div>
   </details>`;
@@ -13124,11 +13325,13 @@ function togglePeHidden(i){
 function addPriceEntry(){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries.push(newPriceEntry());
+  advEntryOpenState['pe'+(p.priceEntries.length-1)] = true; // 새로 추가한 항목은 바로 입력할 수 있게 펼쳐 둔다
   saveAdvChange(); renderAdvBody();
 }
 function removePriceEntry(i){
   const p=getAdvProduct(); if (!p) return;
   if (!confirm('이 요금 항목을 삭제하시겠습니까?')) return;
+  advRemapEntryState(p.priceEntries.map((_,k)=>k).filter(k=>k!==i));
   p.priceEntries.splice(i,1);
   saveAdvChange(); renderAdvBody();
 }
@@ -13140,6 +13343,8 @@ function duplicatePriceEntry(i){
   const clone = JSON.parse(JSON.stringify(p.priceEntries[i]));
   clone.headline = (clone.headline||'') + ' (복제)';
   clone.popup = false;
+  const order = p.priceEntries.map((_,k)=>k); order.splice(i+1, 0, i);
+  advRemapEntryState(order);
   p.priceEntries.splice(i+1, 0, clone);
   saveAdvChange(); renderAdvBody();
 }

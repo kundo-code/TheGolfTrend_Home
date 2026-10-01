@@ -1737,6 +1737,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .ep-popup-viewport.ep-moving{clip-path:inset(-9999px 0 -9999px 0)}
 .ep-popup-viewport.ep-moving .ep-popup-slide{visibility:visible}
 .ep-popup-footer{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.28)}
+.ep-popup-actions{padding:14px 20px 18px}
+.ep-popup-slide .popup-body{padding-bottom:6px}
 .ep-popup-nav{width:28px;height:28px;flex:0 0 auto;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.05rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:all .2s}
 .ep-popup-nav:hover{background:var(--gold);border-color:var(--gold)}
 .ep-popup-dots{flex:1;display:flex;justify-content:center;gap:6px}
@@ -14752,10 +14754,6 @@ function epSlideCardHTML(item, active){
       <h3 class="popup-title">${escapeAttr(p.title)}</h3>
       ${pe && pe.headline?`<p class="popup-headline">${escapeAttr(pe.headline)}</p>`:''}
       ${sale?`<div class="popup-price"><b>${fmtPrice(sale)}</b><span>${saleSym}${saleFrom}</span></div>`:''}
-      <div class="popup-actions">
-        <button class="popup-cta primary" onclick="epPopupGoToProduct('${cat.id}',${idx})">상세 보기 →</button>
-        <button class="popup-cta ghost" onclick="closeEpPopup()">닫기</button>
-      </div>
     </div>
   </div>`;
 }
@@ -14779,6 +14777,12 @@ function renderEpPopup(){
         <span class="ep-popup-counter">${epPopupIdx+1} / ${n}</span>
         <button class="ep-popup-nav next" onclick="epPopupMove(1)" aria-label="다음">›</button>
       </div>`:''}
+      <!-- [수정] "상세 보기 / 닫기" 버튼을 슬라이드마다 두던 것을 이동 바(이전·도트·카운터·다음) 아래 맨 밑으로
+           옮겨 하나만 둔다 — "상세 보기"는 지금 보고 있는 슬라이드의 상품으로 이동한다 -->
+      <div class="popup-actions ep-popup-actions">
+        <button class="popup-cta primary" onclick="epPopupGoToCurrent()">상세 보기 →</button>
+        <button class="popup-cta ghost" onclick="closeEpPopup()">닫기</button>
+      </div>
     </div>`;
 }
 function epPopupUpdatePosition(){
@@ -14807,6 +14811,10 @@ function epPopupStartAuto(){
   clearInterval(epPopupTimer);
   if (epPopupItems.length<=1) return;
   epPopupTimer = setInterval(()=>epPopupGoTo(epPopupIdx+1), 4500);
+}
+function epPopupGoToCurrent(){
+  const it = epPopupItems[epPopupIdx]; if (!it) return;
+  epPopupGoToProduct(it.cat.id, it.idx);
 }
 function epPopupGoToProduct(catId, idx){
   closeEpPopup();

@@ -319,9 +319,9 @@ section.block{padding:100px 24px;position:relative}
    국가별 카드의 지역명(.cat-card .name-ko)과 동일(모바일도 아래 미디어쿼리에서 같은 크기로 맞춘다).
    글자가 사진 위에서도 잘 읽히도록 이미지 전체를 살짝 어둡게 덮는다 */
 .prep-overlay{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:8px;background:rgba(255,255,255,.5);border-radius:inherit;pointer-events:none;text-align:center}
-/* [수정] 글자색을 진한 회색으로 — 어두운 글자가 사진 위에서도 읽히도록 덮개를 반투명 흰색으로 바꾸고,
-   그림자도 밝은 번짐으로 변경. 데스크톱 크기는 권역 카드 지역명보다 2px 작게 */
-.prep-overlay-text{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:calc(clamp(2rem,3.6vw,3rem) - 2px);color:#3A3A3A;line-height:1.05;letter-spacing:.02em;text-shadow:0 0 14px rgba(255,255,255,.85),0 1px 2px rgba(255,255,255,.6);word-break:keep-all}
+/* [수정] 글자색 회색(#5A5A5A, 기존 #3A3A3A보다 2톤 밝게) — 어두운 글자가 사진 위에서도 읽히도록
+   덮개는 반투명 흰색, 그림자는 밝은 번짐. 데스크톱 크기 42px 고정(데스크톱 카드 폭 282~403px에서 한 줄) */
+.prep-overlay-text{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-weight:900;font-size:42px;color:#5A5A5A;line-height:1.05;letter-spacing:.02em;text-shadow:0 0 14px rgba(255,255,255,.85),0 1px 2px rgba(255,255,255,.6);word-break:keep-all}
 /* [Phase] 모바일에서는 국가별/권역별 선택 카드를 한 줄에 3개씩 고정으로 배치한다 — 국내 6개는
    3열×2줄, 해외 9개는 3열×3줄(열 개수 자체는 아래 RESPONSIVE 섹션에서 지정 — 1024px 구간
    규칙보다 뒤에 있어야 우선 적용되므로 그쪽으로 모아둠). 자세한 문구(태그라인·상품 수 배지·
@@ -351,9 +351,10 @@ section.block{padding:100px 24px;position:relative}
 @media(max-width:329px){
   .cat-card .name-ko{font-size:14.352vw;font-size:15.6cqw}
 }
-/* [수정] "상품 준비중" 모바일 크기 — 320px에서 24px, 390px에서 26px(그 사이·바깥은 같은 비율, 22~30px 범위) */
+/* [수정] "상품 준비중" 모바일 크기 — 320px에서 32px, 390px에서 34px(그 사이·바깥은 같은 비율,
+   30~42px 범위 — 데스크톱 42px보다 커지지 않게) */
 @media(max-width:780px){
-  .prep-overlay-text{font-size:clamp(22px, calc(24px + (100vw - 320px) * .02857), 30px);line-height:1.15}
+  .prep-overlay-text{font-size:clamp(30px, calc(32px + (100vw - 320px) * .02857), 42px);line-height:1.15}
 }
 
 /* CATEGORY VIEW + PRODUCT GRID */

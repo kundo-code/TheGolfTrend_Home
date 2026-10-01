@@ -393,7 +393,7 @@ section.block{padding:100px 24px;position:relative}
 .period-filter-btn{flex-shrink:0;padding:6px 15px;border-radius:100px;border:1px solid rgba(10,23,48,.12);background:rgba(10,23,48,.03);color:rgba(10,23,48,.6);font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
 .period-filter-btn:hover{background:rgba(10,23,48,.08);color:var(--pine-deep)}
 .period-filter-btn.active{background:var(--fairway);border-color:var(--fairway);color:#fff;font-weight:600}
-.product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
 /* [추가] 등록된 상품이 1개뿐일 때 — 3열 그리드의 첫 칸에만 들어가 좌측으로 치우쳐 보이는 대신,
    카드 폭은 평소 그리드 한 칸과 같게 유지한 채(3열 그리드였다면 차지했을 폭, 간격 2개분을 뺀 것)
    그 한 칸을 가로 폭 기준 중앙에 오도록 한다 */
@@ -411,7 +411,7 @@ section.block{padding:100px 24px;position:relative}
      카드 자체는 더 커지면서(86%→80%) 이전/다음 카드 끝이 지금보다 조금 더 보이도록(peek) 한다.
      위쪽 제목·필터 영역은 기존 프레임을 그대로 유지 */
   .product-grid{margin-left:-22px;margin-right:-22px;width:calc(100% + 44px);gap:10px}
-  .product-grid>.product{flex:0 0 80%;scroll-snap-align:center}
+  .product-grid>.product{flex:0 0 80%;min-width:0;scroll-snap-align:center}
   .product-grid>.empty-state{flex:0 0 100%}
   /* [추가] 모바일(가로 스크롤 flex 트랙)에서도 상품이 1개뿐이면 좌측 정렬 대신 중앙 배치 */
   .product-grid.single-item{justify-content:center}
@@ -493,7 +493,7 @@ section.block{padding:100px 24px;position:relative}
    레이어를 새로 합성하면서 마우스를 빠르게 움직일 때 화면이 하얗게 깜빡이는 버그가 생길 수 있다
    (Chromium/Safari 공통 현상) — translateZ(0)로 미리 별도 GPU 레이어를 만들어두고 hover 상태에서도
    같은 3D 변환을 유지해, 레이어가 새로 생성/제거되지 않고 그대로 갱신만 되도록 한다 */
-.product{padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(10,23,48,.16),0 2px 6px rgba(10,23,48,.08);transform:translateZ(0);will-change:transform}
+.product{min-width:0;padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(10,23,48,.16),0 2px 6px rgba(10,23,48,.08);transform:translateZ(0);will-change:transform}
 .product:hover{transform:translateY(-6px) translateZ(0);border-color:var(--gold);background:#fff;box-shadow:0 26px 54px rgba(10,23,48,.26),0 8px 18px rgba(10,23,48,.16)}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출.
    [수정] 이미지 레이어(.pv-bg)를 배지(save-btn·region-pill)와 분리된 별도 레이어로 두어,
@@ -551,6 +551,7 @@ section.block{padding:100px 24px;position:relative}
    (15.84px→9.84px→3.84px), 다시 0.15줄(3.6px) 벌렸다(3.84px→7.44px) */
 .product-period-row-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;min-height:10.5px;margin-bottom:7.44px}
 .product-period-row-top .prt-left,.product-period-row-top .prt-right{display:flex}
+.product-period-row-top .prt-left{flex-wrap:wrap;gap:6px}
 /* [수정] meta 그리드의 행 간(라운드·숙박 / 식사·항공포함여부 / 비행시간·소요시간) 간격을
    0.25줄(6px)씩 두 차례 좁힌 뒤(10px→4px→0px), 다시 0.15줄(3.6px) 벌렸다(0px→3.6px) */
 .product .meta{font-size:.78rem;color:rgba(10,23,48,.55);margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(20px,auto));row-gap:3.6px;column-gap:14px}
@@ -571,7 +572,7 @@ section.block{padding:100px 24px;position:relative}
 .product .meta .meta-value{font-weight:700;color:#333333}
 /* [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트 자체는 볼드 해제(값만 내부 <b>로 볼드 유지) */
 .product .meta .meta-value.meta-value-plain{font-weight:400}
-.product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:rgba(229,101,74,.08);border:1px solid rgba(229,101,74,.28);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
+.product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:#F2F3F5;border:1px solid rgba(10,23,48,.10);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
 .product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
@@ -579,12 +580,13 @@ section.block{padding:100px 24px;position:relative}
 .airfare-excluded{color:#D6293E !important}
 .airfare-normal{color:#1d4ed8 !important}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
-/* [수정] 체크포인트2(주의사항) — 카드 태그 아래 구분선 다음에 노출. 붉은 글자 + 옅은 회색 박스
-   (위쪽 체크포인트1(참고사항)의 붉은 톤 박스와 구분). 박스 색상은 관리자에서 바꿀 수 있다 */
+/* [수정] 기본 바탕색 — 체크포인트1(참고사항, 위쪽) 옅은 회색 / 체크포인트2(주의사항, 카드 태그 아래)
+   아주 옅은 빨간색. 박스 색상은 관리자에서 바꿀 수 있다 */
 .product-tag-row + .product-divider-cp2{margin-top:2px}
-.product-checkpoint2{font-size:.76rem;line-height:1.5;color:#D6293E;font-weight:600;background:rgba(10,23,48,.03);border:1px solid rgba(10,23,48,.1);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
+.product-checkpoint2{font-size:.76rem;line-height:1.5;color:#D6293E;font-weight:600;background:#FFF5F5;border:1px solid rgba(214,41,62,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
 .product-checkpoint2 div,.product-checkpoint2 p,.product-checkpoint1 div,.product-checkpoint1 p{margin:0}
-.product-checkpoint1 .rtf-table,.product-checkpoint2 .rtf-table{margin:2px 0;white-space:normal}
+.product-checkpoint1,.product-checkpoint2,.product-tag-row .tag-inline,.product-visual-title h4{overflow-wrap:anywhere;max-width:100%}
+.product-checkpoint1 .rtf-table,.product-checkpoint2 .rtf-table{margin:2px 0;white-space:normal;max-width:100%;table-layout:fixed}
 .product-checkpoint1 .rtf-table td,.product-checkpoint2 .rtf-table td{font-size:inherit;padding:3px 6px;border-color:currentColor}
 /* [수정] 체크포인트2는 상품 카드에서 빨간색 텍스트로 강조 노출 */
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
@@ -600,7 +602,7 @@ section.block{padding:100px 24px;position:relative}
 .prep-overlay-row .adv-badge{margin-left:0}
 .adv-cp2-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset);font-size:.8rem;font-weight:600;color:var(--nm-text-soft)}
 .adv-cp2-note > span{flex:1;min-width:180px}
-.adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:600;color:#B03A22;background:#FDE7EE;border-radius:8px;padding:8px 10px;white-space:pre-line;line-height:1.5}
+.adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:600;color:#B03A22;background:#F2F3F5;border-radius:8px;padding:8px 10px;white-space:pre-line;line-height:1.5}
 /* [추가] 체크포인트 서식 편집기 — 편집 칸이 실제 상품 카드 박스(위쪽=체크포인트1, 아래쪽=체크포인트2)와 같은 색 */
 .cp-editor{margin-top:16px}
 .cp-editor-head{display:flex;align-items:flex-end;gap:8px;margin-bottom:6px}
@@ -608,8 +610,8 @@ section.block{padding:100px 24px;position:relative}
 .cp-editor-hint{font-weight:400;font-size:.7rem;text-transform:none;letter-spacing:0;color:var(--nm-text-soft)}
 .cp-bg-ctl{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
 .adv-body label.ctag-bg,.apc-fields label.ctag-bg,label.ctag-bg{display:block;position:relative;flex-shrink:0;width:26px;height:26px;margin:0;border-radius:50%;overflow:hidden;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);text-transform:none}
-.rtf-editable.cp-top-field{background:#FDE7EE;color:#B03A22;font-weight:600}
-.rtf-editable.cp-bottom-field{background:#F4F5F7;color:#D6293E;font-weight:600}
+.rtf-editable.cp-top-field{background:#F2F3F5;color:#B03A22;font-weight:600}
+.rtf-editable.cp-bottom-field{background:#FFF5F5;color:#D6293E;font-weight:600}
 .ctag-cell{display:flex;align-items:center;gap:4px;min-width:0}
 /* 편집 칸을 실제 카드 태그(.tag-inline)와 같은 모양으로 — 서식·박스 색상 결과를 바로 확인 */
 .rtf-editable.ctag-edit{flex:1;min-width:0;min-height:0;padding:5px 12px;border-radius:100px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);color:#4B5563;font-size:.8rem;font-weight:700;letter-spacing:.03em;line-height:1.4;white-space:normal;overflow:hidden}
@@ -2021,7 +2023,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* RESPONSIVE */
 @media(max-width:1024px){
   .hero-inner{grid-template-columns:1fr}
-  .cat-grid,.product-grid,.blog-grid{grid-template-columns:repeat(2,1fr)}
+  .cat-grid,.product-grid,.blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .category-view{padding:36px}
   .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
   .link-hub-inner{padding:32px}
@@ -8643,16 +8645,17 @@ function productCardHTML(p, catId, idx){
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
     <div class="product-visual-title"><h4>${p.title}</h4></div>
+    <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
+         (박수는 최소 인원이 있던 아래 줄로 이동) -->
     <div class="product-period-row-top">
-      <span class="prt-left">${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}</span>
+      <span class="prt-left">${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(fmtMinPeople(p.minPeople))}</span>`:''}${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}</span>
       <span class="prt-right">${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}</span>
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
     ${cardCpTopHTML(p)}
-    ${(p.minPeople||airfareText||cardStayText)?`<div class="product-period-row">
-      ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
-      ${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}
+    ${(p.nightsCount||cardStayText)?`<div class="product-period-row">
+      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
       ${cardStayText?`<span class="product-minpeople-box">🏨 ${escapeAttr(cardStayText)}</span>`:''}
     </div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
@@ -8893,13 +8896,16 @@ function fitProductCardsToScreen(grid){
   // 아래쪽 여백을 위한 예산을 뺀 나머지가 카드에 배정할 수 있는 높이다
   const available = window.innerHeight - 320;
   const minScale = 0.72;
-  cards.forEach(card=>{
-    card.style.zoom = '';
-    const natural = card.getBoundingClientRect().height;
-    if (available>0 && natural>available){
-      card.style.zoom = Math.max(minScale, available/natural);
-    }
-  });
+  // [버그 수정] 예전에는 카드마다 따로 높이를 재서 각자 다른 zoom을 줬다 — 카드들이 한 줄에서 같은
+  // 높이로 늘어나는(stretch) 탓에, 측정 순서에 따라(특히 모바일 주소창이 나타나고 사라질 때마다
+  // 발생하는 resize 이후) 내용이 적은 카드는 덜 축소되고 많은 카드는 더 축소되어 카드끼리 가로 폭·
+  // 글자 크기가 서로 달라 보였다. 이제 모든 카드의 zoom을 먼저 해제한 뒤 가장 큰 높이 하나로
+  // 같은 배율을 계산해 한 줄의 모든 카드에 똑같이 적용한다
+  cards.forEach(card=>{ card.style.zoom = ''; });
+  let tallest = 0;
+  cards.forEach(card=>{ tallest = Math.max(tallest, card.getBoundingClientRect().height); });
+  const z = (available>0 && tallest>available) ? Math.max(minScale, available/tallest) : 0;
+  if (z) cards.forEach(card=>{ card.style.zoom = z; });
 }
 window.addEventListener('resize', ()=>{
   document.querySelectorAll('.product-grid, .pc-track').forEach(fitProductCardsToScreen);
@@ -12986,7 +12992,7 @@ function advBasicHTML(p){
 function cpEditorHTML(p, field, title, hintText, guide, pos, save){
   const bg = p[field+'Bg']||'';
   const val = field==='checkpoint2' ? (p.checkpoint2||p.commonPrecautions||'') : (p[field]||'');
-  const dflt = pos==='top' ? '#fde7ee' : '#f4f5f7';
+  const dflt = pos==='top' ? '#f2f3f5' : '#fff5f5'; // 기본: 체크포인트1 옅은 회색, 체크포인트2 아주 옅은 빨강
   return `<div class="cp-editor" data-field="${field}">
     <div class="cp-editor-head">
       <label class="cp-editor-title">${title} <span class="cp-editor-hint">${hintText}</span></label>

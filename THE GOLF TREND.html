@@ -574,18 +574,20 @@ section.block{padding:100px 24px;position:relative}
 .product .meta .meta-value{font-weight:700;color:#333333}
 /* [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트 자체는 볼드 해제(값만 내부 <b>로 볼드 유지) */
 .product .meta .meta-value.meta-value-plain{font-weight:400}
-.product-checkpoint1{font-size:.76rem;line-height:1.5;color:#B03A22;font-weight:600;background:#F2F3F5;border:1px solid rgba(10,23,48,.10);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
+.product-checkpoint1{font-size:.76rem;line-height:1.5;color:#646464;font-weight:400;background:#F5F5F5;border:1px solid rgba(10,23,48,.10);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
 .product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
+/* [수정] 기간·박수·체류일 박스 바탕색 RGB(225,225,225) */
+.product-period-box{background:#E1E1E1}
 /* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
 .airfare-excluded{color:#D6293E !important}
 .airfare-normal{color:#1d4ed8 !important}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
-/* [수정] 기본 바탕색 — 체크포인트1(참고사항, 위쪽) 옅은 회색 / 체크포인트2(주의사항, 카드 태그 아래)
-   아주 옅은 빨간색. 박스 색상은 관리자에서 바꿀 수 있다 */
+/* [수정] 기본 바탕색 — 체크포인트1(참고사항, 위쪽) RGB(245,245,245) / 체크포인트2(주의사항, 카드 태그 아래)
+   RGB(255,245,245). 글자는 두 박스 모두 볼드 해제 + RGB(100,100,100). 박스 색상은 관리자에서 바꿀 수 있다 */
 .product-tag-row + .product-divider-cp2{margin-top:2px}
-.product-checkpoint2{font-size:.76rem;line-height:1.5;color:#D6293E;font-weight:600;background:#FFF5F5;border:1px solid rgba(214,41,62,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
+.product-checkpoint2{font-size:.76rem;line-height:1.5;color:#646464;font-weight:400;background:#FFF5F5;border:1px solid rgba(214,41,62,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
 .product-checkpoint2 div,.product-checkpoint2 p,.product-checkpoint1 div,.product-checkpoint1 p{margin:0}
 .product-checkpoint1,.product-checkpoint2,.product-tag-row .tag-inline,.product-visual-title h4{overflow-wrap:anywhere;max-width:100%}
 .product-checkpoint1 .rtf-table,.product-checkpoint2 .rtf-table{margin:2px 0;white-space:normal;max-width:100%;table-layout:fixed}
@@ -604,7 +606,7 @@ section.block{padding:100px 24px;position:relative}
 .prep-overlay-row .adv-badge{margin-left:0}
 .adv-cp2-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset);font-size:.8rem;font-weight:600;color:var(--nm-text-soft)}
 .adv-cp2-note > span{flex:1;min-width:180px}
-.adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:600;color:#B03A22;background:#F2F3F5;border-radius:8px;padding:8px 10px;white-space:pre-line;line-height:1.5}
+.adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:400;color:#646464;background:#F5F5F5;border-radius:8px;padding:8px 10px;white-space:pre-line;line-height:1.5}
 /* [추가] 체크포인트 서식 편집기 — 편집 칸이 실제 상품 카드 박스(위쪽=체크포인트1, 아래쪽=체크포인트2)와 같은 색 */
 .cp-editor{margin-top:16px}
 /* [추가] 상품 카드에 "박스"로 표시되는 항목 — 입력칸을 실제 카드 박스와 같은 색으로 */
@@ -613,19 +615,19 @@ section.block{padding:100px 24px;position:relative}
 .cbf-head b{color:var(--gold-deep)}
 .cbf-sub{margin-left:6px;font-size:.68rem;font-weight:500;color:var(--nm-text-soft)}
 .adv-body .bf-input,.apc-fields .bf-input{box-shadow:none;font-weight:600;border-radius:9px}
-.adv-body .bf-input.bf-gray,.apc-fields .bf-input.bf-gray{background:#F4F5F7;border:1px solid rgba(10,23,48,.14);color:var(--pine-deep)}
+.adv-body .bf-input.bf-gray,.apc-fields .bf-input.bf-gray{background:#E1E1E1;border:1px solid rgba(10,23,48,.14);color:var(--pine-deep)}
 .adv-body .bf-input.bf-gold,.apc-fields .bf-input.bf-gold{background:#FBF6EC;border:1px solid rgba(221,179,103,.45);color:var(--gold-deep)}
 .adv-body .bf-input:focus,.apc-fields .bf-input:focus{box-shadow:0 0 0 2px var(--nm-blue)}
 .bf-chip{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:7px;font-size:.6rem;font-weight:700;letter-spacing:0;text-transform:none;vertical-align:middle}
-.bf-chip.bf-gray{background:#F4F5F7;border:1px solid rgba(10,23,48,.14);color:var(--pine-deep)}
+.bf-chip.bf-gray{background:#E1E1E1;border:1px solid rgba(10,23,48,.14);color:var(--pine-deep)}
 .bf-chip.bf-gold{background:#FBF6EC;border:1px solid rgba(221,179,103,.45);color:var(--gold-deep)}
 .cp-editor-head{display:flex;align-items:flex-end;gap:8px;margin-bottom:6px}
 .adv-body label.cp-editor-title,.apc-fields label.cp-editor-title,label.cp-editor-title{flex:1;min-width:0;margin:0}
 .cp-editor-hint{font-weight:400;font-size:.7rem;text-transform:none;letter-spacing:0;color:var(--nm-text-soft)}
 .cp-bg-ctl{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
 .adv-body label.ctag-bg,.apc-fields label.ctag-bg,label.ctag-bg{display:block;position:relative;flex-shrink:0;width:26px;height:26px;margin:0;border-radius:50%;overflow:hidden;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);text-transform:none}
-.rtf-editable.cp-top-field{background:#F2F3F5;color:#B03A22;font-weight:600}
-.rtf-editable.cp-bottom-field{background:#FFF5F5;color:#D6293E;font-weight:600}
+.rtf-editable.cp-top-field{background:#F5F5F5;color:#646464;font-weight:400}
+.rtf-editable.cp-bottom-field{background:#FFF5F5;color:#646464;font-weight:400}
 .ctag-cell{display:flex;align-items:center;gap:4px;min-width:0}
 /* 편집 칸을 실제 카드 태그(.tag-inline)와 같은 모양으로 — 서식·박스 색상 결과를 바로 확인 */
 .rtf-editable.ctag-edit{flex:1;min-width:0;min-height:0;padding:5px 12px;border-radius:100px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);color:#4B5563;font-size:.8rem;font-weight:700;letter-spacing:.03em;line-height:1.4;white-space:normal;overflow:hidden}
@@ -13022,7 +13024,7 @@ function advBasicHTML(p){
 function cpEditorHTML(p, field, title, hintText, guide, pos, save){
   const bg = p[field+'Bg']||'';
   const val = field==='checkpoint2' ? (p.checkpoint2||p.commonPrecautions||'') : (p[field]||'');
-  const dflt = pos==='top' ? '#f2f3f5' : '#fff5f5'; // 기본: 체크포인트1 옅은 회색, 체크포인트2 아주 옅은 빨강
+  const dflt = pos==='top' ? '#f5f5f5' : '#fff5f5'; // 기본: 체크포인트1 RGB(245,245,245), 체크포인트2 RGB(255,245,245)
   return `<div class="cp-editor" data-field="${field}">
     <div class="cp-editor-head">
       <label class="cp-editor-title">${title} <span class="cp-editor-hint">${hintText}</span></label>

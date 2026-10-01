@@ -7105,6 +7105,38 @@ window.addEventListener('resize', syncTopBarHeight);
 // 메뉴바 아래로 내려간 조건(body.widgets-compact)에서 그대로 적용한다(nav/topbar 자체의 동작이라
 // 위젯 줄 배치 방식과는 무관하다). 그 외(가로폭도 넉넉하고 컴팩트 모드도 아닌) 진짜 일반
 // 데스크톱에서는 이전과 동일하게 topbar를 계속 고정 노출한다
+// [버그 수정] 메뉴바에서 섹션으로 이동할 때, 모바일·좁은 컴팩트 모드에서는 이동한 위치에서 탑바가 위로
+// 접혀 메뉴바만 남는데도 스크롤 여백(html scroll-padding-top)은 항상 "탑바+메뉴바" 높이로 잡혀 있어 섹션
+// 위에 탑바 높이만큼 빈 간격이 생겼다. 도착 위치에서 실제로 보이게 될 고정 영역 높이를 계산해 쓴다:
+// 헤드라인 배너 아래로 이동하면(=탑바가 접힘) 메뉴바 높이만, 그 외에는 탑바+메뉴바 높이
+function isTopbarCollapsibleMode(){ return window.innerWidth <= 780 || document.body.classList.contains('widgets-compact'); }
+function stickyOffsetForY(docY){
+  const nav = document.getElementById('mainNav');
+  const navH = nav ? nav.getBoundingClientRect().height : 54;
+  if (isTopbarCollapsibleMode()){
+    const headlineEl = document.querySelector('.headline');
+    const headlineBottom = headlineEl ? headlineEl.getBoundingClientRect().bottom + window.scrollY : 0;
+    if (docY - navH > headlineBottom) return navH;
+  }
+  return parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || navH;
+}
+function scrollTargetY(el){
+  const elTop = el.getBoundingClientRect().top + window.scrollY;
+  return Math.max(0, elTop - stickyOffsetForY(elTop));
+}
+// 페이지 안 앵커 링크(#section) 클릭 — 위 계산으로 섹션 윗변이 고정 영역 바로 아래에 오도록 이동
+document.addEventListener('click', e=>{
+  if (e.defaultPrevented || e.button!==0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const id = a.getAttribute('href').slice(1);
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (!el || el.closest('#adminPanel,.adv-editor-overlay,.pd-overlay')) return;
+  e.preventDefault();
+  window.scrollTo({top: scrollTargetY(el), behavior:'smooth'});
+  if (history.replaceState) history.replaceState(null, '', '#'+id);
+});
 (function initMobileTopbarScroll(){
   const headlineEl = document.querySelector('.headline');
   let ticking = false;
@@ -8466,9 +8498,9 @@ function renderCategoryGrid(){
 // html{scroll-behavior:smooth}가 프레임마다 별도의 스무스 스크롤을 또 걸어 서로 밀리는 것을 막는다
 function smoothScrollToEl(el, duration, offset){
   if (!el) return;
-  const scrollPaddingTop = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
   const startY = window.scrollY;
-  const targetY = Math.max(0, startY + el.getBoundingClientRect().top - scrollPaddingTop + (offset||0));
+  // [수정] 고정 영역(탑바·메뉴바) 높이를 도착 위치 기준으로 계산(모바일에서 탑바가 접히는 경우 반영)
+  const targetY = Math.max(0, scrollTargetY(el) + (offset||0));
   const startTime = performance.now();
   const easeInOutCubic = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
   function step(now){
@@ -10795,7 +10827,7 @@ function renderProductDetail(p,cat,idx){
   if (kchan)   contactBtns.push(`<a href="${escapeAttr(kchan)}" target="_blank" rel="noopener" class="kakao">💬 카카오 채널</a>`);
   if (kfriend) contactBtns.push(`<a href="${escapeAttr(kfriend)}" target="_blank" rel="noopener" class="kakao">➕ 카톡 친구 추가</a>`);
   // Always offer booking form as fallback
-  contactBtns.push(`<a onclick="closeProductDetail();document.getElementById('bookDest').value='${cat.ko}';document.getElementById('booking').scrollIntoView({behavior:'smooth'})">✈ 예약 문의</a>`);
+  contactBtns.push(`<a onclick="closeProductDetail();document.getElementById('bookDest').value='${cat.ko}';window.scrollTo({top:scrollTargetY(document.getElementById('booking')),behavior:'smooth'})">✈ 예약 문의</a>`);
   html += `<div class="pd-slot"><div class="pd-section-title">📞 문의하기</div>
     <div class="pd-contact">${contactBtns.join('')}</div></div>`;
 
@@ -14482,7 +14514,7 @@ function selectAiProduct(catId, idx){
   const src = document.getElementById('leadSource'); if (src) src.value = 'ai_recommend';
   const rp = document.getElementById('leadProduct'); if (rp) rp.value = p.title;
   const bookingSec = document.getElementById('booking');
-  if (bookingSec) bookingSec.scrollIntoView({behavior:'smooth', block:'start'});
+  if (bookingSec) window.scrollTo({top: scrollTargetY(bookingSec), behavior:'smooth'});
   setTimeout(()=>{ document.querySelector('#bookingForm input[name=name]')?.focus(); }, 400);
 }
 (function initAiRecommend(){

@@ -579,11 +579,13 @@ section.block{padding:100px 24px;position:relative}
 .airfare-excluded{color:#D6293E !important}
 .airfare-normal{color:#1d4ed8 !important}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
-/* [추가] 체크포인트2(참고사항) — 카드 태그 아래 구분선 다음에 노출. 관리자 입력란(cp2-field)과 같은 붉은 글자,
-   체크포인트1(붉은 톤 박스)과 구분되도록 옅은 회색 박스 */
+/* [수정] 체크포인트2(주의사항) — 카드 태그 아래 구분선 다음에 노출. 붉은 글자 + 옅은 회색 박스
+   (위쪽 체크포인트1(참고사항)의 붉은 톤 박스와 구분). 박스 색상은 관리자에서 바꿀 수 있다 */
 .product-tag-row + .product-divider-cp2{margin-top:2px}
 .product-checkpoint2{font-size:.76rem;line-height:1.5;color:#D6293E;font-weight:600;background:rgba(10,23,48,.03);border:1px solid rgba(10,23,48,.1);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
-.product-checkpoint2 div,.product-checkpoint2 p{margin:0}
+.product-checkpoint2 div,.product-checkpoint2 p,.product-checkpoint1 div,.product-checkpoint1 p{margin:0}
+.product-checkpoint1 .rtf-table,.product-checkpoint2 .rtf-table{margin:2px 0;white-space:normal}
+.product-checkpoint1 .rtf-table td,.product-checkpoint2 .rtf-table td{font-size:inherit;padding:3px 6px;border-color:currentColor}
 /* [수정] 체크포인트2는 상품 카드에서 빨간색 텍스트로 강조 노출 */
 .product-checkpoint{font-size:.76rem;line-height:1.55;color:#D6293E;white-space:pre-line;margin-bottom:12px}
 /* [수정] 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동. 카드태그1~4까지 여러 개 노출 가능 */
@@ -596,9 +598,18 @@ section.block{padding:100px 24px;position:relative}
 .prep-overlay-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset)}
 .adv-body input.prep-overlay-input{flex:1;min-width:160px;width:auto}
 .prep-overlay-row .adv-badge{margin-left:0}
-.adv-cp2-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding:10px 12px;border-radius:10px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset);font-size:.8rem;font-weight:700;color:var(--nm-text)}
+.adv-cp2-note{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset);font-size:.8rem;font-weight:600;color:var(--nm-text-soft)}
 .adv-cp2-note > span{flex:1;min-width:180px}
-.adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:600;color:#D6293E;white-space:pre-line;line-height:1.5}
+.adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:600;color:#B03A22;background:#FDE7EE;border-radius:8px;padding:8px 10px;white-space:pre-line;line-height:1.5}
+/* [추가] 체크포인트 서식 편집기 — 편집 칸이 실제 상품 카드 박스(위쪽=체크포인트1, 아래쪽=체크포인트2)와 같은 색 */
+.cp-editor{margin-top:16px}
+.cp-editor-head{display:flex;align-items:flex-end;gap:8px;margin-bottom:6px}
+.adv-body label.cp-editor-title,.apc-fields label.cp-editor-title,label.cp-editor-title{flex:1;min-width:0;margin:0}
+.cp-editor-hint{font-weight:400;font-size:.7rem;text-transform:none;letter-spacing:0;color:var(--nm-text-soft)}
+.cp-bg-ctl{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+.adv-body label.ctag-bg,.apc-fields label.ctag-bg,label.ctag-bg{display:block;position:relative;flex-shrink:0;width:26px;height:26px;margin:0;border-radius:50%;overflow:hidden;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);text-transform:none}
+.rtf-editable.cp-top-field{background:#FDE7EE;color:#B03A22;font-weight:600}
+.rtf-editable.cp-bottom-field{background:#F4F5F7;color:#D6293E;font-weight:600}
 .ctag-cell{display:flex;align-items:center;gap:4px;min-width:0}
 /* 편집 칸을 실제 카드 태그(.tag-inline)와 같은 모양으로 — 서식·박스 색상 결과를 바로 확인 */
 .rtf-editable.ctag-edit{flex:1;min-width:0;min-height:0;padding:5px 12px;border-radius:100px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);color:#4B5563;font-size:.8rem;font-weight:700;letter-spacing:.03em;line-height:1.4;white-space:normal;overflow:hidden}
@@ -8034,7 +8045,7 @@ function richTextFieldHTML(value, onchangeAttr, opts){
   const oninput = onchangeAttr.replace('__HTML__', 'this.innerHTML');
   return `<div class="rtf-wrap">
     ${rtfToolbarHTML()}
-    <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
+    <div class="rtf-editable ${opts.cls||''}" style="min-height:${opts.minHeight||'150px'};${opts.style||''}" contenteditable="true" data-placeholder="${escapeAttr(opts.placeholder||'')}" oninput="${oninput}" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${initial}</div>
   </div>`;
 }
 // 서식 툴바(크기·글꼴·줄간격·B·I·U·표·서식✕·색상) — 장문 필드와 카드 태그 편집기가 함께 사용
@@ -8544,13 +8555,26 @@ function prepOverlayHTML(p){
   const txt = (p.prepOverlayText||'').trim() || PREP_OVERLAY_DEFAULT;
   return `<div class="prep-overlay" aria-label="${escapeAttr(txt)}"><span class="prep-overlay-text">${escapeAttr(txt)}</span></div>`;
 }
-// [추가] 체크포인트2(참고사항 — 공통 참고사항과 같은 값)도 상품 카드에 노출 — 카드 태그 바로 아래,
-// 구분선을 두고 표시한다. 일반 텍스트는 줄바꿈 그대로, 서식(HTML)이 들어간 값은 정리해서 표시
-function cardCp2HTML(p){
+// [수정] 체크포인트 두 개의 제목·위치를 서로 바꿨다(저장 필드는 그대로):
+//   · 체크포인트1 = 참고사항(p.checkpoint2 = 공통 참고사항) → 카드의 라운드·숙박 정보 아래(위쪽 박스)
+//   · 체크포인트2 = 주의사항(p.checkpoint1)                  → 카드 태그 아래, 구분선 다음(아래쪽 박스)
+// 두 칸 모두 서식(HTML)을 넣을 수 있고, 박스 색상은 p.checkpoint1Bg / p.checkpoint2Bg(저장 필드 기준)
+function cpBodyHTML(v){
+  v = String(v||'');
+  return v.indexOf('<')<0 ? escapeAttr(v.trim()) : sanitizeRichHTML(v);
+}
+function cpBoxStyleAttr(bg){ const st=cardTagBoxStyle(bg); return st ? ` style="${st}"` : ''; }
+// 위쪽 박스 — 체크포인트1(참고사항)
+function cardCpTopHTML(p){
   const v = String(p.checkpoint2 || p.commonPrecautions || '');
-  if (!richToPlain(v)) return '';
-  const body = v.indexOf('<')<0 ? escapeAttr(v.trim()) : sanitizeRichHTML(v);
-  return `<div class="product-divider product-divider-cp2"></div><div class="product-checkpoint2">${body}</div>`;
+  if (!richToPlain(v) && !/<table/i.test(v)) return '';
+  return `<div class="product-checkpoint1"${cpBoxStyleAttr(p.checkpoint2Bg)}>${cpBodyHTML(v)}</div><div class="product-divider"></div>`;
+}
+// 아래쪽 박스 — 체크포인트2(주의사항), 카드 태그 아래 구분선 다음
+function cardCp2HTML(p){
+  const v = String(p.checkpoint1 || '');
+  if (!richToPlain(v) && !/<table/i.test(v)) return '';
+  return `<div class="product-divider product-divider-cp2"></div><div class="product-checkpoint2"${cpBoxStyleAttr(p.checkpoint1Bg)}>${cpBodyHTML(v)}</div>`;
 }
 function productCardHTML(p, catId, idx){
   const cat=findCat(catId);
@@ -8625,7 +8649,7 @@ function productCardHTML(p, catId, idx){
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
-    ${p.checkpoint1?`<div class="product-checkpoint1">${escapeAttr(p.checkpoint1)}</div><div class="product-divider"></div>`:''}
+    ${cardCpTopHTML(p)}
     ${(p.minPeople||airfareText||cardStayText)?`<div class="product-period-row">
       ${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(p.minPeople)}인 이상</span>`:''}
       ${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}
@@ -10503,9 +10527,9 @@ function renderProductDetail(p,cat,idx){
   const commonNotIncludedRows = bulletRowsRich(plan.notIncluded.value||'','✕');
   // [수정] 공통 참고사항은 "체크포인트2(참고사항)"와 값을 서로 동기화하는 일반 텍스트 필드라 그대로
   // 일반 텍스트로 렌더링하고, 요금 항목들에서 끌어올린 값(리치 텍스트)일 때만 리치 텍스트로 렌더링한다
-  const commonPrecautionsRows = plan.precautions.source==='common'
-    ? bulletRows(plan.precautions.value||'','•')
-    : bulletRowsRich(plan.precautions.value||'','•');
+  // [수정] 체크포인트1(=공통 참고사항)에 서식을 넣을 수 있게 되어 공통값도 리치 텍스트로 렌더링
+  // (bulletRowsRich는 서식 없는 기존 일반 텍스트도 줄 단위로 그대로 처리한다)
+  const commonPrecautionsRows = bulletRowsRich(plan.precautions.value||'','•');
   if (commonIncludedRows || commonNotIncludedRows || commonPrecautionsRows){
     html += `<div class="pd-slot"><div class="pd-section-title">💰 포함 · 불포함 · 참고사항</div>
       <div style="padding:0 20px 18px;display:flex;flex-direction:column;gap:10px">
@@ -12211,8 +12235,8 @@ function renderProductAdmin(catId){
           ? `<input type="text" value="${escapeAttr(richToPlain(p.cardTag1))}" readonly title="서식이 적용된 태그는 고급 편집에서 수정할 수 있습니다" style="opacity:.75;cursor:not-allowed">`
           : `<input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)">`}</div>
         <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
-        <div class="full"><label>체크포인트1(주의사항) (상품 카드의 기간 위 강조 박스에 노출)</label><textarea class="cp1-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateProduct(${i},'checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea></div>
-        <div class="full"><label>체크포인트2(참고사항) (상품 카드의 카드 태그 아래 + 자세히 보기 페이지의 불포함사항 바로 아래에 노출 · "참고사항" 입력란과 자동 동기화)</label><textarea class="cp2-field" style="min-height:175px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateProduct(${i},'checkpoint2',this.value)">${escapeAttr(p.checkpoint2||'')}</textarea></div>
+        <div class="full">${cpEditorHTML(p, 'checkpoint2', '체크포인트1(참고사항)', '(상품 카드의 라운드·숙박 정보 아래 강조 박스 + 자세히 보기 "참고사항"에 노출 · 참고사항과 자동 동기화)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
+        <div class="full">${cpEditorHTML(p, 'checkpoint1', '체크포인트2(주의사항)', '(상품 카드의 카드 태그 아래, 구분선 다음에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
       </div>
     </details>`).join('');
   adminFocusLastProduct(list);
@@ -12245,6 +12269,7 @@ function updateProduct(idx,field,value){
   // [추가] "체크포인트2(참고사항)"과 공통 "참고사항"은 같은 값으로 취급 — 고급편집의 참고사항
   // 입력란과 자동으로 맞춰진다
   if (field==='checkpoint2') productOverrides[activeProductCat][idx].commonPrecautions = value;
+  if (field==='checkpoint2Bg' || field==='checkpoint1Bg'){ if (!value) delete productOverrides[activeProductCat][idx][field]; }
   saveProducts();
   renderCategoryGrid();
   updateProductCountLabel();
@@ -12676,11 +12701,6 @@ function advJump(key){
 }
 // 모두 펼치기: 그룹과 그 하위 섹션만(요금 항목 내부는 제외 — 한꺼번에 열면 오히려 너무 길어진다)
 // 모두 접기: 요금 항목·일정 일자 카드까지 전부
-function advJumpCp2(){
-  const g=document.querySelector('#advBody details[data-ck="g-detail"]'); if (g) g.open=true;
-  advJump('d-inc');
-  setTimeout(()=>{ const t=document.querySelector('#advBody details[data-ck="d-inc"] textarea'); if (t) t.focus({preventScroll:true}); }, 400);
-}
 function advToggleAll(open){
   const body = document.getElementById('advBody'); if (!body) return;
   body.querySelectorAll('details[data-ck]').forEach(d=>{ if (open && d.closest('.pe-item')) return; d.open = open; });
@@ -12814,15 +12834,10 @@ function advBasicHTML(p){
             }).join('')}
           </div>
         </div>
-        <!-- [추가] 체크포인트2는 "자세히 보기 > 포함·불포함·참고사항"의 참고사항과 같은 값 — 카드 태그 아래에도
-             표시되므로 여기서 현재 값을 미리 보고 입력란으로 바로 이동할 수 있게 한다 -->
-        <div class="adv-cp2-note">
-          <span>🌟 체크포인트2(참고사항) ${hint('— 카드 태그 아래 구분선 다음에 노출')}</span>
-          <button type="button" class="apc-btn-sm" onclick="advJumpCp2()">${(p.checkpoint2||p.commonPrecautions)?'수정하기':'입력하기'} →</button>
-          ${(p.checkpoint2||p.commonPrecautions)?`<div class="adv-cp2-preview">${escapeAttr(richToPlain(p.checkpoint2||p.commonPrecautions))}</div>`:''}
-        </div>
-        <label>체크포인트1(주의사항) ${hint('(상품 카드의 기간 위 강조 박스에 노출)')}</label>
-        <textarea class="cp1-field" style="min-height:120px" placeholder="${escapeAttr(CHECKPOINT1_GUIDE)}" oninput="updateAdvField('checkpoint1',this.value)">${escapeAttr(p.checkpoint1||'')}</textarea>
+        <!-- [수정] 체크포인트1(참고사항)·체크포인트2(주의사항) — 제목·위치를 서로 바꾸고 서식 편집·박스 색상 지정 추가.
+             체크포인트1은 "자세히 보기 > 참고사항"과 같은 값이라 여기서 입력하면 상세페이지에도 함께 반영된다 -->
+        ${cpEditorHTML(p, 'checkpoint2', '체크포인트1(참고사항)', '(상품 카드의 라운드·숙박 정보 아래 강조 박스 + 자세히 보기 "참고사항"에 노출)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateAdvField(${k},${v})`)}
+        ${cpEditorHTML(p, 'checkpoint1', '체크포인트2(주의사항)', '(상품 카드의 카드 태그 아래, 구분선 다음에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateAdvField(${k},${v})`)}
 
         ${sub('📋 기본 정보', '카드 + 자세히 보기 "상품기본정보" + 요금 항목 기본값')}
         <div class="grid-2">
@@ -12866,9 +12881,13 @@ function advBasicHTML(p){
           <div class="pe-labels-body">
             <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'200px'})}
             <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'200px'})}
-            <!-- [수정] 체크포인트2와 참고사항은 같은 값으로 자동 동기화되는 필드라, 입력란을 하나로 합쳤다 -->
-            <label>🌟 참고사항 ${hint('(= 체크포인트2 · 불포함사항 바로 아래 + 상품 카드의 카드 태그 아래에 노출)')}</label>
-            <textarea class="auto-grow" style="min-height:140px" placeholder="${escapeAttr(CHECKPOINT_GUIDE)}" oninput="updateAdvField('commonPrecautions',this.value);autoGrowTextarea(this)">${escapeAttr(p.commonPrecautions||'')}</textarea>
+            <!-- [수정] 참고사항은 체크포인트1과 같은 값 — 서식 편집기는 상품 카드 그룹의 체크포인트1 한 곳에만 두고
+                 (같은 값을 두 편집기가 동시에 고치면 서로 덮어쓸 수 있어서) 여기서는 미리보기 + 바로가기만 제공 -->
+            <label>🌟 참고사항 ${hint('(= 체크포인트1 · 불포함사항 바로 아래 + 상품 카드 강조 박스에 노출)')}</label>
+            <div class="adv-cp2-note">
+              ${(p.checkpoint2||p.commonPrecautions)?`<div class="adv-cp2-preview"${cpBoxStyleAttr(p.checkpoint2Bg)}>${cpBodyHTML(p.checkpoint2||p.commonPrecautions)}</div>`:`<span>입력된 참고사항이 없습니다</span>`}
+              <button type="button" class="apc-btn-sm" onclick="advJumpCpTop()">체크포인트1에서 ${(p.checkpoint2||p.commonPrecautions)?'수정':'입력'} →</button>
+            </div>
           </div>
         </details>
         <!-- 상세 페이지에서 요금표 바로 위에 노출 -->
@@ -12962,6 +12981,39 @@ function advBasicHTML(p){
   `;
 }
 // 값이 실제로 입력돼 있는지 — 리치 텍스트는 태그를 뺀 내용으로, 'none'은 미입력으로 본다
+// [추가] 체크포인트 서식 편집기 — 서식 툴바 + 편집 칸(실제 카드 박스 색상 미리보기) + 박스 색상 선택
+// save(keyExpr, valExpr)는 저장 호출 문자열을 만든다(고급편집: updateAdvField, 상품 목록: updateProduct)
+function cpEditorHTML(p, field, title, hintText, guide, pos, save){
+  const bg = p[field+'Bg']||'';
+  const val = field==='checkpoint2' ? (p.checkpoint2||p.commonPrecautions||'') : (p[field]||'');
+  const dflt = pos==='top' ? '#fde7ee' : '#f4f5f7';
+  return `<div class="cp-editor" data-field="${field}">
+    <div class="cp-editor-head">
+      <label class="cp-editor-title">${title} <span class="cp-editor-hint">${hintText}</span></label>
+      <span class="cp-bg-ctl">
+        <label class="ctag-bg" title="박스 색상"><input type="color" value="${bg||dflt}" oninput="cpPreviewBg(this)" onchange="${save(`'${field}Bg'`,'this.value')}"><span>🎨</span></label>
+        <button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="cpResetBg(this);${save(`'${field}Bg'`,"''")}">기본</button>
+      </span>
+    </div>
+    ${richTextFieldHTML(val, save(`'${field}'`,'__HTML__'), {cls:`cp-field cp-${pos}-field`, placeholder:guide, minHeight:'110px', style:cardTagBoxStyle(bg)})}
+  </div>`;
+}
+function cpPreviewBg(inp){
+  const ed=inp.closest('.cp-editor').querySelector('.rtf-editable');
+  ed.setAttribute('style', (ed.getAttribute('style')||'').replace(/background:[^;]*;?|border-color:[^;]*;?|(^|;)color:[^;]*;?/g,'$1') + cardTagBoxStyle(inp.value));
+}
+function cpResetBg(btn){
+  const ed=btn.closest('.cp-editor').querySelector('.rtf-editable');
+  ed.setAttribute('style', (ed.getAttribute('style')||'').replace(/background:[^;]*;?|border-color:[^;]*;?|(^|;)color:[^;]*;?/g,'$1'));
+}
+// "자세히 보기 > 참고사항"에서 체크포인트1 편집기로 이동
+function advJumpCpTop(){
+  const g=document.querySelector('#advBody details[data-ck="g-card"]'); if (g) g.open=true;
+  const el=document.querySelector('#advBody .cp-editor[data-field="checkpoint2"]'); if (!el) return;
+  const body=document.getElementById('advBody'), nav=body.querySelector('.adv-quicknav');
+  body.scrollTo({top: body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav?nav.offsetHeight:0) - 10, behavior:'smooth'});
+  setTimeout(()=>{ const ed=el.querySelector('.rtf-editable'); if (ed) ed.focus({preventScroll:true}); }, 450);
+}
 function prepPreviewText(v){
   const el=document.querySelector('#advBody .prep-preview-wrap .prep-overlay-text');
   if (el) el.textContent=(v||'').trim()||PREP_OVERLAY_DEFAULT;
@@ -13161,7 +13213,8 @@ function commonSetField(p, f, v){
     case 'included': p.commonIncluded=c; break;
     case 'notIncluded': p.commonNotIncluded=c; break;
     // 공통 참고사항은 체크포인트2와 동기화되는 일반 텍스트 필드라 줄 단위 텍스트로 옮긴다
-    case 'precautions': p.commonPrecautions=_peTextKey(c); p.checkpoint2=p.commonPrecautions; break;
+    // 공통 참고사항(= 체크포인트1)도 서식을 지원하므로 HTML 그대로 옮긴다
+    case 'precautions': p.commonPrecautions=c||''; p.checkpoint2=p.commonPrecautions; break;
     case 'schedule': p.schedule=ensureSchedule(c.s); p.labels.teeOffTimes=Object.assign(PE_EMPTY_TEE(), c.t||{}); break;
   }
 }
@@ -13198,7 +13251,6 @@ function promoteEntriesToCommon(){
     const k0=F.key(F.pe(entries[0]));
     if (!k0 || !entries.every(pe=>F.key(F.pe(pe))===k0)) return;
     // 공통 참고사항은 일반 텍스트 필드라 표(<table>)를 옮기면 서식이 사라진다 — 데이터 보존을 위해 건너뜀
-    if (f==='precautions' && /<table/i.test(String(F.pe(entries[0])||''))){ skipped.push(F.label); return; }
     toPromote.push(f);
   });
   if (!toPromote.length && !toClear.length){

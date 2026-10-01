@@ -3686,6 +3686,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
      cv-head 아래쪽 여백(24px→12px, 20px→10px)과 period-filter-row 위쪽 여백(14px→7px)을 각각 절반으로 */
   .cv-head{padding-bottom:12px;margin-bottom:10px}
   .period-filter-row{padding-top:7px}
+  /* [수정] 모바일은 상품 목록 패널(.category-view)의 밝은 바탕을 없애 어두운 섹션 배경 위에 바로 놓이므로,
+     시즌별/월별 보기 제목·버튼(진한 회색 글자)이 잘 안 보였다 — 데스크톱 패널과 같은 밝은 바탕(#FDFBF6)
+     박스로 감싸고 버튼도 데스크톱과 같은 모양 그대로 보이게 한다 */
+  .period-filter-row{background:#FDFBF6;border:1px solid rgba(10,23,48,.08);border-radius:16px;box-shadow:0 6px 18px rgba(10,23,48,.12);padding:10px 12px 12px;margin-bottom:12px}
+  .period-filter-row .period-filter-label{color:rgba(10,23,48,.6)}
 }
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
@@ -8529,17 +8534,15 @@ function selectCategory(id, opts){
       smoothScrollToEl(panel, 500, 0);
       // [수정] 2단계 스크롤은 모바일에서만 적용. 웹(데스크톱)에서는 1단계 이동에서 멈춘다
       if (window.innerWidth<=780){
-        // [수정] 1단계 이동 후 1초간 머문 뒤 2단계 스크롤을 시작한다
+        // [수정] 1단계 이동(0.5초) 후 머무는 시간을 0.5초 늘려(1초 → 1.5초 뒤 시작) 제목을 충분히 보여준 뒤
+        // 2단계 스크롤을 시작한다
         setTimeout(()=>{
           const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
-          // [수정] 두 번째 단계는 브라우저 기본 smooth 대신 약 0.3초간 이어지는(기존 2초 대비 더 빠른)
-          // 커스텀 이징 스크롤로 교체. 목표 위치도 시즌별 버튼 줄이 화면 맨 위에 딱 붙는 지점보다,
-          // 월별 박스(.period-filter-btn) 높이의 3배만큼 더 스크롤해(그 줄이 화면 위로 더 올라가도록)
-          // 상품 카드가 더 많이 보이게 한다
-          const chip=filterRow?filterRow.querySelector('.period-filter-btn'):null;
-          const chipH=chip?chip.getBoundingClientRect().height:0;
-          smoothScrollToEl(filterRow, 300, chipH*3);
-        }, 1000);
+          // [수정] 두 번째 단계는 약 0.3초간 이어지는 커스텀 이징 스크롤. 최종 위치는 시즌별/월별 보기
+          // 제목(밝은 박스 윗변)이 메뉴바 바로 아래에 오도록 — 예전에는 버튼 높이의 3배만큼 더 내려가
+          // 제목이 메뉴바 뒤로 가려졌다
+          smoothScrollToEl(filterRow, 300, 0);
+        }, 1500);
       }
     },100);
   }

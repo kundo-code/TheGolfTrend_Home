@@ -565,6 +565,8 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 관리자에서 "한 줄로" 토글을 켠 meta 항목은 카드에서 그리드 전체 폭(2칸)을 혼자 차지해
    내용이 길어도 줄바꿈 없이 한 줄에 표시되도록 한다 */
 .product .meta span.meta-full{grid-column:1/-1}
+/* [추가] 박수·체류일 박스 줄 — 구분선 바로 아래, 위아래로 여백을 둬 텍스트 정보와 구분 */
+.product .meta span.meta-boxes{gap:8px;flex-wrap:wrap;margin:5px 0 6px}
 /* [추가] 라운드·숙박·식사 그룹과 항공포함여부·비행시간·호텔→골프장·공항→호텔 그룹 사이 구분선 */
 .product .meta span.meta-divider{height:0;padding:1px 0 0;margin:1px 0;border-top:1px dashed rgba(10,23,48,.14)}
 /* [수정] 라운드·항공포함여부·숙박·식사·소요시간·비행시간 내용 가독성 강화 — 볼드 + 파란색 계열
@@ -605,6 +607,18 @@ section.block{padding:100px 24px;position:relative}
 .adv-cp2-preview{flex-basis:100%;font-size:.76rem;font-weight:600;color:#B03A22;background:#F2F3F5;border-radius:8px;padding:8px 10px;white-space:pre-line;line-height:1.5}
 /* [추가] 체크포인트 서식 편집기 — 편집 칸이 실제 상품 카드 박스(위쪽=체크포인트1, 아래쪽=체크포인트2)와 같은 색 */
 .cp-editor{margin-top:16px}
+/* [추가] 상품 카드에 "박스"로 표시되는 항목 — 입력칸을 실제 카드 박스와 같은 색으로 */
+.card-box-fields{margin:8px 0 6px;padding:12px 14px 14px;border-radius:12px;border:1px dashed rgba(10,23,48,.18);background:var(--nm-surface-light)}
+.cbf-head{font-size:.8rem;font-weight:700;color:var(--nm-text);margin-bottom:4px}
+.cbf-head b{color:var(--gold-deep)}
+.cbf-sub{margin-left:6px;font-size:.68rem;font-weight:500;color:var(--nm-text-soft)}
+.adv-body .bf-input,.apc-fields .bf-input{box-shadow:none;font-weight:600;border-radius:9px}
+.adv-body .bf-input.bf-gray,.apc-fields .bf-input.bf-gray{background:#F4F5F7;border:1px solid rgba(10,23,48,.14);color:var(--pine-deep)}
+.adv-body .bf-input.bf-gold,.apc-fields .bf-input.bf-gold{background:#FBF6EC;border:1px solid rgba(221,179,103,.45);color:var(--gold-deep)}
+.adv-body .bf-input:focus,.apc-fields .bf-input:focus{box-shadow:0 0 0 2px var(--nm-blue)}
+.bf-chip{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:7px;font-size:.6rem;font-weight:700;letter-spacing:0;text-transform:none;vertical-align:middle}
+.bf-chip.bf-gray{background:#F4F5F7;border:1px solid rgba(10,23,48,.14);color:var(--pine-deep)}
+.bf-chip.bf-gold{background:#FBF6EC;border:1px solid rgba(221,179,103,.45);color:var(--gold-deep)}
 .cp-editor-head{display:flex;align-items:flex-end;gap:8px;margin-bottom:6px}
 .adv-body label.cp-editor-title,.apc-fields label.cp-editor-title,label.cp-editor-title{flex:1;min-width:0;margin:0}
 .cp-editor-hint{font-weight:400;font-size:.7rem;text-transform:none;letter-spacing:0;color:var(--nm-text-soft)}
@@ -8608,23 +8622,30 @@ function productCardHTML(p, catId, idx){
     ...(p.stay ? [{full: !!mw.stay, html: `🏨 <b class="meta-value">${p.stay}</b>`}] : []),
     ...(p.meals ? [{full: !!mw.meals, html: `🍽 <b class="meta-value">${p.meals}</b>`}] : []),
   ];
+  // [수정] 항공 포함 여부는 제목 아래 박스 줄(최소 인원 옆)로 옮겨 여기서는 빼고,
+  // 순서를 비행시간 → 공항→호텔(국내: 숙소→골프장) → 호텔→골프장으로 변경
   const metaGroup2 = [
-    ...(airfareText ? [{full: !!mw.airfare, html: `✈️ <b class="meta-value ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">${airfareText}</b>`}] : []),
     // [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트는 볼드 해제하고, 입력한 값만 볼드 처리
     ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <span class="meta-value meta-value-plain">비행시간 <b>${escapeAttr(p.flightTime)}</b></span>`}] : []),
-    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <span class="meta-value meta-value-plain">호텔→골프장 <b>${escapeAttr(p.hotelToGolfTime)}</b></span>`}] : []),
     ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <span class="meta-value meta-value-plain">${transferLabel} <b>${escapeAttr(p.transferTime)}</b></span>`}] : []),
+    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <span class="meta-value meta-value-plain">호텔→골프장 <b>${escapeAttr(p.hotelToGolfTime)}</b></span>`}] : []),
   ];
+  // [수정] 박수·체류일 박스 — 식사 정보와 비행시간 정보 사이, 구분선 바로 아래 한 줄로(박스 색상 동일)
+  const stayBoxes = [
+    p.nightsCount ? `<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>` : '',
+    cardStayText ? `<span class="product-period-box">🏨 ${escapeAttr(cardStayText)}</span>` : '',
+  ].join('');
   const metaItems = [
     ...metaGroup1,
-    ...(metaGroup2.length ? [{full:true, divider:true, html:''}] : []),
+    ...((stayBoxes || metaGroup2.length) ? [{full:true, divider:true, html:''}] : []),
+    ...(stayBoxes ? [{full:true, boxes:true, html:stayBoxes}] : []),
     ...metaGroup2,
   ];
   let metaCol = 0;
   const metaHTML = metaItems.map((item,i)=>{
     if (item.full){
       metaCol = 0;
-      return item.divider ? `<span class="meta-full meta-divider"></span>` : `<span class="meta-full">${item.html}</span>`;
+      return item.divider ? `<span class="meta-full meta-divider"></span>` : `<span class="meta-full${item.boxes?' meta-boxes':''}">${item.html}</span>`;
     }
     const isLeft = metaCol===0;
     const hasRightSibling = isLeft && metaItems[i+1] && !metaItems[i+1].full;
@@ -8654,10 +8675,6 @@ function productCardHTML(p, catId, idx){
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
     ${cardCpTopHTML(p)}
-    ${(p.nightsCount||cardStayText)?`<div class="product-period-row">
-      ${p.nightsCount?`<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>`:''}
-      ${cardStayText?`<span class="product-minpeople-box">🏨 ${escapeAttr(cardStayText)}</span>`:''}
-    </div>`:''}
     ${cardTags.length?`<div class="product-tag-row">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     ${cardCp2HTML(p)}
     <div class="product-foot">
@@ -12228,8 +12245,8 @@ function renderProductAdmin(catId){
       <div class="apc-fields">
         <div class="full"><label>제목 · Title</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateProduct(${i},'title',this.value)"></div>
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
-        <div><label>기간 · Nights</label><input type="text" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
-        <div><label>박수 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드의 기간 옆에 노출)</span></label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateProduct(${i},'nightsCount',this.value)"></div>
+        <div><label>🗓 기간 · Nights <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
+        <div><label>🌙 박수 <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateProduct(${i},'nightsCount',this.value)"></div>
         <div><div class="mw-label-row"><label>라운드 · Rounds <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),`toggleMetaWide(${i},'rounds',this.checked)`)}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
         <div><div class="mw-label-row"><label>숙박 · Stay <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),`toggleMetaWide(${i},'stay',this.checked)`)}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
         <div><div class="mw-label-row"><label>식사 · Meals <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),`toggleMetaWide(${i},'meals',this.checked)`)}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
@@ -12805,12 +12822,38 @@ function advBasicHTML(p){
           </div>
         </details>
 
-        ${sub('📝 제목 · 가격 · 태그')}
+        ${sub('📝 제목')}
         <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
-        <div class="grid-2">
-          <div><label>기간</label><input type="text" value="${escapeAttr(p.nights)}" oninput="updateAdvField('nights',this.value)"></div>
-          <div><label>박수 ${hint('(카드의 기간 옆에 노출)')}</label><input type="text" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
+
+        <!-- [수정] 기본 정보를 제목과 카드 태그 사이로 이동. 상품 카드에 "박스"로 표시되는 항목은 한데 모으고
+             입력칸을 실제 카드 박스와 같은 색으로 칠해 어떤 값이 어디에 어떻게 보이는지 바로 알 수 있게 했다 -->
+        ${sub('📋 기본 정보', '카드 + 자세히 보기 "상품기본정보" + 요금 항목 기본값')}
+        <div class="card-box-fields">
+          <div class="cbf-head">🔲 상품 카드에 <b>박스</b>로 표시되는 항목 <span class="cbf-sub">입력칸 색 = 카드 박스 색</span></div>
+          <div class="grid-2">
+            <div><label>👥 최소 인원 ${hint('(제목 아래 왼쪽)')}</label><input type="text" class="bf-input bf-gold" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
+            <div><label>✈️ 항공 포함 여부 ${hint('(최소 인원 오른쪽)')}</label>
+              <select class="bf-input bf-gold ${p.airfareIncluded==='excluded'?'airfare-excluded':(p.airfareIncluded==='included'?'airfare-normal':'')}" onchange="updateAdvField('airfareIncluded',this.value);renderAdvBody()">
+                ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>🗓 기간 ${hint('(제목 아래 오른쪽)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
+            <div><label>🌙 박수 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
+            <div class="full"><label>🏨 체류일 ${hint('(박수 오른쪽 · 자세히 보기 "항공/이동 정보"의 체류일과 같은 값)')}</label>
+              <select class="bf-input bf-gray" onchange="updatePriceEntryLabel(-1,'stayDuration',this.value);renderAdvBody()">
+                ${STAY_OPTS.map(o=>`<option value="${o[0]}" ${(p.labels.stayDuration||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+          </div>
         </div>
+        <div class="grid-2">
+          <div class="full"><div class="mw-label-row"><label>⛳ 라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 3R" oninput="updateAdvField('rounds',this.value)"></div>
+          <div class="full"><div class="mw-label-row"><label>🏨 숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+          <div class="full"><div class="mw-label-row"><label>🍽 식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+        </div>
+        <span class="mw-hint" style="margin-top:6px">"한 줄로"를 켜면 카드 하단 meta 영역에서 그 항목이 한 줄 전체를 차지합니다</span>
+
+        ${sub('💰 가격 · 태그')}
         <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
         <div class="cardprice-box">
           <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
@@ -12845,19 +12888,6 @@ function advBasicHTML(p){
         ${cpEditorHTML(p, 'checkpoint2', '체크포인트1(참고사항)', '(상품 카드의 라운드·숙박 정보 아래 강조 박스 + 자세히 보기 "참고사항"에 노출)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateAdvField(${k},${v})`)}
         ${cpEditorHTML(p, 'checkpoint1', '체크포인트2(주의사항)', '(상품 카드의 카드 태그 아래, 구분선 다음에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateAdvField(${k},${v})`)}
 
-        ${sub('📋 기본 정보', '카드 + 자세히 보기 "상품기본정보" + 요금 항목 기본값')}
-        <div class="grid-2">
-          <div><label>최소 인원</label><input type="text" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
-          <div><div class="mw-label-row"><label>라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 3R" oninput="updateAdvField('rounds',this.value)"></div>
-          <div class="full"><div class="mw-label-row"><label>항공 포함 여부 ${hint('(카드 하단 · "2인 이상" 옆)')}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.airfare),"updateAdvField('metaWide.airfare',this.checked)")}</div>
-            <select onchange="updateAdvField('airfareIncluded',this.value)">
-              ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-            </select>
-          </div>
-          <div class="full"><div class="mw-label-row"><label>숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
-          <div class="full"><div class="mw-label-row"><label>식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-        </div>
-        <span class="mw-hint" style="margin-top:6px">"한 줄로"를 켜면 카드 하단 meta 영역에서 그 항목이 한 줄 전체를 차지합니다</span>
 
         <details class="adv-collapsible" ${advDetailsAttrs('card-move', false)}>
           <summary>✈️ 비행 · 이동 시간 ${hint('(카드 하단 meta 영역)')} ${advFillBadge(moveN, isDomestic?2:3)}</summary>

@@ -580,6 +580,7 @@ section.block{padding:100px 24px;position:relative}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
 /* [수정] 기간·박수·체류일 박스 바탕색 RGB(225,225,225) */
 .product-period-box{background:#E1E1E1}
+.mchip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
 /* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
 .airfare-excluded{color:#D6293E !important}
 .airfare-normal{color:#1d4ed8 !important}
@@ -5004,6 +5005,8 @@ function ensureExtended(p){
   if (!p.metaWide) p.metaWide = {};
   // [추가] 타이틀 이미지 위 "상품 준비중" 문구 — 토글(prepOverlay)과 문구(prepOverlayText)
   if (p.prepOverlay===undefined) p.prepOverlay = false;
+  // [추가] 숙소 위치 — 'outside'(골프장 外 숙박) / 'inside'(골프장 內 숙박) / 'none'(없음, 카드에 표시 안 함)
+  if (p.lodgeLocation===undefined) p.lodgeLocation = 'none';
   if (p.prepOverlayText===undefined) p.prepOverlayText = '';
   // [추가] "요금 항목 추가" 전에도 미리 입력해둘 수 있는 공통(요금 항목과 무관) 버전 — 상품
   // 상세 페이지의 "공통 안내" 바로 위에 노출된다. 요금 항목별 값과는 별도로 보관한다
@@ -8426,6 +8429,24 @@ const SEASON_DEFS = [
   {key:'winter', label:'겨울 (12~2월)', months:[12,1,2]},
 ];
 const MONTH_OPTS = Array.from({length:12},(_,i)=>i+1);
+// [추가] 상품 카드 "기간" 박스 색상 — 12 시즌 컬러 휠을 달력 순서로 대응(겨울→봄 경계 Bright, 봄→여름 Light,
+// 여름→가을 Soft, 가을→겨울 Dark): 3월 Bright Spring · 4월 True Spring · 5월 Light Spring · 6월 Light Summer ·
+// 7월 True Summer · 8월 Soft Summer · 9월 Soft Autumn · 10월 True Autumn · 11월 Dark Autumn · 12월 Dark Winter ·
+// 1월 True Winter · 2월 Bright Winter. 글자색은 원본 이미지와 같이 검정
+const MONTH_BOX_COLORS = {1:'#3A5ECD',2:'#BE14C2',3:'#FF6B9A',4:'#FFD040',5:'#FBE8DC',6:'#A7E5BF',7:'#9ACBFF',8:'#B4707D',9:'#FD9A98',10:'#E8B03F',11:'#BF0000',12:'#6B205C'};
+// 상품의 추천 판매 시기(월)에 따른 기간 박스 스타일 — 1개월이면 그 색, 여러 달이면 그 달들의 색을 차례로
+// 이은 그라데이션. 선택한 달이 없거나 12개월 모두이면(시기 구분 없음) 기본 회색 그대로
+function periodBoxStyle(p){
+  const ms = [...new Set((p.months||[]).map(Number).filter(m=>m>=1&&m<=12))].sort((a,b)=>a-b);
+  if (!ms.length || ms.length>=12) return '';
+  const cs = ms.map(m=>MONTH_BOX_COLORS[m]);
+  const bg = cs.length===1 ? cs[0] : `linear-gradient(90deg,${cs.join(',')})`;
+  return `background:${bg};border-color:${cs.length===1?cs[0]:'rgba(0,0,0,.08)'};color:#000`;
+}
+// 추천 판매 시기 칩에 그 달의 기간 박스 색상을 작은 점으로 함께 표시
+function monthChipLabel(m){ return `<span class="mchip-dot" style="background:${MONTH_BOX_COLORS[m]}"></span>${m}월`; }
+const LODGE_OPTS = [['outside','골프장 外 숙박'],['inside','골프장 內 숙박'],['none','없음']];
+function lodgeText(p){ const o=LODGE_OPTS.find(x=>x[0]===p.lodgeLocation); return (o && o[0]!=='none') ? o[1] : ''; }
 const SEASON_SHORT = {spring:'봄', summer:'여름', fall:'가을', winter:'겨울'};
 // [Phase] 관리자 상품 목록의 제목 우측에 노출할 "추천 판매 시기" 요약 — 권역별(국내)은 등록된 월을
 // 그대로, 국가별(해외)은 그 월이 속한 시즌(들)을 표시한다(전면 소팅 기준과 동일하게)
@@ -8762,6 +8783,7 @@ function productCardHTML(p, catId, idx){
   const stayBoxes = [
     p.nightsCount ? `<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>` : '',
     cardStayText ? `<span class="product-period-box">🏨 ${escapeAttr(cardStayText)}</span>` : '',
+    lodgeText(p) ? `<span class="product-period-box">📍 ${escapeAttr(lodgeText(p))}</span>` : '',
   ].join('');
   const metaItems = [
     ...metaGroup1,
@@ -8798,7 +8820,7 @@ function productCardHTML(p, catId, idx){
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
     <div class="product-period-row-top">
       <span class="prt-left">${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(fmtMinPeople(p.minPeople))}</span>`:''}${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}</span>
-      <span class="prt-right">${p.nights?`<span class="product-period-box">🗓 ${p.nights}</span>`:''}</span>
+      <span class="prt-right">${p.nights?`<span class="product-period-box"${periodBoxStyle(p)?` style="${periodBoxStyle(p)}"`:''}>🗓 ${p.nights}</span>`:''}</span>
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
@@ -12381,7 +12403,7 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),`toggleMetaWide(${i},'flightTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
         <div><div class="mw-label-row"><label>공항→호텔/골프텔 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
         <div><div class="mw-label-row"><label>${transferFieldLabel} <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
-        <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
+        <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~10은 고급 편집에서 입력</span></label>${/<[a-z]/i.test(p.cardTag1||'')
           ? `<input type="text" value="${escapeAttr(richToPlain(p.cardTag1))}" readonly title="서식이 적용된 태그는 고급 편집에서 수정할 수 있습니다" style="opacity:.75;cursor:not-allowed">`
           : `<input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)">`}</div>
@@ -12911,7 +12933,7 @@ function advBasicHTML(p){
           </label>
         </div>
         <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
-        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsMulti(${val})`)}
+        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsMulti(${val})`)}
       </div>
     </details>
 
@@ -12965,11 +12987,16 @@ function advBasicHTML(p){
                 ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
               </select>
             </div>
-            <div><label>🗓 기간 ${hint('(제목 아래 오른쪽)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
+            <div><label>🗓 기간 ${hint('(제목 아래 오른쪽 · 박스 색 = 추천 판매 시기 월 색상)')}</label><input type="text" class="bf-input bf-gray" style="${periodBoxStyle(p)}" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
             <div><label>🌙 박수 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-            <div class="full"><label>🏨 체류일 ${hint('(박수 오른쪽 · 자세히 보기 "항공/이동 정보"의 체류일과 같은 값)')}</label>
+            <div><label>🏨 체류일 ${hint('(박수 오른쪽 · 자세히 보기 "항공/이동 정보"의 체류일과 같은 값)')}</label>
               <select class="bf-input bf-gray" onchange="updatePriceEntryLabel(-1,'stayDuration',this.value);renderAdvBody()">
                 ${STAY_OPTS.map(o=>`<option value="${o[0]}" ${(p.labels.stayDuration||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>📍 숙소 위치 ${hint('(체류일 오른쪽 · 없음이면 표시 안 함)')}</label>
+              <select class="bf-input bf-gray" onchange="updateAdvField('lodgeLocation',this.value)">
+                ${LODGE_OPTS.map(o=>`<option value="${o[0]}" ${(p.lodgeLocation||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
               </select>
             </div>
           </div>

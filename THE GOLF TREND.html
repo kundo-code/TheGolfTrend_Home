@@ -590,6 +590,9 @@ section.block{padding:100px 24px;position:relative}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
 /* [수정] 기간·박수·체류일 박스 바탕색 RGB(225,225,225) */
 .product-period-box{background:#E1E1E1}
+/* [추가] 숙소 위치 박스 — 골프장 外 숙박은 연한 빨강, 골프장 內 숙박은 연한 파랑 */
+.product-period-box.lodge-outside,.adv-body .bf-input.bf-gray.lodge-outside{background:#FFE1E1;border-color:rgba(220,38,38,.28)}
+.product-period-box.lodge-inside,.adv-body .bf-input.bf-gray.lodge-inside{background:#DCEBFF;border-color:rgba(37,99,235,.28)}
 .mchip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
 /* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
 .airfare-excluded{color:#D6293E !important}
@@ -8303,6 +8306,46 @@ function taToggleSub(btn){
   ta.setSelectionRange(Math.max(lineStart, a + (makeSub?1:-1)), Math.max(lineStart, b + delta));
   ta.dispatchEvent(new Event('input', {bubbles:true}));
 }
+// [추가] 하위서식 줄에서 Enter — 내용이 있는 하위 줄에서 Enter를 누르면 다음 줄도 하위서식으로 이어지고,
+// 비어 있는 하위 줄에서 한 번 더 Enter를 누르면 하위서식이 풀려 상위(일반) 줄로 돌아간다
+document.addEventListener('keydown', e=>{
+  if (e.key!=='Enter' || e.shiftKey || e.isComposing || e.keyCode===229) return;
+  const t = e.target;
+  // 서식 입력란(contenteditable)
+  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit')){
+    const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    let n = sel.anchorNode;
+    while (n && n.parentNode!==t) n = n.parentNode;
+    if (!n || n.nodeType!==1 || !n.classList.contains('rtf-sub')) return;
+    const empty = !(n.textContent||'').replace(/[\u200B\s]/g,'') && !n.querySelector('img,table');
+    if (!empty) return;
+    e.preventDefault();
+    n.classList.remove('rtf-sub'); if (!n.className) n.removeAttribute('class');
+    if (!n.firstChild) n.appendChild(document.createElement('br'));
+    const r = document.createRange(); r.setStart(n, 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+    t.dispatchEvent(new Event('input', {bubbles:true}));
+    return;
+  }
+  // 일반 여러 줄 입력란(하위서식 버튼이 있는 textarea) — 탭으로 시작하는 줄이 하위 줄
+  if (t && t.tagName==='TEXTAREA' && t.closest && t.closest('.ta-sub-wrap')){
+    const v=t.value, a=t.selectionStart, b=t.selectionEnd; if (a!==b) return;
+    const ls = v.lastIndexOf('\n', a-1) + 1;
+    let le = v.indexOf('\n', a); if (le<0) le = v.length;
+    const line = v.slice(ls, le);
+    if (!line.startsWith('\t')) return;
+    e.preventDefault();
+    if (!line.replace(/^\t+/,'').trim()){
+      // 빈 하위 줄 → 탭을 지워 상위 줄로
+      t.value = v.slice(0, ls) + line.replace(/^\t+/,'') + v.slice(le);
+      t.setSelectionRange(ls, ls);
+    } else {
+      // 내용이 있는 하위 줄 → 다음 줄도 하위 줄로 이어 쓰기
+      t.value = v.slice(0, a) + '\n\t' + v.slice(a);
+      t.setSelectionRange(a+2, a+2);
+    }
+    t.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+});
 function plainSubLinesHTML(text){
   const t = String(text||'');
   if (t.indexOf('\n')<0 && t.indexOf('\t')<0) return escapeAttr(t);
@@ -8806,7 +8849,7 @@ function productCardHTML(p, catId, idx){
   const stayBoxes = [
     p.nightsCount ? `<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>` : '',
     cardStayText ? `<span class="product-period-box">🏨 ${escapeAttr(cardStayText)}</span>` : '',
-    lodgeText(p) ? `<span class="product-period-box">📍 ${escapeAttr(lodgeText(p))}</span>` : '',
+    lodgeText(p) ? `<span class="product-period-box lodge-box lodge-${p.lodgeLocation}">📍 ${escapeAttr(lodgeText(p))}</span>` : '',
   ].join('');
   const metaItems = [
     ...metaGroup1,
@@ -13041,7 +13084,7 @@ function advBasicHTML(p){
               </select>
             </div>
             <div><label>📍 숙소 위치 ${hint('(체류일 오른쪽 · 없음이면 표시 안 함)')}</label>
-              <select class="bf-input bf-gray" onchange="updateAdvField('lodgeLocation',this.value)">
+              <select class="bf-input bf-gray lodge-${p.lodgeLocation||'none'}" onchange="updateAdvField('lodgeLocation',this.value);this.className='bf-input bf-gray lodge-'+this.value">
                 ${LODGE_OPTS.map(o=>`<option value="${o[0]}" ${(p.lodgeLocation||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
               </select>
             </div>
@@ -14561,6 +14604,8 @@ function syncStyleTags(){
 const STYLE_OPTIONS = [
   {value:'골프텔 (체류형)', label:'🏨 골프텔 체류형'},
   {value:'시내 호텔 (이동형)', label:'🏙 시내호텔 이동형'},
+  {value:'골프장 內 숙박', label:'⛳ 골프장 內 숙박'},
+  {value:'골프장 外 숙박', label:'🏨 골프장 外 숙박'},
   {value:'미식 및 주변 관광 중심', label:'🍴 미식·관광 중심'},
   {value:'미식 및 쇼핑 중심', label:'🛍 미식·쇼핑 중심'},
   {value:'골프장 퀄리티 중시', label:'⛳ 골프장 퀄리티'},
@@ -14572,7 +14617,11 @@ const STYLE_OPTIONS = [
   {value:'실속형 (그린피·숙박·2일차 조식)', label:'💡 실속형'},
   {value:'특가 (그린피·숙박)', label:'🏷 특가'}
 ];
+// [추가] 숙소 위치 스타일 — 상품의 "숙소 위치"(p.lodgeLocation) 값으로 정확히 판정하고, 값이 없으면 키워드로 보조
+const STYLE_LODGE = {'골프장 內 숙박':'inside', '골프장 外 숙박':'outside'};
 const STYLE_KEYWORDS = {
+  '골프장 內 숙박': ['골프장 內','골프장內','골프장 내 숙박','골프텔'],
+  '골프장 外 숙박': ['골프장 外','골프장外','골프장 외 숙박','시내'],
   '골프텔 (체류형)': ['리조트','체류'],
   '시내 호텔 (이동형)': ['시내','투어'],
   '미식 및 주변 관광 중심': ['오션뷰','힐링','투어'],
@@ -14621,6 +14670,11 @@ function computeAiRecommendations(criteria){
       else score += 5;
       const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
       criteria.styles.forEach(styleVal=>{
+        const lodge = STYLE_LODGE[styleVal];
+        if (lodge && p.lodgeLocation && p.lodgeLocation!=='none'){
+          if (p.lodgeLocation===lodge){ score+=20; reasons.push(`'${styleVal}' 상품`); }
+          return; // 숙소 위치가 지정된 상품은 그 값으로만 판정(반대 위치면 가산점 없음)
+        }
         const kws = STYLE_KEYWORDS[styleVal]||[];
         if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }
       });

@@ -437,6 +437,16 @@ section.block{padding:100px 24px;position:relative}
   padding-bottom:24px;
 }
 .pc-track::-webkit-scrollbar{display:none}
+/* [추가] 필터로 남은 상품이 3개 이하일 때 — 범퍼 없이 카드만 가운데 정렬(넘칠 때는 auto 여백이 0이 되어 앞쪽이 잘리지 않음) */
+.pc-track.pc-few>.product:first-child{margin-left:auto}
+.pc-track.pc-few>.product:last-child{margin-right:auto}
+.pc-track>.product.pc-pulse{animation:pcPulse .6s ease}
+@media(max-width:780px){
+  /* 모바일(카드 80% 폭): 범퍼가 없어도 첫·마지막 카드가 가운데에 올 수 있도록 양끝 여백 10% */
+  .pc-track.pc-few>.product:first-child{margin-left:10%}
+  .pc-track.pc-few>.product:last-child{margin-right:10%}
+}
+@keyframes pcPulse{0%{box-shadow:0 0 0 0 rgba(221,179,103,.0)}35%{box-shadow:0 0 0 4px rgba(221,179,103,.85)}100%{box-shadow:0 0 0 0 rgba(221,179,103,0)}}
 .pc-track.dragging{cursor:grabbing;scroll-behavior:auto}
 /* [수정] 기본 .product 규칙의 transition:all은 리사이즈로 flex-basis(폭)가 바뀔 때도 함께 애니메이션돼,
    리사이즈 직후 카드 실측 좌표(getBoundingClientRect)를 재는 pcRecalcPadding·pcUpdateCenterDim이
@@ -8429,11 +8439,9 @@ const SEASON_DEFS = [
   {key:'winter', label:'겨울 (12~2월)', months:[12,1,2]},
 ];
 const MONTH_OPTS = Array.from({length:12},(_,i)=>i+1);
-// [추가] 상품 카드 "기간" 박스 색상 — 12 시즌 컬러 휠을 달력 순서로 대응(겨울→봄 경계 Bright, 봄→여름 Light,
-// 여름→가을 Soft, 가을→겨울 Dark): 3월 Bright Spring · 4월 True Spring · 5월 Light Spring · 6월 Light Summer ·
-// 7월 True Summer · 8월 Soft Summer · 9월 Soft Autumn · 10월 True Autumn · 11월 Dark Autumn · 12월 Dark Winter ·
-// 1월 True Winter · 2월 Bright Winter. 글자색은 원본 이미지와 같이 검정
-const MONTH_BOX_COLORS = {1:'#3A5ECD',2:'#BE14C2',3:'#FF6B9A',4:'#FFD040',5:'#FBE8DC',6:'#A7E5BF',7:'#9ACBFF',8:'#B4707D',9:'#FD9A98',10:'#E8B03F',11:'#BF0000',12:'#6B205C'};
+// [수정] 상품 카드 "기간" 박스 월별 색상 — 관리자가 지정한 월별 팔레트(파스텔), 글자색 #121A33
+const MONTH_BOX_COLORS = {1:'#E1C3F3',2:'#FFC8E8',3:'#FFE8FB',4:'#FFE9A3',5:'#D6F3E0',6:'#C3E1FF',7:'#A2F4F6',8:'#BFFFD3',9:'#F5D79B',10:'#ECB3B3',11:'#D9AEA8',12:'#B9C5EC'};
+const MONTH_BOX_FONT = '#121A33';
 // 상품의 추천 판매 시기(월)에 따른 기간 박스 스타일 — 1개월이면 그 색, 여러 달이면 그 달들의 색을 차례로
 // 이은 그라데이션. 선택한 달이 없거나 12개월 모두이면(시기 구분 없음) 기본 회색 그대로
 function periodBoxStyle(p){
@@ -8441,7 +8449,7 @@ function periodBoxStyle(p){
   if (!ms.length || ms.length>=12) return '';
   const cs = ms.map(m=>MONTH_BOX_COLORS[m]);
   const bg = cs.length===1 ? cs[0] : `linear-gradient(90deg,${cs.join(',')})`;
-  return `background:${bg};border-color:${cs.length===1?cs[0]:'rgba(0,0,0,.08)'};color:#000`;
+  return `background:${bg};border-color:${cs.length===1?cs[0]:'rgba(0,0,0,.08)'};color:${MONTH_BOX_FONT}`;
 }
 // 추천 판매 시기 칩에 그 달의 기간 박스 색상을 작은 점으로 함께 표시
 function monthChipLabel(m){ return `<span class="mchip-dot" style="background:${MONTH_BOX_COLORS[m]}"></span>${m}월`; }
@@ -8465,7 +8473,10 @@ function productPeriodBadgeText(p, catId){
 // 독립적으로 "열려있는 카드"를 추적한다 — 해외에서 하나, 국내에서 하나, 동시에 열려있을 수 있다
 let selectedOverseasId=null, selectedDomesticId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 // [Phase] 기간별 소팅 필터 상태 — overseas: SEASON_DEFS의 key(또는 null=전체), domestic: 1~12(또는 null=전체)
-let catFilter = {overseas:null, domestic:null};
+// [수정] 처음 열 때 기본 선택은 "전체"가 아니라 오늘 날짜 기준 — 해외(시즌별)는 이번 시즌, 국내(월별)는 이번 달
+function currentMonthNum(){ return new Date().getMonth()+1; }
+function currentSeasonKey(){ const m=currentMonthNum(); const s=SEASON_DEFS.find(d=>d.months.includes(m)); return s?s.key:null; }
+let catFilter = {overseas:currentSeasonKey(), domestic:currentMonthNum()};
 let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 // [버그 수정] 공유 이미지를 만드는 동안(수 초 이상 걸릴 수 있음) 사용자가 "반응이 없다"고 여겨
@@ -8529,7 +8540,7 @@ function setPeriodFilter(regionKey, value){
     // [Phase] innerHTML로 다시 그려지면 .period-filter-track도 새 DOM 노드가 되어 드래그 리스너가
     // 함께 사라지므로, 필터를 바꿀 때마다 다시 걸어준다
     const trackEl = row.querySelector('.period-filter-track');
-    if (trackEl) initCarouselDrag(trackEl);
+    if (trackEl){ initCarouselDrag(trackEl); revealActiveFilterChip(trackEl); }
   }
   refreshCategoryProducts(regionKey);
 }
@@ -8594,8 +8605,20 @@ function renderRegionGrid(regionKey){
     const navTrackEl = panelHost.querySelector('.cv-nav-track');
     if (navTrackEl) initCarouselDrag(navTrackEl);
     const filterTrackEl = panelHost.querySelector('.period-filter-track');
-    if (filterTrackEl) initCarouselDrag(filterTrackEl);
+    if (filterTrackEl){ initCarouselDrag(filterTrackEl); revealActiveFilterChip(filterTrackEl); }
   }
+}
+// [추가] 모바일에서 한 줄 가로 스크롤인 시즌별/월별 버튼 줄 — 기본 선택(이번 시즌·이번 달)처럼 선택된 버튼이
+// 화면 밖에 있으면 보이도록 그 줄만 가로로 스크롤한다(페이지 자체는 움직이지 않음)
+function revealActiveFilterChip(trackEl){
+  if (!trackEl) return;
+  requestAnimationFrame(()=>{
+    const a = trackEl.querySelector('.period-filter-btn.active');
+    if (!a || trackEl.scrollWidth <= trackEl.clientWidth) return;
+    const prev = trackEl.style.scrollBehavior; trackEl.style.scrollBehavior='auto';
+    trackEl.scrollLeft = Math.max(0, a.offsetLeft - trackEl.offsetLeft - (trackEl.clientWidth - a.offsetWidth)/2);
+    trackEl.style.scrollBehavior = prev;
+  });
 }
 function renderCategoryGrid(){
   renderRegionGrid('overseas');
@@ -8906,7 +8929,9 @@ function refreshCategoryProducts(regionKey){
   if (filtered.length===0){
     grid.className='product-grid';
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>${filterOn?'선택하신 시기에 맞는 상품이 없습니다.':'이 지역의 상품은 곧 업데이트됩니다.'}</p></div>`;
-  } else if (filtered.length>3){
+  } else if (allProducts.length>3){
+    // [수정] 화면 배치는 "전체"일 때와 같게 — 이 국가/권역의 전체 상품이 4개 이상이면, 시즌/월 필터로
+    // 남은 상품이 3개 이하여도 같은 캐러셀(이전·다음 버튼·도트·카운터) 배치로 보여준다
     grid.className='product-carousel-host';
     grid.innerHTML=productCarouselHTML(filtered.map(x=>x.p), selectedId, regionKey, filtered.map(x=>x.i));
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
@@ -8962,14 +8987,16 @@ function productCarouselHTML(products, catId, regionKey, origIndices){
   // 카드 클릭(openProductDetail) 시 필요한 idx는 이 배열 안 위치(0..total-1)가 아니라 origIndices로
   // 전달받은 원본 위치를 써야 한다. origIndices가 없으면(필터 미적용 호출) 그대로 위치 인덱스를 쓴다
   const idxOf = i => origIndices ? origIndices[i] : i;
-  const lastCloneHTML = productCardHTML(products[total-1], catId, idxOf(total-1));
-  const firstCloneHTML = productCardHTML(products[0], catId, idxOf(0));
+  // [추가] 3개 이하(필터 결과)면 양끝 복제(범퍼) 없이 카드만 가운데 정렬 — 같은 상품이 두 번 보이지 않게
+  const few = total<=3;
+  const lastCloneHTML = few ? '' : productCardHTML(products[total-1], catId, idxOf(total-1));
+  const firstCloneHTML = few ? '' : productCardHTML(products[0], catId, idxOf(0));
   const cardsHTML = products.map((p,i)=>productCardHTML(p,catId,idxOf(i))).join('');
   const dotsHTML = products.map((_,i)=>`<button type="button" class="pc-dot" onclick="pcGoTo('${regionKey}',${i})" aria-label="${i+1}번째 상품로 이동"></button>`).join('');
   // [수정] 좌/우 이동 버튼은 카드 영역(트랙) 밖, 카드 아래 컨트롤 바로 빼서 카드를 가리지 않게 하고,
   // 도트 옆에 "N / 전체" 숫자 카운터를 함께 보여줘 몇 개 상품이 있는지 한눈에 알 수 있게 한다
   return `<div class="pc-carousel">
-    <div class="pc-track" id="pcTrack_${regionKey}" data-total="${total}">${lastCloneHTML}${cardsHTML}${firstCloneHTML}</div>
+    <div class="pc-track${few?' pc-few':''}" id="pcTrack_${regionKey}" data-total="${total}" data-bump="${few?0:1}" data-active="0">${lastCloneHTML}${cardsHTML}${firstCloneHTML}</div>
   </div>
   <div class="pc-controls">
     <div class="pc-controls-nav">
@@ -9009,6 +9036,11 @@ function pcNearestExtIndex(track){
 function pcRealIndex(track){
   const total = parseInt(track.dataset.total, 10) || 0;
   if (!total) return 0;
+  if (track.dataset.bump==='0'){
+    // 범퍼 없는 소수 카드: 가로로 넘칠 때(모바일)는 가운데 카드, 모두 보일 때(데스크톱)는 마지막으로 고른 카드
+    if (track.scrollWidth <= track.clientWidth+1) return Math.min(total-1, parseInt(track.dataset.active,10)||0);
+    return Math.min(total-1, pcNearestExtIndex(track));
+  }
   const idx = pcNearestExtIndex(track);
   if (idx<=0) return total-1;
   if (idx>=total+1) return 0;
@@ -9023,6 +9055,11 @@ function pcRealIndex(track){
 function pcScroll(regionKey, dir){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
+  if (track.dataset.bump==='0'){ // 범퍼 없는 소수 카드는 다음/이전 카드로 순환
+    const total = parseInt(track.dataset.total,10)||0; if (!total) return;
+    pcGoTo(regionKey, (pcRealIndex(track)+dir+total)%total);
+    return;
+  }
   const maxScroll = track.scrollWidth - track.clientWidth;
   const atStart = track.scrollLeft<=1, atEnd = track.scrollLeft>=maxScroll-1;
   if ((dir<0 && atStart) || (dir>0 && atEnd)){
@@ -9037,6 +9074,15 @@ function pcScroll(regionKey, dir){
 function pcGoTo(regionKey, idx){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
+  if (track.dataset.bump==='0'){
+    track.dataset.active = idx;
+    const card = track.querySelectorAll('.product')[idx];
+    if (card) track.scrollTo({left: card.offsetLeft - (track.clientWidth - card.clientWidth)/2, behavior:'smooth'});
+    pcUpdateDots(regionKey);
+    // 모두 보이는 데스크톱에서는 스크롤이 없으므로, 고른 카드를 잠깐 강조해 어떤 카드인지 알려준다
+    if (card && track.scrollWidth <= track.clientWidth+1){ card.classList.remove('pc-pulse'); void card.offsetWidth; card.classList.add('pc-pulse'); }
+    return;
+  }
   // real[idx]가 3장 중 "가운데"에 오려면, 그 앞장(real[idx-1] = 확장 인덱스 idx)이 맨 앞(leading)에
   // 와야 한다 — 즉 목표 scrollLeft는 idx*step (범퍼 오프셋은 leading 기준이라 이미 상쇄되어 있음)
   track.scrollTo({left: idx*pcSlideStep(track), behavior:'smooth'});
@@ -9176,7 +9222,7 @@ function initProductCarousel(regionKey){
   // 이미 정상 동작하므로 건드리지 않는다)
   if (window.innerWidth<=780){
     requestAnimationFrame(()=>{
-      const firstReal = track.querySelectorAll('.product')[1];
+      const firstReal = track.querySelectorAll('.product')[track.dataset.bump==='0'?0:1];
       if (firstReal) track.scrollLeft = firstReal.offsetLeft - (track.clientWidth - firstReal.clientWidth)/2;
       pcUpdateDots(regionKey);
       pcUpdateCenterDim(regionKey);

@@ -962,6 +962,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-sch-group-head .h{font-size:1.14rem;font-weight:700;color:var(--pine-deep);text-align:right;flex-shrink:0}
 .pd-sch-days{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
 .pd-sch-day{display:flex;gap:10px}
+/* [추가] 공통 일정 요약 타임라인도 요금 항목별 타임라인과 같이 일자 번호 사이를 세로선으로 연결 —
+   번호(24px 원) 중앙(왼쪽 여백 16px + 12px)을 지나는 옅은 금색 선을 번호 뒤에 그린다 */
+.pd-sch-group .pd-sch-days{position:relative;z-index:0}
+.pd-sch-group .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:27px;top:24px;bottom:24px;width:2px;border-radius:1px;background:rgba(221,179,103,.45)}
 .pd-sch-day-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--pine-deep);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .pd-sch-day-body{flex:1;min-width:0}
 .pd-sch-day-label{font-size:.85rem;font-weight:700;color:var(--pine-deep)}
@@ -1593,6 +1597,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 포함/불포함사항 입력란의 가이드(placeholder) 예시 문구는 연한 회색으로 통일 */
 .rtf-editable.included-field:empty:before,.rtf-editable.notincluded-field:empty:before{color:#B7BFCB}
 .rtf-table{border-collapse:collapse;margin:4px 0;width:100%}
+/* [추가] 하위서식 — 윗줄 글자 시작 위치에서 1.5글자 들여쓰기(관리자 편집 칸에는 옅은 세로 안내선도 표시) */
+.rtf-sub{display:block;padding-left:1.5em}
+.rtf-editable .rtf-sub{box-shadow:inset 2px 0 0 rgba(47,111,237,.28)}
+.pd-check-list .row.row-sub{padding-left:calc(24px + 1.5em)}
+.rtf-btn.rtf-sub-btn{width:auto;padding:0 8px;font-size:.68rem;white-space:nowrap}
+.card-tag-editor .rtf-sub-btn{display:none}
+.ta-sub-wrap{position:relative}
+.ta-sub-wrap textarea{tab-size:5;-moz-tab-size:5}
+.ta-sub-btn{float:right;margin:-2px 0 4px;padding:3px 9px;border:none;border-radius:8px;background:var(--nm-surface-light,#eef1f6);color:var(--nm-text,#0a1730);font-size:.66rem;font-weight:700;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm,0 1px 3px rgba(0,0,0,.12))}
 .rtf-table td,.rtf-table th{border:1px solid rgba(163,177,198,.6);padding:6px 8px;font-size:.85rem;min-width:32px}
 .row-table{display:block!important;padding:2px 0}
 .row-table .rtf-table{margin:0}
@@ -8082,14 +8095,19 @@ function bulletRowsRich(html, icon){
     tables.push(m);
     return `\u0000TBL${tables.length-1}\u0000`;
   });
+  // [추가] "하위서식"으로 표시된 줄(<div class="rtf-sub">)은 앞에 \u0001 표시를 붙여 두었다가,
+  // 체크(✓)·점(•)·엑스(✕) 아이콘 없이 윗줄 글자 시작 위치에서 1.5글자 들여쓴 줄(row-sub)로 그린다
   const normalized = withPlaceholders
-    .replace(/<div>/gi,'').replace(/<\/div>/gi,'\n')
+    .replace(/<div[^>]*class="[^"]*\brtf-sub\b[^"]*"[^>]*>/gi,'\n\u0001')
+    .replace(/<div[^>]*>/gi,'').replace(/<\/div>/gi,'\n')
     .replace(/<p>/gi,'').replace(/<\/p>/gi,'\n')
     .replace(/<br\s*\/?>/gi,'\n');
-  return normalized.split('\n').map(s=>s.trim()).filter(Boolean)
+  return normalized.split('\n').map(s=>s.trim())
+    .filter(s=>s.replace(/\u0001/g,'').replace(/<[^>]*>/g,'').trim() || /\u0000TBL/.test(s))
     .map(line=>{
       const tblMatch = line.match(/^\u0000TBL(\d+)\u0000$/);
       if (tblMatch) return `<div class="row row-table">${tables[+tblMatch[1]]}</div>`;
+      if (line.charAt(0)==='\u0001') return `<div class="row row-sub"><span>${line.replace(/\u0001/g,'')}</span></div>`;
       return `<div class="row"><span class="ic">${icon}</span><span>${line}</span></div>`;
     }).join('');
 }
@@ -8135,6 +8153,7 @@ function rtfToolbarHTML(){
       <button type="button" class="rtf-btn" title="밑줄" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'underline')"><u>U</u></button>
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
+      <button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button>
       <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"><span class="rtf-color-t">T</span></label>
     </div>`;
 }
@@ -8207,6 +8226,76 @@ function rtfCmd(btnEl, cmd, val){
     document.execCommand(cmd, false, val);
   }
   editable.dispatchEvent(new Event('input', {bubbles:true}));
+}
+// [추가] 하위서식 — 커서가 있는 줄(선택 영역이 여러 줄이면 그 줄들 모두)을 <div class="rtf-sub">로 감싸
+// 1.5글자 들여쓴 하위 항목으로 만든다(이미 하위서식이면 해제). 편집 영역의 줄은 <div> 또는 <br>로
+// 나뉘는데, <br>로 나뉜 줄은 먼저 그 줄만 <div>로 묶은 뒤 표시를 붙인다
+function rtfLineBlock(editable, node){
+  if (!node) return null;
+  if (node===editable){
+    const div=document.createElement('div'); div.appendChild(document.createElement('br'));
+    editable.appendChild(div); return div;
+  }
+  let n=node;
+  while (n && n.parentNode!==editable) n=n.parentNode;
+  if (!n) return null;
+  if (n.nodeType===1 && n.tagName==='DIV') return n;
+  const isBreak = x => x && (x.nodeName==='BR' || x.nodeName==='DIV' || x.nodeName==='TABLE');
+  if (n.nodeName==='BR'){ // 빈 줄
+    const div=document.createElement('div'); editable.insertBefore(div, n); div.appendChild(n); return div;
+  }
+  let start=n; while (start.previousSibling && !isBreak(start.previousSibling)) start=start.previousSibling;
+  let end=n;   while (end.nextSibling && !isBreak(end.nextSibling)) end=end.nextSibling;
+  const div=document.createElement('div');
+  editable.insertBefore(div, start);
+  let cur=start;
+  while (cur){ const next=cur.nextSibling; div.appendChild(cur); if (cur===end) break; cur=next; }
+  if (div.nextSibling && div.nextSibling.nodeName==='BR') div.nextSibling.remove(); // 줄 경계는 이제 </div>가 대신한다
+  return div;
+}
+function rtfToggleSub(btnEl){
+  const wrap = btnEl.closest('.rtf-wrap');
+  const editable = rtfTarget(wrap);
+  editable.focus();
+  rtfRestoreSelection(editable);
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  if (!editable.contains(range.commonAncestorContainer) && range.commonAncestorContainer!==editable) return;
+  const keep = {sn:range.startContainer, so:range.startOffset, en:range.endContainer, eo:range.endOffset};
+  const first = rtfLineBlock(editable, range.startContainer);
+  const last = range.collapsed ? first : rtfLineBlock(editable, range.endContainer);
+  if (!first) return;
+  const blocks=[]; let cur=first;
+  while (cur){ if (cur.nodeType===1 && cur.tagName==='DIV') blocks.push(cur); if (cur===last) break; cur=cur.nextSibling; }
+  const makeSub = !first.classList.contains('rtf-sub');
+  blocks.forEach(b=>{ b.classList.toggle('rtf-sub', makeSub); if (!b.className) b.removeAttribute('class'); });
+  try{ const r=document.createRange(); r.setStart(keep.sn, keep.so); r.setEnd(keep.en, keep.eo); sel.removeAllRanges(); sel.addRange(r); }catch(e){}
+  editable.dispatchEvent(new Event('input', {bubbles:true}));
+}
+// [추가] 일반 텍스트 입력란(일정 안내 문구·일정 내용)용 하위서식 — 줄 맨 앞에 탭 문자를 붙였다 떼어
+// 하위 항목을 표시한다. 상세 페이지에서는 plainSubLinesHTML()이 탭으로 시작하는 줄을 1.5글자 들여 그린다
+function taToggleSub(btn){
+  const ta = btn.closest('.ta-sub-wrap').querySelector('textarea');
+  const v = ta.value, a = ta.selectionStart, b = ta.selectionEnd;
+  const lineStart = v.lastIndexOf('\n', a-1) + 1;
+  let lineEnd = v.indexOf('\n', b); if (lineEnd<0) lineEnd = v.length;
+  const lines = v.slice(lineStart, lineEnd).split('\n');
+  const makeSub = !lines[0].startsWith('\t');
+  const changed = lines.map(l=> makeSub ? (l.startsWith('\t')?l:'\t'+l) : l.replace(/^\t/,''));
+  const out = changed.join('\n');
+  ta.value = v.slice(0,lineStart) + out + v.slice(lineEnd);
+  const delta = out.length - (lineEnd-lineStart);
+  ta.focus();
+  ta.setSelectionRange(Math.max(lineStart, a + (makeSub?1:-1)), Math.max(lineStart, b + delta));
+  ta.dispatchEvent(new Event('input', {bubbles:true}));
+}
+function plainSubLinesHTML(text){
+  const t = String(text||'');
+  if (t.indexOf('\n')<0 && t.indexOf('\t')<0) return escapeAttr(t);
+  return t.split('\n').map(l=> l.startsWith('\t')
+    ? `<div class="rtf-sub">${escapeAttr(l.replace(/^\t+/,''))}</div>`
+    : `<div>${escapeAttr(l)||'&nbsp;'}</div>`).join('');
 }
 // 줄간격 조절 — execCommand에 해당 기능이 없어 선택영역을 <span style="line-height:...">로 직접 감싼다.
 // 단, 선택영역이 <br>(줄바꿈)을 포함하면 bulletRowsRich()의 문자열 기반 줄 분리 로직이 깨질 수 있어
@@ -10432,7 +10521,7 @@ function scheduleDaysHTML(days, tee){
       <div class="pd-sch-opt">
         ${o.tag?`<span class="tag">${escapeAttr(o.tag)}</span>`:''}
         ${o.flight?`항공: ${escapeAttr(o.flight)}<br>`:''}
-        ${o.activity?escapeAttr(o.activity):''}
+        ${o.activity?plainSubLinesHTML(o.activity):''}
       </div>`).join('')}
       ${tee[TEE_DAY_KEYS_PD[di]]?`<div class="pd-sch-tee">⛳ Tee Off Time: ${escapeAttr(tee[TEE_DAY_KEYS_PD[di]])}</div>`:''}
       ${(d.meals.breakfast||d.meals.lunch||d.meals.dinner)?`<div class="pd-sch-meals">
@@ -10781,7 +10870,7 @@ function renderProductDetail(p,cat,idx){
           <div class="pd-sch-group-head"><div class="t">공통 일정</div><div class="h"></div></div>
           <div class="pd-sch-days">${scheduleDaysHTML(cs.s.days, cs.t)}</div>
         </div>
-        ${p.scheduleNote?`<div class="pd-schedule-note">${escapeAttr(p.scheduleNote)}</div>`:''}
+        ${p.scheduleNote?`<div class="pd-schedule-note">${plainSubLinesHTML(p.scheduleNote)}</div>`:''}
         ${commonOverrideNote(['schedule'])}
       </div>
     </div>`;
@@ -12290,7 +12379,7 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>숙박 · Stay <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),`toggleMetaWide(${i},'stay',this.checked)`)}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
         <div><div class="mw-label-row"><label>식사 · Meals <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),`toggleMetaWide(${i},'meals',this.checked)`)}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
         <div><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),`toggleMetaWide(${i},'flightTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
-        <div><div class="mw-label-row"><label>호텔→골프장 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
+        <div><div class="mw-label-row"><label>공항→호텔/골프텔 이동시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
         <div><div class="mw-label-row"><label>${transferFieldLabel} <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
         <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,m+'월']), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~10은 고급 편집에서 입력</span></label>${/<[a-z]/i.test(p.cardTag1||'')
@@ -12933,7 +13022,7 @@ function advBasicHTML(p){
           <div class="adv-collapsible-body">
             <div class="grid-2">
               <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
-              <div class="full"><div class="mw-label-row"><label>호텔→골프장 이동시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
+              <div class="full"><div class="mw-label-row"><label>공항→호텔/골프텔 이동시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
               <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
             </div>
           </div>
@@ -13010,7 +13099,7 @@ function advBasicHTML(p){
             <label>상단 개요 문구</label>
             <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
             <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
-            <textarea style="min-height:70px" placeholder="예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다." oninput="updateAdvField('scheduleNote',this.value)">${escapeAttr(p.scheduleNote||'')}</textarea>
+            <div class="ta-sub-wrap"><button type="button" class="ta-sub-btn" title="하위서식 — 커서가 있는 줄을 1.5글자 들여쓴 하위 항목으로 (다시 누르면 해제)" onmousedown="event.preventDefault()" onclick="taToggleSub(this)">↳하위서식</button><textarea style="min-height:70px" placeholder="예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다." oninput="updateAdvField('scheduleNote',this.value)">${escapeAttr(p.scheduleNote||'')}</textarea></div>
             <label>공통 일정</label>
             ${scheduleHTML(p, -1)}
           </div>
@@ -13631,7 +13720,7 @@ function scheduleDayHTML(peIdx, d, di, tee){
     <div class="grid-2" style="margin-top:6px">
       <div><label>옵션 태그 (선택, 시즌 A/B 등 구분)</label><input type="text" value="${escapeAttr(o.tag)}" placeholder="A" oninput="updateScheduleOption(${peIdx},${di},${oi},'tag',this.value)"></div>
       <div><label>항공/이동 정보</label><input type="text" value="${escapeAttr(o.flight)}" placeholder="예: TW9617 인천 07:30 출발 → 임기 08:50 도착" oninput="updateScheduleOption(${peIdx},${di},${oi},'flight',this.value)"></div>
-      <div class="full"><label>일정 내용</label><textarea class="auto-grow" style="min-height:40px" placeholder="예: 현지 직원 미팅(미팅보드: 고객명) → 골프장 이동(15분) → 체크인 및 중식 후 라운드" oninput="updateScheduleOption(${peIdx},${di},${oi},'activity',this.value);autoGrowTextarea(this)">${escapeAttr(o.activity)}</textarea>
+      <div class="full ta-sub-wrap"><label>일정 내용</label><button type="button" class="ta-sub-btn" title="하위서식 — 커서가 있는 줄을 1.5글자 들여쓴 하위 항목으로 (다시 누르면 해제)" onmousedown="event.preventDefault()" onclick="taToggleSub(this)">↳하위서식</button><textarea class="auto-grow" style="min-height:40px" placeholder="예: 현지 직원 미팅(미팅보드: 고객명) → 골프장 이동(15분) → 체크인 및 중식 후 라운드" oninput="updateScheduleOption(${peIdx},${di},${oi},'activity',this.value);autoGrowTextarea(this)">${escapeAttr(o.activity)}</textarea>
         ${d.options.length>1?`<button class="apc-btn-sm apc-delete" style="margin-top:4px" onclick="removeScheduleOption(${peIdx},${di},${oi})">이 옵션 삭제</button>`:''}
       </div>
     </div>`).join('')}

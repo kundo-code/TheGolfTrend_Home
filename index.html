@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <!-- FIX: viewport-fit=cover — iOS 노치/다이내믹 아일랜드·하단 홈 인디케이터 영역까지 웹뷰가 확장되도록 하여, 아래 safe-area-inset-* 값들이 실제로 계산되게 한다 (이 값이 없으면 env(safe-area-inset-*)는 항상 0으로 계산된다) -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>
+/* [관리자 진입] 주소 뒤에 ?admin(또는 #admin)을 붙여 열면 이 기기에 "관리자 모드"가 저장되어 관리자 버튼이 보이고 패널이 열린다.
+   ?admin=off 로 열면 이 기기에서 버튼을 다시 숨긴다. (보안은 관리자 로그인이 담당 — 이 주소는 버튼을 보이게만 한다) */
+(function(){try{
+  var q=new URLSearchParams(location.search), a=q.get('admin'), de=document.documentElement;
+  if (a==='off'){ localStorage.removeItem('kundo_admin_ui'); }
+  else if (a!==null || location.hash==='#admin'){ localStorage.setItem('kundo_admin_ui','1'); window.__openAdminOnLoad=true; }
+  if (localStorage.getItem('kundo_admin_ui')==='1') de.classList.add('is-admin-ui');
+  if (a!==null || location.hash==='#admin'){ q.delete('admin'); var qs=q.toString(); history.replaceState(history.state,'',location.pathname+(qs?'?'+qs:'')+(location.hash==='#admin'?'':location.hash)); }
+}catch(e){}})();
+</script>
 <title>THE GOLF TREND — Beyond Golf, Into Life | (주)더골프트렌드</title>
 <meta name="description" content="20년 이상 해외 골프 운영 경험의 (주)더골프트렌드 THE GOLF TREND. 일본·중국·동남아 명문 코스와 국내 6권역(강원·충청·호남·영남·수도권·제주) 골프 여행을 큐레이션하는 골프 전문 여행사입니다.">
 <!-- [Phase 3 SEO/GEO 강화] canonical·robots·author·theme-color -->
@@ -1185,6 +1196,9 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .lico.lico-img > img{width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;pointer-events:none}
 /* 국내/해외 골드 리본 배지 */
 .lico .region-tag{position:absolute;top:-6px;right:-9px;background:linear-gradient(135deg,#DDB367,#CA8E3F);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:100px;line-height:1.25;border:1.5px solid var(--pine-deep);z-index:5;white-space:nowrap;letter-spacing:0;font-family:'Noto Sans KR',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+/* 지역 표기("국내/해외" 등)는 로고 우측 상단이 아니라 로고 아래 가운데에 걸쳐 둔다(글자가 길어도 옆 글자를 가리지 않게) — 비자필요 배지는 제외 */
+.link-item .lico .region-tag:not(.ee-visa-badge),.link-admin-item .lico .region-tag{top:auto;right:auto;bottom:-9px;left:50%;transform:translateX(-50%)}
+.link-item:has(.lico .region-tag:not(.ee-visa-badge)){padding-bottom:17px}
 .link-item .lname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .link-item .larr{color:rgba(10,23,48,.35);font-size:.85rem}
 .link-item.disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
@@ -2412,6 +2426,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    박스 크기(56px)는 기존 관리자 아이콘 그대로 유지하되 박스 안 아이콘 글자 크기만 가독성을
    위해 최대한 키운다(1.4rem→2.2rem). 바탕 원형박스 투명도는 페이지 콘텐츠를 덜 가리도록
    82%→50%로 낮춘다(모바일은 기존 82% 그대로 유지) */
+/* [관리자 버튼 숨김] 방문자에게는 관리자(톱니바퀴) 버튼을 보여주지 않는다. 관리자는 주소 뒤에 ?admin 을 붙여 들어오면
+   이 기기에서 버튼이 나타난다(html.is-admin-ui). 숨겨진 동안은 전화·문의 버튼이 맨 아래 자리부터 채운다 */
+html:not(.is-admin-ui) .admin-fab{display:none!important}
+@media(min-width:781px){
+  html:not(.is-admin-ui) .tb-booking-fab{bottom:calc(40px + env(safe-area-inset-bottom))}
+  html:not(.is-admin-ui) .mobile-call-fab{bottom:calc(40px + 68px + env(safe-area-inset-bottom))}
+}
 @media(min-width:781px){
   .tb-booking-fab,.mobile-call-fab{display:flex;align-items:center;justify-content:center}
   .tb-booking-fab,.mobile-call-fab,.admin-fab{
@@ -8072,6 +8093,7 @@ function syncWidgetLayoutMode(){
 }
 window.addEventListener('resize', syncWidgetLayoutMode);
 window.addEventListener('load', syncWidgetLayoutMode);
+window.addEventListener('load', ()=>{ if (window.__openAdminOnLoad){ window.__openAdminOnLoad=false; const pn=document.getElementById('adminPanel'); if (pn && !pn.classList.contains('open')) toggleAdmin(); } });
 safeRender(syncWidgetLayoutMode);
 // [추가] 히어로 섹션의 배경이미지를 위젯 줄 영역까지 확장 — .mobile-widget-row는 히어로 바깥의
 // 별도 요소라 히어로 자신의 배경(.hero-bg, position:absolute;inset:0)이 원래는 히어로 박스
@@ -8660,7 +8682,7 @@ const LINK_DEFS = {
   blog: {
     label:'블로그',
     items:[
-      {key:'blog_naver_kr', name:'네이버 블로그 · 국내 / 해외', img:'icon-naver', region:'국내', defaultUrl:'https://blog.naver.com/thegolftrend'},
+      {key:'blog_naver_kr', name:'네이버 블로그 · 국내 / 해외', img:'icon-naver', region:'국내/해외', defaultUrl:'https://blog.naver.com/thegolftrend'},
       {key:'blog_naver_ov', name:'네이버 블로그 · 해외',    img:'icon-naver',   region:'해외', defaultUrl:'https://blog.naver.com/modamgolf'},
       {key:'blog_tistory',  name:'T-Story · 골프핸스토리',   img:'icon-tistory', defaultUrl:'https://golftrend.tistory.com/'}
     ]

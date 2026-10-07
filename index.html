@@ -753,9 +753,10 @@ section.block{padding:100px 24px;position:relative}
    골드 색상(--gold)으로 바뀌며, 클릭 시 눌리는 느낌의 축소 애니메이션을 준다. 모바일에서는 숨기고
    기존 터치 스와이프로 대체한다(아래 @media(max-width:780px)) */
 .pd-side-nav{
-  /* [수정] fixed → absolute: 스크롤 컨테이너(.pd-overlay) 기준으로 배치해, 페이지를 스크롤해도 화면을
-     따라다니지 않고 처음 열렸을 때의 자리(첫 화면 세로 중앙)에 그대로 머문다 */
-  position:absolute;top:50%;transform:translateY(-50%);
+  /* [수정] 스크롤 컨테이너(.pd-overlay) 맨 위의 sticky 레일(.pd-side-rail, 높이 0) 기준으로 화면 세로 중앙
+     (50vh)에 배치 — 오버레이의 backdrop-filter 때문에 position:fixed도 내용과 함께 스크롤되므로, sticky
+     레일로 스크롤 위치와 무관하게 화면의 같은 자리에 고정한다 */
+  position:absolute;top:50vh;transform:translateY(-50%);
   width:64px;height:64px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   background:rgba(10,23,48,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
@@ -770,6 +771,7 @@ section.block{padding:100px 24px;position:relative}
    유지한다: 카드 가장자리(50% ± 280px)에서 버튼 너비(64px)+여백(40px)만큼 바깥쪽 */
 /* [수정] 상세 정보 영역 가장자리(50% ± 264px)와 화면 가장자리 사이의 정중앙에 버튼 중심이 오도록 배치 —
    (50% - 264px) / 2 - 버튼 반폭(32px) = 25% - 164px */
+.pd-side-rail{position:sticky;top:0;height:0;z-index:15}
 .pd-side-nav.prev{left:calc(25% - 164px)}
 .pd-side-nav.next{right:calc(25% - 164px)}
 /* [수정] 이 크기(64px 박스·2.2rem 글자)에서 실측한 결과 좌우는 이미 중앙이지만 위아래는 살짝
@@ -897,7 +899,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 요금 항목별 "자세히 →" 토글 — 이 항목의 레이블·일정 및 공통 포함/불포함/참고사항을 펼쳐서 보여준다.
    링크·공유 버튼(.pd-pe-bottom-row)은 "상세보기" 토글 아래에 별도 배치한다 */
 .pd-pe-actions{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:4px}
-.pd-pe-more{margin-top:2px}
+.pd-pe-more{margin-top:2px;align-self:stretch} /* 펼친 본문이 카드 폭을 꽉 채우도록 */
 .pd-pe-more summary{color:var(--gold-deep);font-size:.82rem;font-weight:600;cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:4px}
 .pd-pe-more summary::-webkit-details-marker{display:none}
 .pd-pe-more summary::after{content:'→';transition:transform .2s}
@@ -1057,7 +1059,8 @@ section.block{padding:100px 24px;position:relative}
 .post-body{padding:22px 24px;flex:1;display:flex;flex-direction:column;gap:8px}
 .post-body h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.15rem;color:var(--pine-deep);font-weight:500;line-height:1.35}
 /* [Phase] 태그 레이블을 이미지 위 오버레이에서 타이틀 바로 아래·우측 정렬로 이동, 종류별 색상+아이콘 부여 */
-.post-tag-row{display:flex;justify-content:flex-end;padding-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10)}
+.post-tag-row{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:6px;padding-bottom:8px;border-bottom:1px solid rgba(10,23,48,.10)}
+.post-tag-count{margin-right:auto;font-size:.68rem;font-weight:700;color:rgba(10,23,48,.55)}
 .post-tag-badge{display:inline-flex;align-items:center;gap:5px;color:#fff;font-size:.68rem;font-weight:700;padding:5px 12px;border-radius:100px;letter-spacing:.05em}
 .post-tag-icon{width:13px;height:13px;border-radius:3px;object-fit:contain;background:#fff}
 .post-tag-green{background:#2fa84f}
@@ -4514,6 +4517,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 <!-- [수정] 상품 상세 안에서 이전/다음 상품(같은 국내·해외 권역 루프)으로 바로 이동할 수 있도록
      상단 고정 내비게이션 바(지역명·순번·이전/다음 버튼)와 권역 전환 시 잠깐 노출되는 전환 화면을 추가 -->
 <div class="pd-overlay" id="pdOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeProductDetail)">
+  <!-- [수정] 웹(데스크톱) 전용 이전/다음 대형 버튼 — 높이 0의 sticky 레일(.pd-side-rail) 안에 두어, 상세 페이지를
+       위아래로 스크롤해도 화면 세로 중앙의 같은 자리에 고정된다(모바일은 숨기고 터치 스와이프로 대체) -->
+  <div class="pd-side-rail">
+    <button type="button" class="pd-side-nav prev" onclick="pdMove(-1)" aria-label="이전 상품"><span class="pd-nav-arrow-glyph">‹</span></button>
+    <button type="button" class="pd-side-nav next" onclick="pdMove(1)" aria-label="다음 상품"><span class="pd-nav-arrow-glyph">›</span></button>
+  </div>
   <div class="pd-container" id="pdContainer">
     <div class="pd-nav-bar" id="pdNavBar">
       <button class="pd-nav-arrow prev" onclick="pdMove(-1)" aria-label="이전 상품"><span class="pd-nav-arrow-glyph">‹</span></button>
@@ -4533,8 +4542,6 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   <!-- [수정] 웹(데스크톱) 전용 — 상품 상세 페이지 영역 좌/우측 화면 가장자리에 큼직한 이전/다음
        버튼을 추가로 배치. 상단 박스의 작은 화살표(.pd-nav-arrow)는 그대로 유지하고, 이 버튼들은
        모바일에서는 표시하지 않는다(터치 스와이프로 대체) -->
-  <button type="button" class="pd-side-nav prev" onclick="pdMove(-1)" aria-label="이전 상품"><span class="pd-nav-arrow-glyph">‹</span></button>
-  <button type="button" class="pd-side-nav next" onclick="pdMove(1)" aria-label="다음 상품"><span class="pd-nav-arrow-glyph">›</span></button>
 </div>
 
 <!-- [수정] 웹(데스크톱)·모바일 모두 화면 우측 최하단 코너에 "전화하기"·"문의하기"·"관리자"
@@ -4629,7 +4636,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         <div class="admin-section-head">
           <h4 class="admin-h4-lg">📡 블로그 · 유튜브 자동 수집 채널</h4>
         </div>
-        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 새 글·영상이 올라올 때마다 자동으로 "여행 이야기"에 노출됩니다. 채널당 최신 5개까지 가져옵니다.<br><br>💡 유튜브는 반드시 "UC"로 시작하는 채널 ID를 입력해야 합니다 — @핸들이나 채널명은 인식되지 않습니다. 채널 홈 → 정보 → "채널 ID 공유" 메뉴에서 확인할 수 있습니다.<br><br>💡 자동으로 불러온 이미지가 없거나 마음에 들지 않으면 각 글/영상마다 직접 업로드할 수 있습니다. 권장 1280×720px (16:9 비율), 10MB 이하 JPG/PNG.</div>
+        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 새 글·영상이 올라올 때마다 자동으로 "여행 이야기"에 노출됩니다. 채널당 최신 5개까지 가져옵니다.<br><br>💡 유튜브는 반드시 "UC"로 시작하는 채널 ID를 입력해야 합니다 — @핸들이나 채널명은 인식되지 않습니다. 채널 홈 → 정보 → "채널 ID 공유" 메뉴에서 확인할 수 있습니다.<br><br>💡 연결 상품이 같은 글·영상은 "여행 이야기"에서 하나의 카드로 묶여 노출됩니다(직접 링크를 입력한 글은 제외).<br><br>💡 자동으로 불러온 이미지가 없거나 마음에 들지 않으면 각 글/영상마다 직접 업로드할 수 있습니다. 권장 1280×720px (16:9 비율), 10MB 이하 JPG/PNG.</div>
         <div class="admin-channel-add-row">
           <select id="newChannelType" class="abc-input" style="flex:0 0 auto;width:auto">
             <option value="blog">📝 네이버 블로그</option>
@@ -4869,7 +4876,7 @@ function newExtendedFields(){
   return {
     titleMedia:null, gallery:[], galleryConfig:{layout:'slide',autoSlide:true},
     videoGallery:[], pkgPoster:null, editorsPick:false, bookingPolicy:'', // [Phase 3 상품등록 개선]
-    extraFees:[], precautions:'', linkUrl:'', // [Phase 3 상품등록 개선 v2/v3] extraFees: 항목·금액 분리 입력(표 형식)
+    extraFees:defaultExtraFees(), extraFeesSeeded:true, precautions:'', linkUrl:'', // [Phase 3 상품등록 개선 v2/v3] extraFees: 항목·금액 분리 입력(표 형식)
     scheduleOverview:'', scheduleNote:'', // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인 공통 설명·안내문구
     // [수정] 요금 항목(항목1/2...)을 아직 추가하지 않은 상품도 레이블·일정 요약 타임라인을 입력할 수 있도록,
     // 특정 요금 항목에 종속되지 않는 "공통" 레이블·일정을 상품 레벨에 별도로 둔다
@@ -4936,6 +4943,10 @@ function ensureExtended(p){
     p.extraFees = (typeof p.extraFeeNote==='string' && p.extraFeeNote.trim()) ? [{label:p.extraFeeNote.trim(), amount:''}] : [];
   }
   delete p.extraFeeNote;
+  // [추가] 추가 요금 안내가 아직 하나도 등록되지 않은 상품은 기본값(⛳️ [골프관련] 캐디피·카트비 / 🏨 [숙박 선택 옵션])으로
+  // 시작한다. 한 번 채운 뒤(extraFeesSeeded)에는 관리자가 모두 지워도 다시 채우지 않는다
+  if (!p.extraFees.length && !p.extraFeesSeeded) p.extraFees = defaultExtraFees();
+  p.extraFeesSeeded = true;
   // [Phase 3 상품등록 개선 v4] 추가 요금 안내 항목을 그룹으로 묶어 표시 가능 — kind:'group'(제목만) / 'item'(항목·금액)
   p.extraFees.forEach(f=>{
     if (f.kind!=='group') f.kind='item'; // 기존 데이터(구분 없음)는 모두 일반 항목으로 간주
@@ -5294,7 +5305,12 @@ const BLOG = [];
 const CHANNELS_KEY = 'kundo_channels_v1';
 let channelsOverride = null;
 try{ channelsOverride = JSON.parse(localStorage.getItem(CHANNELS_KEY)||'null'); }catch(e){}
-function getChannelsList(){ return channelsOverride || []; }
+// [수정] 블로그 채널 표시 이름 "국내골프여행" → "국내/해외골프여행"(국내·해외 글을 함께 올리는 채널)
+function getChannelsList(){
+  const list = channelsOverride || [];
+  list.forEach(ch=>{ if (ch && /^\s*국내\s*골프\s*여행\s*$/.test(ch.label||'')) ch.label = '국내/해외골프여행'; });
+  return list;
+}
 // [수정] "수집된 글/영상 — 직접 편집" 펼침 상태를 네이티브 <details>의 open 속성이 아니라 이
 // 독립적인 Set으로 직접 관리한다 — renderAdminChannels()가 다시 호출될 때마다 DOM을 통째로
 // 새로 만들면서 <details>가 매번 새 노드로 교체되는데, 이전에는 다시 그리기 직전에 DOM에서
@@ -5643,7 +5659,20 @@ function getAutoCollectedPosts(){
       });
     });
   });
-  return posts;
+  // [추가] 연결 상품이 같은 글/영상(블로그·유튜브 채널을 가리지 않음)은 하나의 카드로 묶는다 — 어차피 모두
+  // 같은 상품 링크로 이동하므로, 먼저 나온 글을 대표로 두고 태그(블로그/유튜브)와 묶인 개수만 함께 표시한다.
+  // 직접 링크를 입력한 글은 이동 위치가 달라 묶지 않는다
+  const grouped = [], byProduct = {};
+  posts.forEach(p=>{
+    const key = (p.productCat && p.productIdx!=null && !(overrides[p.sourceUrl]||{}).manualUrl) ? p.productCat+'#'+p.productIdx : '';
+    if (!key){ grouped.push(p); return; }
+    const g = byProduct[key];
+    if (!g){ p.groupTags=[p.tag]; p.groupCount=1; byProduct[key]=p; grouped.push(p); return; }
+    g.groupCount++;
+    if (!g.groupTags.includes(p.tag)) g.groupTags.push(p.tag);
+    if (!g.image && p.image) g.image = p.image;
+  });
+  return grouped;
 }
 
 // ── 고객 후기 ──────────────────────────────────────────────────
@@ -8139,7 +8168,8 @@ function bulletRowsRich(html, icon){
   // 체크(✓)·점(•)·엑스(✕) 아이콘 없이 윗줄 글자 시작 위치에서 1.5글자 들여쓴 줄(row-sub)로 그린다
   const normalized = withPlaceholders
     .replace(/<div[^>]*class="[^"]*\brtf-sub\b[^"]*"[^>]*>/gi,'\n\u0001')
-    .replace(/<div[^>]*>/gi,'').replace(/<\/div>/gi,'\n')
+    // [버그 수정] 일반 <div> 줄 앞에도 줄바꿈 — "첫 줄<div>둘째 줄</div>"이 "첫 줄둘째 줄"로 붙어 보이던 문제(빈 줄은 아래에서 걸러짐)
+    .replace(/<div[^>]*>/gi,'\n').replace(/<\/div>/gi,'\n')
     .replace(/<p>/gi,'').replace(/<\/p>/gi,'\n')
     .replace(/<br\s*\/?>/gi,'\n');
   return normalized.split('\n').map(s=>s.trim())
@@ -8349,6 +8379,44 @@ function rtfLineBlock(editable, node){
   if (div.nextSibling && div.nextSibling.nodeName==='BR') div.nextSibling.remove(); // 줄 경계는 이제 </div>가 대신한다
   return div;
 }
+// [수정] 한 덩어리 안에 여러 줄이 들어 있는 경우(Shift+Enter·붙여넣기 등으로 생긴 "\n" 문자나 <div> 안의 <br>)
+// 하위서식이 커서가 있는 줄만이 아니라 그 덩어리 전체(윗줄들까지)에 적용되던 문제 — 적용 전에 줄 단위로
+// 나눠 둔다. 표시·저장 결과(bulletRowsRich는 \n·<br>·<div>를 모두 줄바꿈으로 취급)는 그대로이고, 노드를
+// 옮기기만 하므로 현재 선택 영역(live Range)도 유지된다
+function rtfSplitLines(editable){
+  // 1) 텍스트 속 "\n" → <br> (표 안은 제외)
+  const walker = document.createTreeWalker(editable, NodeFilter.SHOW_TEXT);
+  const texts = []; let tn;
+  while ((tn = walker.nextNode())) if (tn.data.indexOf('\n')>=0 && !(tn.parentNode.closest && tn.parentNode.closest('table'))) texts.push(tn);
+  texts.forEach(t=>{
+    let cur = t, i;
+    while ((i = cur.data.indexOf('\n'))>=0){
+      const rest = cur.splitText(i);       // cur = 앞부분, rest = "\n..."
+      rest.deleteData(0,1);
+      rest.parentNode.insertBefore(document.createElement('br'), rest);
+      cur = rest;
+    }
+  });
+  // 2) 편집 영역 바로 아래 <div> 안에서 <br>로 나뉜 여러 줄 → 줄마다 같은 속성(class·style)의 <div>로 분리
+  Array.from(editable.childNodes).forEach(div=>{
+    if (div.nodeType!==1 || div.tagName!=='DIV') return;
+    const kids = Array.from(div.childNodes);
+    const lines = []; let cur = [];
+    kids.forEach(k=>{
+      if (k.nodeName==='BR'){ lines.push(cur); cur = []; } // 마지막 <br>(빈 줄 자리표시)은 줄을 하나 더 만들지 않는다
+      else cur.push(k);
+    });
+    if (cur.length) lines.push(cur);
+    if (lines.length<=1) return;
+    lines.forEach(nodes=>{
+      const d = div.cloneNode(false);
+      nodes.forEach(n=>d.appendChild(n));
+      if (!d.firstChild) d.appendChild(document.createElement('br'));
+      editable.insertBefore(d, div);
+    });
+    div.remove();
+  });
+}
 function rtfToggleSub(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
@@ -8356,6 +8424,7 @@ function rtfToggleSub(btnEl){
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return;
+  if (editable.contains(sel.getRangeAt(0).commonAncestorContainer)) rtfSplitLines(editable);
   const range = sel.getRangeAt(0);
   if (!editable.contains(range.commonAncestorContainer) && range.commonAncestorContainer!==editable) return;
   const keep = {sn:range.startContainer, so:range.startOffset, en:range.endContainer, eo:range.endOffset};
@@ -8471,6 +8540,59 @@ document.addEventListener('input', e=>{
     if (!n.firstChild) n.appendChild(document.createElement('br'));
     const r = document.createRange(); r.setStart(n, 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
   }
+}, true);
+// [추가] 서식 입력란에 붙여넣기 — 다른 입력란(포함사항=연초록, 불포함사항=연빨강 등)에서 복사하면 브라우저가 그 칸의
+// 바탕색·기본 글자색·글꼴 등을 인라인 스타일로 함께 복사해 와서, 붙여넣은 칸에 원래 칸의 바탕색이 그대로 묻어났다.
+// 붙여넣기 HTML에서 바탕색과 브라우저가 계산해 넣은 기본 서식은 버리고, 사용자가 지정한 서식(색·굵게·pt 크기 등)만 남긴다
+function rtfCleanPastedHTML(html, target){
+  const div = document.createElement('div');
+  div.innerHTML = String(html).replace(/<!--[\s\S]*?-->/g,'');
+  div.querySelectorAll('script,style,meta,link,title,iframe,object,embed,form,input,button,select,textarea').forEach(el=>el.remove());
+  const tcs = getComputedStyle(target);
+  const norm = v=>String(v||'').replace(/\s+/g,'').replace(/["']/g,'').toLowerCase();
+  const baseColor = norm(tcs.color), baseFont = norm(tcs.fontFamily);
+  const firstFont = v=>norm(v).split(',')[0];
+  const allowed = ['color','font-size','font-weight','text-decoration','text-decoration-line','font-style','font-family','line-height'];
+  div.querySelectorAll('*').forEach(el=>{
+    Array.from(el.attributes).forEach(attr=>{
+      const name = attr.name.toLowerCase();
+      if (name==='style'){
+        const kept = attr.value.split(';').map(x=>x.trim()).filter(Boolean).filter(decl=>{
+          const ci = decl.indexOf(':'); if (ci<0) return false;
+          const prop = decl.slice(0,ci).trim().toLowerCase(), val = decl.slice(ci+1).trim().replace(/\s*!important$/,'');
+          if (!allowed.includes(prop)) return false;           // background·background-color 등은 모두 제외
+          const v = val.toLowerCase();
+          if (prop==='color') return norm(v)!==baseColor && v!=='inherit' && v!=='rgb(10,23,48)' && norm(v)!=='rgb(10,23,48)' && norm(v)!=='rgb(100,100,100)';
+          if (prop==='font-size') return /(pt|em)$/.test(v);  // 우리 서식(pt·em)만 유지, 브라우저가 넣은 px 기본 크기는 버림
+          if (prop==='font-family') return firstFont(v)!==firstFont(baseFont) && !/^(pretendard|notosanskr|-apple-system|system-ui)$/.test(firstFont(v)); // 사이트 기본 글꼴은 버림
+          if (prop==='font-weight') return v!=='400' && v!=='normal';
+          if (prop==='font-style') return v!=='normal';
+          if (prop==='text-decoration' || prop==='text-decoration-line') return v!=='none' && !/^none\b/.test(v);
+          if (prop==='line-height') return /^[\d.]+$/.test(v);
+          return true;
+        });
+        if (kept.length) el.setAttribute('style', kept.join(';')); else el.removeAttribute('style');
+      } else if (name==='class'){
+        const keep = attr.value.split(/\s+/).filter(c=>c==='rtf-sub' || c==='rtf-table');
+        if (keep.length) el.setAttribute('class', keep.join(' ')); else el.removeAttribute('class');
+      } else if (name!=='colspan' && name!=='rowspan'){
+        el.removeAttribute(attr.name); // bgcolor·id·on* 등
+      }
+    });
+  });
+  // 속성이 모두 사라진 <span>은 풀어 준다
+  div.querySelectorAll('span:not([style]):not([class])').forEach(sp=>sp.replaceWith(...sp.childNodes));
+  return div.innerHTML;
+}
+document.addEventListener('paste', e=>{
+  const t = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
+  if (!t || !e.clipboardData) return;
+  const html = e.clipboardData.getData('text/html');
+  if (!html) return; // 일반 텍스트 붙여넣기는 브라우저 기본 동작 그대로
+  e.preventDefault();
+  let clean = rtfCleanPastedHTML(html, t);
+  if (t.classList.contains('ctag-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
+  document.execCommand('insertHTML', false, clean);
 }, true);
 function plainSubLinesHTML(text){
   const t = String(text||'');
@@ -9685,7 +9807,12 @@ function syncBlogProductLinks(){
   return list;
 }
 // [Phase] "여행 이야기" 카드 태그 배지 — 태그 종류별로 색상/아이콘을 다르게 표시한다
-function postTagBadgeHTML(tag){
+function postTagBadgeHTML(tag, count){
+  // [추가] 같은 연결 상품으로 묶인 카드 — 태그 배지를 종류별로 나란히 + 묶인 글/영상 개수
+  if (Array.isArray(tag)){
+    const badges = tag.map(t=>postTagBadgeHTML(t).replace(/^<div class="post-tag-row">|<\/div>$/g,'')).join('');
+    return `<div class="post-tag-row">${count>1?`<span class="post-tag-count">글·영상 ${count}개</span>`:''}${badges}</div>`;
+  }
   const t = tag || '블로그';
   let text = t, cls = 'post-tag-default', icon = '';
   if (t==='국내-블로그' || t==='해외-블로그' || t==='국내' || t==='해외'){
@@ -9714,7 +9841,7 @@ function postCardHTML(b){
     </div>
     <div class="post-body">
       <h3>${escapeAttr(title)}</h3>
-      ${postTagBadgeHTML(b.tag)}
+      ${postTagBadgeHTML(b.groupTags || b.tag, b.groupCount)}
       ${subtitle?`<p class="blog-subtitle">${escapeAttr(subtitle)}</p>`:''}
       <p>${escapeAttr(desc.slice(0,120))}${desc.length>120?'...':''}</p>
       <div class="post-meta"><span>${new URL(href||'https://example.com').hostname.replace('www.','')}</span><span>원문 보기 →</span></div>
@@ -11052,10 +11179,9 @@ function renderProductDetail(p,cat,idx){
           const peSch = show('schedule') ? eff('schedule') : null;
           const hasPeSchedule = !!peSch;
           const precautionsRows = show('precautions') ? bulletRowsRich(eff('precautions')||'','•') : '';
-          // [수정] 참고사항은 옅은 회색 박스로 구분
-          const peNotesHTML = precautionsRows ? `<div class="pd-pe-notes-group">
-            <div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>
-          </div>` : '';
+          // [수정] 참고사항은 옅은 회색 박스로 구분 — "상세보기" 안이 아니라 불포함사항 박스 바로 아래에
+          // 포함↔불포함과 같은 간격(카드 gap 8px)으로 노출해 세 박스가 한 묶음으로 보이게 한다
+          const peNotesHTML = precautionsRows ? `<div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>` : '';
           const peItemNo = String(idx+1).padStart(2,'0');
           const moreBody = [
             labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ [항목 ${peItemNo}] 항공/이동 정보</div>${labelRows}</div>`:'',
@@ -11064,8 +11190,7 @@ function renderProductDetail(p,cat,idx){
             // [수정] "+요금 항목 추가"에서 이 항목에 지정된 accent 색상(PE_ACCENT_COLORS)과 같은
             // 색으로 왼쪽에 라인을 그어, 상세보기의 일정 요약 타임라인이 어느 요금 항목의 일정인지
             // 한눈에 구분되도록 함
-            hasPeSchedule?`<div class="pd-pe-more-sub pd-pe-sch-accent" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]};--pe-accent-pale:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .28)}"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(peSch.s.days, peSch.t)}</div></div>`:'',
-            peNotesHTML
+            hasPeSchedule?`<div class="pd-pe-more-sub pd-pe-sch-accent" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]};--pe-accent-pale:${hexToRgba(PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length], .28)}"><div class="t">🗓️ 일정 요약 타임라인</div><div class="pd-sch-days">${scheduleDaysHTML(peSch.s.days, peSch.t)}</div></div>`:''
           ].join('');
           // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 — 외부 링크는 별도 버튼으로만
           // 이동. 요금 항목의 "상세보기"는 항목 수가 많을 때 화면을 너무 길게 만들어 모두 기본으로 접어둔다
@@ -11085,6 +11210,7 @@ function renderProductDetail(p,cat,idx){
             ${blk('ddLabel')}
             ${blk('inc')}
             ${blk('notInc')}
+            ${peNotesHTML}
             <!-- [수정] 항목별 "연결 링크·URL"(pe.link)과 상품 공통 "연결 링크·URL"(p.linkUrl)을
                  값이 있을 때 동일한 UI(.go)로 함께 노출 — 항목별 링크가 먼저, 공통 링크가 그 다음.
                  옅은 회색 카드와 구분되도록 로고색 음영 버튼으로 스타일링하고, "상세보기" 토글 아래
@@ -11143,7 +11269,9 @@ function renderProductDetail(p,cat,idx){
 
   // [수정] 추가 요금 안내를 일정 요약 타임라인 하단으로 이동
   // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
-  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount));
+  // [수정] 아래에 항목이 하나도 없는 그룹 제목(예: 기본값의 "🏨 [숙박 선택 옵션]"을 비워 둔 경우)은 고객 화면에서 숨긴다
+  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount))
+    .filter((f,i,arr)=> f.kind!=='group' || (arr[i+1] && arr[i+1].kind!=='group'));
   if (extraFees.length){
     html += `<div class="pd-slot"><div class="pd-section-title">💰 추가 요금 안내</div>
       <div class="pd-fee-table">${extraFees.map((f,i)=> f.kind==='group'
@@ -12603,16 +12731,25 @@ function renderProductAdmin(catId){
   const transferFieldLabel = isDomesticCat(activeProductCat) ? '숙소→골프장 소요시간' : '공항→호텔 소요시간';
   document.getElementById('productCount').textContent=`${catObj.ko} · 총 ${products.length}개`;
   if (products.length===0){
+    list.dataset.cat='';
     list.innerHTML=`<div class="empty-state" style="padding:30px 0"><div class="big">📦</div><p>등록된 상품이 없습니다.</p></div>`;
     return;
   }
   // [수정] 상품 카드를 <details>로 전환 — 넘버링 옆에 제목을 함께 보여주고, 접어서 목록을 훑어볼 수 있게 한다.
   // 목록이 길어지면 한눈에 훑어보기 어려우므로 기본값은 접힌 상태로 시작한다
   // [수정] 손잡이(⠿)에만 draggable 지정 — 요금 항목(항목1/2...)의 드래그 순서 변경과 동일한 방식
+  // [수정] 복제·이동·고급편집·순서변경 등으로 목록을 다시 그릴 때, 직전에 펼쳐져/접혀 있던 상태를 상품 단위로
+  // 그대로 유지한다(인덱스가 바뀌어도 같은 상품 객체를 따라감). 같은 국가 목록을 처음 그릴 때만 "최근 작업"
+  // 상품을 자동으로 펼친다
+  const prevObjs = (list.dataset.cat===activeProductCat && list._apcObjs) ? list._apcObjs : null;
+  const openObjs = new Set();
+  if (prevObjs) list.querySelectorAll('.admin-product-card').forEach(c=>{ if (c.open) openObjs.add(prevObjs[+c.dataset.idx]); });
+  list.dataset.cat = activeProductCat;
+  list._apcObjs = products.slice();
   const dropAttrs = i=>`data-idx="${i}" ondragover="productDragOver(event)" ondragleave="productDragLeave(event)" ondrop="productDrop(event,${i})"`;
   const handleAttrs = i=>`draggable="true" ondragstart="productDragStart(event,${i})" ondragend="productDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
   list.innerHTML=products.map((p,i)=>`
-    <details class="admin-product-card" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
+    <details class="admin-product-card" ${openObjs.has(p)?'open':''} style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
       <summary class="apc-head">
         <span class="apc-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</span>
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
@@ -12655,16 +12792,16 @@ function renderProductAdmin(catId){
         <div class="full">${cpEditorHTML(p, 'checkpoint1', '체크포인트2(주의사항)', '(상품 카드의 카드 태그 아래, 구분선 다음에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
       </div>
     </details>`).join('');
-  adminFocusLastProduct(list);
+  adminFocusLastProduct(list, !prevObjs);
 }
 // [추가] 마지막으로 작업한 상품 카드를 펼쳐 두고 "최근 작업" 표시 — 관리자 패널 첫 진입(복원) 때는
 // 그 카드가 보이도록 스크롤까지 이동한다
-function adminFocusLastProduct(list){
+function adminFocusLastProduct(list, autoOpen){
   const fi=adminPosResolveIdx(activeProductCat);
   if (fi<0) return;
   const card=list.querySelector(`.admin-product-card[data-idx="${fi}"]`);
   if (!card) return;
-  card.open=true;
+  if (autoOpen!==false || adminPosScrollPending) card.open=true;
   card.classList.add('apc-last');
   const title=card.querySelector('.apc-title-preview');
   if (title) title.insertAdjacentHTML('afterend','<span class="apc-last-badge">최근 작업</span>');
@@ -13470,6 +13607,15 @@ function advFilled(v){
   return !!_peTextKey(s);
 }
 
+// [추가] 추가 요금 안내 기본값
+function defaultExtraFees(){
+  return [
+    {kind:'group', title:'⛳️ [골프관련]'},
+    {kind:'item', label:'캐디피', amount:'150,000원/팀'},
+    {kind:'item', label:'카트비', amount:'100,000원/팀'},
+    {kind:'group', title:'🏨 [숙박 선택 옵션]'}
+  ];
+}
 // [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액을 분리 입력하는 표 형식 리스트
 function extraFeesHTML(p){
   const fees = p.extraFees||[];

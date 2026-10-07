@@ -1200,6 +1200,14 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .link-item .lico .region-tag:not(.ee-visa-badge),.link-admin-item .lico .region-tag{top:auto;right:auto;bottom:-9px;left:50%;transform:translateX(-50%)}
 .link-item:has(.lico .region-tag:not(.ee-visa-badge)){padding-bottom:17px}
 .link-item .lname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* "블로그/SNS" 한 칸(2칸 폭) — 로고(항목)를 블로그 한 줄, SNS 한 줄로 배치 */
+.link-group-wide{grid-column:span 2}
+@media(max-width:600px){.link-group-wide{grid-column:1/-1}}
+.link-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:8px}
+.link-row .link-item{margin-bottom:0;padding:9px 10px;gap:8px}
+.link-row .link-item .lname{white-space:normal;overflow:visible;line-height:1.25;font-size:.8rem}
+.link-row .link-item .larr{display:none}
+.link-row .link-item:has(.lico .region-tag:not(.ee-visa-badge)){padding-bottom:17px}
 .link-item .larr{color:rgba(10,23,48,.35);font-size:.85rem}
 .link-item.disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
 
@@ -1277,6 +1285,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    확보해 터치 표준을 충족한다 — 아이콘은 그 안에서 그대로 중앙 정렬되므로 보이는 크기는 바뀌지 않는다 */
 .foot-socials .foot-social{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;transition:transform .2s}
 .foot-socials .foot-social:hover{transform:translateY(-2px)}
+/* 푸터: 네이버 밴드 B2C/B2B 구분 글자 박스 — 로고와 겹치지 않게 로고 바로 아래에 둔다 */
+.foot-socials{align-items:flex-start}
+.foot-socials .foot-social{flex-direction:column;justify-content:flex-start;padding-top:4px}
+.foot-socials .foot-social .foot-badge{margin-top:3px;background:#00C73C;color:#fff;font-size:.6rem;font-weight:800;line-height:1;padding:3px 7px;border-radius:100px;letter-spacing:.05em}
+.foot-socials .foot-social .foot-badge.b2b{background:#1877F2}
 .foot-socials .foot-social .lico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:.85rem;font-weight:700;position:relative}
 .foot-socials .foot-social .lico.band{background:#00C73C}
 .foot-socials .foot-social .lico.naver{background:#03C75A}
@@ -1603,18 +1616,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .overlay.show{opacity:1;pointer-events:auto}
 
 /* Band B2C/B2B CTA row */
-/* [수정] B2C/B2B 초대 박스 — 전체 폭 한 줄이 아니라 "네이버 밴드" 칸(블로그 왼쪽) 안에 작게 2열로 배치하고, 박스마다 네이버 밴드 로고를 B2C/B2B 왼쪽에 둔다 */
-.band-cta-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.band-cta{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;padding:9px 10px;background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.15),rgba(0,199,60,.05));border:1px solid rgba(0,199,60,.4);border-radius:12px;color:#fff;font-weight:600;font-size:.78rem;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
+/* [수정] B2C/B2B 초대 박스 — "네이버 밴드" 칸 안에 두 줄(위·아래)로 쌓고, 칸 폭 전체를 쓰는 긴 박스. 박스마다 네이버 밴드 로고를 B2C/B2B 왼쪽에 둔다 */
+.band-cta-row{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px}
+.band-cta{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 14px;background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.15),rgba(0,199,60,.05));border:1px solid rgba(0,199,60,.4);border-radius:12px;color:#fff;font-weight:600;font-size:.85rem;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
 .band-cta:hover{background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.28),rgba(0,199,60,.12));border-color:#00C73C;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .band-cta:active{background:linear-gradient(135deg,rgba(0,199,60,.28),rgba(0,199,60,.12));transform:translateY(1px);box-shadow:var(--btn-press)}
 .band-cta.b2b{background:var(--btn-highlight),linear-gradient(135deg,rgba(24,119,242,.15),rgba(24,119,242,.05));border-color:rgba(24,119,242,.4)}
 .band-cta.b2b:hover{background:var(--btn-highlight),linear-gradient(135deg,rgba(24,119,242,.28),rgba(24,119,242,.12));border-color:#1877F2;box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .band-cta.b2b:active{background:linear-gradient(135deg,rgba(24,119,242,.28),rgba(24,119,242,.12));box-shadow:var(--btn-press)}
-.band-cta .bc-top{display:flex;align-items:center;gap:6px;width:100%}
-.band-cta .bc-logo{width:22px;height:22px;border-radius:6px;object-fit:contain;flex-shrink:0}
+.band-cta .bc-logo{width:26px;height:26px;border-radius:7px;object-fit:contain;flex-shrink:0}
 .band-cta .bc-badge{background:#00C73C;color:#fff;font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:100px;letter-spacing:.05em}
-.band-cta .bc-label{color:var(--pine-deep);line-height:1.25;font-size:.74rem}
+.band-cta .bc-label{color:var(--pine-deep);line-height:1.25;font-size:.84rem;min-width:0}
 .band-cta.b2b .bc-badge{background:#1877F2}
 .band-cta .bc-arr{margin-left:auto;color:var(--gold)}
 
@@ -8682,8 +8694,8 @@ const LINK_DEFS = {
   band: {
     label:'네이버 밴드',
     items:[
-      {key:'band_b2c',  name:'B2C 초대', img:'icon-band', defaultUrl:'https://band.us/n/a5abb4Q9w1oab'},
-      {key:'band_b2b',  name:'B2B 초대', img:'icon-band', defaultUrl:'https://band.us/n/afa2A6V7X8658'},
+      {key:'band_b2c',  name:'B2C 초대', img:'icon-band', badge:'B2C', defaultUrl:'https://band.us/n/a5abb4Q9w1oab'},
+      {key:'band_b2b',  name:'B2B 초대', img:'icon-band', badge:'B2B', defaultUrl:'https://band.us/n/afa2A6V7X8658'},
       {key:'band_main', name:'공식 밴드', img:'icon-band', defaultUrl:'https://www.band.us/band/92278374/post'}
     ]
   },
@@ -11374,28 +11386,35 @@ function renderLinks(){
   const b2cActive = isLinkActive('band_b2c');
   const b2bActive = isLinkActive('band_b2b');
   const bandLogo = (typeof ICON_DATA !== 'undefined' && ICON_DATA['icon-band']) ? ICON_DATA['icon-band'] : 'assets/icons/icon-band.png';
-  const ctaBox = (key, cls, badge, label)=>`<a class="band-cta${cls}" href="${escapeAttr(getLinkUrl(key))}" target="_blank" rel="noopener"><span class="bc-top"><img class="bc-logo" src="${bandLogo}" alt="" loading="lazy" decoding="async"><span class="bc-badge">${badge}</span><span class="bc-arr">→</span></span><span class="bc-label">${label}</span></a>`;
+  const ctaBox = (key, cls, badge, label)=>`<a class="band-cta${cls}" href="${escapeAttr(getLinkUrl(key))}" target="_blank" rel="noopener"><img class="bc-logo" src="${bandLogo}" alt="" loading="lazy" decoding="async"><span class="bc-badge">${badge}</span><span class="bc-label">${label}</span><span class="bc-arr">→</span></a>`;
   const ctaHTML = (b2cActive || b2bActive) ? `<div class="band-cta-row">
     ${b2cActive ? ctaBox('band_b2c','','B2C','고객 초대 밴드') : ''}
     ${b2bActive ? ctaBox('band_b2b',' b2b','B2B','파트너 초대 밴드') : ''}
   </div>` : '';
-  const groupHTML = Object.keys(LINK_DEFS).map(k=>{
-    const g=LINK_DEFS[k];
-    // 밴드 그룹에서는 공식 밴드(band_main)만 목록으로 노출(B2C/B2B는 위의 작은 박스)
-    const items = (k==='band') ? g.items.filter(it=>it.key==='band_main') : g.items;
-    const active = items.filter(it=>!linkHiddenOverrides[it.key] && isLinkActive(it.key));
-    const customActive = (customLinkItems[k]||[]).filter(it=>it.url && it.active!==false);
-    const boxes = (k==='band') ? ctaHTML : '';
-    if (!active.length && !customActive.length && !boxes) return '';
-    return `<div class="link-group">
-      <h4>${g.label}</h4>
-      ${boxes}
-      ${active.map(it=>`<a class="link-item" href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener">
-        ${linkIconEl(it)}<span class="lname">${it.name}</span><span class="larr">→</span></a>`).join('')}
-      ${customActive.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
-        <span class="lico">🔗</span><span class="lname">${escapeAttr(it.name||'링크')}</span><span class="larr">→</span></a>`).join('')}
+  const itemHTML = it=>`<a class="link-item" href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener">
+        ${linkIconEl(it)}<span class="lname">${it.name}</span><span class="larr">→</span></a>`;
+  const customHTML = it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
+        <span class="lico">🔗</span><span class="lname">${escapeAttr(it.name||'링크')}</span><span class="larr">→</span></a>`;
+  const activeOf = k=>LINK_DEFS[k].items.filter(it=>!linkHiddenOverrides[it.key] && isLinkActive(it.key));
+  const customOf = k=>(customLinkItems[k]||[]).filter(it=>it.url && it.active!==false);
+  // 네이버 밴드 칸: B2C/B2B 초대 박스(두 줄) + 공식 밴드
+  const bandItems = LINK_DEFS.band.items.filter(it=>it.key==='band_main' && !linkHiddenOverrides[it.key] && isLinkActive(it.key));
+  const bandCustom = customOf('band');
+  const bandHTML = (!bandItems.length && !bandCustom.length && !ctaHTML) ? '' : `<div class="link-group">
+      <h4>${LINK_DEFS.band.label}</h4>
+      ${ctaHTML}
+      ${bandItems.map(itemHTML).join('')}
+      ${bandCustom.map(customHTML).join('')}
     </div>`;
-  }).join('');
+  // "블로그/SNS" 한 칸: 첫 줄은 블로그 로고들, 둘째 줄은 SNS 로고들
+  const blogRow = activeOf('blog').map(itemHTML).join('') + customOf('blog').map(customHTML).join('');
+  const snsRow = activeOf('sns').map(itemHTML).join('') + customOf('sns').map(customHTML).join('');
+  const blogSnsHTML = (!blogRow && !snsRow) ? '' : `<div class="link-group link-group-wide">
+      <h4>블로그/SNS</h4>
+      ${blogRow ? `<div class="link-row">${blogRow}</div>` : ''}
+      ${snsRow ? `<div class="link-row">${snsRow}</div>` : ''}
+    </div>`;
+  const groupHTML = bandHTML + blogSnsHTML;
   c.innerHTML = groupHTML + renderEntryExitGroup();
   if (!c.innerHTML.trim()){
     c.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:rgba(247,245,240,.5)">
@@ -11440,7 +11459,7 @@ function renderFootSocials(){
   const items=LINK_DEFS.sns.items.concat(LINK_DEFS.blog.items).concat(LINK_DEFS.band.items);
   const builtinHTML = items.map(it=>{
     if (linkHiddenOverrides[it.key] || !isLinkActive(it.key)) return '';
-    return `<a href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener" title="${it.name}" class="foot-social">${linkIconEl(it)}</a>`;
+    return `<a href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener" title="${it.name}" class="foot-social">${linkIconEl(it)}${it.badge?`<span class="foot-badge${it.badge==='B2B'?' b2b':''}">${it.badge}</span>`:''}</a>`;
   }).join('');
   const customHTML = ['sns','blog','band'].flatMap(g=>customLinkItems[g]||[]).filter(it=>it.url && it.active!==false)
     .map(it=>`<a href="${escapeAttr(it.url)}" target="_blank" rel="noopener" title="${escapeAttr(it.name||'링크')}" class="foot-social">🔗</a>`).join('');

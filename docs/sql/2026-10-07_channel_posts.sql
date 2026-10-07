@@ -16,6 +16,7 @@ create table if not exists public.channel_posts (
   thumbnail     text not null default '',
   published_at  timestamptz,                      -- 글 작성/영상 게시 시각 (정렬 기준)
   post_no       text,                             -- 네이버 글 번호(logNo) 또는 유튜브 영상 ID
+  category      text not null default '',         -- 네이버 블로그 카테고리 이름 (예: 국내 패키지 여행)
   updated_at    timestamptz not null default now()
 );
 

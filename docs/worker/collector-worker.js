@@ -8,7 +8,7 @@
 //   ?mode=ytlist&channel=UC...&pageToken=...     → 유튜브 채널 업로드 영상 50개씩 { items, nextPageToken, total }
 //   ?mode=naverlist&blogId=아이디&page=1          → 네이버 블로그 글 30개씩 { items, page, total, source }
 //
-// items 형식: [{ id, link, title, thumbnail, published(ISO 문자열) }]
+// items 형식: [{ id, link, title, thumbnail, published(ISO 문자열), category(네이버 블로그 카테고리 이름, 없으면 빈 문자열) }]
 //
 // 환경 변수(Settings → Variables and Secrets)
 //   YOUTUBE_API_KEY  (Secret, 필수 — 유튜브 수집용)  Google Cloud에서 발급한 YouTube Data API v3 키
@@ -91,6 +91,8 @@ async function naverList(url, json) {
   const UA_PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
   const linkOf = logNo => `https://blog.naver.com/${blogId}/${logNo}`;
   let firstError = '';
+  // 카테고리 번호 → 이름 (글 목록에 이름이 없을 때를 대비해 한 번 가져옴. 실패해도 목록은 계속 진행)
+  const catMap = await naverCategoryMap(blogId, UA_MOBILE, UA_PC);
 
   // 1) 모바일 블로그 목록(JSON)
   try {
@@ -108,6 +110,7 @@ async function naverList(url, json) {
           title: stripTags(it.titleWithInspectMessage || it.title || ''),
           thumbnail: fixNaverThumb(it.thumbnailUrl || (it.thumbnailList && it.thumbnailList[0] && it.thumbnailList[0].url) || ''),
           published: toIso(it.addDate),
+          category: stripTags(safeDecode(String(it.categoryName || catMap[String(it.categoryNo)] || ''))),
         }));
         return json({ items, page, total: Number(res.totalCount) || 0, source: 'm-api' });
       }
@@ -128,10 +131,36 @@ async function naverList(url, json) {
     title: stripTags(safeDecode(it.title || '')),
     thumbnail: '',
     published: toIso(it.addDate),
+    category: stripTags(safeDecode(String(it.categoryName || catMap[String(it.categoryNo)] || ''))),
   }));
   return json({ items, page, total: Number(d2.totalCount) || 0, source: 'title-list' });
 }
 
+// 네이버 블로그 카테고리 목록 → { 카테고리번호: 카테고리이름 }. 응답 구조가 달라져도 견디도록 categoryNo/categoryName 짝을 찾아 모은다
+async function naverCategoryMap(blogId, UA_MOBILE, UA_PC) {
+  const map = {};
+  const walk = (o, depth) => {
+    if (!o || depth > 6) return;
+    if (Array.isArray(o)) { o.forEach(x => walk(x, depth + 1)); return; }
+    if (typeof o === 'object') {
+      const name = o.categoryName || o.categoryname;
+      if (o.categoryNo != null && name) map[String(o.categoryNo)] = stripTags(safeDecode(String(name)));
+      Object.keys(o).forEach(k => walk(o[k], depth + 1));
+    }
+  };
+  const tryFetch = async (url, ua, ref) => {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': ua, 'Referer': ref, 'Accept': 'application/json' } });
+      if (!r.ok) return false;
+      walk(JSON.parse((await r.text()).replace(/\\'/g, "'")), 0);
+      return Object.keys(map).length > 0;
+    } catch (e) { return false; }
+  };
+  if (!(await tryFetch(`https://m.blog.naver.com/api/blogs/${blogId}/category-list`, UA_MOBILE, `https://m.blog.naver.com/${blogId}`))) {
+    await tryFetch(`https://blog.naver.com/CategoryList.naver?blogId=${blogId}&from=postList&isMobile=false`, UA_PC, `https://blog.naver.com/${blogId}`);
+  }
+  return map;
+}
 function safeDecode(s) { try { return decodeURIComponent(String(s).replace(/\+/g, ' ')); } catch (e) { return String(s); } }
 function stripTags(s) { return String(s).replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim(); }
 // 목록용 작은 썸네일(type=w80 등)을 카드용 크기로

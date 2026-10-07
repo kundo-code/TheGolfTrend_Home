@@ -1603,18 +1603,20 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .overlay.show{opacity:1;pointer-events:auto}
 
 /* Band B2C/B2B CTA row */
-.band-cta-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.band-cta{display:flex;align-items:center;gap:12px;padding:18px 22px;background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.15),rgba(0,199,60,.05));border:1px solid rgba(0,199,60,.4);border-radius:14px;color:#fff;font-weight:600;font-size:.95rem;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
+/* [수정] B2C/B2B 초대 박스 — 전체 폭 한 줄이 아니라 "네이버 밴드" 칸(블로그 왼쪽) 안에 작게 2열로 배치하고, 박스마다 네이버 밴드 로고를 B2C/B2B 왼쪽에 둔다 */
+.band-cta-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.band-cta{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;padding:9px 10px;background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.15),rgba(0,199,60,.05));border:1px solid rgba(0,199,60,.4);border-radius:12px;color:#fff;font-weight:600;font-size:.78rem;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
 .band-cta:hover{background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.28),rgba(0,199,60,.12));border-color:#00C73C;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .band-cta:active{background:linear-gradient(135deg,rgba(0,199,60,.28),rgba(0,199,60,.12));transform:translateY(1px);box-shadow:var(--btn-press)}
 .band-cta.b2b{background:var(--btn-highlight),linear-gradient(135deg,rgba(24,119,242,.15),rgba(24,119,242,.05));border-color:rgba(24,119,242,.4)}
 .band-cta.b2b:hover{background:var(--btn-highlight),linear-gradient(135deg,rgba(24,119,242,.28),rgba(24,119,242,.12));border-color:#1877F2;box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .band-cta.b2b:active{background:linear-gradient(135deg,rgba(24,119,242,.28),rgba(24,119,242,.12));box-shadow:var(--btn-press)}
-.band-cta .bc-badge{background:#00C73C;color:#fff;font-size:.72rem;font-weight:800;padding:5px 10px;border-radius:100px;letter-spacing:.06em}
-.band-cta .bc-label{color:var(--pine-deep)}
+.band-cta .bc-top{display:flex;align-items:center;gap:6px;width:100%}
+.band-cta .bc-logo{width:22px;height:22px;border-radius:6px;object-fit:contain;flex-shrink:0}
+.band-cta .bc-badge{background:#00C73C;color:#fff;font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:100px;letter-spacing:.05em}
+.band-cta .bc-label{color:var(--pine-deep);line-height:1.25;font-size:.74rem}
 .band-cta.b2b .bc-badge{background:#1877F2}
 .band-cta .bc-arr{margin-left:auto;color:var(--gold)}
-@media(max-width:780px){.band-cta-row{grid-template-columns:1fr}}
 
 /* Toggle Switch (관리자 전용) */
 .toggle-slider{position:absolute;inset:0;background:var(--nm-surface);border-radius:100px;transition:.2s;box-shadow:var(--nm-shadow-inset)}
@@ -1650,7 +1652,13 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 
 /* 출입국신고서 작성 안내 (연계채널 화면) */
 /* [수정] 마지막 칸으로 밀어내던 배치(grid-column:-2/-1)를 없애 "SNS" 바로 오른쪽에 이어서 배치 */
-.ee-group{grid-column:auto}
+/* [수정] "SNS"와 "출·입국 신고 가이드" 사이 간격을 3배(20px → 60px)로 넓히고 구분선을 둔다.
+   옆 칸에 놓이면 세로 구분선(.ee-side), 아래 줄로 내려가면 위쪽 구분선(.ee-below) — 어느 쪽인지는 layoutEeDivider()가 화면 폭에 맞춰 판단 */
+.ee-group{grid-column:auto;position:relative}
+.ee-group.ee-side{margin-left:40px}
+.ee-group.ee-side::before{content:'';position:absolute;left:-30px;top:0;bottom:0;width:1px;background:rgba(10,23,48,.18)}
+.ee-group.ee-below{margin-top:40px}
+.ee-group.ee-below::before{content:'';position:absolute;left:0;right:0;top:-30px;height:1px;background:rgba(10,23,48,.18)}
 .ee-icon-fallback{background:linear-gradient(135deg,#4A6FE5,#2FA9E5)}
 .ee-visa-badge{background:linear-gradient(135deg,#E5654A,#CA3F3F)!important}
 
@@ -11362,36 +11370,50 @@ function renderEntryExitGroup(){
 // LINKS (main section)
 function renderLinks(){
   const c=document.getElementById('linkGroups');
-  // B2C/B2B 밴드 초대는 별도 CTA 버튼 영역으로 이동 - 링크 그룹에서 제외
+  // B2C/B2B 초대 박스는 "네이버 밴드" 칸 안(공식 밴드 위)에 작은 2열로 둔다
+  const b2cActive = isLinkActive('band_b2c');
+  const b2bActive = isLinkActive('band_b2b');
+  const bandLogo = (typeof ICON_DATA !== 'undefined' && ICON_DATA['icon-band']) ? ICON_DATA['icon-band'] : 'assets/icons/icon-band.png';
+  const ctaBox = (key, cls, badge, label)=>`<a class="band-cta${cls}" href="${escapeAttr(getLinkUrl(key))}" target="_blank" rel="noopener"><span class="bc-top"><img class="bc-logo" src="${bandLogo}" alt="" loading="lazy" decoding="async"><span class="bc-badge">${badge}</span><span class="bc-arr">→</span></span><span class="bc-label">${label}</span></a>`;
+  const ctaHTML = (b2cActive || b2bActive) ? `<div class="band-cta-row">
+    ${b2cActive ? ctaBox('band_b2c','','B2C','고객 초대 밴드') : ''}
+    ${b2bActive ? ctaBox('band_b2b',' b2b','B2B','파트너 초대 밴드') : ''}
+  </div>` : '';
   const groupHTML = Object.keys(LINK_DEFS).map(k=>{
     const g=LINK_DEFS[k];
-    // 밴드 그룹에서는 공식 밴드(band_main)만 노출
+    // 밴드 그룹에서는 공식 밴드(band_main)만 목록으로 노출(B2C/B2B는 위의 작은 박스)
     const items = (k==='band') ? g.items.filter(it=>it.key==='band_main') : g.items;
     const active = items.filter(it=>!linkHiddenOverrides[it.key] && isLinkActive(it.key));
     const customActive = (customLinkItems[k]||[]).filter(it=>it.url && it.active!==false);
-    if (!active.length && !customActive.length) return '';
+    const boxes = (k==='band') ? ctaHTML : '';
+    if (!active.length && !customActive.length && !boxes) return '';
     return `<div class="link-group">
       <h4>${g.label}</h4>
+      ${boxes}
       ${active.map(it=>`<a class="link-item" href="${escapeAttr(getLinkUrl(it.key))}" target="_blank" rel="noopener">
         ${linkIconEl(it)}<span class="lname">${it.name}</span><span class="larr">→</span></a>`).join('')}
       ${customActive.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
         <span class="lico">🔗</span><span class="lname">${escapeAttr(it.name||'링크')}</span><span class="larr">→</span></a>`).join('')}
     </div>`;
   }).join('');
-  // B2C · B2B 별도 CTA 버튼 (활성 상태인 것만)
-  const b2cActive = isLinkActive('band_b2c');
-  const b2bActive = isLinkActive('band_b2b');
-  const ctaHTML = (b2cActive || b2bActive) ? `<div class="band-cta-row">
-    ${b2cActive ? `<a class="band-cta" href="${escapeAttr(getLinkUrl('band_b2c'))}" target="_blank" rel="noopener"><span class="bc-badge">B2C</span><span class="bc-label">고객 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
-    ${b2bActive ? `<a class="band-cta b2b" href="${escapeAttr(getLinkUrl('band_b2b'))}" target="_blank" rel="noopener"><span class="bc-badge">B2B</span><span class="bc-label">파트너 초대 밴드</span><span class="bc-arr">→</span></a>` : ''}
-  </div>` : '';
-  c.innerHTML = ctaHTML + groupHTML + renderEntryExitGroup();
+  c.innerHTML = groupHTML + renderEntryExitGroup();
   if (!c.innerHTML.trim()){
     c.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:rgba(247,245,240,.5)">
       아직 등록된 연계 채널이 없습니다. 관리자 패널 → 브랜드 링크에서 URL을 등록해주세요.</div>`;
   }
+  layoutEeDivider();
   updateOrganizationSameAs();
 }
+// 출·입국 신고 가이드 칸이 앞 칸 옆(같은 줄)이면 세로 구분선·좌측 간격, 아래 줄이면 위쪽 구분선·위 간격
+function layoutEeDivider(){
+  const ee = document.querySelector('#linkGroups > .ee-group'); if (!ee) return;
+  const prev = ee.previousElementSibling; if (!prev) return;
+  ee.classList.remove('ee-side','ee-below');
+  ee.classList.add(Math.abs(ee.offsetTop - prev.offsetTop) < 4 ? 'ee-side' : 'ee-below');
+}
+window.addEventListener('load', ()=>layoutEeDivider());
+let _eeResizeT = null;
+window.addEventListener('resize', ()=>{ clearTimeout(_eeResizeT); _eeResizeT = setTimeout(layoutEeDivider, 80); });
 // [Phase 3 SEO/GEO 강화] 관리자 패널에서 켠(isLinkActive) SNS/블로그/밴드 링크만 Organization
 // sameAs로 반영 — 화면에 보이는 활성 링크와 구조화 데이터가 항상 일치하도록 renderLinks()에서 매번 호출.
 function updateOrganizationSameAs(){

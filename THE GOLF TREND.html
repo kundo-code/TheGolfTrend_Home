@@ -575,6 +575,13 @@ section.block{padding:100px 24px;position:relative}
    0.25줄(6px) 추가로 벌린다(6px→12px) */
 /* [추가] 제목 뒤에 붙는 추천 판매 시기 "【 10월 】" — 줄 중간에서 끊기지 않도록 한 덩어리로 */
 .pt-months{white-space:nowrap;color:var(--gold-deep);font-weight:700}
+/* [수정] 상품 카드의 추천 판매 시기 "【 10월 】" — 제목 뒤 하이픈(-) 제거, 제목 줄 오른쪽 끝에 배치, 글자 크기는 제목보다 2pt 작게 */
+.product-visual-title .pt-months{flex-shrink:0;margin-left:10px;margin-top:2px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
+.product-visual-title h4{flex:1;min-width:0}
+/* 상세 페이지 상단: "영남권 · YEONGNAM" 줄의 오른쪽 끝에 배치 (글자 크기는 상품 카드의 표기와 동일) */
+.pd-top-title .cat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.pd-top-title .cat-row .cat{margin-bottom:0;min-width:0}
+.pd-top-title .cat-row .pt-months{flex-shrink:0;margin-left:auto;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
 .product-visual-title{margin-bottom:12px;min-height:6px;display:flex;align-items:flex-start}
 .product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 /* [수정] 타이틀 바로 아래 줄에 "🌙 박수"(좌측)와 "🗓 기간 · Nights"(우측)를 함께 배치 —
@@ -9865,7 +9872,7 @@ function productCardHTML(p, catId, idx){
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
-    <div class="product-visual-title"><h4>${p.title}${productMonthsTag(p)?`<span class="pt-months"> - ${productMonthsTag(p)}</span>`:''}</h4></div>
+    <div class="product-visual-title"><h4>${p.title}</h4>${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</div>
     <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
     <div class="product-period-row-top">
@@ -12009,7 +12016,7 @@ function renderProductDetail(p,cat,idx){
 
   // [수정] 제목은 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단에 별도 박스로 분리
   let html = `<div class="pd-slot pd-top-title">
-    <div class="cat">${cat.ko} · ${cat.en}</div>
+    <div class="cat-row"><div class="cat">${cat.ko} · ${cat.en}</div>${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</div>
     <h2>${p.title}</h2>
   </div>`;
   html += `<div class="pd-slot pd-title-slot">

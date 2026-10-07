@@ -10594,7 +10594,19 @@ function paLocalMatch(e){
   if (_pa.q){ const q=_pa.q.toLowerCase(); if (!((ov.title1||'')+' '+(e.item.title||'')).toLowerCase().includes(q)) return false; }
   return paRegionMatch(ov, _pa.region);
 }
+// [수정] 글 12개를 불러온 뒤 같은 상품끼리 묶으면 카드가 12장보다 적어져(홈은 12장을 채움) 첫 화면이 홈보다 비어 보였다.
+// 묶은 뒤의 "자동 수집 카드"가 목표 장수(12장씩 늘어남)에 닿을 때까지 이어서 불러온다
+function paAutoCardCount(){ return buildAutoPosts(cpSortEntries(_pa.entries)).length; }
 async function paLoadMore(){
+  if (_pa.loading || _pa.done) return;
+  _pa.target = (_pa.target||0) + CP_ARCHIVE_PAGE;
+  const seq = _pa.seq;
+  do{
+    await paFetchBatch();
+    if (seq !== _pa.seq) return; // 그 사이 필터가 바뀜
+  }while(!_pa.done && !_pa.error && paAutoCardCount() < _pa.target);
+}
+async function paFetchBatch(){
   if (_pa.loading || _pa.done) return;
   _pa.loading = true; paRenderFoot();
   const seq = _pa.seq;
@@ -10636,6 +10648,13 @@ async function paLoadMore(){
       if (rows.length < CP_ARCHIVE_PAGE) _pa.done = true;
       if (_pa.offset === rows.length){ // 첫 페이지에 직접 추가한 글도 함께
         cpAllEntries().filter(e=>e.item._pinned).forEach(e=>batch.push(e));
+        // 추천 고정 글은 홈처럼 맨 앞에 나오도록 첫 묶음에 함께 불러온다(오래된 글이어도)
+        const ovs = getChannelPostOverrides();
+        const fl = Object.keys(ovs).filter(k=>ovs[k] && ovs[k].featured);
+        for (let i=0; i<fl.length; i+=80){
+          const r = await client.from(CHANNEL_POSTS_TABLE).select(cpCols()).in('link', fl.slice(i,i+80));
+          if (!r.error && r.data) r.data.forEach(row=>{ const ch = chById[row.channel_id]; if (ch) batch.push({ch, item:cpRowToItem(row)}); });
+        }
       }
       rows.forEach(row=>{ const ch = chById[row.channel_id]; if (ch) batch.push({ch, item:cpRowToItem(row)}); });
       batch = batch.filter(paLocalMatch);
@@ -10666,7 +10685,7 @@ function paManualCards(){
 function paRenderGrid(){
   const grid = document.getElementById('paGrid'); if (!grid) return;
   cpResetGroups('a');
-  const cards = paManualCards().concat(buildAutoPosts(_pa.entries));
+  const cards = paManualCards().concat(buildAutoPosts(cpSortEntries(_pa.entries))); // 추천 고정 → 최신순(홈과 같은 순서)
   _pa.shown = cards.length;
   grid.innerHTML = cards.length ? cards.map(b=>postCardHTML(b)).join('')
     : (_pa.loading ? '' : `<div class="pa-empty">${_pa.error?'목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.':'조건에 맞는 글·영상이 없습니다.'}</div>`);
@@ -10681,13 +10700,13 @@ function paRenderFoot(){
       : `<button type="button" class="pa-more" onclick="paLoadMore()">더 보기</button><span class="pa-count">${n}개 표시 중</span>`);
 }
 function paSetFilter(k, v){
-  _pa[k] = v; _pa.entries = []; _pa.offset = 0; _pa.done = false; _pa.loading = false; _pa.pool = null; _pa.error = ''; _pa.seq++;
+  _pa[k] = v; _pa.entries = []; _pa.offset = 0; _pa.done = false; _pa.target = 0; _pa.loading = false; _pa.pool = null; _pa.error = ''; _pa.seq++;
   document.querySelectorAll('#postArchive .pa-tab').forEach(b=>b.classList.toggle('active', b.dataset.type===_pa.type));
   paRenderGrid(); paLoadMore();
 }
 function openPostArchive(){
   closePostArchive();
-  Object.assign(_pa, {type:'', region:'', q:'', entries:[], offset:0, done:false, loading:false, pool:null, error:''}); _pa.seq++;
+  Object.assign(_pa, {type:'', region:'', q:'', entries:[], offset:0, done:false, loading:false, pool:null, error:'', target:0}); _pa.seq++;
   const regionOpts = `<option value="">전체 지역</option><option value="domestic">국내 전체</option><option value="overseas">해외 전체</option>
     <optgroup label="국내">${CATEGORIES.domestic.map(c=>`<option value="${c.id}">${escapeAttr(c.ko)}</option>`).join('')}</optgroup>
     <optgroup label="해외">${CATEGORIES.overseas.map(c=>`<option value="${c.id}">${escapeAttr(c.ko)}</option>`).join('')}</optgroup>`;
@@ -10713,8 +10732,11 @@ function openPostArchive(){
   document.body.appendChild(el);
   document.documentElement.classList.add('pa-open');
   // 스크롤이 바닥 근처에 오면 자동으로 다음 묶음
+  // (내용이 다시 그려지며 위치가 보정될 때 생기는 스크롤 이벤트는 위로 움직인 것이므로 무시 — 아래로 내릴 때만 이어서 불러온다)
+  let lastTop = 0;
   el.querySelector('.pa-body').addEventListener('scroll', e=>{
-    const b = e.currentTarget; if (b.scrollTop + b.clientHeight > b.scrollHeight - 300) paLoadMore();
+    const b = e.currentTarget, down = b.scrollTop > lastTop; lastTop = b.scrollTop;
+    if (down && b.scrollTop + b.clientHeight > b.scrollHeight - 300) paLoadMore();
   }, {passive:true});
   paRenderGrid(); paLoadMore();
 }

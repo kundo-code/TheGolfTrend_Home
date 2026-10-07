@@ -8682,7 +8682,7 @@ const LINK_DEFS = {
   blog: {
     label:'블로그',
     items:[
-      {key:'blog_naver_kr', name:'네이버 블로그 · 국내 / 해외', img:'icon-naver', region:'국내/해외', defaultUrl:'https://blog.naver.com/thegolftrend'},
+      {key:'blog_naver_kr', name:'네이버 블로그 · 국내 / 해외', img:'icon-naver', region:'국내/해외', regionAdminOnly:true, defaultUrl:'https://blog.naver.com/thegolftrend'},
       {key:'blog_naver_ov', name:'네이버 블로그 · 해외',    img:'icon-naver',   region:'해외', defaultUrl:'https://blog.naver.com/modamgolf'},
       {key:'blog_tistory',  name:'T-Story · 골프핸스토리',   img:'icon-tistory', defaultUrl:'https://golftrend.tistory.com/'}
     ]
@@ -11334,11 +11334,12 @@ function setBlogField(idx, field, val){
 }
 
 // 아이콘 렌더 헬퍼 — img 필드 있으면 이미지 아이콘, 없으면 텍스트 폴백 (틱톡 등)
-function linkIconEl(it){
+// 지역 배지는 regionAdminOnly 항목(네이버 블로그 국내/해외)이면 관리자 패널(inAdmin)에서만 표시 — 연계채널·회사소개(푸터)에서는 숨김
+function linkIconEl(it, inAdmin){
   if (it.img){
     // ICON_DATA(인라인 base64)를 우선 사용, 없으면 파일 경로로 폴백
     const src = (typeof ICON_DATA !== 'undefined' && ICON_DATA[it.img]) ? ICON_DATA[it.img] : `images/${it.img}.png`;
-    const badge = it.region ? `<span class="region-tag">${it.region}</span>` : '';
+    const badge = (it.region && (inAdmin || !it.regionAdminOnly)) ? `<span class="region-tag">${it.region}</span>` : '';
     return `<span class="lico lico-img"><img src="${src}" alt="" loading="lazy" decoding="async"/>${badge}</span>`;
   }
   return `<span class="lico ${it.cls||''}">${it.ico||''}</span>`;
@@ -14033,7 +14034,7 @@ function renderLinkAdminGroup(group){
     const noUrl = !url;
     return `
     <div class="link-admin-item ${(!active||hidden)?'inactive':''}">
-      ${linkIconEl(it)}
+      ${linkIconEl(it, true)}
       <div class="content">
         <div class="name-row">
           <div class="name">${it.name}${hidden?' <span class="file-hint" style="color:var(--nm-danger)">(삭제됨)</span>':''}</div>

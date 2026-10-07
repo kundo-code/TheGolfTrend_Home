@@ -1063,7 +1063,29 @@ section.block{padding:100px 24px;position:relative}
 .post-tag-count{margin-right:auto;font-size:.68rem;font-weight:700;color:rgba(10,23,48,.55)}
 .post-tag-badge{display:inline-flex;align-items:center;gap:5px;color:#fff;font-size:.68rem;font-weight:700;padding:5px 12px;border-radius:100px;letter-spacing:.05em}
 .post-tag-icon{width:13px;height:13px;border-radius:3px;object-fit:contain;background:#fff}
-.post-tag-green{background:#2fa84f}
+.post-tag-green{background:#20ba06}
+/* [추가] 블로그 태그 — 로고 이미지(초록 말풍선 로고)를 초록 박스 안에 그대로 사용 */
+.post-tag-badge.post-tag-blog{padding:3px 12px 3px 6px}
+.post-tag-blog .post-tag-icon{width:22px;height:22px;border-radius:0;background:none}
+.post-tag-link{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.post-tag-link:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(10,23,48,.25)}
+/* [추가] 블로그·유튜브 이동 선택창 */
+.pc-chooser{position:fixed;inset:0;z-index:3600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.pc-chooser-card{width:min(360px,100%);background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 50px rgba(10,23,48,.35);display:flex;flex-direction:column;gap:10px}
+.pc-chooser-head{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--pine-deep);padding:2px 2px 4px}
+.pc-chooser-x{border:none;background:rgba(10,23,48,.06);width:28px;height:28px;border-radius:50%;font-size:1.1rem;line-height:1;cursor:pointer;color:var(--pine-deep)}
+.pc-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;text-decoration:none;color:#fff;transition:transform .15s,filter .15s}
+.pc-opt:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.pc-opt.blog{background:#20ba06}
+.pc-opt.youtube{background:#e64545}
+.pc-opt.pc-opt-prod{background:var(--pine-deep)}
+.pc-opt-ic{width:34px;height:34px;flex-shrink:0;object-fit:contain;border-radius:8px}
+.pc-opt.youtube .pc-opt-ic{background:#fff;padding:5px}
+.pc-opt-emoji{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.18);font-size:1.2rem}
+.pc-opt-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pc-opt-tx b{font-size:.92rem}
+.pc-opt-tx em{font-style:normal;font-size:.74rem;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-opt-arr{font-weight:800}
 .post-tag-red{background:#e64545}
 .post-tag-yellow{background:#dca82c}
 .post-tag-default{background:rgba(221,179,103,.9)}
@@ -5669,6 +5691,10 @@ function getAutoCollectedPosts(){
         isAuto: true,
         sourceUrl: item.link, // 오버라이드 UI가 원본 RSS 글 URL을 키로 계속 찾을 수 있도록 보존
         productCat: ov.productCat||'', productIdx: ov.productIdx!=null?ov.productIdx:null,
+        // [추가] 같은 상품으로 묶였을 때 "블로그로 갈지 / 유튜브로 갈지" 고를 수 있도록 글·영상별 이동 주소를 보관
+        _m: {type: ch.type==='youtube' ? 'youtube' : 'blog', tag: ov.tag || (ch.type==='youtube' ? '유튜브' : '블로그'),
+             title: ov.title1 || item.title || (ch.label||ch.handle), url: normalizeExtUrl(ov.manualUrl || item.link)},
+        _productUrl: normalizeExtUrl(linkedProduct && linkedProduct.linkUrl),
       });
     });
   });
@@ -5680,8 +5706,9 @@ function getAutoCollectedPosts(){
     const key = (p.productCat && p.productIdx!=null && !(overrides[p.sourceUrl]||{}).manualUrl) ? p.productCat+'#'+p.productIdx : '';
     if (!key){ grouped.push(p); return; }
     const g = byProduct[key];
-    if (!g){ p.groupTags=[p.tag]; p.groupCount=1; byProduct[key]=p; grouped.push(p); return; }
+    if (!g){ p.groupTags=[p.tag]; p.groupCount=1; p.members=[p._m]; byProduct[key]=p; grouped.push(p); return; }
     g.groupCount++;
+    g.members.push(p._m);
     if (!g.groupTags.includes(p.tag)) g.groupTags.push(p.tag);
     if (!g.image && p.image) g.image = p.image;
   });
@@ -7984,6 +8011,7 @@ const ICON_DATA = {
   'icon-instagram':'assets/icons/icon-instagram.png',
   'icon-litt':'assets/icons/icon-litt.png',
   'icon-naver':'assets/icons/icon-naver.png',
+  'icon-blog':'assets/icons/icon-blog.png', // 블로그 태그 배지용 로고(초록 박스 안에 사용)
   'icon-tistory':'assets/icons/icon-tistory.png',
   'icon-tiktok':'assets/icons/icon-tiktok.png',
   'icon-youtube':'assets/icons/icon-youtube.png',
@@ -9831,17 +9859,25 @@ function syncBlogProductLinks(){
   return list;
 }
 // [Phase] "여행 이야기" 카드 태그 배지 — 태그 종류별로 색상/아이콘을 다르게 표시한다
-function postTagBadgeHTML(tag, count){
+function postTagBadgeHTML(tag, count, members){
   // [추가] 같은 연결 상품으로 묶인 카드 — 태그 배지를 종류별로 나란히 + 묶인 글/영상 개수
+  // 묶음에 블로그·유튜브가 함께 있으면 배지를 직접 눌러 해당 쪽으로 바로 이동할 수 있다
   if (Array.isArray(tag)){
-    const badges = tag.map(t=>postTagBadgeHTML(t).replace(/^<div class="post-tag-row">|<\/div>$/g,'')).join('');
+    const multi = members && new Set(members.map(m=>m.type)).size>1;
+    const badges = tag.map(t=>{
+      let h = postTagBadgeHTML(t).replace(/^<div class="post-tag-row">|<\/div>$/g,'');
+      const m = multi && members.find(x=>x.tag===t);
+      if (m && m.url) h = h.replace('<span class="post-tag-badge', `<span role="link" tabindex="0" title="${escapeAttr(t)}(으)로 이동" onclick="event.stopPropagation();window.open('${escapeAttr(m.url)}','_blank','noopener')" class="post-tag-link post-tag-badge`);
+      return h;
+    }).join('');
     return `<div class="post-tag-row">${count>1?`<span class="post-tag-count">글·영상 ${count}개</span>`:''}${badges}</div>`;
   }
   const t = tag || '블로그';
   let text = t, cls = 'post-tag-default', icon = '';
-  if (t==='국내-블로그' || t==='해외-블로그' || t==='국내' || t==='해외'){
-    cls = 'post-tag-green';
-    icon = (typeof ICON_DATA !== 'undefined') ? ICON_DATA['icon-naver'] : '';
+  if (t==='블로그' || t==='국내-블로그' || t==='해외-블로그' || t==='국내' || t==='해외'){
+    // [수정] 블로그 태그는 초록 박스 + 블로그 로고 이미지
+    cls = 'post-tag-green post-tag-blog';
+    icon = (typeof ICON_DATA !== 'undefined') ? ICON_DATA['icon-blog'] : '';
   } else if (t==='유튜브'){
     cls = 'post-tag-red';
     icon = (typeof ICON_DATA !== 'undefined') ? ICON_DATA['icon-youtube'] : '';
@@ -9851,6 +9887,25 @@ function postTagBadgeHTML(tag, count){
   }
   return `<div class="post-tag-row"><span class="post-tag-badge ${cls}">${icon?`<img class="post-tag-icon" src="${icon}" alt="" loading="lazy" decoding="async">`:''}${escapeAttr(text)}</span></div>`;
 }
+// [추가] 블로그·유튜브가 함께 묶인 카드의 이동 선택창
+let _pgSeq = 0, _postGroups = {};
+function openPostChooser(key){
+  const g = _postGroups[key]; if (!g) return;
+  closePostChooser();
+  const opts = g.members.filter(m=>m.url).map(m=>`<a class="pc-opt ${m.type}" href="${escapeAttr(m.url)}" target="_blank" rel="noopener" onclick="closePostChooser()">
+      <img class="pc-opt-ic" src="${ICON_DATA[m.type==='youtube'?'icon-youtube':'icon-blog']}" alt="">
+      <span class="pc-opt-tx"><b>${m.type==='youtube'?'유튜브':'블로그'}에서 보기</b><em>${escapeAttr(m.title||'')}</em></span><span class="pc-opt-arr">→</span></a>`);
+  if (g.productUrl && !g.members.some(m=>m.url===g.productUrl))
+    opts.push(`<a class="pc-opt pc-opt-prod" href="${escapeAttr(g.productUrl)}" target="_blank" rel="noopener" onclick="closePostChooser()"><span class="pc-opt-ic pc-opt-emoji">⛳</span><span class="pc-opt-tx"><b>상품 상세 보기</b><em>연결된 상품 링크</em></span><span class="pc-opt-arr">→</span></a>`);
+  const el = document.createElement('div');
+  el.className = 'pc-chooser'; el.id = 'postChooser';
+  el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
+  el.innerHTML = `<div class="pc-chooser-card"><div class="pc-chooser-head">어디로 이동할까요?<button type="button" class="pc-chooser-x" aria-label="닫기" onclick="closePostChooser()">×</button></div>${opts.join('')}</div>`;
+  el.addEventListener('click', e=>{ if (e.target===el) closePostChooser(); });
+  document.body.appendChild(el);
+}
+function closePostChooser(){ const el = document.getElementById('postChooser'); if (el) el.remove(); }
+document.addEventListener('keydown', e=>{ if (e.key==='Escape') closePostChooser(); });
 function postCardHTML(b){
   const bg = b.image || getImage(b.fallbackCat) || '';
   const title = b.title1 || b.title || `${b.tag||'블로그'} 새 글 보러가기`;
@@ -9858,14 +9913,22 @@ function postCardHTML(b){
   const desc = b.description || (b.title ? '' : '최신 골프 여행 후기와 소식을 블로그에서 만나보세요');
   // [Phase] "직접 링크 입력"이 채워져 있으면 자동 연결 상품 링크보다 우선한다
   const href = normalizeExtUrl(b.manualUrl || b.url);
-  const clickAttr = href ? `onclick="window.open('${escapeAttr(href)}','_blank','noopener')"` : '';
-  return `<article class="post" style="cursor:${href?'pointer':'default'}" ${clickAttr}>
+  // [추가] 블로그와 유튜브가 같은 상품으로 묶인 카드는 눌렀을 때 어디로 이동할지 고르는 선택창을 띄운다
+  let chooser = '';
+  if (b.members && new Set(b.members.map(m=>m.type)).size>1){
+    const key = 'pg'+(++_pgSeq);
+    _postGroups[key] = {members:b.members, productUrl:b._productUrl||''};
+    chooser = key;
+  }
+  const clickAttr = chooser ? `onclick="openPostChooser('${chooser}')"` : (href ? `onclick="window.open('${escapeAttr(href)}','_blank','noopener')"` : '');
+  const clickable = chooser || href;
+  return `<article class="post" style="cursor:${clickable?'pointer':'default'}" ${clickAttr}>
     <div class="post-visual${bg?'':' post-visual-empty'}">
       ${bg?`<img src="${escapeAttr(bg)}" alt="${escapeAttr(title)}" loading="lazy" decoding="async">`:''}
     </div>
     <div class="post-body">
       <h3>${escapeAttr(title)}</h3>
-      ${postTagBadgeHTML(b.groupTags || b.tag, b.groupCount)}
+      ${postTagBadgeHTML(b.groupTags || b.tag, b.groupCount, b.members)}
       ${subtitle?`<p class="blog-subtitle">${escapeAttr(subtitle)}</p>`:''}
       <p>${escapeAttr(desc.slice(0,120))}${desc.length>120?'...':''}</p>
       <div class="post-meta"><span>${escapeAttr(safeHostname(href))}</span><span>원문 보기 →</span></div>
@@ -9879,6 +9942,7 @@ function renderBlog(){
   // fetchBlogMeta의 인덱스는 getBlogList()(수동 목록)와만 맞아야 하므로 아래 자동 시도
   // 루프는 반드시 manualList 기준으로 돌려야 한다(합쳐진 list 기준으로 돌리면 인덱스가 어긋남).
   const list = manualList.concat(getAutoCollectedPosts());
+  _pgSeq = 0; _postGroups = {};
   const cardsHTML = list.map(postCardHTML).join('');
   // [수정] 모바일 스와이프 캐러셀에서 첫 카드 왼쪽에 마지막 카드 끝쪽이 보여지고 그대로 스와이프해
   // 이동할 수 있도록(순환 루프), 상품 캐러셀(.pc-track)과 동일하게 맨 앞엔 마지막 글의 복제를,

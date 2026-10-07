@@ -1072,6 +1072,52 @@ section.block{padding:100px 24px;position:relative}
 .post-tag-link{cursor:pointer;transition:transform .15s,box-shadow .15s}
 .post-tag-link:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(10,23,48,.25)}
 /* [추가] 블로그·유튜브 이동 선택창 */
+/* [추가] 여행 이야기 "전체 보기" 창 */
+html.pa-open,html.pa-open body{overflow:hidden}
+.pa-overlay{position:fixed;inset:0;z-index:3400;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,23,48,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.pa-panel{width:min(1100px,100%);height:min(88vh,1000px);display:flex;flex-direction:column;background:#F7F4EC;border-radius:22px;box-shadow:0 30px 70px rgba(10,23,48,.4);overflow:hidden}
+.pa-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 6px}
+.pa-head h3{margin:0;font-size:1.35rem;font-weight:800;color:var(--pine-deep)}
+.pa-head h3 em{font-style:normal;color:var(--gold-deep)}
+.pa-x{border:none;background:rgba(10,23,48,.07);width:34px;height:34px;border-radius:50%;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--pine-deep)}
+.pa-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 22px 14px;border-bottom:1px solid rgba(10,23,48,.1)}
+.pa-tabs{display:flex;gap:6px}
+.pa-tab{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;border:1px solid rgba(10,23,48,.14);background:#fff;color:var(--pine-deep);font-size:.84rem;font-weight:700;cursor:pointer}
+.pa-tab img{width:18px;height:18px;object-fit:contain;border-radius:4px}
+.pa-tab.active{background:var(--pine-deep);color:#fff;border-color:var(--pine-deep)}
+.pa-region{height:36px;padding:0 10px;border-radius:10px;border:1px solid rgba(10,23,48,.14);background:#fff;color:var(--pine-deep);font-size:.84rem}
+.pa-search{display:flex;flex:1;min-width:180px;max-width:320px;margin-left:auto}
+.pa-search input{flex:1;min-width:0;height:36px;padding:0 12px;border:1px solid rgba(10,23,48,.14);border-right:none;border-radius:10px 0 0 10px;font-size:.86rem;background:#fff}
+.pa-search button{height:36px;padding:0 12px;border:1px solid rgba(10,23,48,.14);border-radius:0 10px 10px 0;background:#fff;cursor:pointer}
+.pa-body{flex:1;overflow-y:auto;padding:18px 22px 24px;overscroll-behavior:contain}
+.pa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.pa-empty{grid-column:1/-1;text-align:center;padding:50px 10px;color:rgba(10,23,48,.55)}
+.pa-foot{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 0 4px}
+.pa-more{padding:11px 34px;border-radius:100px;border:none;background:var(--pine-deep);color:#fff;font-weight:700;font-size:.9rem;cursor:pointer}
+.pa-count,.pa-loading{font-size:.78rem;color:rgba(10,23,48,.55)}
+@media(max-width:900px){ .pa-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media(max-width:600px){
+  .pa-overlay{padding:0}
+  .pa-panel{height:100%;border-radius:0}
+  .pa-head{padding:14px 16px 4px}
+  .pa-tools{padding:8px 16px 12px}
+  .pa-search{max-width:none;margin-left:0;flex-basis:100%}
+  .pa-body{padding:14px 16px 20px}
+  .pa-grid{grid-template-columns:1fr}
+}
+/* [추가] 관리자 — 수집 서버·저장소 상태 / 글 목록 검색·페이지 */
+.admin-collector-box{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--nm-surface-light);box-shadow:var(--nm-shadow-inset);display:flex;flex-direction:column;gap:10px;font-size:.8rem;color:var(--nm-text)}
+.admin-collector-box:empty{display:none}
+.cpb-row,.cpb-sync{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.cpb-row .abc-input{flex:1;min-width:220px}
+.cpb-row .abc-label{margin:0}
+.cpb-ok{color:#15803d;font-weight:700}
+.cpb-warn{color:#b45309;font-weight:700}
+.ch-view-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.ch-view-tools form{display:flex;gap:4px;flex:1;min-width:200px}
+.ch-view-tools .abc-input{flex:1;min-width:0}
+.ch-view-tools .abc-select{width:auto}
+.ch-view-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 0 2px;font-size:.8rem}
 .pc-chooser{position:fixed;inset:0;z-index:3600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .pc-chooser-card{width:min(360px,100%);background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 50px rgba(10,23,48,.35);display:flex;flex-direction:column;gap:10px}
 .pc-chooser-head{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--pine-deep);padding:2px 2px 4px}
@@ -4161,7 +4207,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         <h2>여행 <em>이야기</em></h2>
         <p>다녀온 사람만 아는 꿀팁, 시즌별 라운드 후기, 골프 여행 가이드까지.</p>
       </div>
-      <a class="sec-more">전체 아티클 →</a>
+      <a class="sec-more" id="blogMoreBtn" role="button" tabindex="0" onclick="openPostArchive()" onkeydown="if(event.key==='Enter')openPostArchive()">전체 보기 →</a>
     </div>
     <div class="blog-grid" id="blogGrid"></div>
     <div class="blog-controls" id="blogControls">
@@ -4662,7 +4708,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
         <div class="admin-section-head">
           <h4 class="admin-h4-lg">📡 블로그 · 유튜브 자동 수집 채널</h4>
         </div>
-        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 새 글·영상이 올라올 때마다 자동으로 "여행 이야기"에 노출됩니다. 채널당 최신 5개까지 가져옵니다. 더 오래된 글이나 방금 올린 글이 안 보이면 채널 카드의 "글/영상 주소 직접 추가"에 주소를 넣어 바로 등록할 수 있습니다.<br><br>💡 유튜브는 반드시 "UC"로 시작하는 채널 ID를 입력해야 합니다 — @핸들이나 채널명은 인식되지 않습니다. 채널 홈 → 정보 → "채널 ID 공유" 메뉴에서 확인할 수 있습니다.<br><br>💡 연결 상품이 같은 글·영상은 "여행 이야기"에서 하나의 카드로 묶여 노출됩니다(직접 링크를 입력한 글은 제외).<br><br>💡 자동으로 불러온 이미지가 없거나 마음에 들지 않으면 각 글/영상마다 직접 업로드할 수 있습니다. 권장 1280×720px (16:9 비율), 10MB 이하 JPG/PNG.</div>
+        <div class="admin-info-box">💡 블로그 아이디 또는 유튜브 채널 ID를 한 번만 등록해두면, 채널의 글·영상을 모두 가져와 "여행 이야기"에 노출합니다. 홈에는 "추천 고정" 글 → 최신 글 순으로 12개까지 보이고, 나머지는 "전체 보기"에서 탭·지역·검색으로 찾아볼 수 있습니다.<br><br>💡 전체 수집에는 "수집 서버"와 Supabase 저장소가 필요합니다(설정 안내: docs/channel-collection-setup.md). 설정 전에는 RSS 최신 글만 가져옵니다. 특정 글이 안 보이면 채널 카드의 "글/영상 주소 직접 추가"로 바로 등록할 수 있습니다.<br><br>💡 유튜브는 반드시 "UC"로 시작하는 채널 ID를 입력해야 합니다 — @핸들이나 채널명은 인식되지 않습니다. 채널 홈 → 정보 → "채널 ID 공유" 메뉴에서 확인할 수 있습니다.<br><br>💡 연결 상품이 같은 글·영상은 "여행 이야기"에서 하나의 카드로 묶여 노출됩니다(직접 링크를 입력한 글은 제외).<br><br>💡 자동으로 불러온 이미지가 없거나 마음에 들지 않으면 각 글/영상마다 직접 업로드할 수 있습니다. 권장 1280×720px (16:9 비율), 10MB 이하 JPG/PNG.</div>
         <div class="admin-channel-add-row">
           <select id="newChannelType" class="abc-input" style="flex:0 0 auto;width:auto">
             <option value="blog">📝 네이버 블로그</option>
@@ -4672,6 +4718,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
           <input type="text" id="newChannelLabel" class="abc-input" placeholder="표시 이름(선택)">
           <button type="button" class="abc-btn-sm" onclick="addChannel()">+ 채널 추가</button>
         </div>
+        <div id="adminCollectorBox" class="admin-collector-box"></div>
         <div id="adminChannelsList" style="margin-top:10px"></div>
       </div>
       <div class="admin-section">
@@ -5331,19 +5378,238 @@ const BLOG = [];
 const CHANNELS_KEY = 'kundo_channels_v1';
 let channelsOverride = null;
 try{ channelsOverride = JSON.parse(localStorage.getItem(CHANNELS_KEY)||'null'); }catch(e){}
+
+// ═══ [추가] 블로그·유튜브 "전체 글" 수집 · 저장 ═══════════════════════════════════════════════
+// · 수집 서버(Cloudflare Worker, docs/worker/collector-worker.js)로 채널의 모든 글/영상 목록을 페이지 단위로 가져온다.
+//   (네이버 블로그 30개씩 · 유튜브 50개씩) 수집 서버가 없거나 실패하면 기존 프록시의 RSS(최신 글)로 대신한다.
+// · 수집은 관리자만 한다(관리자 패널을 열 때 마지막 수집이 12시간 넘었으면 자동, 또는 🔄 버튼). 결과는 Supabase
+//   channel_posts 테이블(docs/sql/2026-10-07_channel_posts.sql)에 제목·링크·썸네일·날짜만 저장한다.
+// · 방문자는 그 테이블을 읽기만 한다 — 홈에는 최신·추천 고정 글 일부만, "전체 보기"에서는 필요한 만큼 페이지 단위로.
+//   테이블이 없거나 비어 있으면 자동으로 기존 방식(방문자 기기별 RSS 최신 글)으로 동작한다.
+// · 처음 한 번만 전체를 가져오고, 이후에는 이미 저장된 글을 만나는 지점까지(새 글만) 가져온다(증분 수집).
+const COLLECTOR_KEY = 'kundo_collector_endpoint_v1';
+let collectorEndpointOverride = null;
+try{ collectorEndpointOverride = JSON.parse(localStorage.getItem(COLLECTOR_KEY)||'null'); }catch(e){}
+function getCollectorEndpoint(){ return normalizeExtUrl(collectorEndpointOverride||''); }
+function setCollectorEndpoint(v){
+  collectorEndpointOverride = String(v||'').trim() || null;
+  try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){}
+  queueSiteStateSync();
+}
+const CHANNEL_POSTS_TABLE = 'channel_posts';
+const CP_HOME_LIMIT = 12;        // 홈 "여행 이야기"에 노출할 자동 수집 카드 수
+const CP_ARCHIVE_PAGE = 12;      // "전체 보기"에서 한 번에 보여줄 개수
+const CP_SYNC_INTERVAL = 12*60*60*1000; // 관리자 패널을 열 때 자동 수집 간격
+const CP_COLS = 'link,channel_id,type,title,thumbnail,published_at';
+let _cpMode = 'legacy';     // 'db' = Supabase 저장 목록 사용 / 'legacy' = 방문자 기기별 RSS
+let _cpTableOk = false;     // channel_posts 테이블 사용 가능 여부(비어 있어도 true)
+let _cpTotal = 0;           // 저장된 전체 글/영상 수
+let _cpHomeRows = [];       // 홈용(최신 + 추천 고정) 행
+let _cpByChannel = {};      // 관리자용 채널별 전체 목록
+let _cpSyncRunning = false, _cpAutoSyncTried = false, _cpSyncMsg = '';
+// 글/영상 주소를 하나의 형태로 맞춘다 — RSS 주소(?fromRss=true…)·모바일 주소·youtu.be 등이 서로 다른 글로
+// 취급되어 연결 상품·제목 등 관리자 편집값을 잃지 않도록
+function canonPostLink(u){
+  u = String(u||'').trim(); if (!u) return '';
+  let m = u.match(/^(?:https?:)?\/\/(?:m\.)?blog\.naver\.com\/([A-Za-z0-9_-]+)\/(\d+)/i);
+  if (m) return `https://blog.naver.com/${m[1]}/${m[2]}`;
+  try{
+    const x = new URL(u.startsWith('//')?'https:'+u:u);
+    if (/(^|\.)blog\.naver\.com$/i.test(x.hostname) && x.searchParams.get('blogId') && x.searchParams.get('logNo'))
+      return `https://blog.naver.com/${x.searchParams.get('blogId')}/${x.searchParams.get('logNo')}`;
+  }catch(e){}
+  m = u.match(/(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/i);
+  if (m) return `https://www.youtube.com/watch?v=${m[1]}`;
+  return u;
+}
+function cpRowToItem(r){
+  return {link:canonPostLink(r.link), title:r.title||'', thumbnail:r.thumbnail||'', published:r.published_at||'', channelId:r.channel_id, type:r.type};
+}
+// 방문자 홈: 최신 60개 + 추천 고정 글(최신 60개 밖에 있어도)만 가볍게 불러온다
+async function loadChannelPostsHome(){
+  const client = (typeof getSupabaseClient==='function') ? getSupabaseClient() : null;
+  if (!client){ _cpMode='legacy'; _cpTableOk=false; return false; }
+  try{
+    const head = await client.from(CHANNEL_POSTS_TABLE).select('link', {count:'exact', head:true});
+    if (head.error) throw head.error;
+    _cpTableOk = true; _cpTotal = head.count || 0;
+    if (!_cpTotal){ _cpMode='legacy'; _cpHomeRows=[]; return false; }
+    const {data, error} = await client.from(CHANNEL_POSTS_TABLE).select(CP_COLS).order('published_at',{ascending:false, nullsFirst:false}).limit(60);
+    if (error) throw error;
+    let rows = data||[];
+    const ovs = getChannelPostOverrides();
+    const have = new Set(rows.map(r=>canonPostLink(r.link)));
+    const missing = Object.keys(ovs).filter(k=>ovs[k] && ovs[k].featured && !have.has(k));
+    for (let i=0; i<missing.length; i+=50){
+      const r2 = await client.from(CHANNEL_POSTS_TABLE).select(CP_COLS).in('link', missing.slice(i,i+50));
+      if (!r2.error && r2.data) rows = rows.concat(r2.data);
+    }
+    _cpHomeRows = rows.map(cpRowToItem);
+    _cpMode = 'db';
+    return true;
+  }catch(e){
+    _cpMode='legacy'; _cpTableOk=false;
+    return false;
+  }
+}
+// 관리자: 채널 하나의 저장된 전체 목록(1000개씩 나눠 읽기)
+async function cpLoadChannelRows(chId){
+  const client = getSupabaseClient(); if (!client || !_cpTableOk) return (_cpByChannel[chId] = _cpByChannel[chId] || []);
+  let all = [];
+  for (let from=0; from<20000; from+=1000){
+    const {data, error} = await client.from(CHANNEL_POSTS_TABLE).select(CP_COLS).eq('channel_id', chId)
+      .order('published_at',{ascending:false, nullsFirst:false}).range(from, from+999);
+    if (error || !data) break;
+    all = all.concat(data);
+    if (data.length<1000) break;
+  }
+  _cpByChannel[chId] = all.map(cpRowToItem);
+  return _cpByChannel[chId];
+}
+async function collectorGet(params){
+  const base = getCollectorEndpoint(); if (!base) throw new Error('수집 서버 주소가 설정되지 않음');
+  const u = new URL(base);
+  Object.keys(params).forEach(k=>{ const v=params[k]; if (v!=null && v!=='') u.searchParams.set(k, v); });
+  const r = await fetch(u.toString());
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok || d.error) throw new Error(d.error || ('HTTP '+r.status));
+  return d;
+}
+// 수집 서버로 채널의 글/영상 목록을 페이지 단위로 가져온다 — 증분 수집이면 이미 저장된 글을 만난 페이지에서 멈춘다
+async function cpCollectFromServer(ch, known, full){
+  const out = [], seen = new Set();
+  const take = items=>{
+    let fresh = 0, dupRun = 0;
+    (items||[]).forEach(it=>{
+      const link = canonPostLink(it.link); if (!link) return;
+      if (seen.has(link)){ dupRun++; return; }
+      seen.add(link);
+      out.push({link, title:it.title||'', thumbnail:it.thumbnail||'', published:it.published||'', postNo:it.id||''});
+      if (!known.has(link)) fresh++;
+    });
+    return {fresh, dupRun, n:(items||[]).length};
+  };
+  if (ch.type==='youtube'){
+    let token = '';
+    for (let i=0; i<200; i++){
+      const d = await collectorGet({mode:'ytlist', channel:ch.handle, pageToken:token});
+      const t = take(d.items);
+      if (!full && t.fresh < t.n) break;
+      token = d.nextPageToken || ''; if (!token) break;
+      await new Promise(r=>setTimeout(r,120));
+    }
+  } else {
+    for (let page=1; page<=300; page++){
+      const d = await collectorGet({mode:'naverlist', blogId:ch.handle, page});
+      const t = take(d.items);
+      if (!t.n || t.dupRun===t.n) break;           // 마지막 페이지를 지나 같은 목록이 반복되면 중단
+      if (!full && t.fresh < t.n) break;
+      if (d.total && seen.size >= d.total) break;
+      await new Promise(r=>setTimeout(r,120));
+    }
+  }
+  return out;
+}
+// 기존 프록시 RSS(최신 글) — 수집 서버가 없거나 실패했을 때
+async function cpCollectFromRss(ch){
+  const res = await fetch(PROXY_ENDPOINT + '?mode=rss&url=' + encodeURIComponent(buildChannelFeedUrl(ch)));
+  if (!res.ok) throw new Error('RSS HTTP '+res.status);
+  const data = await res.json();
+  return (data.items||[]).map(it=>({link:canonPostLink(it.link), title:it.title||'', thumbnail:it.thumbnail||'',
+    published:it.published||it.pubDate||it.isoDate||'', postNo:''})).filter(it=>it.link);
+}
+async function cpUpsert(ch, items){
+  const client = getSupabaseClient(); if (!client) throw new Error('Supabase 연결 없음');
+  const rows = items.map(it=>{
+    const t = Date.parse(it.published);
+    return {link:it.link, channel_id:ch.id, type: ch.type==='youtube'?'youtube':'blog', title:(it.title||'').slice(0,300),
+      thumbnail:it.thumbnail||'', published_at: isNaN(t)?null:new Date(t).toISOString(), post_no:it.postNo||null, updated_at:new Date().toISOString()};
+  });
+  for (let i=0; i<rows.length; i+=300){
+    const {error} = await client.from(CHANNEL_POSTS_TABLE).upsert(rows.slice(i,i+300), {onConflict:'link'});
+    if (error) throw error;
+  }
+}
+// 채널 하나 수집 → 저장. full=true면 처음부터 끝까지 다시(제목·썸네일 갱신 포함)
+async function syncChannel(ch, full){
+  const known = new Set((_cpByChannel[ch.id] || await cpLoadChannelRows(ch.id)).map(r=>r.link));
+  let items = null, source = '', err = '';
+  if (getCollectorEndpoint()){
+    try{ items = await cpCollectFromServer(ch, known, full || !known.size); source = 'server'; }
+    catch(e){ err = (e && e.message) || String(e); }
+  }
+  if (!items){
+    try{ items = await cpCollectFromRss(ch); source = 'rss'; }
+    catch(e){ err = (err?err+' / ':'') + ((e && e.message) || String(e)); }
+  }
+  if (!items){ _rssLastError[ch.id] = err || '수집 실패'; return {added:0, error:_rssLastError[ch.id]}; }
+  const toSave = (full || source==='rss') ? items : items.filter(it=>!known.has(it.link));
+  const added = items.filter(it=>!known.has(it.link)).length;
+  if (toSave.length) await cpUpsert(ch, toSave);
+  delete _rssLastError[ch.id];
+  ch.lastSync = Date.now(); ch.lastSource = source; ch.lastAdded = added;
+  if (err && source==='rss') ch.lastSourceNote = '수집 서버 실패 → RSS 최신 글로 대체: '+err; else delete ch.lastSourceNote;
+  await cpLoadChannelRows(ch.id);
+  return {added};
+}
+// 여러 채널 수집(관리자 전용) — 끝나면 홈·관리자 화면을 다시 그린다
+async function syncChannels(opts){
+  opts = opts || {};
+  if (_cpSyncRunning || !adminSession) return;
+  if (!_cpTableOk) await loadChannelPostsHome();
+  if (!_cpTableOk){ // 테이블이 없으면 기존 방식(방문자 기기별 RSS)
+    await refreshChannelFeeds(opts.ids ? {force:opts.ids} : undefined);
+    renderBlog(); renderAdminChannels(); return;
+  }
+  _cpSyncRunning = true; _cpSyncMsg = '수집 중…'; renderAdminChannels();
+  const list = getChannelsList();
+  let total = 0; const errs = [];
+  for (const ch of list){
+    if (opts.ids && !opts.ids.includes(ch.id)) continue;
+    _cpSyncMsg = `수집 중… (${ch.label||ch.handle})`; renderAdminChannels();
+    try{ const r = await syncChannel(ch, !!opts.full); total += r.added||0; if (r.error) errs.push((ch.label||ch.handle)+': '+r.error); }
+    catch(e){ _rssLastError[ch.id] = (e && e.message) || String(e); errs.push((ch.label||ch.handle)+': '+_rssLastError[ch.id]); }
+  }
+  saveChannelsList(list);
+  _cpSyncRunning = false;
+  _cpSyncMsg = errs.length ? `⚠️ 일부 실패 — ${errs.join(' / ')}` : `✓ 수집 완료 — 새 글/영상 ${total}개`;
+  await loadChannelPostsHome();
+  renderBlog(); renderAdminChannels();
+}
+// 관리자 패널을 열었을 때 마지막 수집이 12시간 넘은 채널이 있으면 한 번 자동 수집
+function maybeAutoSyncChannels(){
+  if (_cpAutoSyncTried || _cpSyncRunning || !adminSession || !_cpTableOk) return;
+  const list = getChannelsList(); if (!list.length) return;
+  if (!list.some(ch=>!ch.lastSync || (Date.now()-ch.lastSync) > CP_SYNC_INTERVAL)) return;
+  _cpAutoSyncTried = true;
+  setTimeout(()=>syncChannels({}), 300);
+}
+async function testCollectorEndpoint(){
+  const el = document.getElementById('collectorTestMsg');
+  if (el) el.textContent = '확인 중…';
+  try{
+    const d = await collectorGet({mode:'ping'});
+    if (el) el.textContent = d.ok ? `✓ 연결됨${d.youtube?'':' (⚠ 유튜브 API 키 미설정 — 유튜브는 RSS 최신 글로 수집)'}` : '응답이 올바르지 않습니다';
+  }catch(e){ if (el) el.textContent = '⚠ 연결 실패: '+((e && e.message) || e); }
+}
 // [수정] 블로그 채널 표시 이름 "국내골프여행" → "국내/해외골프여행"(국내·해외 글을 함께 올리는 채널)
 // [추가] 채널의 모든 글/영상 = 관리자가 주소로 직접 추가한 글(ch.pinned, 모든 방문자에게 공유됨) + RSS로 수집한 글.
 // RSS는 채널당 최신 5개만 가져오고 기기별 캐시(6시간)라, 더 오래된 글이나 방금 올린 글은 이 "직접 추가"로 바로 등록한다
+// [수정] 저장소(Supabase channel_posts)를 쓰는 중이면 그 목록을, 아니면 기기별 RSS 캐시를 사용. 주소는 모두 정규화
 function channelAllItems(ch){
   const seen = new Set(), out = [];
-  (ch.pinned||[]).forEach(it=>{ if (it && it.link && !seen.has(it.link)){ seen.add(it.link); out.push(Object.assign({_pinned:true}, it)); } });
-  const cached = _rssCache[ch.id];
-  ((cached && cached.items) || []).forEach(it=>{ if (it && it.link && !seen.has(it.link)){ seen.add(it.link); out.push(it); } });
+  (ch.pinned||[]).forEach(it=>{ const link = it && canonPostLink(it.link);
+    if (link && !seen.has(link)){ seen.add(link); out.push(Object.assign({_pinned:true}, it, {link, published: it.published || (it.addedAt ? new Date(it.addedAt).toISOString() : '')})); } });
+  let src;
+  if (_cpMode==='db' || _cpByChannel[ch.id]) src = _cpByChannel[ch.id] || _cpHomeRows.filter(r=>r.channelId===ch.id);
+  else { const cached = _rssCache[ch.id]; src = ((cached && cached.items) || []); }
+  src.forEach(it=>{ const link = it && canonPostLink(it.link);
+    if (link && !seen.has(link)){ seen.add(link); out.push(Object.assign({}, it, {link, published: it.published || it.pubDate || it.isoDate || ''})); } });
   return out;
 }
 async function addChannelPinnedPost(chId){
   const inp = document.getElementById('pinUrl_'+chId);
-  const link = normalizeExtUrl(inp && inp.value);
+  const link = canonPostLink(normalizeExtUrl(inp && inp.value));
   if (!link || !/^https?:\/\/[^/]+\/.+/.test(link)){ alert('추가할 글/영상의 주소를 입력해주세요. 예) https://blog.naver.com/thegolftrend/224285622579'); return; }
   const list = getChannelsList();
   const ch = list.find(c=>c.id===chId); if (!ch) return;
@@ -5351,7 +5617,7 @@ async function addChannelPinnedPost(chId){
     alert('이미 이 채널에 있는 글/영상입니다. 아래 "수집된 글/영상" 목록에서 찾아 편집하세요.');
     _channelItemsOpen.add(chId); renderAdminChannels(); return;
   }
-  ch.pinned = (ch.pinned||[]).concat([{link, title:'', thumbnail:''}]);
+  ch.pinned = (ch.pinned||[]).concat([{link, title:'', thumbnail:'', addedAt:Date.now()}]);
   saveChannelsList(list);
   _channelItemsOpen.add(chId);
   if (inp) inp.value = '';
@@ -5370,7 +5636,7 @@ async function addChannelPinnedPost(chId){
 function removeChannelPinnedPost(chId, link){
   if (!confirm('직접 추가한 이 글/영상을 목록에서 삭제하시겠습니까?')) return;
   const list = getChannelsList(); const ch = list.find(c=>c.id===chId); if (!ch) return;
-  ch.pinned = (ch.pinned||[]).filter(it=>it.link!==link);
+  ch.pinned = (ch.pinned||[]).filter(it=>canonPostLink(it.link)!==canonPostLink(link));
   saveChannelsList(list); renderAdminChannels(); renderBlog();
 }
 // [추가] 글/영상 하나에 연결 상품을 여러 개 등록 — 대표 연결 상품(ov.productCat/productIdx) + 추가 연결 상품(ov.extraProducts)
@@ -5464,20 +5730,69 @@ function addChannel(){
   handleInput.value=''; labelInput.value='';
   delete _rssCache[list[list.length-1].id]; // 새 채널은 곧바로 첫 수집 시도
   renderAdminChannels();
-  refreshChannelFeeds().then(renderBlog);
+  if (_cpTableOk) syncChannels({ids:[list[list.length-1].id], full:true});
+  else refreshChannelFeeds().then(renderBlog);
 }
 function removeChannel(id){
   if (!confirm('이 채널 등록을 삭제하시겠습니까? (이미 노출 중인 글/영상도 함께 사라집니다)')) return;
   saveChannelsList(getChannelsList().filter(c=>c.id!==id));
   delete _rssCache[id];
   saveRssCache();
+  delete _cpByChannel[id];
+  _cpHomeRows = _cpHomeRows.filter(r=>r.channelId!==id);
+  if (_cpTableOk && adminSession){ // 저장된 글 목록도 함께 삭제
+    const client = getSupabaseClient();
+    if (client) client.from(CHANNEL_POSTS_TABLE).delete().eq('channel_id', id).then(()=>loadChannelPostsHome().then(()=>renderBlog()));
+  }
   renderAdminChannels();
   renderBlog();
 }
-function refreshChannelNow(id){
+// 🔄 새 글 수집(증분) / 전체 다시 수집(full)
+function refreshChannelNow(id, full){
+  if (_cpTableOk && adminSession){ syncChannels({ids:[id], full:!!full}); return; }
   refreshChannelFeeds({force:[id]}).then(()=>{ renderBlog(); renderAdminChannels(); });
 }
+// [추가] 관리자 — 수집 서버 주소·저장소 상태·수집 진행 상황
+function renderCollectorBox(){
+  const box = document.getElementById('adminCollectorBox'); if (!box) return;
+  const ep = collectorEndpointOverride || '';
+  const store = _cpTableOk
+    ? `<span class="cpb-ok">● 저장소 사용 중</span> — Supabase에 저장된 글·영상 ${_cpTotal}개를 방문자에게 보여줍니다(방문자 브라우저는 수집하지 않음).`
+    : `<span class="cpb-warn">● 저장소 미설정</span> — channel_posts 테이블이 없어 기존 방식(방문자 기기별 RSS 최신 글)으로 동작 중입니다. 설정 안내: docs/channel-collection-setup.md`;
+  box.innerHTML = `<div class="cpb-row">
+      <label class="abc-label" for="collectorEpInput">수집 서버 주소</label>
+      <input type="text" id="collectorEpInput" class="abc-input" placeholder="https://golftrend-collector.○○○.workers.dev" value="${escapeAttr(ep)}" onchange="setCollectorEndpoint(this.value);renderCollectorBox()">
+      <button type="button" class="abc-btn-sm" onclick="setCollectorEndpoint(document.getElementById('collectorEpInput').value);testCollectorEndpoint()">연결 확인</button>
+      <span class="file-hint" id="collectorTestMsg">${ep?'':'비워 두면 RSS 최신 글만 수집합니다'}</span>
+    </div>
+    <div class="cpb-store">${store}</div>
+    ${_cpTableOk?`<div class="cpb-sync">
+      <button type="button" class="abc-btn-sm" ${_cpSyncRunning?'disabled':''} onclick="syncChannels({})">🔄 모든 채널 새 글 수집</button>
+      <button type="button" class="abc-btn-sm" ${_cpSyncRunning?'disabled':''} onclick="if(confirm('모든 채널의 글·영상을 처음부터 다시 가져올까요? (글이 많으면 몇 분 걸릴 수 있습니다)'))syncChannels({full:true})">⟳ 전체 다시 수집</button>
+      <span class="file-hint">${escapeAttr(_cpSyncMsg||'관리자 패널을 열 때 마지막 수집이 12시간 지났으면 자동으로 새 글을 가져옵니다')}</span>
+    </div>`:''}`;
+}
+function cpAgo(t){
+  const m = Math.round((Date.now()-t)/60000);
+  if (m<1) return '방금'; if (m<60) return m+'분 전'; const h=Math.round(m/60); if (h<48) return h+'시간 전'; return Math.round(h/24)+'일 전';
+}
+// 관리자 글 목록 보기 상태(채널별): 검색어·필터·페이지
+const _chView = {};
+const CH_VIEW_PAGE = 20;
+function setChView(chId, k, v){
+  const st = _chView[chId] || (_chView[chId] = {q:'', f:'all', page:0});
+  st[k] = v; if (k!=='page') st.page = 0;
+  renderAdminChannels();
+}
+function toggleChannelPostFeatured(url){
+  const ov = getChannelPostOverride(url);
+  setChannelPostOverride(url, {featured: !ov.featured});
+  renderAdminChannels();
+  if (_cpMode==='db') loadChannelPostsHome().then(renderBlog); else renderBlog();
+}
+const _cpLoading = {};
 function renderAdminChannels(){
+  renderCollectorBox();
   const c = document.getElementById('adminChannelsList');
   if (!c) return;
   const list = getChannelsList();
@@ -5485,23 +5800,61 @@ function renderAdminChannels(){
   const overridesMap = getChannelPostOverrides();
   c.innerHTML = list.map(ch=>{
     const cached = _rssCache[ch.id];
-    const items = channelAllItems(ch);
+    // 저장소 사용 중이면 이 채널의 저장된 전체 목록을 한 번 읽어 온다(관리자 전용)
+    if (_cpTableOk && adminSession && !_cpByChannel[ch.id] && !_cpLoading[ch.id]){
+      _cpLoading[ch.id] = true;
+      cpLoadChannelRows(ch.id).finally(()=>{ _cpLoading[ch.id] = false; renderAdminChannels(); });
+    }
+    const allItems = channelAllItems(ch);
+    const view = _chView[ch.id] || {q:'', f:'all', page:0};
+    const vq = (view.q||'').toLowerCase();
+    const filtered = allItems.filter(it=>{
+      const ov = overridesMap[it.link] || {};
+      if (vq && !(((ov.title1||'')+' '+(it.title||'')).toLowerCase().includes(vq))) return false;
+      if (view.f==='nolink') return !channelPostProducts(ov).length;
+      if (view.f==='hidden') return !!ov.hidden;
+      if (view.f==='featured') return !!ov.featured;
+      if (view.f==='pinned') return !!it._pinned;
+      return true;
+    });
+    const pages = Math.max(1, Math.ceil(filtered.length / CH_VIEW_PAGE));
+    const page = Math.min(view.page||0, pages-1);
+    const pageStart = page*CH_VIEW_PAGE;
+    const items = filtered.slice(pageStart, pageStart + CH_VIEW_PAGE);
     const lastErr = _rssLastError[ch.id];
     // [수정] 502/503/504는 채널 ID 문제가 아니라 프록시 서버(Cloudflare Worker) 또는 YouTube
     // 쪽의 일시적/지속적 오류일 가능성이 높으므로, 그 방향으로 확인해볼 수 있게 힌트를 덧붙인다
     const isGatewayErr = lastErr && /HTTP 50[234]/.test(lastErr);
-    const statusText = lastErr ? `⚠️ 수집 실패 (${lastErr})${isGatewayErr?' — 프록시 서버 상태를 확인해주세요':''}` : (cached ? `최근 수집: ${cached.items.length}개 글/영상` : '아직 수집 전') + ((ch.pinned||[]).length ? ` · 직접 추가 ${(ch.pinned||[]).length}개` : '');
+    const statusText = lastErr ? `⚠️ 수집 실패 (${lastErr})${isGatewayErr?' — 프록시 서버 상태를 확인해주세요':''}` : (_cpTableOk
+      ? (_cpByChannel[ch.id] ? `저장된 글/영상 ${_cpByChannel[ch.id].length}개` : '목록 읽는 중…') + (ch.lastSync ? ` · 마지막 수집 ${cpAgo(ch.lastSync)}${ch.lastSource==='rss'?' (RSS 최신 글)':' (전체 목록)'}` : ' · 아직 수집 전') + (ch.lastSourceNote ? ` · ⚠ ${ch.lastSourceNote}` : '')
+      : (cached ? `최근 수집: ${cached.items.length}개 글/영상` : '아직 수집 전')) + ((ch.pinned||[]).length ? ` · 직접 추가 ${(ch.pinned||[]).length}개` : '');
     const isOpen = _channelItemsOpen.has(ch.id);
     // [Phase] 채널별로 실제 수집된 글/영상 목록을 펼쳐 보여주고, 수동 블로그 카드와 동일한
     // 필드(태그·타이틀1·타이틀2·이미지·연결 상품)를 글 URL 단위로 직접 덮어쓸 수 있게 한다.
     // 네이버 블로그는 테마에 따라 RSS에 태그·썸네일이 부실한 경우가 많아 특히 필요하다
-    const toggleRow = items.length ? `<div class="admin-channel-items-toggle-row">
+    const toggleRow = allItems.length ? `<div class="admin-channel-items-toggle-row">
       <button type="button" class="admin-channel-items-toggle" onclick="toggleChannelItemsOpen('${ch.id}')">
-        수집된 글/영상 ${items.length}개 — 직접 편집 <span class="chev">${isOpen?'▲':'▼'}</span>
+        수집된 글/영상 ${allItems.length}개 — 직접 편집 <span class="chev">${isOpen?'▲':'▼'}</span>
       </button>
     </div>` : '';
-    const itemsBody = (items.length && isOpen) ? `<div class="admin-collapse-body">
-        ${items.map((item,ii)=>{
+    // [추가] 글이 많아도 찾기 쉽게 — 제목 검색 · 필터 · 20개씩 페이지
+    const toolsRow = `<div class="ch-view-tools">
+        <form onsubmit="event.preventDefault();setChView('${ch.id}','q',this.q.value.trim())"><input name="q" class="abc-input" placeholder="제목 검색" value="${escapeAttr(view.q||'')}"><button type="submit" class="abc-btn-sm">🔍</button></form>
+        <select class="abc-select" onchange="setChView('${ch.id}','f',this.value)">
+          ${[['all','전체'],['nolink','연결 상품 없는 글'],['featured','추천 고정한 글'],['hidden','숨긴 글'],['pinned','직접 추가한 글']].map(([v,l])=>`<option value="${v}" ${view.f===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+        <span class="file-hint">${filtered.length}개${filtered.length!==allItems.length?` / 전체 ${allItems.length}개`:''}</span>
+      </div>`;
+    const pager = pages>1 ? `<div class="ch-view-pager">
+        <button type="button" class="abc-btn-sm" ${page<=0?'disabled':''} onclick="setChView('${ch.id}','page',${page-1})">◀ 이전</button>
+        <span>${page+1} / ${pages}</span>
+        <button type="button" class="abc-btn-sm" ${page>=pages-1?'disabled':''} onclick="setChView('${ch.id}','page',${page+1})">다음 ▶</button>
+      </div>` : '';
+    const itemsBody = (allItems.length && isOpen) ? `<div class="admin-collapse-body">
+        ${toolsRow}
+        ${items.length?'':'<div class="file-hint" style="padding:12px 0">조건에 맞는 글/영상이 없습니다</div>'}
+        ${items.map((item,ii0)=>{
+          const ii = pageStart + ii0;
           const ov = overridesMap[item.link] || {};
           const thumb = ov.image || item.thumbnail || '';
           const defaultTag = ch.type==='youtube' ? '유튜브' : '블로그';
@@ -5516,7 +5869,7 @@ function renderAdminChannels(){
                 ${!thumb?'<span class="abc-no-img">이미지 없음</span>':''}
               </div>
               <div class="admin-channel-item-headinfo">
-                <div class="admin-channel-item-title">${ov.hidden?'<span class="admin-channel-hidden-badge">숨김</span> ':''}${item._pinned?'<span class="admin-channel-hidden-badge" style="background:#2563eb">직접 추가</span> ':''}원본: ${escapeAttr(item.title||'(제목 없음)')}</div>
+                <div class="admin-channel-item-title">${ov.hidden?'<span class="admin-channel-hidden-badge">숨김</span> ':''}${item._pinned?'<span class="admin-channel-hidden-badge" style="background:#2563eb">직접 추가</span> ':''}${ov.featured?'<span class="admin-channel-hidden-badge" style="background:#d97706">추천 고정</span> ':''}원본: ${escapeAttr(item.title||'(제목 없음)')}</div>
                 <!-- [수정] "업로드 이미지 제거"·"화면에서 숨기기" 두 버튼의 순서를 바꾸고(숨기기 먼저),
                      이미지 업로드 버튼과는 별도로 묶어 행 우측 끝으로 정렬한다 -->
                 <div class="admin-channel-item-actions">
@@ -5524,6 +5877,7 @@ function renderAdminChannels(){
                     <input type="file" id="${inputId}" accept="image/*" onchange="handleChannelPostImageUpload('${escapeAttr(item.link)}',this)">
                   </label>
                   <div class="admin-channel-item-actions-right">
+                    <button type="button" class="abc-img-btn" title="홈 여행 이야기 맨 앞에 고정" onclick="toggleChannelPostFeatured('${escapeAttr(item.link)}')">${ov.featured?'⭐ 추천 고정 해제':'☆ 추천 고정'}</button>
                     <button type="button" class="abc-img-btn" onclick="toggleChannelPostHidden('${escapeAttr(item.link)}')">${ov.hidden?'👁️ 다시 노출':'🙈 화면에서 숨기기'}</button>
                     ${ov.image?`<button type="button" class="abc-img-btn danger" onclick="clearChannelPostImage('${escapeAttr(item.link)}')">업로드 이미지 제거</button>`:''}
                     ${item._pinned?`<button type="button" class="abc-img-btn danger" onclick="removeChannelPinnedPost('${ch.id}','${escapeAttr(item.link)}')">🗑 직접 추가한 글 삭제</button>`:''}
@@ -5588,6 +5942,7 @@ function renderAdminChannels(){
             </div>
           </div>`;
         }).join('')}
+        ${pager}
       </div>` : '';
     // [수정] 헤더(채널 정보+최근 수집 상태+새로고침/삭제 버튼)를 별도의 flex 행(.admin-channel-head)으로
     // 감싸 카드 전체와 같은 flex 컨테이너에 두지 않는다 — 이전에는 헤더와 수집 항목 목록(itemsHTML)이
@@ -5601,7 +5956,8 @@ function renderAdminChannels(){
           <span class="file-hint" style="${lastErr?'color:var(--nm-danger)':''}">${escapeAttr(statusText)}</span>
         </div>
         <div class="admin-channel-actions">
-          <button type="button" class="abc-btn-sm" onclick="refreshChannelNow('${ch.id}')" title="지금 새로고침">🔄</button>
+          <button type="button" class="abc-btn-sm" onclick="refreshChannelNow('${ch.id}')" title="새 글 수집" ${_cpSyncRunning?'disabled':''}>🔄</button>
+          ${_cpTableOk?`<button type="button" class="abc-btn-sm" title="이 채널의 글·영상을 처음부터 다시 수집" ${_cpSyncRunning?'disabled':''} onclick="refreshChannelNow('${ch.id}',true)">⟳ 전체</button>`:''}
           <button type="button" class="file-btn danger" onclick="removeChannel('${ch.id}')">삭제</button>
         </div>
       </div>
@@ -5613,6 +5969,7 @@ function renderAdminChannels(){
       ${itemsBody}
     </div>`;
   }).join('');
+  maybeAutoSyncChannels();
 }
 
 // RSS 수집 결과는 방문자 기기마다 로컬 캐시(6시간)로 보관 — 매 방문마다 다시 가져오지 않도록 하되,
@@ -5656,7 +6013,7 @@ async function refreshChannelFeeds(opts){
         continue;
       }
       const data = await res.json();
-      const items = (data.items||[]).slice(0,5);
+      const items = (data.items||[]); // [수정] 최신 5개 제한 제거 — 홈 노출 개수는 CP_HOME_LIMIT로 따로 제한
       if (!items.length){
         console.warn(`[채널 수집 결과 0건] ${ch.label||ch.handle} (${ch.type}) — 채널 ID를 확인해주세요: ${feedUrl}`);
         // [수정] 이번 응답이 비어있어도, 기존에 정상 수집해둔 항목이 있으면 그 항목을 빈 결과로
@@ -5694,14 +6051,20 @@ if (channelPostOverrides==null){
     }
   }catch(e){}
 }
-function getChannelPostOverrides(){ return channelPostOverrides || {}; }
+// [수정] 편집값 키를 정규화된 글 주소로 맞춘다(예전 RSS 주소 ?fromRss=true… 로 저장된 값도 그대로 이어 씀)
+function getChannelPostOverrides(){
+  const m = channelPostOverrides || {};
+  Object.keys(m).forEach(k=>{ const c = canonPostLink(k); if (c && c!==k){ m[c] = Object.assign({}, m[k], m[c]); delete m[k]; } });
+  return m;
+}
 function saveChannelPostOverrides(map){
   channelPostOverrides = map;
   try{ localStorage.setItem(CHANNEL_POST_OV_KEY, JSON.stringify(map)); }catch(e){ alert('저장 공간 부족'); }
   queueSiteStateSync();
 }
-function getChannelPostOverride(url){ return getChannelPostOverrides()[url] || {}; }
+function getChannelPostOverride(url){ return getChannelPostOverrides()[canonPostLink(url)] || {}; }
 function setChannelPostOverride(url, patch){
+  url = canonPostLink(url);
   const map = getChannelPostOverrides();
   map[url] = Object.assign({}, map[url], patch);
   saveChannelPostOverrides(map);
@@ -5755,12 +6118,34 @@ function setChannelLabel(chId, label){
   renderBlog();
 }
 // 채널에서 자동 수집된 항목들을 여행 이야기 카드(.post)와 동일한 형태로 변환
-function getAutoCollectedPosts(){
-  const list = getChannelsList();
+// [수정] 채널 글/영상 → 카드 데이터. entries를 넘기지 않으면 모든 채널의 글을 "추천 고정 → 최신순"으로 정렬해
+// 홈에 노출할 개수(CP_HOME_LIMIT)만큼만 돌려준다(opts.all이면 제한 없음). "전체 보기"는 entries를 직접 넘긴다
+function cpSortEntries(entries){
+  const ovs = getChannelPostOverrides();
+  const t = it=>{ const v = Date.parse(it.published||''); return isNaN(v) ? -Infinity : v; };
+  return entries.map((e,i)=>({e,i})).sort((a,b)=>{
+    const fa = (ovs[a.e.item.link]||{}).featured ? 1 : 0, fb = (ovs[b.e.item.link]||{}).featured ? 1 : 0;
+    if (fa!==fb) return fb-fa;
+    const ta = t(a.e.item), tb = t(b.e.item);
+    if (ta!==tb) return tb-ta;
+    return a.i-b.i;
+  }).map(x=>x.e);
+}
+function cpAllEntries(){
+  const out = [];
+  getChannelsList().forEach(ch=>channelAllItems(ch).forEach(item=>out.push({ch, item})));
+  return out;
+}
+function getAutoCollectedPosts(opts){
+  opts = opts || {};
+  const grouped = buildAutoPosts(cpSortEntries(opts.entries || cpAllEntries()));
+  return (opts.entries || opts.all) ? grouped : grouped.slice(0, CP_HOME_LIMIT);
+}
+function buildAutoPosts(entries){
   const overrides = getChannelPostOverrides();
   const posts = [];
-  list.forEach(ch=>{
-    channelAllItems(ch).forEach(item=>{
+  entries.forEach(({ch, item})=>{
+    {
       if (!item.link) return;
       const ov = overrides[item.link] || {};
       if (ov.hidden) return; // 관리자가 화면에서 숨긴 글/영상은 제외
@@ -5785,8 +6170,9 @@ function getAutoCollectedPosts(){
         _m: {type: ch.type==='youtube' ? 'youtube' : 'blog', tag: ov.tag || (ch.type==='youtube' ? '유튜브' : '블로그'),
              title: ov.title1 || item.title || (ch.label||ch.handle), url: normalizeExtUrl(ov.manualUrl || item.link)},
         _products: channelPostProducts(ov),
+        featured: !!ov.featured,
       });
-    });
+    }
   });
   // [추가] 연결 상품이 같은 글/영상(블로그·유튜브 채널을 가리지 않음)은 하나의 카드로 묶는다 — 어차피 모두
   // 같은 상품 링크로 이동하므로, 먼저 나온 글을 대표로 두고 태그(블로그/유튜브)와 묶인 개수만 함께 표시한다.
@@ -6435,6 +6821,7 @@ function collectSiteState(){
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
+    collectorEndpoint: collectorEndpointOverride,
   };
 }
 function applySiteState(state){
@@ -6463,6 +6850,7 @@ function applySiteState(state){
   if (state.reviewsOverride !== undefined) reviewsOverride = state.reviewsOverride;
   if (state.channelsOverride !== undefined) channelsOverride = state.channelsOverride;
   if (state.channelPostOverrides !== undefined) channelPostOverrides = state.channelPostOverrides;
+  if (state.collectorEndpoint !== undefined){ collectorEndpointOverride = state.collectorEndpoint; try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){} }
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
   try{
@@ -10003,7 +10391,12 @@ function postTagBadgeHTML(tag, count, members){
   return `<div class="post-tag-row"><span class="post-tag-badge ${cls}">${icon?`<img class="post-tag-icon" src="${icon}" alt="" loading="lazy" decoding="async">`:''}${escapeAttr(text)}</span></div>`;
 }
 // [추가] 블로그·유튜브가 함께 묶인 카드의 이동 선택창
-let _pgSeq = 0, _postGroups = {};
+let _pgSeq = 0, _postGroups = {}, _pgPrefix = 'h';
+// 홈(h)과 "전체 보기"(a) 카드의 선택창 데이터를 따로 관리 — 한쪽을 다시 그려도 다른 쪽 카드가 깨지지 않게
+function cpResetGroups(prefix){
+  _pgPrefix = prefix;
+  Object.keys(_postGroups).forEach(k=>{ if (k.startsWith(prefix+'pg')) delete _postGroups[k]; });
+}
 function openPostChooser(key){
   const g = _postGroups[key]; if (!g) return;
   closePostChooser();
@@ -10016,7 +10409,7 @@ function openPostChooser(key){
     const pp = (getProducts(pr.cat)||[])[pr.idx]; if (!pp) return;
     const dup = isDuplicateProductTitle(pp.title);
     const per = dup ? (productMonthsTag(pp) || '【 전체 시기 】') : '';
-    opts.push(`<a class="pc-opt pc-opt-prod" href="#" onclick="event.preventDefault();closePostChooser();openProductDetail('${escapeAttr(pr.cat)}',${pr.idx})"><span class="pc-opt-ic pc-opt-emoji">⛳</span><span class="pc-opt-tx"><b>상품 상세 보기</b><em>${escapeAttr(pp.title||'(제목 없음)')}${per?` <span style="white-space:nowrap">${escapeAttr(per)}</span>`:''}</em></span><span class="pc-opt-arr">→</span></a>`);
+    opts.push(`<a class="pc-opt pc-opt-prod" href="#" onclick="event.preventDefault();closePostChooser();closePostArchive();openProductDetail('${escapeAttr(pr.cat)}',${pr.idx})"><span class="pc-opt-ic pc-opt-emoji">⛳</span><span class="pc-opt-tx"><b>상품 상세 보기</b><em>${escapeAttr(pp.title||'(제목 없음)')}${per?` <span style="white-space:nowrap">${escapeAttr(per)}</span>`:''}</em></span><span class="pc-opt-arr">→</span></a>`);
   });
   const el = document.createElement('div');
   el.className = 'pc-chooser'; el.id = 'postChooser';
@@ -10027,6 +10420,137 @@ function openPostChooser(key){
 }
 function closePostChooser(){ const el = document.getElementById('postChooser'); if (el) el.remove(); }
 document.addEventListener('keydown', e=>{ if (e.key==='Escape') closePostChooser(); });
+// ═══ [추가] "여행 이야기" 전체 보기 — 탭(전체/블로그/유튜브) · 지역(연결 상품 기준) · 제목 검색 · 더 보기 ═══
+const _pa = {type:'', region:'', q:'', entries:[], offset:0, done:false, loading:false, pool:null, seq:0};
+function paRegionMatch(ov, region){
+  if (!region) return true;
+  const cats = channelPostProducts(ov||{}).map(x=>x.cat);
+  if (region==='domestic') return cats.some(c=>CATEGORIES.domestic.some(d=>d.id===c));
+  if (region==='overseas') return cats.some(c=>CATEGORIES.overseas.some(d=>d.id===c));
+  return cats.includes(region);
+}
+function paLocalMatch(e){
+  const ovs = getChannelPostOverrides(), ov = ovs[e.item.link] || {};
+  if (ov.hidden) return false;
+  if (_pa.type && (e.ch.type==='youtube'?'youtube':'blog')!==_pa.type) return false;
+  if (_pa.q){ const q=_pa.q.toLowerCase(); if (!((ov.title1||'')+' '+(e.item.title||'')).toLowerCase().includes(q)) return false; }
+  return paRegionMatch(ov, _pa.region);
+}
+async function paLoadMore(){
+  if (_pa.loading || _pa.done) return;
+  _pa.loading = true; paRenderFoot();
+  const seq = _pa.seq;
+  try{
+    const chById = {}; getChannelsList().forEach(ch=>chById[ch.id]=ch);
+    let batch = [];
+    if (_cpMode!=='db' || _pa.region || _pa.pool){
+      // 기존 방식(RSS) 또는 지역 필터: 대상 목록을 한 번 만들어 두고 화면에서 나눠 보여준다
+      if (!_pa.pool){
+        let pool = [];
+        if (_cpMode==='db'){
+          const ovs = getChannelPostOverrides();
+          const links = Object.keys(ovs).filter(k=>paRegionMatch(ovs[k], _pa.region));
+          const client = getSupabaseClient();
+          for (let i=0; i<links.length; i+=80){
+            const r = await client.from(CHANNEL_POSTS_TABLE).select(CP_COLS).in('link', links.slice(i,i+80));
+            if (!r.error && r.data) r.data.forEach(row=>{ const ch=chById[row.channel_id]; if (ch) pool.push({ch, item:cpRowToItem(row)}); });
+          }
+          pool = pool.concat(cpAllEntries().filter(e=>e.item._pinned));
+        } else pool = cpAllEntries();
+        const seen = new Set();
+        _pa.pool = cpSortEntries(pool.filter(e=>{ if (seen.has(e.item.link)) return false; seen.add(e.item.link); return paLocalMatch(e); }))
+          .map(e=>Object.assign({}, e)); // 추천 고정 우선 정렬은 전체 보기에서도 유지
+      }
+      batch = _pa.pool.slice(_pa.offset, _pa.offset + CP_ARCHIVE_PAGE);
+      _pa.offset += batch.length;
+      if (_pa.offset >= _pa.pool.length) _pa.done = true;
+    } else {
+      // 저장소에서 페이지 단위로 읽기(종류·제목 검색은 서버에서 거름)
+      const client = getSupabaseClient();
+      let q = client.from(CHANNEL_POSTS_TABLE).select(CP_COLS).order('published_at',{ascending:false, nullsFirst:false})
+        .range(_pa.offset, _pa.offset + CP_ARCHIVE_PAGE - 1);
+      if (_pa.type) q = q.eq('type', _pa.type);
+      if (_pa.q) q = q.ilike('title', '%' + _pa.q.replace(/[%_\\]/g, m=>'\\'+m) + '%');
+      const {data, error} = await q;
+      if (error) throw error;
+      const rows = data || [];
+      _pa.offset += rows.length;
+      if (rows.length < CP_ARCHIVE_PAGE) _pa.done = true;
+      if (_pa.offset === rows.length){ // 첫 페이지에 직접 추가한 글도 함께
+        cpAllEntries().filter(e=>e.item._pinned).forEach(e=>batch.push(e));
+      }
+      rows.forEach(row=>{ const ch = chById[row.channel_id]; if (ch) batch.push({ch, item:cpRowToItem(row)}); });
+      batch = batch.filter(paLocalMatch);
+    }
+    if (seq !== _pa.seq) return; // 그 사이 필터가 바뀜
+    const have = new Set(_pa.entries.map(e=>e.item.link));
+    batch.forEach(e=>{ if (!have.has(e.item.link)){ have.add(e.item.link); _pa.entries.push(e); } });
+  }catch(e){
+    _pa.done = true; _pa.error = (e && e.message) || String(e);
+  }finally{
+    if (seq === _pa.seq){ _pa.loading = false; paRenderGrid(); }
+  }
+}
+function paRenderGrid(){
+  const grid = document.getElementById('paGrid'); if (!grid) return;
+  cpResetGroups('a');
+  const cards = buildAutoPosts(_pa.entries);
+  grid.innerHTML = cards.length ? cards.map(b=>postCardHTML(b)).join('')
+    : (_pa.loading ? '' : `<div class="pa-empty">${_pa.error?'목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.':'조건에 맞는 글·영상이 없습니다.'}</div>`);
+  _pgPrefix = 'h'; // 홈 카드의 선택창 데이터는 건드리지 않는다
+  paRenderFoot();
+}
+function paRenderFoot(){
+  const f = document.getElementById('paFoot'); if (!f) return;
+  const n = _pa.entries.length;
+  f.innerHTML = _pa.loading ? '<span class="pa-loading">불러오는 중…</span>'
+    : (_pa.done ? (n?`<span class="pa-count">${n}개 모두 표시</span>`:'')
+      : `<button type="button" class="pa-more" onclick="paLoadMore()">더 보기</button><span class="pa-count">${n}개 표시 중</span>`);
+}
+function paSetFilter(k, v){
+  _pa[k] = v; _pa.entries = []; _pa.offset = 0; _pa.done = false; _pa.loading = false; _pa.pool = null; _pa.error = ''; _pa.seq++;
+  document.querySelectorAll('#postArchive .pa-tab').forEach(b=>b.classList.toggle('active', b.dataset.type===_pa.type));
+  paRenderGrid(); paLoadMore();
+}
+function openPostArchive(){
+  closePostArchive();
+  Object.assign(_pa, {type:'', region:'', q:'', entries:[], offset:0, done:false, loading:false, pool:null, error:''}); _pa.seq++;
+  const regionOpts = `<option value="">전체 지역</option><option value="domestic">국내 전체</option><option value="overseas">해외 전체</option>
+    <optgroup label="국내">${CATEGORIES.domestic.map(c=>`<option value="${c.id}">${escapeAttr(c.ko)}</option>`).join('')}</optgroup>
+    <optgroup label="해외">${CATEGORIES.overseas.map(c=>`<option value="${c.id}">${escapeAttr(c.ko)}</option>`).join('')}</optgroup>`;
+  const el = document.createElement('div');
+  el.className = 'pa-overlay'; el.id = 'postArchive';
+  el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','여행 이야기 전체 보기');
+  el.innerHTML = `<div class="pa-panel">
+    <div class="pa-head"><h3>여행 이야기 <em>전체 보기</em></h3><button type="button" class="pa-x" aria-label="닫기" onclick="closePostArchive()">×</button></div>
+    <div class="pa-tools">
+      <div class="pa-tabs">
+        <button type="button" class="pa-tab active" data-type="" onclick="paSetFilter('type','')">전체</button>
+        <button type="button" class="pa-tab" data-type="blog" onclick="paSetFilter('type','blog')"><img src="${ICON_DATA['icon-blog']}" alt="">블로그</button>
+        <button type="button" class="pa-tab" data-type="youtube" onclick="paSetFilter('type','youtube')"><img src="${ICON_DATA['icon-youtube']}" alt="">유튜브</button>
+      </div>
+      <select class="pa-region" aria-label="지역" onchange="paSetFilter('region',this.value)">${regionOpts}</select>
+      <form class="pa-search" onsubmit="event.preventDefault();paSetFilter('q',this.q.value.trim())">
+        <input name="q" type="search" placeholder="제목 검색" aria-label="제목 검색"><button type="submit" aria-label="검색">🔍</button>
+      </form>
+    </div>
+    <div class="pa-body"><div class="pa-grid" id="paGrid"></div><div class="pa-foot" id="paFoot"></div></div>
+  </div>`;
+  el.addEventListener('click', e=>{ if (e.target===el) closePostArchive(); });
+  document.body.appendChild(el);
+  document.documentElement.classList.add('pa-open');
+  // 스크롤이 바닥 근처에 오면 자동으로 다음 묶음
+  el.querySelector('.pa-body').addEventListener('scroll', e=>{
+    const b = e.currentTarget; if (b.scrollTop + b.clientHeight > b.scrollHeight - 300) paLoadMore();
+  }, {passive:true});
+  paRenderGrid(); paLoadMore();
+}
+function closePostArchive(){
+  const el = document.getElementById('postArchive'); if (el) el.remove();
+  document.documentElement.classList.remove('pa-open');
+}
+// 캡처 단계 — 선택창이 열려 있으면 Esc는 선택창만 닫고(선택창 쪽 처리), 전체 보기 창은 그대로 둔다
+document.addEventListener('keydown', e=>{ if (e.key==='Escape' && !document.getElementById('postChooser')) closePostArchive(); }, true);
 function postCardHTML(b){
   const bg = b.image || getImage(b.fallbackCat) || '';
   const title = b.title1 || b.title || `${b.tag||'블로그'} 새 글 보러가기`;
@@ -10037,7 +10561,7 @@ function postCardHTML(b){
   // [추가] 블로그와 유튜브가 같은 상품으로 묶인 카드는 눌렀을 때 어디로 이동할지 고르는 선택창을 띄운다
   let chooser = '';
   if (b.members && (new Set(b.members.map(m=>m.type)).size>1 || (b.prods && b.prods.length>1))){
-    const key = 'pg'+(++_pgSeq);
+    const key = _pgPrefix+'pg'+(++_pgSeq);
     _postGroups[key] = {members:b.members, prods:b.prods||[]};
     chooser = key;
   }
@@ -10045,7 +10569,7 @@ function postCardHTML(b){
   const clickable = chooser || href;
   return `<article class="post" style="cursor:${clickable?'pointer':'default'}" ${clickAttr}>
     <div class="post-visual${bg?'':' post-visual-empty'}">
-      ${bg?`<img src="${escapeAttr(bg)}" alt="${escapeAttr(title)}" loading="lazy" decoding="async">`:''}
+      ${bg?`<img src="${escapeAttr(bg)}" alt="${escapeAttr(title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}
     </div>
     <div class="post-body">
       <h3>${escapeAttr(title)}</h3>
@@ -10063,7 +10587,13 @@ function renderBlog(){
   // fetchBlogMeta의 인덱스는 getBlogList()(수동 목록)와만 맞아야 하므로 아래 자동 시도
   // 루프는 반드시 manualList 기준으로 돌려야 한다(합쳐진 list 기준으로 돌리면 인덱스가 어긋남).
   const list = manualList.concat(getAutoCollectedPosts());
-  _pgSeq = 0; _postGroups = {};
+  cpResetGroups('h');
+  // "전체 보기 →" 버튼에 전체 글/영상 수 표시
+  const moreBtn = document.getElementById('blogMoreBtn');
+  if (moreBtn){
+    const n = _cpMode==='db' ? _cpTotal + getChannelsList().reduce((a,ch)=>a+(ch.pinned||[]).length,0) : cpAllEntries().length;
+    moreBtn.textContent = n ? `전체 보기 (${n}) →` : '전체 보기 →';
+  }
   const cardsHTML = list.map(postCardHTML).join('');
   // [수정] 모바일 스와이프 캐러셀에서 첫 카드 왼쪽에 마지막 카드 끝쪽이 보여지고 그대로 스와이프해
   // 이동할 수 있도록(순환 루프), 상품 캐러셀(.pc-track)과 동일하게 맨 앞엔 마지막 글의 복제를,
@@ -15376,7 +15906,10 @@ const siteStatePulled = waitForSupabaseLib(3000)
   .catch(()=>false);
 // [Phase] 등록된 채널(블로그·유튜브)의 RSS를 백그라운드에서 가져와 "여행 이야기"에 자동 반영.
 // 다른 기기에서 등록한 채널 목록이 pullSiteState로 막 동기화된 뒤에 시도해야 하므로 그 뒤에 이어서 실행.
-siteStatePulled.finally(()=>{ refreshChannelFeeds().then(renderBlog).catch(()=>{}); });
+// [수정] 저장된 전체 목록(Supabase)이 있으면 그것만 읽고(방문자 수집 없음), 없으면 기존 RSS 방식
+siteStatePulled.finally(()=>{
+  loadChannelPostsHome().then(ok=>{ if (ok){ renderBlog(); if (typeof renderAdminChannels==='function') renderAdminChannels(); } else return refreshChannelFeeds().then(renderBlog); }).catch(()=>{});
+});
 
 // 홈 진입 시 팝업 최대 3개 표시 (세션당 1회)
 // 반환값: 이번 호출에서 실제로 팝업을 노출했는지 여부 — EDITOR'S PICK 팝업과 동시에 겹쳐 뜨지

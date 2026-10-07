@@ -6,9 +6,11 @@
 // 제공 기능 (모두 GET, 응답은 JSON)
 //   ?mode=ping                                   → 연결 확인 { ok, youtube:true|false }
 //   ?mode=ytlist&channel=UC...&pageToken=...     → 유튜브 채널 업로드 영상 50개씩 { items, nextPageToken, total }
-//   ?mode=naverlist&blogId=아이디&page=1          → 네이버 블로그 글 30개씩 { items, page, total, source }
+//   ?mode=naverlist&blogId=아이디&page=1          → 네이버 블로그 글 목록 { items, page, total, source }
+//   ?mode=navercats&blogId=아이디                 → (진단용) 블로그 카테고리 구조 { categories:[{no,name,parent,path}] }
 //
-// items 형식: [{ id, link, title, thumbnail, published(ISO 문자열), category(네이버 블로그 카테고리 이름, 없으면 빈 문자열) }]
+// items 형식: [{ id, link, title, thumbnail, published(ISO 문자열), category }]
+//   category: 네이버 블로그 카테고리. 상위 카테고리가 있으면 "상위 > 하위" (예: "해외 패키지 여행 > 중국"), 없으면 빈 문자열
 //
 // 환경 변수(Settings → Variables and Secrets)
 //   YOUTUBE_API_KEY  (Secret, 필수 — 유튜브 수집용)  Google Cloud에서 발급한 YouTube Data API v3 키
@@ -43,6 +45,7 @@ export default {
       if (mode === 'ping') return json({ ok: true, youtube: !!env.YOUTUBE_API_KEY }, 200, 0);
       if (mode === 'ytlist') return await youtubeList(url, env, json);
       if (mode === 'naverlist') return await naverList(url, json);
+      if (mode === 'navercats') return await naverCats(url, json);
       return json({ error: 'unknown mode' }, 400, 0);
     } catch (e) {
       return json({ error: String((e && e.message) || e) }, 502, 0);
@@ -82,17 +85,32 @@ async function youtubeList(url, env, json) {
 }
 
 // ── 네이버 블로그: 글 목록 30개씩 (모바일 목록 → 실패 시 PC 제목 목록) ────────────
+const UA_MOBILE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+const UA_PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+
+// 진단용: 이 블로그의 카테고리 구조(번호·이름·상위 번호·"상위 > 하위" 경로)를 그대로 보여줌
+async function naverCats(url, json) {
+  const blogId = url.searchParams.get('blogId') || '';
+  if (!/^[A-Za-z0-9_-]{2,40}$/.test(blogId)) return json({ error: 'invalid blogId' }, 400, 0);
+  const cats = await naverCategoryMap(blogId, UA_MOBILE, UA_PC);
+  const categories = Object.keys(cats).map(no => ({ no, name: cats[no].name, parent: cats[no].parent, path: naverCatPath(cats, no).join(' > ') }));
+  return json({ categories }, 200, 0);
+}
+
 async function naverList(url, json) {
   const blogId = url.searchParams.get('blogId') || '';
   if (!/^[A-Za-z0-9_-]{2,40}$/.test(blogId)) return json({ error: 'invalid blogId' }, 400, 0);
   const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10) || 1);
   const categoryNo = /^\d+$/.test(url.searchParams.get('categoryNo') || '') ? url.searchParams.get('categoryNo') : '0';
-  const UA_MOBILE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
-  const UA_PC = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
   const linkOf = logNo => `https://blog.naver.com/${blogId}/${logNo}`;
   let firstError = '';
-  // 카테고리 번호 → 이름 (글 목록에 이름이 없을 때를 대비해 한 번 가져옴. 실패해도 목록은 계속 진행)
+  // 카테고리 번호 → {이름, 상위 번호}. 글 목록에는 가장 아래 단계 이름만 있는 경우가 많아서, 상위 카테고리까지 이어
+  // "상위 > 하위"로 만든다. 실패해도 목록은 계속 진행(그 경우 아래 단계 이름만 내려감)
   const catMap = await naverCategoryMap(blogId, UA_MOBILE, UA_PC);
+  const catOf = it => {
+    const parts = naverCatPath(catMap, it.categoryNo);
+    return parts.length ? parts.join(' > ') : stripTags(safeDecode(String(it.categoryName || '')));
+  };
 
   // 1) 모바일 블로그 목록(JSON)
   try {
@@ -110,7 +128,7 @@ async function naverList(url, json) {
           title: stripTags(it.titleWithInspectMessage || it.title || ''),
           thumbnail: fixNaverThumb(it.thumbnailUrl || (it.thumbnailList && it.thumbnailList[0] && it.thumbnailList[0].url) || ''),
           published: toIso(it.addDate),
-          category: stripTags(safeDecode(String(it.categoryName || catMap[String(it.categoryNo)] || ''))),
+          category: catOf(it),
         }));
         return json({ items, page, total: Number(res.totalCount) || 0, source: 'm-api' });
       }
@@ -131,35 +149,47 @@ async function naverList(url, json) {
     title: stripTags(safeDecode(it.title || '')),
     thumbnail: '',
     published: toIso(it.addDate),
-    category: stripTags(safeDecode(String(it.categoryName || catMap[String(it.categoryNo)] || ''))),
+    category: catOf(it),
   }));
   return json({ items, page, total: Number(d2.totalCount) || 0, source: 'title-list' });
 }
 
-// 네이버 블로그 카테고리 목록 → { 카테고리번호: 카테고리이름 }. 응답 구조가 달라져도 견디도록 categoryNo/categoryName 짝을 찾아 모은다
+// 네이버 블로그 카테고리 목록 → { 카테고리번호: {name, parent(상위 번호, 최상위면 빈 문자열)} }.
+// 응답 구조가 달라져도 견디도록 categoryNo/categoryName 짝을 찾아 모으고, 상위는 parentCategoryNo 또는 "하위 목록 안에 들어 있음"으로 판단한다
 async function naverCategoryMap(blogId, UA_MOBILE, UA_PC) {
-  const map = {};
-  const walk = (o, depth) => {
-    if (!o || depth > 6) return;
-    if (Array.isArray(o)) { o.forEach(x => walk(x, depth + 1)); return; }
-    if (typeof o === 'object') {
-      const name = o.categoryName || o.categoryname;
-      if (o.categoryNo != null && name) map[String(o.categoryNo)] = stripTags(safeDecode(String(name)));
-      Object.keys(o).forEach(k => walk(o[k], depth + 1));
+  const cats = {};
+  const walk = (o, ctx, depth) => {
+    if (!o || depth > 8) return;
+    if (Array.isArray(o)) { o.forEach(x => walk(x, ctx, depth + 1)); return; }
+    if (typeof o !== 'object') return;
+    let here = ctx;
+    const name = o.categoryName || o.categoryname;
+    if (o.categoryNo != null && name) {
+      const no = String(o.categoryNo);
+      const pn = o.parentCategoryNo != null && String(o.parentCategoryNo) !== '' && String(o.parentCategoryNo) !== '0' ? String(o.parentCategoryNo) : (ctx || '');
+      cats[no] = { name: stripTags(safeDecode(String(name))), parent: pn && pn !== no ? pn : '' };
+      here = no;
     }
+    Object.keys(o).forEach(k => walk(o[k], here, depth + 1));
   };
   const tryFetch = async (url, ua, ref) => {
     try {
       const r = await fetch(url, { headers: { 'User-Agent': ua, 'Referer': ref, 'Accept': 'application/json' } });
       if (!r.ok) return false;
-      walk(JSON.parse((await r.text()).replace(/\\'/g, "'")), 0);
-      return Object.keys(map).length > 0;
+      walk(JSON.parse((await r.text()).replace(/\\'/g, "'")), '', 0);
+      return Object.keys(cats).length > 0;
     } catch (e) { return false; }
   };
   if (!(await tryFetch(`https://m.blog.naver.com/api/blogs/${blogId}/category-list`, UA_MOBILE, `https://m.blog.naver.com/${blogId}`))) {
     await tryFetch(`https://blog.naver.com/CategoryList.naver?blogId=${blogId}&from=postList&isMobile=false`, UA_PC, `https://blog.naver.com/${blogId}`);
   }
-  return map;
+  return cats;
+}
+// 카테고리 번호 → ["최상위", ..., "해당 카테고리"] 이름 목록
+function naverCatPath(cats, no) {
+  const parts = []; let cur = String(no), guard = 0;
+  while (cur && cats[cur] && guard++ < 6) { parts.unshift(cats[cur].name); cur = cats[cur].parent; }
+  return parts;
 }
 function safeDecode(s) { try { return decodeURIComponent(String(s).replace(/\+/g, ' ')); } catch (e) { return String(s); } }
 function stripTags(s) { return String(s).replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim(); }

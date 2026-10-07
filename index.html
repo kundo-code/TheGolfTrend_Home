@@ -5432,16 +5432,31 @@ let _cpHomeRows = [];       // 홈용(최신 + 추천 고정) 행
 let _cpByChannel = {};      // 관리자용 채널별 전체 목록
 let _cpSyncRunning = false, _cpAutoSyncTried = false, _cpSyncMsg = '', _cpLastError = '';
 // ── 네이버 블로그 카테고리 → 여행 이야기 태그 ──
-// 기본: "국내 패키지 여행" → 국내-블로그, "해외 패키지 여행" → 해외-블로그. 그 밖의 카테고리는 관리자가 채널 카드의
-// "카테고리별 태그"에서 지정할 수 있고, 글 단위 태그 지정(ov.tag)이 있으면 그것이 가장 우선한다.
+// 블로그 카테고리는 2단계입니다. 예) 해외 패키지 여행 > 일본·중국·태국…, 국내 패키지 여행 > 수도권·영남권·제주…
+// 수집된 category에는 "상위 > 하위" 경로가 들어 있고, 상위가 "국내 패키지 여행"이면 국내-블로그, "해외 패키지 여행"이면 해외-블로그입니다.
+// 상위 정보를 못 받은 글(하위 이름만 있음)도 알려진 하위 이름(나라·권역)으로 같은 결과가 나옵니다.
+// 그 밖의 카테고리는 관리자가 채널 카드의 "카테고리별 태그"에서 지정할 수 있고, 글 단위 태그 지정(ov.tag)이 있으면 그것이 가장 우선합니다.
 const CATEGORY_TAG_DEFAULTS = {'국내패키지여행':'국내-블로그', '해외패키지여행':'해외-블로그'};
+const CAT_DOMESTIC_LEAVES = ['수도권','충청권','영남권','호남권','강원권','제주'];
+const CAT_OVERSEAS_LEAVES = ['일본','중국','태국','베트남','라오스','미얀마','필리핀','말레이시아','인도네시아','미국령'];
 const CATEGORY_TAG_CHOICES = ['국내-블로그','해외-블로그','블로그','스토리'];
 function normCat(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
+function catSegments(cat){ return String(cat||'').split('>').map(x=>x.trim()).filter(Boolean); }
+function defaultCategoryTag(seg){
+  const n = normCat(seg);
+  if (CATEGORY_TAG_DEFAULTS[n]) return CATEGORY_TAG_DEFAULTS[n];
+  if (CAT_DOMESTIC_LEAVES.some(x=>n.startsWith(x))) return '국내-블로그';
+  if (CAT_OVERSEAS_LEAVES.some(x=>n.startsWith(x))) return '해외-블로그';
+  return '';
+}
 function categoryTagFor(ch, cat){
-  if (!cat) return '';
-  const key = normCat(cat), map = (ch && ch.categoryTags) || {};
-  for (const k of Object.keys(map)) if (normCat(k)===key) return map[k];
-  return CATEGORY_TAG_DEFAULTS[key] || '';
+  const segs = catSegments(cat); if (!segs.length) return '';
+  const map = (ch && ch.categoryTags) || {};
+  // 관리자 지정: 가장 구체적인(아래 단계) 카테고리부터 확인
+  for (let i=segs.length-1; i>=0; i--){ const key = normCat(segs[i]); for (const k of Object.keys(map)) if (normCat(k)===key) return map[k]; }
+  // 기본 규칙: 위 단계부터 확인(상위가 국내/해외 패키지 여행이면 그대로 결정)
+  for (const sg of segs){ const t = defaultCategoryTag(sg); if (t) return t; }
+  return '';
 }
 // 글/영상 주소를 하나의 형태로 맞춘다 — RSS 주소(?fromRss=true…)·모바일 주소·youtu.be 등이 서로 다른 글로
 // 취급되어 연결 상품·제목 등 관리자 편집값을 잃지 않도록
@@ -5863,8 +5878,14 @@ function toggleChannelCats(el, chId){
 }
 // 채널에 수집된 카테고리 목록(많은 순)
 function chCategoriesOf(ch){
-  const m = {}; channelAllItems(ch).forEach(it=>{ const c = String(it.category||'').trim(); if (c) m[c] = (m[c]||0)+1; });
-  return Object.keys(m).sort((a,b)=>m[b]-m[a]).map(k=>({name:k, count:m[k]}));
+  // 최상위 카테고리 기준으로 묶는다(예: "해외 패키지 여행"). 아래 단계 이름은 설명용으로 함께 보관
+  const m = {}, kids = {};
+  channelAllItems(ch).forEach(it=>{
+    const segs = catSegments(it.category); if (!segs.length) return;
+    const top = segs[0]; m[top] = (m[top]||0)+1;
+    if (segs.length>1){ kids[top] = kids[top] || {}; kids[top][segs[segs.length-1]] = 1; }
+  });
+  return Object.keys(m).sort((a,b)=>m[b]-m[a]).map(k=>({name:k, count:m[k], children:Object.keys(kids[k]||{})}));
 }
 function setChannelCategoryTag(chId, cat, tag){
   const list = getChannelsList(); const ch = list.find(c=>c.id===chId); if (!ch) return;
@@ -5879,8 +5900,9 @@ function chCategoryBoxHTML(ch, allItems){
   const open = _chCatOpen.has(ch.id);
   const rows = cats.map(c=>{
     const cur = Object.keys(ch.categoryTags||{}).filter(k=>normCat(k)===normCat(c.name)).map(k=>ch.categoryTags[k])[0] || '';
-    const dflt = CATEGORY_TAG_DEFAULTS[normCat(c.name)] || '블로그';
-    return `<div class="ch-cat-row"><span class="ch-cat-name">${escapeAttr(c.name)} <em>${c.count}개</em></span>
+    const dflt = defaultCategoryTag(c.name) || '블로그';
+    const sub = c.children.length ? ` · ${c.children.slice(0,5).map(escapeAttr).join(', ')}${c.children.length>5?' 외':''}` : '';
+    return `<div class="ch-cat-row"><span class="ch-cat-name">${escapeAttr(c.name)} <em>${c.count}개${sub}</em></span>
       <select class="abc-select" onchange="setChannelCategoryTag('${ch.id}','${escapeAttr(c.name).replace(/'/g,'&#39;')}',this.value)">
         <option value="" ${!cur?'selected':''}>자동 (${dflt})</option>
         ${CATEGORY_TAG_CHOICES.map(t=>`<option value="${t}" ${cur===t?'selected':''}>${t}</option>`).join('')}
@@ -5889,7 +5911,7 @@ function chCategoryBoxHTML(ch, allItems){
   const body = cats.length ? rows : `<div class="file-hint">카테고리 정보가 아직 없습니다. ${_cpTableOk && !_cpHasCategory ? '위쪽 안내의 SQL을 한 번 실행한 뒤 ' : ''}수집 서버 코드를 최신으로 바꾸고 <b>⟳ 전체</b>를 눌러 다시 수집하세요.</div>`;
   return `<div class="ch-cat-box${open?' is-open':''}">
       <button type="button" class="admin-channel-items-toggle" onclick="toggleChannelCats(this,'${ch.id}')">카테고리별 태그 <span class="chev">${cats.length?cats.length+'개':'없음'} ▾</span></button>
-      <div class="ch-cat-body"><div class="file-hint" style="margin-bottom:8px">"국내 패키지 여행"은 <b>국내-블로그</b>, "해외 패키지 여행"은 <b>해외-블로그</b>로 자동 표시됩니다. 다른 카테고리는 여기서 지정하세요. 글마다 따로 고른 태그가 있으면 그것이 우선합니다.</div>${body}</div>
+      <div class="ch-cat-body"><div class="file-hint" style="margin-bottom:8px">"국내 패키지 여행"(아래 수도권·영남권·제주 등)은 <b>국내-블로그</b>, "해외 패키지 여행"(아래 일본·중국·태국 등)은 <b>해외-블로그</b>로 자동 표시됩니다. 다른 카테고리는 여기서 지정하세요. 글마다 따로 고른 태그가 있으면 그것이 우선합니다.</div>${body}</div>
     </div>`;
 }
 const _cpLoading = {};
@@ -5992,6 +6014,7 @@ function renderAdminChannels(){
               </div>
             </div>
             <div class="admin-channel-item-fields">
+              ${ch.type!=='youtube'?`<div class="abc-field-row"><label class="abc-label">네이버 카테고리</label><span class="file-hint" style="margin:0">${escapeAttr(item.category||'(정보 없음 — 전체 다시 수집 필요)')}</span></div>`:''}
               <div class="abc-field-row">
                 <label class="abc-label">태그</label>
                 <select class="abc-select" onchange="setChannelPostField('${escapeAttr(item.link)}','tag',this.value)">

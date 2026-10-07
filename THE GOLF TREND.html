@@ -10838,7 +10838,9 @@ function renderBlog(){
   // [수정] 모바일 스와이프 캐러셀에서 첫 카드 왼쪽에 마지막 카드 끝쪽이 보여지고 그대로 스와이프해
   // 이동할 수 있도록(순환 루프), 상품 캐러셀(.pc-track)과 동일하게 맨 앞엔 마지막 글의 복제를,
   // 맨 뒤엔 첫 글의 복제를 범퍼로 하나씩 붙인다. 글이 2개 미만이면 복제해도 의미가 없어 생략한다
-  const looped = list.length>=2;
+  // [버그 수정] 범퍼(복제 카드)는 가로 스와이프 캐러셀인 모바일 폭에서만 붙인다. 데스크톱은 3열 정적 그리드라
+  // 복제가 그대로 보여서 첫 카드와 마지막 카드가 맨 앞/맨 뒤에 한 번씩 더 나타나 중복처럼 보였다(상품 카드와 동일 기준)
+  const looped = window.innerWidth<=780 && list.length>=2;
   grid.dataset.total = list.length;
   grid.dataset.looped = looped ? '1' : '';
   grid.innerHTML = looped
@@ -10937,7 +10939,12 @@ function initBlogCarousel(){
     clearTimeout(_blogScrollTimer);
     _blogScrollTimer = setTimeout(updateBlogDots, 80);
   }, { passive:true });
-  window.addEventListener('resize', updateBlogDots);
+  // 화면 폭이 모바일↔데스크톱 경계를 넘으면 범퍼(복제 카드) 유무가 달라지므로 다시 그린다
+  let wasMobile = window.innerWidth<=780;
+  window.addEventListener('resize', ()=>{
+    const mob = window.innerWidth<=780;
+    if (mob!==wasMobile){ wasMobile = mob; renderBlog(); } else updateBlogDots();
+  });
   updateBlogDots();
 }
 const _blogMetaAttempted = new Set();

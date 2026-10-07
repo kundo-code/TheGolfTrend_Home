@@ -497,6 +497,16 @@ section.block{padding:100px 24px;position:relative}
   .pc-carousel{margin-left:-22px;margin-right:-22px;width:calc(100% + 44px)}
   .pc-track{gap:10px}
   .pc-track>.product{flex:0 0 80%;scroll-snap-align:center}
+  /* [추가] 모바일에서도 데스크톱 호버처럼 가운데 카드를 강조 — 가운데 카드는 현재 크기 그대로 두고
+     (확대 대신) 좌우 카드를 90%로 줄이고 반투명(60%) 처리. 가운데 카드는 호버 때처럼 금색 테두리·흰 배경 */
+  .pc-track>.product,.product-grid>.product{transform-origin:center}
+  .pc-track>.product:hover,.product-grid>.product:hover{transform:translateZ(0)}
+  .pc-track>.product.m-side,.pc-track>.product.m-side:hover,
+  .product-grid>.product.m-side,.product-grid>.product.m-side:hover{transform:scale(.9) translateZ(0);opacity:.6}
+  /* 가운데 카드 쪽 모서리를 기준으로 줄여, 화면 가장자리에 살짝 보이는 옆 카드(peek)가 그대로 보이게 */
+  .pc-track>.product.m-left,.product-grid>.product.m-left{transform-origin:right center}
+  .pc-track>.product.m-right,.product-grid>.product.m-right{transform-origin:left center}
+  .pc-track>.product.m-center,.product-grid>.product.m-center{border-color:var(--gold);background:#fff;box-shadow:0 10px 28px rgba(10,23,48,.24),0 2px 6px rgba(10,23,48,.12)}
 }
 /* [수정] 글래스모피즘 통일 — 다른 카드(.post)와 동일하게 반투명+블러 적용 */
 /* [수정] backdrop-filter가 적용된 요소에서 hover 시 transform이 바뀌면 브라우저가 매번 블러
@@ -584,7 +594,7 @@ section.block{padding:100px 24px;position:relative}
 .product .meta .meta-value{font-weight:700;color:#333333}
 /* [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트 자체는 볼드 해제(값만 내부 <b>로 볼드 유지) */
 .product .meta .meta-value.meta-value-plain{font-weight:400}
-.product-checkpoint1{font-size:.76rem;line-height:1.5;color:#646464;font-weight:400;background:#F5F5F5;border:1px solid rgba(10,23,48,.10);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
+.product-checkpoint1{font-size:.84rem;line-height:1.5;color:#646464;font-weight:400;background:#F5F5F5;border:1px solid rgba(10,23,48,.10);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line}
 .product-period-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .product-period-box,.product-minpeople-box{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--pine-deep);background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.10);border-radius:9px;padding:7px 11px}
 .product-minpeople-box{color:var(--gold-deep);background:rgba(221,179,103,.10);border-color:rgba(221,179,103,.3)}
@@ -601,7 +611,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 기본 바탕색 — 체크포인트1(참고사항, 위쪽) RGB(245,245,245) / 체크포인트2(주의사항, 카드 태그 아래)
    RGB(255,245,245). 글자는 두 박스 모두 볼드 해제 + RGB(100,100,100). 박스 색상은 관리자에서 바꿀 수 있다 */
 .product-tag-row + .product-divider-cp2{margin-top:2px}
-.product-checkpoint2{font-size:.76rem;line-height:1.5;color:#646464;font-weight:400;background:#FFF5F5;border:1px solid rgba(214,41,62,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
+.product-checkpoint2{font-size:.84rem;line-height:1.5;color:#646464;font-weight:400;background:#FFF5F5;border:1px solid rgba(214,41,62,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
 .product-checkpoint2 div,.product-checkpoint2 p,.product-checkpoint1 div,.product-checkpoint1 p{margin:0}
 .product-checkpoint1,.product-checkpoint2,.product-tag-row .tag-inline,.product-visual-title h4{overflow-wrap:anywhere;max-width:100%}
 .product-checkpoint1 .rtf-table,.product-checkpoint2 .rtf-table{margin:2px 0;white-space:normal;max-width:100%;table-layout:fixed}
@@ -653,7 +663,9 @@ section.block{padding:100px 24px;position:relative}
 .ctag-bg-reset{flex-shrink:0;height:22px;padding:0 6px;border:none;border-radius:100px;background:var(--nm-surface-light);color:var(--nm-text-soft);cursor:pointer;font-size:.62rem;font-weight:700;line-height:1;white-space:nowrap;box-shadow:var(--nm-shadow-raised-sm)}
 .tag-inline .rtf-table{width:auto;margin:0}
 .tag-inline .rtf-table td{font-size:inherit;padding:1px 6px;border-color:currentColor}
-.product-tag-row .tag-inline{display:inline-block;background:rgba(22,163,74,.12);color:#4B5563;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(22,163,74,.3);letter-spacing:.05em}
+/* [수정] 카드에 노출되는 입력값(카드 태그·체크포인트1/2)의 기본 글자 크기를 약 1.1배로 — 서식 크기 '보통'과
+   '약간 크게'의 중간보다 조금 크게(태그 .68→.75rem, 체크포인트 .76→.84rem) */
+.product-tag-row .tag-inline{display:inline-block;background:rgba(22,163,74,.12);color:#4B5563;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:100px;border:1px solid rgba(22,163,74,.3);letter-spacing:.05em}
 .product-foot{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:1px solid rgba(10,23,48,.10);margin-top:auto}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.869rem;color:var(--pine-deep);font-weight:500}
 .product-foot .price .unit{font-size:.792rem;color:inherit;margin-left:4px}
@@ -907,7 +919,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-more-sub .pd-check-list{padding:0}
 .pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:10px;padding:0}
 .pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days{position:relative;z-index:0}
-.pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:12px;top:12px;bottom:12px;width:2px;border-radius:1px;background:var(--pe-accent-pale, rgba(47,111,237,.25))}
+.pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:11.5px;top:12px;bottom:12px;width:1px;border-radius:1px;background:var(--pe-accent-pale, rgba(47,111,237,.25))}
 /* [Phase] 포함/불포함/참고사항 세 항목을 하나의 묶음으로 시각적으로 구분 — 위아래 구분선과 옅은
    배경을 줘서 카드의 다른 정보(레이블·일정)와 명확히 나뉘어 보이게 하고, 본문 폰트도 검정에 가까운
    진한 색으로 바꿔 가독성을 높인다(다른 곳에서 공용으로 쓰는 .pd-check-list 기본색은 그대로 둠) */
@@ -977,9 +989,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-sch-days{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
 .pd-sch-day{display:flex;gap:10px}
 /* [추가] 공통 일정 요약 타임라인도 요금 항목별 타임라인과 같이 일자 번호 사이를 세로선으로 연결 —
-   번호(24px 원) 중앙(왼쪽 여백 16px + 12px)을 지나는 옅은 금색 선을 번호 뒤에 그린다 */
+   번호(24px 원) 중앙(왼쪽 여백 16px + 12px)을 지나는 옅은 금색 선을 번호 뒤에 그린다
+   [수정] 연결선 굵기 2px → 1px (더 얇게), 원 중앙에 오도록 left 0.5px 보정 */
 .pd-sch-group .pd-sch-days{position:relative;z-index:0}
-.pd-sch-group .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:27px;top:24px;bottom:24px;width:2px;border-radius:1px;background:rgba(221,179,103,.45)}
+.pd-sch-group .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:27.5px;top:24px;bottom:24px;width:1px;border-radius:1px;background:rgba(221,179,103,.45)}
 .pd-sch-day-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--gold);color:var(--pine-deep);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .pd-sch-day-body{flex:1;min-width:0}
 .pd-sch-day-label{font-size:.85rem;font-weight:700;color:var(--pine-deep)}
@@ -1604,6 +1617,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .rtf-color input[type=color]::-webkit-color-swatch{border:none;border-radius:8px}
 .rtf-color input[type=color]::-moz-color-swatch{border:none;border-radius:8px}
 .rtf-color-t{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.rtf-toolbar .rtf-color-group{display:inline-flex;gap:3px;margin-left:auto;flex-shrink:0}
+.rtf-btn.rtf-color-apply{position:relative;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.rtf-color-apply .rtf-color-t{position:static;color:var(--nm-text);text-shadow:none;font-size:.82rem;line-height:1}
+.rtf-color-bar{display:block;width:16px;height:4px;border-radius:2px;background:var(--rtf-cur-color,#D6293E);box-shadow:0 0 0 1px rgba(10,23,48,.15)}
+.rtf-btn.rtf-color-more{width:22px;font-size:.62rem;padding:0}
+.rtf-color-pop{position:fixed;z-index:3000;display:grid;grid-template-columns:repeat(8,24px);gap:6px;padding:10px;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(10,23,48,.22),0 0 0 1px rgba(10,23,48,.08)}
+.rtf-color-pop[hidden]{display:none}
+.rtf-sw{width:24px;height:24px;border-radius:6px;border:none;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(10,23,48,.18)}
+.rtf-sw:hover{transform:scale(1.12)}
+.rtf-color-pop label.rtf-sw-custom{grid-column:1/-1;padding:0;line-height:1;position:relative;display:flex;align-items:center;justify-content:center;height:28px;border-radius:8px;background:var(--nm-surface-light,#eef1f6);font-size:.7rem;font-weight:700;color:var(--nm-text,#0a1730);cursor:pointer;text-transform:none;letter-spacing:0;margin:0}
+.rtf-color-pop label.rtf-sw-custom input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:none}
 .rtf-editable{padding:12px 14px;min-height:150px;font-family:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);outline:none;white-space:pre-wrap;overflow-wrap:break-word}
 .rtf-editable:empty:before{content:attr(data-placeholder);color:var(--nm-text-soft);white-space:pre-line}
 .rtf-editable.included-field{background:#E6F6EA}
@@ -8142,13 +8166,9 @@ function richTextFieldHTML(value, onchangeAttr, opts){
 // 서식 툴바(크기·글꼴·줄간격·B·I·U·표·서식✕·색상) — 장문 필드와 카드 태그 편집기가 함께 사용
 function rtfToolbarHTML(){
   return `<div class="rtf-toolbar" onmousedown="rtfSaveSelection()">
-      <select class="rtf-size-sel" title="글자 크기" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
+      <select class="rtf-size-sel" title="글자 크기(pt)" onchange="rtfCmd(this,'fontSize',this.value);this.value=''">
         <option value="">크기</option>
-        <option value="1">작게</option>
-        <option value="2">보통</option>
-        <option value="3">약간 크게</option>
-        <option value="4">크게</option>
-        <option value="5">아주 크게</option>
+        ${RTF_PT_SIZES.map(pt=>`<option value="${pt}">${pt}pt</option>`).join('')}
       </select>
       <select class="rtf-font-sel" title="폰트 종류" onchange="rtfCmd(this,'fontName',this.value);this.value=''">
         <option value="">글꼴</option>
@@ -8170,9 +8190,70 @@ function rtfToolbarHTML(){
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
       <button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button>
-      <label class="rtf-color" title="글자 색상"><input type="color" onchange="rtfCmd(this,'foreColor',this.value)" value="#0A1730"><span class="rtf-color-t">T</span></label>
+      <span class="rtf-color-group">
+        <button type="button" class="rtf-btn rtf-color-apply" title="글자 색상 적용(밑줄 색) — 텍스트를 선택하고 누르면 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'foreColor',_rtfColor)"><span class="rtf-color-t">T</span><span class="rtf-color-bar"></span></button>
+        <button type="button" class="rtf-btn rtf-color-more" title="글자 색상 고르기" onmousedown="event.preventDefault()" onclick="rtfToggleColorPop(this)">▾</button>
+        <div class="rtf-color-pop" hidden>
+          ${RTF_COLORS.map(c=>`<button type="button" class="rtf-sw" style="background:${c}" title="${c}" onmousedown="event.preventDefault()" onclick="rtfPickColor(this,'${c}')"></button>`).join('')}
+          <label class="rtf-sw-custom" title="팔레트에 없는 색 직접 고르기"><input type="color" value="#0A1730" onchange="rtfPickColor(this,this.value)">🎨 직접 선택</label>
+        </div>
+      </span>
     </div>`;
 }
+// [수정] 글자 크기는 pt 단위로 표기·적용
+const RTF_PT_SIZES = [8,9,10,10.5,11,12,13,14,16,18,20,24,28];
+// [수정] 글자 색상 — 네이티브 색상 선택기(input[type=color])는 값이 바뀔 때만 change가 발생해, 방금 쓴 색과
+// 같은 색을 다른 텍스트에 연속으로 적용하면 아무 일도 일어나지 않았다. 팔레트 버튼(클릭할 때마다 적용) +
+// 최근 색 다시 적용(T) 버튼으로 바꿔, 선택한 텍스트에 원하는 색이 항상 적용되게 한다
+const RTF_COLORS = ['#0A1730','#4B5563','#9CA3AF','#FFFFFF','#D6293E','#EA580C','#D97706','#CA8A04',
+                    '#16A34A','#0D9488','#0EA5E9','#2563EB','#1E3A8A','#7C3AED','#DB2777','#8B5A2B'];
+let _rtfColor = '#D6293E';
+document.documentElement.style.setProperty('--rtf-cur-color', _rtfColor);
+function rtfCloseColorPops(except){
+  document.querySelectorAll('.rtf-color-pop:not([hidden])').forEach(p=>{ if (p!==except) p.hidden = true; });
+}
+function rtfToggleColorPop(btn){
+  const pop = btn.parentNode.querySelector('.rtf-color-pop');
+  rtfCloseColorPops(pop);
+  if (!pop.hidden){ pop.hidden = true; return; }
+  // .rtf-wrap이 overflow:hidden이라 화면 기준(fixed)으로 띄운다
+  pop.hidden = false;
+  const r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+  const top = (r.bottom + 6 + h > window.innerHeight && r.top - 6 - h > 0) ? r.top - 6 - h : r.bottom + 6;
+  pop.style.left = left + 'px'; pop.style.top = top + 'px';
+}
+function rtfPickColor(el, c){
+  _rtfColor = c;
+  document.documentElement.style.setProperty('--rtf-cur-color', c);
+  rtfCloseColorPops();
+  rtfCmd(el, 'foreColor', c);
+}
+document.addEventListener('mousedown', e=>{
+  if (!e.target.closest || !e.target.closest('.rtf-color-group')) rtfCloseColorPops();
+}, true);
+window.addEventListener('scroll', e=>{
+  if (!(e.target && e.target.closest && e.target.closest('.rtf-color-pop'))) rtfCloseColorPops();
+}, true);
+window.addEventListener('resize', ()=>rtfCloseColorPops());
+// [추가] 크기 선택 칸에 커서 위치의 글자 크기를 pt로 표시(직접 지정한 크기가 없으면 "크기")
+document.addEventListener('selectionchange', ()=>{
+  const ae = document.activeElement;
+  if (!ae || !ae.classList || !ae.classList.contains('rtf-editable')) return;
+  const wrap = ae.closest('.rtf-wrap'); const selEl = wrap && wrap.querySelector('.rtf-size-sel');
+  if (!selEl || !selEl.options.length) return;
+  const sel = window.getSelection(); let n = sel && sel.anchorNode;
+  if (n && n.nodeType===3) n = n.parentNode;
+  let label = '크기';
+  if (n && ae.contains(n)){
+    const sized = n.closest('[style*="font-size"]');
+    if (sized && ae.contains(sized) && sized!==ae){
+      const pt = Math.round(parseFloat(getComputedStyle(n).fontSize) * 0.75 * 2) / 2;
+      if (pt) label = pt + 'pt';
+    }
+  }
+  if (selEl.options[0].textContent !== label) selEl.options[0].textContent = label;
+});
 // 리치 텍스트 툴바 버튼 — execCommand는 실행 대상(contenteditable)에 포커스·선택영역이 있어야
 // 하므로, 버튼 클릭 시 같은 .rtf-wrap 안의 편집 영역을 찾아 포커스한 뒤 명령을 실행한다.
 // 폰트 크기는 구식 <font size> 태그 대신, 임시로 가장 큰 legacy 크기(7)를 적용해 표시한 뒤
@@ -8211,11 +8292,10 @@ function rtfCmd(btnEl, cmd, val){
   rtfRestoreSelection(editable);
   if (cmd==='fontSize'){
     if (!val) return;
-    const sizeMap = {'1':'.8em','2':'1em','3':'1.15em','4':'1.4em','5':'1.7em'};
     document.execCommand('fontSize', false, '7');
     wrap.querySelectorAll('font[size="7"]').forEach(f=>{
       const span = document.createElement('span');
-      span.style.fontSize = sizeMap[val] || '1em';
+      span.style.fontSize = val + 'pt'; // [수정] pt 단위
       span.innerHTML = f.innerHTML;
       f.replaceWith(span);
     });
@@ -8314,11 +8394,9 @@ document.addEventListener('keydown', e=>{
   // 서식 입력란(contenteditable)
   if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit')){
     const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
-    let n = sel.anchorNode;
-    while (n && n.parentNode!==t) n = n.parentNode;
+    const n = rtfCaretBlock(t, sel);
     if (!n || n.nodeType!==1 || !n.classList.contains('rtf-sub')) return;
-    const empty = !(n.textContent||'').replace(/[\u200B\s]/g,'') && !n.querySelector('img,table');
-    if (!empty) return;
+    if (!rtfBlockEmpty(n)) return;
     e.preventDefault();
     n.classList.remove('rtf-sub'); if (!n.className) n.removeAttribute('class');
     if (!n.firstChild) n.appendChild(document.createElement('br'));
@@ -8346,6 +8424,54 @@ document.addEventListener('keydown', e=>{
     t.dispatchEvent(new Event('input', {bubbles:true}));
   }
 });
+// 커서가 있는 줄(편집 영역의 바로 아래 자식) — 커서가 편집 영역 자체에 걸린 경우(anchorNode===편집영역)도 처리
+function rtfCaretBlock(t, sel){
+  let n = sel.anchorNode;
+  if (n===t) n = t.childNodes[sel.anchorOffset] || t.childNodes[sel.anchorOffset-1] || null;
+  while (n && n.parentNode!==t) n = n.parentNode;
+  return n;
+}
+function rtfBlockEmpty(n){ return !(n.textContent||'').replace(/[\u200B\s]/g,'') && !n.querySelector('img,table'); }
+// [수정] 한글 입력 중(조합 중)에 Enter를 누르면 keydown이 isComposing/229로 들어와 위 처리를 건너뛰고
+// 브라우저 기본 줄바꿈만 일어나, 마지막 글자가 한글일 때 하위서식이 이어지지 않거나(일반 입력란)
+// 빈 하위 줄에서 상위로 돌아가지 않는 일이 간헐적으로 생겼다 — 줄바꿈이 실제로 들어간 직후(input)
+// 결과를 보고 같은 규칙으로 보정한다. 캡처 단계라 입력란 자체의 저장(oninput)보다 먼저 실행된다
+let _subEnterShift = false;
+document.addEventListener('keydown', e=>{ if (e.key==='Enter') _subEnterShift = e.shiftKey; }, true);
+document.addEventListener('input', e=>{
+  const t = e.target;
+  if (!e.inputType || _subEnterShift) return;
+  const isBreak = e.inputType==='insertLineBreak' || e.inputType==='insertParagraph' || (e.inputType==='insertText' && e.data==='\n');
+  if (!isBreak) return;
+  if (t && t.tagName==='TEXTAREA' && t.closest && t.closest('.ta-sub-wrap')){
+    const v = t.value, pos = t.selectionStart;
+    if (pos!==t.selectionEnd || v[pos-1]!=='\n') return;
+    const ps = v.lastIndexOf('\n', pos-2) + 1;
+    const prev = v.slice(ps, pos-1);
+    if (!prev.startsWith('\t')) return;
+    let ce = v.indexOf('\n', pos); if (ce<0) ce = v.length;
+    const cur = v.slice(pos, ce);
+    if (!prev.replace(/^\t+/,'').trim() && !cur.trim()){
+      t.value = v.slice(0, ps) + v.slice(pos); // 빈 하위 줄에서 Enter → 하위서식 해제(상위 줄로)
+      t.setSelectionRange(ps, ps);
+    } else if (!cur.startsWith('\t')){
+      t.value = v.slice(0, pos) + '\t' + v.slice(pos); // 내용 있는 하위 줄 → 다음 줄도 하위
+      t.setSelectionRange(pos+1, pos+1);
+    }
+    return;
+  }
+  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit')){
+    const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    const n = rtfCaretBlock(t, sel);
+    if (!n || n.nodeType!==1 || n.tagName!=='DIV' || !n.classList.contains('rtf-sub') || !rtfBlockEmpty(n)) return;
+    const prev = n.previousSibling;
+    if (!prev || prev.nodeType!==1 || !prev.classList.contains('rtf-sub') || !rtfBlockEmpty(prev)) return;
+    prev.remove();
+    n.classList.remove('rtf-sub'); if (!n.className) n.removeAttribute('class');
+    if (!n.firstChild) n.appendChild(document.createElement('br'));
+    const r = document.createRange(); r.setStart(n, 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+  }
+}, true);
 function plainSubLinesHTML(text){
   const t = String(text||'');
   if (t.indexOf('\n')<0 && t.indexOf('\t')<0) return escapeAttr(t);
@@ -9009,8 +9135,10 @@ function refreshCategoryProducts(regionKey){
       requestAnimationFrame(()=>{
         const firstReal = grid.querySelectorAll('.product')[1];
         if (firstReal) grid.scrollLeft = firstReal.offsetLeft - (grid.clientWidth - firstReal.clientWidth)/2;
+        mcfUpdate(grid);
       });
     }
+    initMobileCardFocus(grid); // [추가] 모바일 가운데 카드 강조
   }
 }
 
@@ -9159,7 +9287,7 @@ function fitProductCardsToScreen(grid){
   // 같은 배율을 계산해 한 줄의 모든 카드에 똑같이 적용한다
   cards.forEach(card=>{ card.style.zoom = ''; });
   let tallest = 0;
-  cards.forEach(card=>{ tallest = Math.max(tallest, card.getBoundingClientRect().height); });
+  cards.forEach(card=>{ tallest = Math.max(tallest, card.offsetHeight); }); // offsetHeight — 좌우 카드 축소(transform)와 무관한 실제 높이
   const z = (available>0 && tallest>available) ? Math.max(minScale, available/tallest) : 0;
   if (z) cards.forEach(card=>{ card.style.zoom = z; });
 }
@@ -9251,10 +9379,35 @@ function pcUpdateCenterDim(regionKey){
   const nearestIdx = pcNearestExtIndex(track);
   cards.forEach((c,i)=>c.classList.toggle('pc-dim', i!==nearestIdx));
 }
+// [추가] 모바일(≤780px) 가운데 카드 강조 — 스크롤하는 동안(rAF) 트랙 중앙에 가장 가까운 카드에 .m-center,
+// 나머지에 .m-side를 붙인다(좌우 카드 축소·반투명). 데스크톱·태블릿에서는 클래스를 모두 뗀다
+function mcfUpdate(container){
+  if (!container) return;
+  const cards = Array.from(container.children).filter(c=>c.classList.contains('product'));
+  if (window.innerWidth>780 || cards.length<2){ cards.forEach(c=>c.classList.remove('m-side','m-center','m-left','m-right')); return; }
+  const r = container.getBoundingClientRect(), cx = r.left + r.width/2;
+  let best=0, bd=Infinity;
+  cards.forEach((c,i)=>{ const cr=c.getBoundingClientRect(); const d=Math.abs(cr.left+cr.width/2-cx); if (d<bd){ bd=d; best=i; } });
+  cards.forEach((c,i)=>{ c.classList.toggle('m-center', i===best); c.classList.toggle('m-side', i!==best);
+    c.classList.toggle('m-left', i<best); c.classList.toggle('m-right', i>best); });
+}
+function initMobileCardFocus(container){
+  if (!container) return;
+  mcfUpdate(container);
+  if (container.dataset.mcf) return;
+  container.dataset.mcf = '1';
+  let raf = 0;
+  container.addEventListener('scroll', ()=>{
+    if (raf) return;
+    raf = requestAnimationFrame(()=>{ raf = 0; mcfUpdate(container); });
+  }, {passive:true});
+}
+window.addEventListener('resize', ()=>{ document.querySelectorAll('.pc-track, .product-grid').forEach(mcfUpdate); });
 function initProductCarousel(regionKey){
   const track = document.getElementById('pcTrack_'+regionKey);
   if (!track) return;
   initCarouselDrag(track);
+  initMobileCardFocus(track);
   pcRecalcPadding(regionKey);
   pcUpdateCenterDim(regionKey);
   // [수정] 모바일(카드 1장씩 노출)에서는 최초 스크롤 위치(0)가 실제 첫 상품이 아니라 맨 앞 범퍼
@@ -9269,6 +9422,7 @@ function initProductCarousel(regionKey){
       if (firstReal) track.scrollLeft = firstReal.offsetLeft - (track.clientWidth - firstReal.clientWidth)/2;
       pcUpdateDots(regionKey);
       pcUpdateCenterDim(regionKey);
+      mcfUpdate(track);
     });
   }
   let scrollTimer=null;

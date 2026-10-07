@@ -575,14 +575,14 @@ section.block{padding:100px 24px;position:relative}
    0.25줄(6px) 추가로 벌린다(6px→12px) */
 /* [추가] 제목 뒤에 붙는 추천 판매 시기 "【 10월 】" — 줄 중간에서 끊기지 않도록 한 덩어리로 */
 .pt-months{white-space:nowrap;color:var(--gold-deep);font-weight:700}
-/* [수정] 상품 카드의 추천 판매 시기 "【 10월 】" — 제목 뒤 하이픈(-) 제거, 제목 줄 오른쪽 끝에 배치, 글자 크기는 제목보다 2pt 작게 */
-.product-visual-title .pt-months{flex-shrink:0;margin-left:10px;margin-top:2px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
+/* [수정] 상품 카드의 추천 판매 시기 "【 10월 】" — 제목 뒤 하이픈(-) 제거, 제목의 마지막 줄(제목이 2~3줄이면 마지막 글자가 있는 줄) 오른쪽 끝에 배치, 글자 크기는 제목보다 2pt 작게 */
+.product-visual-title .pt-months{flex-shrink:0;margin-left:10px;margin-bottom:1px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
 .product-visual-title h4{flex:1;min-width:0}
 /* 상세 페이지 상단: "영남권 · YEONGNAM" 줄의 오른쪽 끝에 배치 (글자 크기는 상품 카드의 표기와 동일) */
 .pd-top-title .cat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
 .pd-top-title .cat-row .cat{margin-bottom:0;min-width:0}
 .pd-top-title .cat-row .pt-months{flex-shrink:0;margin-left:auto;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
-.product-visual-title{margin-bottom:12px;min-height:6px;display:flex;align-items:flex-start}
+.product-visual-title{margin-bottom:12px;min-height:6px;display:flex;align-items:flex-end}
 .product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 /* [수정] 타이틀 바로 아래 줄에 "🌙 박수"(좌측)와 "🗓 기간 · Nights"(우측)를 함께 배치 —
    최소인원(👥)은 그대로 meta 아래 product-period-row에 남는다. 두 배지 중 하나만 있어도
@@ -1208,11 +1208,11 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .link-item:has(.lico .region-tag:not(.ee-visa-badge)){padding-bottom:17px}
 .link-item .lname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* "블로그/SNS" 한 칸(2칸 폭) — 로고(항목)를 블로그 한 줄, SNS 한 줄로 배치 */
-.link-group-wide{grid-column:span 2}
-@media(max-width:600px){.link-group-wide{grid-column:1/-1}}
-.link-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:8px}
-.link-row .link-item{margin-bottom:0;padding:9px 10px;gap:8px}
-.link-row .link-item .lname{white-space:normal;overflow:visible;line-height:1.25;font-size:.8rem}
+/* "블로그/SNS" 한 칸 — 한 줄에 박스 2개, 박스 폭은 "네이버 블로그 · 국내 / 해외"가 한 줄에 들어가는 폭 기준 */
+.link-group-wide{flex:0 0 auto}
+.link-row{display:grid;grid-template-columns:repeat(2,var(--bs-w,226px));gap:8px;margin-bottom:8px}
+.link-row .link-item{margin-bottom:0;padding:11px 12px;gap:8px}
+.link-row .link-item .lname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8rem}
 .link-row .link-item .larr{display:none}
 .link-row .link-item:has(.lico .region-tag:not(.ee-visa-badge)){padding-bottom:17px}
 .link-item .larr{color:rgba(10,23,48,.35);font-size:.85rem}
@@ -1625,7 +1625,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* Band B2C/B2B CTA row */
 /* [수정] B2C/B2B 초대 박스 — "네이버 밴드" 칸 안에 두 줄(위·아래)로 쌓고, 칸 폭 전체를 쓰는 긴 박스. 박스마다 네이버 밴드 로고를 B2C/B2B 왼쪽에 둔다 */
 .band-cta-row{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px}
-.band-cta{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 14px;background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.15),rgba(0,199,60,.05));border:1px solid rgba(0,199,60,.4);border-radius:12px;color:#fff;font-weight:600;font-size:.85rem;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
+.band-cta{display:flex;align-items:center;gap:8px;min-width:0;box-sizing:border-box;min-height:60px;padding:10px 12px;background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.15),rgba(0,199,60,.05));border:1px solid rgba(0,199,60,.4);border-radius:12px;color:#fff;font-weight:600;font-size:.85rem;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
 .band-cta:hover{background:var(--btn-highlight),linear-gradient(135deg,rgba(0,199,60,.28),rgba(0,199,60,.12));border-color:#00C73C;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .band-cta:active{background:linear-gradient(135deg,rgba(0,199,60,.28),rgba(0,199,60,.12));transform:translateY(1px);box-shadow:var(--btn-press)}
 .band-cta.b2b{background:var(--btn-highlight),linear-gradient(135deg,rgba(24,119,242,.15),rgba(24,119,242,.05));border-color:rgba(24,119,242,.4)}
@@ -1633,7 +1633,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .band-cta.b2b:active{background:linear-gradient(135deg,rgba(24,119,242,.28),rgba(24,119,242,.12));box-shadow:var(--btn-press)}
 .band-cta .bc-logo{width:26px;height:26px;border-radius:7px;object-fit:contain;flex-shrink:0}
 .band-cta .bc-badge{background:#00C73C;color:#fff;font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:100px;letter-spacing:.05em}
-.band-cta .bc-label{color:var(--pine-deep);line-height:1.25;font-size:.84rem;min-width:0}
+.band-cta .bc-label{color:var(--pine-deep);line-height:1.25;font-size:.78rem;min-width:0;white-space:nowrap}
 .band-cta.b2b .bc-badge{background:#1877F2}
 .band-cta .bc-arr{margin-left:auto;color:var(--gold)}
 
@@ -1673,7 +1673,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 마지막 칸으로 밀어내던 배치(grid-column:-2/-1)를 없애 "SNS" 바로 오른쪽에 이어서 배치 */
 /* [수정] "SNS"와 "출·입국 신고 가이드" 사이 간격을 3배(20px → 60px)로 넓히고 구분선을 둔다.
    옆 칸에 놓이면 세로 구분선(.ee-side), 아래 줄로 내려가면 위쪽 구분선(.ee-below) — 어느 쪽인지는 layoutEeDivider()가 화면 폭에 맞춰 판단 */
-.ee-group{grid-column:auto;position:relative}
+.ee-group{position:relative}
+/* 출·입국 신고 가이드 박스: 2열, 박스가 늘어나면 오른쪽 열 → 다음 줄(5개면 3줄). 1개일 때는 1열 */
+.ee-grid{display:grid;grid-template-columns:repeat(2,var(--ee-w,168px));gap:8px}
+.ee-grid.ee-1{grid-template-columns:var(--ee-w,168px)}
+.ee-grid .link-item{margin-bottom:0;padding:11px 12px}
 .ee-group.ee-side{margin-left:40px}
 .ee-group.ee-side::before{content:'';position:absolute;left:-30px;top:0;bottom:0;width:1px;background:rgba(10,23,48,.18)}
 .ee-group.ee-below{margin-top:40px}
@@ -2208,7 +2212,17 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-terms a.hi:hover{background:rgba(221,179,103,.25);color:var(--pine-deep)}
 
 /* LINKS AUTO-FIT */
-.link-groups{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:20px!important}
+/* [수정] 연계채널 배치: 네이버 밴드 | 블로그/SNS | 출·입국 신고 가이드 — 칸마다 내용 폭(박스 폭)에 맞추고, 네이버 밴드와 블로그/SNS 사이는 40px.
+   칸이 모자라면 다음 줄로 내려간다 */
+.link-groups{display:flex!important;flex-wrap:wrap;align-items:flex-start;gap:20px!important}
+.link-groups > .link-group{flex:0 0 auto}
+.link-groups > .link-group-band{width:224px;margin-right:20px}
+@media(max-width:780px){
+  .link-groups > .link-group{flex:1 1 100%;width:auto!important;margin-right:0!important}
+  .link-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .link-row .link-item .lname{white-space:normal;line-height:1.25}
+  .ee-grid,.ee-grid.ee-1{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 
 /* RESPONSIVE */
 @media(max-width:1024px){
@@ -11381,8 +11395,10 @@ function renderEntryExitGroup(){
   if (!active.length) return '';
   return `<div class="link-group ee-group">
     <h4>출·입국 신고 가이드</h4>
+    <div class="ee-grid${active.length===1?' ee-1':''}">
     ${active.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
       ${entryExitIconEl(it)}<span class="lname">${escapeAttr(it.name)}</span><span class="larr">→</span></a>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -11407,7 +11423,7 @@ function renderLinks(){
   // 네이버 밴드 칸: B2C/B2B 초대 박스(두 줄) + 공식 밴드
   const bandItems = LINK_DEFS.band.items.filter(it=>it.key==='band_main' && !linkHiddenOverrides[it.key] && isLinkActive(it.key));
   const bandCustom = customOf('band');
-  const bandHTML = (!bandItems.length && !bandCustom.length && !ctaHTML) ? '' : `<div class="link-group">
+  const bandHTML = (!bandItems.length && !bandCustom.length && !ctaHTML) ? '' : `<div class="link-group link-group-band">
       <h4>${LINK_DEFS.band.label}</h4>
       ${ctaHTML}
       ${bandItems.map(itemHTML).join('')}

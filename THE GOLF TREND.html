@@ -1071,8 +1071,8 @@ section.block{padding:100px 24px;position:relative}
 .post-tag-blog .post-tag-icon{width:22px;height:22px;border-radius:0;background:none}
 .post-tag-badge.post-tag-band{padding:3px 12px 3px 6px}
 .post-tag-band .post-tag-icon{width:20px;height:20px;border-radius:5px;background:none}
-/* 유튜브 박스 안 로고 115% (13px → 약 15px) */
-.post-tag-red .post-tag-icon{width:calc(13px * 1.15);height:calc(13px * 1.15)}
+/* 유튜브 박스 안 로고 120% (13px → 15.6px) */
+.post-tag-red .post-tag-icon{width:calc(13px * 1.2);height:calc(13px * 1.2)}
 .pc-opt.band{background:#3a3f45}
 .post-tag-link{cursor:pointer;transition:transform .15s,box-shadow .15s}
 .post-tag-link:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(10,23,48,.25)}
@@ -5430,7 +5430,7 @@ let _cpTableOk = false;     // channel_posts 테이블 사용 가능 여부(비�
 let _cpTotal = 0;           // 저장된 전체 글/영상 수
 let _cpHomeRows = [];       // 홈용(최신 + 추천 고정) 행
 let _cpByChannel = {};      // 관리자용 채널별 전체 목록
-let _cpSyncRunning = false, _cpAutoSyncTried = false, _cpSyncMsg = '';
+let _cpSyncRunning = false, _cpAutoSyncTried = false, _cpSyncMsg = '', _cpLastError = '';
 // ── 네이버 블로그 카테고리 → 여행 이야기 태그 ──
 // 기본: "국내 패키지 여행" → 국내-블로그, "해외 패키지 여행" → 해외-블로그. 그 밖의 카테고리는 관리자가 채널 카드의
 // "카테고리별 태그"에서 지정할 수 있고, 글 단위 태그 지정(ov.tag)이 있으면 그것이 가장 우선한다.
@@ -5466,13 +5466,13 @@ async function loadChannelPostsHome(){
   const client = (typeof getSupabaseClient==='function') ? getSupabaseClient() : null;
   if (!client){ _cpMode='legacy'; _cpTableOk=false; return false; }
   try{
-    let head = await client.from(CHANNEL_POSTS_TABLE).select('link,category', {count:'exact', head:true});
-    if (head.error && /category/i.test(head.error.message||'')){ // category 열이 아직 없음 — 기본 열만 사용
-      _cpHasCategory = false;
-      head = await client.from(CHANNEL_POSTS_TABLE).select('link', {count:'exact', head:true});
-    } else if (!head.error) _cpHasCategory = true;
+    const head = await client.from(CHANNEL_POSTS_TABLE).select('link', {count:'exact', head:true});
     if (head.error) throw head.error;
-    _cpTableOk = true; _cpTotal = head.count || 0;
+    _cpTableOk = true; _cpLastError = ''; _cpTotal = head.count || 0;
+    // category 열이 있는지는 일반 조회(GET)로 확인한다. HEAD 요청은 오류가 나도 설명이 비어 있어서, 열이 없는 것을
+    // "표가 없는 것"으로 잘못 판단해 저장소가 꺼지는 문제가 있었다. 열이 없어도 저장소는 그대로 사용한다.
+    try{ const c = await client.from(CHANNEL_POSTS_TABLE).select('category').limit(1); _cpHasCategory = !c.error; }
+    catch(e){ _cpHasCategory = false; }
     if (!_cpTotal){ _cpMode='legacy'; _cpHomeRows=[]; return false; }
     const {data, error} = await client.from(CHANNEL_POSTS_TABLE).select(cpCols()).order('published_at',{ascending:false, nullsFirst:false}).limit(60);
     if (error) throw error;
@@ -5488,7 +5488,9 @@ async function loadChannelPostsHome(){
     _cpMode = 'db';
     return true;
   }catch(e){
-    _cpMode='legacy'; _cpTableOk=false;
+    _cpMode='legacy'; _cpTableOk=false; _cpHasCategory=false;
+    // 관리자 화면에 사유를 보여 주기 위해 보관(표가 없으면 code 42P01 / PGRST205)
+    _cpLastError = (e && (e.message || e.details || e.hint || e.code)) ? [e.code, e.message || e.details || e.hint].filter(Boolean).join(' ') : '응답에 설명이 없음(네트워크 또는 권한 문제일 수 있음)';
     return false;
   }
 }
@@ -5600,6 +5602,10 @@ async function syncChannels(opts){
   if (_cpSyncRunning || !adminSession) return;
   if (!_cpTableOk) await loadChannelPostsHome();
   if (!_cpTableOk){ // 테이블이 없으면 기존 방식(방문자 기기별 RSS)
+    if (opts.full){
+      alert('전체 수집을 하려면 Supabase 저장소(channel_posts 표)가 필요합니다.\n\n' + (_cpLastError ? '현재 상태: ' + _cpLastError + '\n\n' : '') + '설정 안내: docs/channel-collection-setup.md 의 1단계');
+      renderAdminChannels(); return;
+    }
     await refreshChannelFeeds(opts.ids ? {force:opts.ids} : undefined);
     renderBlog(); renderAdminChannels(); return;
   }
@@ -5791,7 +5797,7 @@ function removeChannel(id){
 }
 // 🔄 새 글 수집(증분) / 전체 다시 수집(full)
 function refreshChannelNow(id, full){
-  if (_cpTableOk && adminSession){ syncChannels({ids:[id], full:!!full}); return; }
+  if (adminSession && (_cpTableOk || full)){ syncChannels({ids:[id], full:!!full}); return; }
   refreshChannelFeeds({force:[id]}).then(()=>{ renderBlog(); renderAdminChannels(); });
 }
 // [추가] 관리자 — 수집 서버 주소·저장소 상태·수집 진행 상황
@@ -5800,7 +5806,7 @@ function renderCollectorBox(){
   const ep = collectorEndpointOverride || '';
   const store = _cpTableOk
     ? `<span class="cpb-ok">● 저장소 사용 중</span> — Supabase에 저장된 글·영상 ${_cpTotal}개를 방문자에게 보여줍니다(방문자 브라우저는 수집하지 않음).`
-    : `<span class="cpb-warn">● 저장소 미설정</span> — channel_posts 테이블이 없어 기존 방식(방문자 기기별 RSS 최신 글)으로 동작 중입니다. 설정 안내: docs/channel-collection-setup.md`;
+    : `<span class="cpb-warn">● 저장소 미설정</span> — channel_posts 테이블을 찾지 못해 기존 방식(방문자 기기별 RSS 최신 글)으로 동작 중입니다. 설정 안내: docs/channel-collection-setup.md${_cpLastError?`<br><span class="file-hint">확인된 사유: ${escapeAttr(_cpLastError)} <button type="button" class="abc-btn-sm" style="margin-left:6px" onclick="loadChannelPostsHome().then(()=>{renderBlog();renderAdminChannels();})">다시 확인</button></span>`:''}`;
   box.innerHTML = `<div class="cpb-row">
       <label class="abc-label" for="collectorEpInput">수집 서버 주소</label>
       <input type="text" id="collectorEpInput" class="abc-input" placeholder="https://golftrend-collector.○○○.workers.dev" value="${escapeAttr(ep)}" onchange="setCollectorEndpoint(this.value);renderCollectorBox()">
@@ -5809,11 +5815,11 @@ function renderCollectorBox(){
     </div>
     <div class="cpb-store">${store}</div>
     ${_cpTableOk && !_cpHasCategory ? `<div class="cpb-warn" style="font-size:.78rem;line-height:1.6">카테고리별 태그(국내-블로그/해외-블로그)를 쓰려면 Supabase SQL Editor에서 아래를 한 번 실행하세요. 그다음 채널 카드의 <b>⟳ 전체</b>로 다시 수집합니다.<br><code style="user-select:all;word-break:break-all">alter table public.channel_posts add column if not exists category text not null default '';</code></div>` : ''}
-    ${_cpTableOk?`<div class="cpb-sync">
+    <div class="cpb-sync">
       <button type="button" class="abc-btn-sm" ${_cpSyncRunning?'disabled':''} onclick="syncChannels({})">🔄 모든 채널 새 글 수집</button>
       <button type="button" class="abc-btn-sm" ${_cpSyncRunning?'disabled':''} onclick="if(confirm('모든 채널의 글·영상을 처음부터 다시 가져올까요? (글이 많으면 몇 분 걸릴 수 있습니다)'))syncChannels({full:true})">⟳ 전체 다시 수집</button>
-      <span class="file-hint">${escapeAttr(_cpSyncMsg||'관리자 패널을 열 때 마지막 수집이 12시간 지났으면 자동으로 새 글을 가져옵니다')}</span>
-    </div>`:''}`;
+      <span class="file-hint">${escapeAttr(_cpSyncMsg||(_cpTableOk?'관리자 패널을 열 때 마지막 수집이 12시간 지났으면 자동으로 새 글을 가져옵니다':'전체 수집은 저장소(channel_posts 표)가 설정되면 사용할 수 있습니다'))}</span>
+    </div>`;
 }
 function cpAgo(t){
   const m = Math.round((Date.now()-t)/60000);
@@ -6059,7 +6065,7 @@ function renderAdminChannels(){
         </div>
         <div class="admin-channel-actions">
           <button type="button" class="abc-btn-sm" onclick="refreshChannelNow('${ch.id}')" title="새 글 수집" ${_cpSyncRunning?'disabled':''}>🔄</button>
-          ${_cpTableOk?`<button type="button" class="abc-btn-sm" title="이 채널의 글·영상을 처음부터 다시 수집" ${_cpSyncRunning?'disabled':''} onclick="refreshChannelNow('${ch.id}',true)">⟳ 전체</button>`:''}
+          <button type="button" class="abc-btn-sm" title="이 채널의 글·영상을 처음부터 다시 수집" ${_cpSyncRunning?'disabled':''} onclick="refreshChannelNow('${ch.id}',true)">⟳ 전체</button>
           <button type="button" class="file-btn danger" onclick="removeChannel('${ch.id}')">삭제</button>
         </div>
       </div>

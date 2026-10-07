@@ -10649,10 +10649,25 @@ async function paLoadMore(){
     if (seq === _pa.seq){ _pa.loading = false; paRenderGrid(); }
   }
 }
+// 홈에 보이는 수동 등록 카드(블로그 바로가기 등)도 전체 보기에 함께 보여 홈 카드 ⊆ 전체 보기가 되게 한다
+function paManualCards(){
+  return syncBlogProductLinks().filter(b=>{
+    if (_pa.type && ((b.tag==='유튜브')?'youtube':'blog')!==_pa.type) return false;
+    if (_pa.region){
+      const cat = b.productCat || '';
+      if (_pa.region==='domestic'){ if (!CATEGORIES.domestic.some(d=>d.id===cat)) return false; }
+      else if (_pa.region==='overseas'){ if (!CATEGORIES.overseas.some(d=>d.id===cat)) return false; }
+      else if (cat!==_pa.region) return false;
+    }
+    if (_pa.q && !((b.title1||'')+' '+(b.title||'')+' '+(b.url||'')).toLowerCase().includes(_pa.q.toLowerCase())) return false;
+    return true;
+  });
+}
 function paRenderGrid(){
   const grid = document.getElementById('paGrid'); if (!grid) return;
   cpResetGroups('a');
-  const cards = buildAutoPosts(_pa.entries);
+  const cards = paManualCards().concat(buildAutoPosts(_pa.entries));
+  _pa.shown = cards.length;
   grid.innerHTML = cards.length ? cards.map(b=>postCardHTML(b)).join('')
     : (_pa.loading ? '' : `<div class="pa-empty">${_pa.error?'목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.':'조건에 맞는 글·영상이 없습니다.'}</div>`);
   _pgPrefix = 'h'; // 홈 카드의 선택창 데이터는 건드리지 않는다
@@ -10660,7 +10675,7 @@ function paRenderGrid(){
 }
 function paRenderFoot(){
   const f = document.getElementById('paFoot'); if (!f) return;
-  const n = _pa.entries.length;
+  const n = _pa.shown || 0; // 글 수가 아니라 화면에 보이는 카드 수
   f.innerHTML = _pa.loading ? '<span class="pa-loading">불러오는 중…</span>'
     : (_pa.done ? (n?`<span class="pa-count">${n}개 모두 표시</span>`:'')
       : `<button type="button" class="pa-more" onclick="paLoadMore()">더 보기</button><span class="pa-count">${n}개 표시 중</span>`);
@@ -10738,6 +10753,54 @@ function postCardHTML(b){
     </div>
   </article>`;
 }
+// "전체 보기 (N) →"의 N = 전체 보기 창에 나오는 카드 수. 저장소 모드에서는 글 전부를 내려받지 않고,
+// 숨김·같은 상품 묶음처럼 카드 수에 영향을 주는 글(관리자 편집이 있는 글)만 저장소에 있는지 조회해 계산한다
+let _cpCountCache = {key:'', n:null}, _cpCountSeq = 0;
+function setPostMoreCount(n){
+  const moreBtn = document.getElementById('blogMoreBtn');
+  if (moreBtn) moreBtn.textContent = n ? `전체 보기 (${n}) →` : '전체 보기 →';
+}
+function updatePostMoreCount(manualN){
+  if (_cpMode!=='db'){
+    setPostMoreCount(manualN + buildAutoPosts(cpSortEntries(cpAllEntries())).length);
+    return;
+  }
+  const ovs = getChannelPostOverrides();
+  const pinned = [];
+  getChannelsList().forEach(ch=>(ch.pinned||[]).forEach(it=>{ const l = it && canonPostLink(it.link); if (l) pinned.push(l); }));
+  const prodKey = o=>(o && o.productCat && o.productIdx!=null && !o.manualUrl) ? o.productCat+'#'+o.productIdx : '';
+  const cand = Object.keys(ovs).filter(k=>ovs[k] && (ovs[k].hidden || prodKey(ovs[k])));
+  const key = [_cpTotal, manualN, pinned.join(','), cand.map(k=>k+'|'+(ovs[k].hidden?'h':'')+prodKey(ovs[k])).join(',')].join('~');
+  if (_cpCountCache.key===key){ setPostMoreCount(_cpCountCache.n); return; }
+  const seq = ++_cpCountSeq;
+  (async ()=>{
+    try{
+      const probe = Array.from(new Set(cand.concat(pinned)));
+      const inTable = new Set();
+      if (probe.length){
+        const client = getSupabaseClient();
+        for (let i=0; i<probe.length; i+=80){
+          const r = await client.from(CHANNEL_POSTS_TABLE).select('link').in('link', probe.slice(i,i+80));
+          if (r.error) throw r.error;
+          (r.data||[]).forEach(x=>inTable.add(canonPostLink(x.link)));
+        }
+      }
+      const pinnedSet = new Set(pinned);
+      let total = _cpTotal;
+      pinnedSet.forEach(l=>{ if (!inTable.has(l)) total++; }); // 직접 추가한 글(저장소에 없는 것)
+      const groups = {};
+      cand.forEach(l=>{
+        if (!inTable.has(l) && !pinnedSet.has(l)) return; // 이미 사라진 글에 남은 편집값
+        if (ovs[l].hidden){ total--; return; }
+        const k = prodKey(ovs[l]); if (k) groups[k] = (groups[k]||0)+1;
+      });
+      Object.keys(groups).forEach(k=>{ total -= groups[k]-1; }); // 같은 상품으로 묶인 글은 카드 1장
+      const n = Math.max(0, total) + manualN;
+      _cpCountCache = {key, n};
+      if (seq===_cpCountSeq) setPostMoreCount(n);
+    }catch(e){ if (seq===_cpCountSeq) setPostMoreCount(0); }
+  })();
+}
 function renderBlog(){
   const grid=document.getElementById('blogGrid');
   const manualList = syncBlogProductLinks();
@@ -10747,11 +10810,8 @@ function renderBlog(){
   const list = manualList.concat(getAutoCollectedPosts());
   cpResetGroups('h');
   // "전체 보기 →" 버튼에 전체 글/영상 수 표시
-  const moreBtn = document.getElementById('blogMoreBtn');
-  if (moreBtn){
-    const n = _cpMode==='db' ? _cpTotal + getChannelsList().reduce((a,ch)=>a+(ch.pinned||[]).length,0) : cpAllEntries().length;
-    moreBtn.textContent = n ? `전체 보기 (${n}) →` : '전체 보기 →';
-  }
+  // [수정] 숫자는 글 수가 아니라 "전체 보기에서 실제로 보이는 카드 수"(숨김 제외 · 같은 상품으로 묶인 글은 1장)
+  updatePostMoreCount(manualList.length);
   const cardsHTML = list.map(postCardHTML).join('');
   // [수정] 모바일 스와이프 캐러셀에서 첫 카드 왼쪽에 마지막 카드 끝쪽이 보여지고 그대로 스와이프해
   // 이동할 수 있도록(순환 루프), 상품 캐러셀(.pc-track)과 동일하게 맨 앞엔 마지막 글의 복제를,

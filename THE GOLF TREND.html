@@ -623,6 +623,7 @@ section.block{padding:100px 24px;position:relative}
 /* [추가] 숙소 위치 박스 — 골프장 外 숙박은 연한 빨강, 골프장 內 숙박은 연한 파랑 */
 .product-period-box.lodge-outside,.adv-body .bf-input.bf-gray.lodge-outside{background:#FFE1E1;border-color:rgba(220,38,38,.28)}
 .product-period-box.lodge-inside,.adv-body .bf-input.bf-gray.lodge-inside{background:#DCEBFF;border-color:rgba(37,99,235,.28)}
+.product-period-box.lodge-golftel,.adv-body .bf-input.bf-gray.lodge-golftel{background:#E3F4DC;border-color:rgba(22,163,74,.3)}
 .mchip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
 /* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
 .airfare-excluded{color:#D6293E !important}
@@ -1002,6 +1003,12 @@ section.block{padding:100px 24px;position:relative}
 /* 일정 요약 타임라인 */
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
+.pd-guide-slot{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.pd-guide-overview{font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
+.pd-guide-note{padding:12px 14px!important;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:10px;font-size:.8rem;gap:5px!important}
+.pd-guide-note .row{font-size:.8rem;color:rgba(10,23,48,.78)}
+.pd-guide-note .row .ic:empty{display:none}
+.pd-guide-note .row.row-sub{padding-left:1.5em}
 .pd-schedule-note{padding:12px 14px;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:10px;font-size:.76rem;line-height:1.6;color:rgba(10,23,48,.72)}
 .pd-sch-group{border:1px solid rgba(10,23,48,.08);border-radius:14px;overflow:hidden;background:rgba(10,23,48,.02)}
 .pd-sch-group-head{padding:12px 16px;background:rgba(221,179,103,.18);display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1586,6 +1593,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-fields input:focus,.apc-fields select:focus,.apc-fields textarea:focus{outline:none;box-shadow:var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .apc-fields select option{background:var(--nm-white);color:var(--nm-text)}
 .add-product-btn{width:100%;min-height:44px;padding:12px;background:var(--nm-surface);border:none;color:var(--nm-blue-deep);border-radius:var(--nm-r-md);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:6px;box-shadow:var(--nm-shadow-inset)}
+.apc-all-group h5{font-size:.82rem;letter-spacing:.14em;color:var(--nm-blue-deep);margin:18px 0 6px;font-weight:700}
+.apc-all-cat{display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-size:.78rem;font-weight:700;color:var(--nm-text)}
+.apc-all-cat em{font-style:normal;font-weight:500;color:var(--nm-text-soft)}
+.apc-all-row{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:6px;background:var(--nm-surface);border-radius:var(--nm-r-md);box-shadow:var(--nm-shadow-raised-sm);flex-wrap:wrap}
+.apc-all-row .idx{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;letter-spacing:.1em;flex-shrink:0}
+.apc-all-title{flex:1;min-width:140px;font-size:.85rem;font-weight:500;color:var(--nm-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.add-divider-btn{margin-top:8px;background:transparent;box-shadow:none;border:1px dashed rgba(10,23,48,.28);min-height:38px;font-size:.82rem}
+.pe-divider-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px;color:var(--nm-text-soft);font-size:.74rem;font-weight:600;letter-spacing:.12em}
+.pe-divider-line{flex:1;height:0;border-top:2px dashed rgba(10,23,48,.28)}
+.pe-divider-row .pee-del{flex-shrink:0}
+/* 자세히 보기 요금표의 항목 사이 구분선 */
+.pd-pe-divider{height:0;border-top:2px solid rgba(10,23,48,.2);margin:6px 4px}
 .add-product-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press)}
 .reset-cat-btn{padding:8px 14px;background:var(--nm-surface);border:none;color:var(--nm-text-soft);border-radius:var(--nm-r-pill);font-size:.75rem;cursor:pointer;transition:all .2s;box-shadow:var(--nm-shadow-raised-sm)}
 .reset-cat-btn:hover{background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue);color:#fff}
@@ -4843,13 +4862,13 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
     </div>
     <div id="tabProducts" style="display:none">
       <div class="admin-info-box"><b>💡</b> 편집할 여행지를 먼저 선택하세요. 기본 정보는 자동 저장됩니다. <b>"고급 편집"</b> 버튼으로 미디어·요금표·레이블·연락처를 관리할 수 있습니다.</div>
-      <select class="product-cat-select" id="productCatSelect" onchange="renderProductAdmin(this.value)"></select>
+      <select class="product-cat-select" id="productCatSelect" onchange="onProductCatChange(this.value)"></select>
       <div class="product-toolbar">
         <span class="info" id="productCount"></span>
-        <button class="reset-cat-btn" onclick="resetCategoryProducts()">이 카테고리 초기값 복원</button>
+        <button class="reset-cat-btn" id="resetCatBtn" onclick="resetCategoryProducts()">이 카테고리 초기값 복원</button>
       </div>
       <div id="productList"></div>
-      <button class="add-product-btn" onclick="addProduct()">+ 새 상품 추가</button>
+      <button class="add-product-btn" id="addProductBtn" onclick="addProduct()">+ 새 상품 추가</button>
     </div>
     <div id="tabLinks" style="display:none">
       <div class="admin-info-box"><b>💡</b> URL을 입력하면 홈페이지에 해당 채널 버튼이 활성화되고, 비워두면 감춰집니다. <b>리틀리(Litt.ly) 국내·해외는 SNS 그룹에 포함</b>되어 있습니다. 자동 저장됩니다.</div>
@@ -5006,6 +5025,7 @@ function newLabels(){
 function newPriceEntry(){
   return {
     hidden:false, // [추가] 화면(고객)에서 이 요금 항목을 숨김 처리할지 여부 — 삭제하지 않고 노출만 끔
+    dividerBefore:false, // [추가] 이 항목 위에 구분선
     headline:'', link:'', linkVisible:true, layout:'card', emphasis:[],
     salePrice:0, saleCurrency:'KRW', saleFromLabel:true,
     originalPrice:0, originalCurrency:'KRW', originalFromLabel:false,
@@ -5104,6 +5124,12 @@ function ensureExtended(p){
   // 시작한다. 한 번 채운 뒤(extraFeesSeeded)에는 관리자가 모두 지워도 다시 채우지 않는다
   if (!p.extraFees.length && !p.extraFeesSeeded) p.extraFees = defaultExtraFees();
   p.extraFeesSeeded = true;
+  // [추가] "공통 안내"가 아직 비어 있고 한 번도 채운 적이 없는 상품은 기본 안내 문구(환불·취소·우천 규정)로 시작한다.
+  // 한 번 채운 뒤(notesSeeded)에는 관리자가 모두 지워도 다시 채우지 않는다
+  if (!p.notesSeeded){
+    if (!String(p.notes||'').replace(/<[^>]*>/g,'').trim()) p.notes = defaultNotesText();
+    p.notesSeeded = true;
+  }
   // [Phase 3 상품등록 개선 v4] 추가 요금 안내 항목을 그룹으로 묶어 표시 가능 — kind:'group'(제목만) / 'item'(항목·금액)
   p.extraFees.forEach(f=>{
     if (f.kind!=='group') f.kind='item'; // 기존 데이터(구분 없음)는 모두 일반 항목으로 간주
@@ -5150,6 +5176,7 @@ function ensureExtended(p){
   // 각 priceEntry에 새 필드 백필
   p.priceEntries.forEach(pe=>{
     if (pe.hidden===undefined) pe.hidden = false; // [추가] 요금 항목 숨김 여부
+    if (pe.dividerBefore===undefined) pe.dividerBefore = false; // [추가] 이 항목 위에 구분선(요금표에서 앞 항목과 구분)
     if (!pe.saleCurrency) pe.saleCurrency='KRW';
     if (!pe.originalCurrency) pe.originalCurrency='KRW';
     if (pe.saleFromLabel===undefined) pe.saleFromLabel = true;
@@ -9112,43 +9139,81 @@ function rtfLineBlock(editable, node){
   if (div.nextSibling && div.nextSibling.nodeName==='BR') div.nextSibling.remove(); // 줄 경계는 이제 </div>가 대신한다
   return div;
 }
-// [수정] 한 덩어리 안에 여러 줄이 들어 있는 경우(Shift+Enter·붙여넣기 등으로 생긴 "\n" 문자나 <div> 안의 <br>)
-// 하위서식이 커서가 있는 줄만이 아니라 그 덩어리 전체(윗줄들까지)에 적용되던 문제 — 적용 전에 줄 단위로
-// 나눠 둔다. 표시·저장 결과(bulletRowsRich는 \n·<br>·<div>를 모두 줄바꿈으로 취급)는 그대로이고, 노드를
-// 옮기기만 하므로 현재 선택 영역(live Range)도 유지된다
-function rtfSplitLines(editable){
-  // 1) 텍스트 속 "\n" → <br> (표 안은 제외)
-  const walker = document.createTreeWalker(editable, NodeFilter.SHOW_TEXT);
-  const texts = []; let tn;
-  while ((tn = walker.nextNode())) if (tn.data.indexOf('\n')>=0 && !(tn.parentNode.closest && tn.parentNode.closest('table'))) texts.push(tn);
-  texts.forEach(t=>{
-    let cur = t, i;
-    while ((i = cur.data.indexOf('\n'))>=0){
-      const rest = cur.splitText(i);       // cur = 앞부분, rest = "\n..."
-      rest.deleteData(0,1);
-      rest.parentNode.insertBefore(document.createElement('br'), rest);
-      cur = rest;
+// [버그 수정] 하위서식이 커서가 있는 줄이 아니라 입력란 전체(또는 엉뚱한 줄)에 적용되던 문제 — 편집 영역의 줄 구조가
+// 제각각이라서 생겼다. 서식(글자 크기·색상 등)을 입력란 전체에 적용하거나 붙여넣으면 줄들이 <span>·<font>·<b> 같은
+// 인라인 태그 하나에 통째로 들어가 있거나(<span>첫줄<br>둘째줄…</span>), <div>가 인라인 태그 안에 들어가 있거나,
+// 줄 구분이 <p>·"\n" 문자인 경우가 있다. 그러면 "커서가 있는 줄"을 찾을 수 없어 덩어리 전체가 하위서식 줄이 되었다.
+// 적용 전에 편집 영역을 "줄마다 <div> 하나"로 평탄화한다 — 글자 서식(인라인 태그)은 줄마다 복제해 그대로 유지하고,
+// 줄의 class(하위서식)·style은 그 줄이 속해 있던 블록의 것을 이어받으며, 표(<table>)는 한 덩어리로 보존한다.
+// 표시·저장 결과(bulletRowsRich는 \n·<br>·<div>를 모두 줄바꿈으로 취급)는 그대로이고, 현재 커서·선택 영역은
+// 임시 표식을 심어 두었다가 같은 위치로 복원한다
+const RTF_BLOCK_TAGS = new Set(['DIV','P','LI','UL','OL','H1','H2','H3','H4','H5','H6','BLOCKQUOTE']);
+function rtfNormalizeLines(editable){
+  const sel = window.getSelection();
+  let range = (sel && sel.rangeCount) ? sel.getRangeAt(0) : null;
+  if (range && !editable.contains(range.commonAncestorContainer)) range = null;
+  const mk = k=>{ const m=document.createElement('span'); m.setAttribute('data-rtf-mark',k); return m; };
+  const ms = mk('s'), me = mk('e');
+  if (range){
+    const r2 = range.cloneRange(); r2.collapse(false); r2.insertNode(me);
+    const r1 = range.cloneRange(); r1.collapse(true); r1.insertNode(ms);
+  }
+  const lines = []; let cur = null;
+  const push = ()=>{ if (cur) lines.push(cur); cur = null; };
+  const ensure = attrs=>{ if (!cur) cur = {nodes:[], attrs:attrs}; return cur; };
+  const wrap = (node, stack)=>{ let n=node; for (let i=stack.length-1;i>=0;i--){ const w=stack[i].cloneNode(false); w.appendChild(n); n=w; } return n; };
+  const walk = (node, stack, attrs)=>{
+    if (node.nodeType===3){
+      if (!cur && /^\s*$/.test(node.data) && node.data.indexOf('\n')>=0) return; // 태그 사이의 서식용 공백·줄바꿈
+      const parts = node.data.split('\n');
+      parts.forEach((t,i)=>{
+        if (i>0) push();
+        if (t===''){ if (i>0 && i<parts.length-1){ ensure(attrs); push(); } }
+        else ensure(attrs).nodes.push(wrap(document.createTextNode(t), stack));
+      });
+      return;
     }
+    if (node.nodeType!==1) return;
+    const tag = node.tagName;
+    if (tag==='BR'){ ensure(attrs); push(); return; }
+    if (tag==='TABLE'){ push(); lines.push({nodes:[node.cloneNode(true)], attrs:null, atomic:true}); return; }
+    if (node.hasAttribute('data-rtf-mark') || tag==='IMG'){ ensure(attrs).nodes.push(wrap(node.cloneNode(true), stack)); return; }
+    if (RTF_BLOCK_TAGS.has(tag)){
+      push();
+      const merged = {
+        cls: [attrs && attrs.cls, node.className].filter(Boolean).join(' '),
+        style: [attrs && attrs.style, node.getAttribute('style')].filter(Boolean).join(';')
+      };
+      Array.from(node.childNodes).forEach(c=>walk(c, stack, merged));
+      push();
+      return;
+    }
+    stack.push(node);
+    Array.from(node.childNodes).forEach(c=>walk(c, stack, attrs));
+    stack.pop();
+  };
+  Array.from(editable.childNodes).forEach(c=>walk(c, [], null));
+  push();
+  const frag = document.createDocumentFragment();
+  lines.forEach(l=>{
+    if (l.atomic){ frag.appendChild(l.nodes[0]); return; }
+    const d = document.createElement('div');
+    if (l.attrs && l.attrs.cls) d.className = l.attrs.cls;
+    if (l.attrs && l.attrs.style) d.setAttribute('style', l.attrs.style);
+    l.nodes.forEach(n=>d.appendChild(n));
+    if (!d.firstChild) d.appendChild(document.createElement('br'));
+    frag.appendChild(d);
   });
-  // 2) 편집 영역 바로 아래 <div> 안에서 <br>로 나뉜 여러 줄 → 줄마다 같은 속성(class·style)의 <div>로 분리
-  Array.from(editable.childNodes).forEach(div=>{
-    if (div.nodeType!==1 || div.tagName!=='DIV') return;
-    const kids = Array.from(div.childNodes);
-    const lines = []; let cur = [];
-    kids.forEach(k=>{
-      if (k.nodeName==='BR'){ lines.push(cur); cur = []; } // 마지막 <br>(빈 줄 자리표시)은 줄을 하나 더 만들지 않는다
-      else cur.push(k);
-    });
-    if (cur.length) lines.push(cur);
-    if (lines.length<=1) return;
-    lines.forEach(nodes=>{
-      const d = div.cloneNode(false);
-      nodes.forEach(n=>d.appendChild(n));
-      if (!d.firstChild) d.appendChild(document.createElement('br'));
-      editable.insertBefore(d, div);
-    });
-    div.remove();
-  });
+  editable.textContent = '';
+  editable.appendChild(frag);
+  if (range){
+    const s = editable.querySelector('[data-rtf-mark="s"]'), e = editable.querySelector('[data-rtf-mark="e"]');
+    if (s && e){
+      const r = document.createRange(); r.setStartAfter(s); r.setEndBefore(e);
+      sel.removeAllRanges(); sel.addRange(r);
+    }
+  }
+  editable.querySelectorAll('[data-rtf-mark]').forEach(m=>m.remove());
 }
 function rtfToggleSub(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
@@ -9157,7 +9222,7 @@ function rtfToggleSub(btnEl){
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return;
-  if (editable.contains(sel.getRangeAt(0).commonAncestorContainer)) rtfSplitLines(editable);
+  if (editable.contains(sel.getRangeAt(0).commonAncestorContainer)) rtfNormalizeLines(editable);
   const range = sel.getRangeAt(0);
   if (!editable.contains(range.commonAncestorContainer) && range.commonAncestorContainer!==editable) return;
   const keep = {sn:range.startContainer, so:range.startOffset, en:range.endContainer, eo:range.endOffset};
@@ -9327,6 +9392,11 @@ document.addEventListener('paste', e=>{
   if (t.classList.contains('ctag-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
   document.execCommand('insertHTML', false, clean);
 }, true);
+// 안내 박스(p.scheduleNote)는 예전에 일반 텍스트(줄바꿈·탭 하위서식)로 저장됐다 — 서식 편집기에 넣을 때 HTML로 바꿔준다
+function scheduleNoteRich(v){
+  v = String(v||'');
+  return /<[a-z]/i.test(v) ? v : (v ? plainSubLinesHTML(v) : '');
+}
 function plainSubLinesHTML(text){
   const t = String(text||'');
   if (t.indexOf('\n')<0 && t.indexOf('\t')<0) return escapeAttr(t);
@@ -9501,7 +9571,7 @@ function isDuplicateProductTitle(title){
   [...CATEGORIES.overseas, ...CATEGORIES.domestic].forEach(c=>(getProducts(c.id)||[]).forEach(pp=>{ if ((pp.title||'')===title) n++; }));
   return n>1;
 }
-const LODGE_OPTS = [['outside','골프장 外 숙박'],['inside','골프장 內 숙박'],['none','없음']];
+const LODGE_OPTS = [['outside','골프장 外 숙박'],['inside','골프장 內 숙박'],['golftel','골프텔 or 외부숙소'],['none','없음']];
 function lodgeText(p){ const o=LODGE_OPTS.find(x=>x[0]===p.lodgeLocation); return (o && o[0]!=='none') ? o[1] : ''; }
 const SEASON_SHORT = {spring:'봄', summer:'여름', fall:'가을', winter:'겨울'};
 // [Phase] 관리자 상품 목록의 제목 우측에 노출할 "추천 판매 시기" 요약 — 권역별(국내)은 등록된 월을
@@ -12098,7 +12168,7 @@ function renderProductDetail(p,cat,idx){
   const commonOverrideNote = fields => pdHasOverride(plan, p, visiblePes, fields)
     ? `<div class="pd-common-note">※ 일부 요금 항목은 해당 항목에 따로 표기된 내용이 적용됩니다</div>` : '';
   const infoRows=[];
-  if (p.title) infoRows.push(['제목', p.title + (productMonthsTag(p)?`<span class="pt-months"> - ${productMonthsTag(p)}</span>`:'')]);
+  if (p.title) infoRows.push(['제목', p.title + (productMonthsTag(p)?`<span class="pt-months"> ${productMonthsTag(p)}</span>`:'')]);
   if (p.nights) infoRows.push(['기간', p.nights]);
   if (plan.minPeople.key) infoRows.push(['최소 인원', escapeAttr(fmtMinPeople(plan.minPeople.value))]);
   if (plan.rounds.key) infoRows.push(['라운드', escapeAttr(plan.rounds.value)]);
@@ -12130,7 +12200,9 @@ function renderProductDetail(p,cat,idx){
   if (plan.stayDuration.key) commonLabelRowsList.push(['🏨 체류일', plan.stayDuration.value]);
   if (plan.departureDay.key) commonLabelRowsList.push(['📅 출발 요일', planArr('departureDay')]);
   if (commonLabelRowsList.length){
-    html += `<div class="pd-slot"><div class="pd-section-title">🏷️ 항공/이동 정보</div>
+    // [수정] "항공 포함 여부"가 포함/불포함이면 "항공/이동 정보 · 출발 요일", "없음(표시 안 함)"이면 항공 항목이 없으므로 "이동정보 · 출발 요일"
+    const moveTitle = plan.airfare.key ? '🏷️ 항공/이동 정보 · 출발 요일' : '🏷️ 이동정보 · 출발 요일';
+    html += `<div class="pd-slot"><div class="pd-section-title">${moveTitle}</div>
       <div class="pd-label-rows">${commonLabelRowsList.map(([k,v])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${escapeAttr(v)}</span></div>`).join('')}</div>
       ${commonOverrideNote(['departureAirport','airPattern','arrAirport','flightNo','airfare','stayDuration','departureDay'])}
     </div>`;
@@ -12161,6 +12233,17 @@ function renderProductDetail(p,cat,idx){
   const notesRows = bulletRowsRich(p.notes||'','•');
   if (notesRows){
     html += `<div class="pd-slot"><div class="pd-section-title">✳️ 공통 안내</div><div class="pd-check-list plain">${notesRows}</div></div>`;
+  }
+  // [수정] 일정 요약 타임라인에서 분리한 "상단 개요 문구"·"안내 박스" — 요금표 바로 위 별도 박스로 노출
+  {
+    const ovTxt = String(p.scheduleOverview||'').trim();
+    const noteRows = bulletRowsRich(scheduleNoteRich(p.scheduleNote), '');
+    if (ovTxt || noteRows){
+      html += `<div class="pd-slot pd-guide-slot">
+        ${ovTxt?`<div class="pd-guide-overview">${escapeAttr(ovTxt)}</div>`:''}
+        ${noteRows?`<div class="pd-guide-note pd-check-list plain">${noteRows}</div>`:''}
+      </div>`;
+    }
   }
   // [수정] 요금표를 갤러리 아래로 이동
   if (visiblePriceEntries.length){
@@ -12257,7 +12340,7 @@ function renderProductDetail(p,cat,idx){
           const peNotesHTML = precautionsRows ? `<div class="pd-pe-precautions-box"><div class="t">🌟 참고사항</div><div class="pd-check-list plain">${precautionsRows}</div></div>` : '';
           const peItemNo = String(idx+1).padStart(2,'0');
           const moreBody = [
-            labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ [항목 ${peItemNo}] 항공/이동 정보</div>${labelRows}</div>`:'',
+            labelRows?`<div class="pd-pe-more-sub"><div class="t">🏷️ [항목 ${peItemNo}] ${_peNoneKey(eff('airfare'))?'항공/이동 정보 · 출발 요일':'이동정보 · 출발 요일'}</div>${labelRows}</div>`:'',
             // [수정] "항공/이동 정보"와 "일정 요약 타임라인" 사이에 구분선을 넣어 두 섹션을 시각적으로 분리
             (labelRows && hasPeSchedule)?`<div class="pd-section-divider"></div>`:'',
             // [수정] "+요금 항목 추가"에서 이 항목에 지정된 accent 색상(PE_ACCENT_COLORS)과 같은
@@ -12268,7 +12351,8 @@ function renderProductDetail(p,cat,idx){
           // [수정] 카드(박스) 아무 곳이나 클릭해도 "상세보기"가 펼쳐지도록 — 외부 링크는 별도 버튼으로만
           // 이동. 요금 항목의 "상세보기"는 항목 수가 많을 때 화면을 너무 길게 만들어 모두 기본으로 접어둔다
           const clickAttr = moreBody ? `onclick="togglePeMore(this)"` : '';
-          return `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
+          const dividerHTML = (pe.dividerBefore && idx>0) ? `<div class="pd-pe-divider" role="separator"></div>` : '';
+          return dividerHTML + `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
             ${emphArr.length?`<span class="emph-group">${emphArr.map(t=>`<span class="emph ${emphCls(t)}">${escapeAttr(t)}</span>`).join('')}</span>`:''}
             ${pe.headline?`<div class="pe-headline">${pe.headline}</div>`:''}
             <div class="prices">
@@ -12329,12 +12413,10 @@ function renderProductDetail(p,cat,idx){
     const cs = plan.schedule.value;
     html += `<div class="pd-section-divider"></div><div class="pd-slot"><div class="pd-section-title">🗓️ 일정 요약 타임라인</div>
       <div class="pd-schedule">
-        ${p.scheduleOverview?`<div class="pd-schedule-overview">${escapeAttr(p.scheduleOverview)}</div>`:''}
         <div class="pd-sch-group">
           <div class="pd-sch-group-head"><div class="t">공통 일정</div><div class="h"></div></div>
           <div class="pd-sch-days">${scheduleDaysHTML(cs.s.days, cs.t)}</div>
         </div>
-        ${p.scheduleNote?`<div class="pd-schedule-note">${plainSubLinesHTML(p.scheduleNote)}</div>`:''}
         ${commonOverrideNote(['schedule'])}
       </div>
     </div>`;
@@ -13770,7 +13852,47 @@ function renderProductCatSelect(){
   const sel=document.getElementById('productCatSelect');
   const dom=CATEGORIES.domestic.map(c=>`<option value="${c.id}"${c.id===activeProductCat?' selected':''}>${c.koFull||c.ko}</option>`).join('');
   const ov=CATEGORIES.overseas.map(c=>`<option value="${c.id}"${c.id===activeProductCat?' selected':''}>${c.ko}</option>`).join('');
-  sel.innerHTML=`<optgroup label="국내 권역">${dom}</optgroup><optgroup label="해외 국가">${ov}</optgroup>`;
+  // [추가] "전체 보기" — 국내 권역·해외 국가의 모든 상품을 한 화면에 모아 보는 옵션
+  const all=`<option value="all"${adminProductViewAll?' selected':''}>🌐 전체 보기 (국내 권역 + 해외 국가)</option>`;
+  sel.innerHTML=`${all}<optgroup label="국내 권역">${dom}</optgroup><optgroup label="해외 국가">${ov}</optgroup>`;
+  if (adminProductViewAll) sel.value='all';
+}
+let adminProductViewAll = false;
+function onProductCatChange(v){
+  if (v==='all'){ adminProductViewAll = true; renderProductAdmin(); }
+  else { adminProductViewAll = false; renderProductAdmin(v); }
+}
+// 전체 보기 — 카테고리별로 묶어 상품 이름·기간·고급 편집을 한눈에. 상품 추가·이동·순서 변경 등은 각 카테고리 화면에서 한다
+function renderProductAdminAll(){
+  const list=document.getElementById('productList');
+  const total={dom:0, ov:0};
+  const section=(label, cats, key)=>{
+    const body=cats.map(c=>{
+      const ps=getProducts(c.id);
+      total[key]+=ps.length;
+      if (!ps.length) return '';
+      return `<div class="apc-all-cat"><span>${escapeAttr(c.koFull||c.ko)}</span><em>${ps.length}개</em></div>`+ps.map((p,i)=>`
+        <div class="apc-all-row">
+          <span class="idx">${String(i+1).padStart(2,'0')}</span>
+          <span class="apc-all-title">${p.title?escapeAttr(p.title):'(제목 없음)'}</span>
+          <span class="apc-period-badge">${escapeAttr(productPeriodBadgeText(p, c.id))}</span>
+          <button class="apc-btn-sm apc-edit-btn" onclick="openAdvEditor('${c.id}',${i})">고급 편집</button>
+          <button class="apc-btn-sm apc-dup" onclick="adminGoProductCat('${c.id}',${i})" title="이 상품이 있는 카테고리 목록으로 이동해 기본 정보 편집·복제·삭제·순서 변경">목록에서 편집</button>
+        </div>`).join('');
+    }).join('');
+    return body ? `<div class="apc-all-group"><h5>${label}</h5>${body}</div>` : '';
+  };
+  const html = section('국내 권역', CATEGORIES.domestic, 'dom') + section('해외 국가', CATEGORIES.overseas, 'ov');
+  list.dataset.cat=''; list._apcObjs=null;
+  document.getElementById('productCount').textContent=`전체 · 총 ${total.dom+total.ov}개 (국내 ${total.dom} · 해외 ${total.ov})`;
+  list.innerHTML = html || `<div class="empty-state" style="padding:30px 0"><div class="big">📦</div><p>등록된 상품이 없습니다.</p></div>`;
+}
+function adminGoProductCat(catId, idx){
+  adminProductViewAll = false;
+  renderProductCatSelect();
+  renderProductAdmin(catId);
+  const card=document.querySelector(`#productList .admin-product-card[data-idx="${idx}"]`);
+  if (card){ card.open=true; card.scrollIntoView({block:'start'}); }
 }
 // [추가] 상품 리스트의 "이동" 드롭다운에 채울 국내 권역/해외 국가 옵션 — 현재 카테고리(excludeCatId)는
 // 이동할 필요가 없으므로 목록에서 제외한다
@@ -13796,6 +13918,12 @@ function moveProduct(idx, targetCatId){
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
 function renderProductAdmin(catId){
+  if (catId) adminProductViewAll = false;
+  // [추가] 전체 보기 모드에서는 추가·초기화 버튼을 숨기고 전체 목록을 그린다
+  const _addBtn=document.getElementById('addProductBtn'), _resetBtn=document.getElementById('resetCatBtn');
+  if (_addBtn) _addBtn.style.display = adminProductViewAll ? 'none' : '';
+  if (_resetBtn) _resetBtn.style.display = adminProductViewAll ? 'none' : '';
+  if (adminProductViewAll){ renderProductAdminAll(); return; }
   if (catId && catId!==activeProductCat){ activeProductCat=catId; adminPosSave({cat:catId, idx:null, title:''}); }
   else if (catId) activeProductCat=catId;
   const list=document.getElementById('productList');
@@ -14352,9 +14480,9 @@ function advBasicHTML(p){
   const dpN = (_peDayKey(p.commonDayPrices)?1:0) + (_peHolKey(p.commonHolidayPrices)?1:0);
   const incN = f(p.commonIncluded) + f(p.commonNotIncluded) + f(p.commonPrecautions);
   const schOn = !!_peSchKey({s:p.schedule, t:p.labels.teeOffTimes});
-  const schN = (schOn?1:0) + f(p.scheduleOverview) + f(p.scheduleNote);
+  const schN = schOn?1:0;
   const feeN = (p.extraFees||[]).filter(x=> x.kind==='group' ? x.title : (x.label||x.amount)).length;
-  const detailSecN = [f(p.notes), airN, dpN, incN, schN, feeN, f(p.bookingPolicy), f(p.linkUrl)].filter(Boolean).length;
+  const detailSecN = [f(p.notes), f(p.scheduleOverview)+f(p.scheduleNote), airN, dpN, incN, schN, feeN, f(p.bookingPolicy), f(p.linkUrl)].filter(Boolean).length;
   const nEntries = p.priceEntries.length;
   return `
     <!-- [추가] 빠른 이동 — 스크롤 위치와 무관하게 상단에 고정, 그룹으로 바로 이동·펼치기/접기 -->
@@ -14539,6 +14667,17 @@ function advBasicHTML(p){
           <summary>✳️ 공통 안내 ${advFillBadge(f(p.notes),1)}</summary>
           <div class="pe-labels-body">${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'160px'})}</div>
         </details>
+        <!-- [수정] 일정 요약 타임라인에 있던 "상단 개요 문구"·"안내 박스"를 분리 — 자세히 보기에서 요금표 바로 위 별도 박스로 노출 -->
+        <details class="pe-labels" ${advDetailsAttrs('d-notebox', false)}>
+          <summary>📝 상단 개요 문구 · 안내 박스 ${advFillBadge(f(p.scheduleOverview)+f(p.scheduleNote),2)}</summary>
+          <div class="pe-labels-body">
+            <span class="mw-hint">자세히 보기 "요금표" 바로 위에 별도 박스로 노출됩니다</span>
+            <label>상단 개요 문구</label>
+            <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
+            <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
+            ${richTextFieldHTML(scheduleNoteRich(p.scheduleNote), "updateAdvField('scheduleNote',__HTML__)", {placeholder:'예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다.', minHeight:'110px'})}
+          </div>
+        </details>
         <details class="pe-labels" ${advDetailsAttrs('d-dp', false)}>
           <summary>🗓️ 출발 요일별 · 공휴일 요금 ${advFillBadge(dpN,2)}</summary>
           <div class="pe-labels-body">
@@ -14574,12 +14713,8 @@ function advBasicHTML(p){
           </div>
         </details>
         <details class="pe-labels" id="schDetails-1" ${advDetailsAttrs('d-sch', false)}>
-          <summary>🗓 일정 요약 타임라인 ${advFillBadge(schN,3)}</summary>
+          <summary>🗓 일정 요약 타임라인 ${advFillBadge(schN,1)}</summary>
           <div class="pe-labels-body">
-            <label>상단 개요 문구</label>
-            <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
-            <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
-            <div class="ta-sub-wrap"><button type="button" class="ta-sub-btn" title="하위서식 — 커서가 있는 줄을 1.5글자 들여쓴 하위 항목으로 (다시 누르면 해제)" onmousedown="event.preventDefault()" onclick="taToggleSub(this)">↳하위서식</button><textarea style="min-height:70px" placeholder="예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다." oninput="updateAdvField('scheduleNote',this.value)">${escapeAttr(p.scheduleNote||'')}</textarea></div>
             <label>공통 일정</label>
             ${scheduleHTML(p, -1)}
           </div>
@@ -14617,9 +14752,10 @@ function advBasicHTML(p){
           </div>
           ${nEntries ? `<button type="button" class="apc-btn-sm pe-inh-promote" onclick="promoteEntriesToCommon()" title="모든 요금 항목에 똑같이 들어 있는 값은 공통으로 옮기고, 공통값과 같은 값은 항목에서 비웁니다">⇪ 반복 입력된 값 공통으로 올리기</button>` : ''}
         </div>
-        ${nEntries ? p.priceEntries.map((pe,i)=>priceEntryHTML(pe,i,popupCount,p)).join('')
+        ${nEntries ? p.priceEntries.map((pe,i)=>(pe.dividerBefore && i>0 ? peDividerRowHTML(i) : '') + priceEntryHTML(pe,i,popupCount,p)).join('') + (p.peTailDivider ? peDividerRowHTML(-1) : '')
           : `<div style="color:var(--nm-text-soft);padding:20px;text-align:center;border:1px dashed rgba(10,23,48,.18);border-radius:10px;margin:6px 0">등록된 요금 항목이 없습니다</div>`}
         <button class="add-product-btn" onclick="addPriceEntry()">+ 요금 항목 추가</button>
+        <button class="add-product-btn add-divider-btn" onclick="addPriceDivider()" title="요금표에서 항목 사이에 구분선을 넣습니다 — 누른 뒤 요금 항목을 추가하면 그 항목 위에 구분선이 들어갑니다">+ 구분선 추가</button>
       </div>
     </details>
   `;
@@ -14681,6 +14817,13 @@ function advFilled(v){
 }
 
 // [추가] 추가 요금 안내 기본값
+// 공통 안내 기본 문구 — 자세히 보기에서는 줄마다 • 표시가 자동으로 붙으므로 줄 앞에 별도 기호를 넣지 않는다
+function defaultNotesText(){
+  return ['환불 규정은 여행사 규정에 따릅니다.',
+    '취소/변경 진행은 해당 여행사에서 안내 받으세요.',
+    '출발전 우천 예보로 인한 사전 취소는 불가합니다.',
+    '골프장과 연계된 숙박 시설이 아닌 경우, 우천 취소가 가능해도 숙박요금에는 위약금이 발생 될 수 있습니다.'].join('<br>');
+}
 function defaultExtraFees(){
   return [
     {kind:'group', title:'⛳️ [골프관련]'},
@@ -14988,6 +15131,7 @@ function priceEntryHTML(pe, i, popupCount, p){
           <span class="toggle-slider"></span>
           <span class="pt-lbl">팝업 노출</span>
         </label>
+        ${i>0?`<button class="apc-btn-sm apc-dup" onclick="togglePeDivider(${i})" title="요금표에서 이 항목 위에 구분선">${pe.dividerBefore?'─ 위 구분선 해제':'─ 위에 구분선'}</button>`:''}
         <button class="apc-btn-sm apc-dup" onclick="togglePeHidden(${i})">${pe.hidden?'👁️ 다시 노출':'🙈 화면에서 숨기기'}</button>
         <button class="apc-btn-sm apc-dup" onclick="duplicatePriceEntry(${i})">복제</button>
         <button class="pee-del" onclick="removePriceEntry(${i})">삭제</button>
@@ -15341,9 +15485,34 @@ function togglePeHidden(i){
   p.priceEntries[i].hidden = !p.priceEntries[i].hidden;
   saveAdvChange(); renderAdvBody();
 }
+// [추가] 요금표 구분선 — 요금 항목 사이에 가는 선을 넣어 항목 묶음을 나눈다. 구분선은 "다음 항목 위"(pe.dividerBefore)로 저장되어
+// 항목을 드래그해 옮기거나 복제·삭제해도 항목과 함께 움직이고, 항목 번호·가격 계산에는 영향을 주지 않는다.
+// "+ 구분선 추가"는 맨 아래에 구분선을 놓고(p.peTailDivider), 이어서 추가하는 요금 항목이 그 구분선 아래에 놓인다
+function peDividerRowHTML(i){
+  return `<div class="pe-divider-row"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><button type="button" class="pee-del" onclick="removePeDivider(${i})" title="구분선 삭제">✕</button></div>`;
+}
+function addPriceDivider(){
+  const p=getAdvProduct(); if (!p) return;
+  if (!p.priceEntries.length){ alert('요금 항목을 먼저 추가한 뒤 구분선을 넣어주세요.'); return; }
+  if (p.peTailDivider){ alert('이미 맨 아래에 구분선이 있습니다. "+ 요금 항목 추가"를 누르면 이 구분선 아래에 새 항목이 들어갑니다.'); return; }
+  p.peTailDivider = true;
+  saveAdvChange(); renderAdvBody();
+}
+function removePeDivider(i){
+  const p=getAdvProduct(); if (!p) return;
+  if (i<0) p.peTailDivider = false; else if (p.priceEntries[i]) p.priceEntries[i].dividerBefore = false;
+  saveAdvChange(); renderAdvBody();
+}
+function togglePeDivider(i){
+  const p=getAdvProduct(); if (!p || !p.priceEntries[i]) return;
+  p.priceEntries[i].dividerBefore = !p.priceEntries[i].dividerBefore;
+  saveAdvChange(); renderAdvBody();
+}
 function addPriceEntry(){
   const p=getAdvProduct(); if (!p) return;
-  p.priceEntries.push(newPriceEntry());
+  const ne = newPriceEntry();
+  if (p.peTailDivider){ ne.dividerBefore = true; p.peTailDivider = false; }
+  p.priceEntries.push(ne);
   advEntryOpenState['pe'+(p.priceEntries.length-1)] = true; // 새로 추가한 항목은 바로 입력할 수 있게 펼쳐 둔다
   saveAdvChange(); renderAdvBody();
 }
@@ -16044,7 +16213,7 @@ function computeAiRecommendations(criteria){
       const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
       criteria.styles.forEach(styleVal=>{
         const lodge = STYLE_LODGE[styleVal];
-        if (lodge && p.lodgeLocation && p.lodgeLocation!=='none'){
+        if (lodge && p.lodgeLocation && p.lodgeLocation!=='none' && p.lodgeLocation!=='golftel'){ // 골프텔 or 외부숙소는 위치가 특정되지 않아 키워드로 판정
           if (p.lodgeLocation===lodge){ score+=20; reasons.push(`'${styleVal}' 상품`); }
           return; // 숙소 위치가 지정된 상품은 그 값으로만 판정(반대 위치면 가산점 없음)
         }

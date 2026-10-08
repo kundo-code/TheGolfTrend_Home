@@ -1003,8 +1003,17 @@ section.block{padding:100px 24px;position:relative}
 /* 일정 요약 타임라인 */
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
+.pd-dp-sec + .pd-dp-sec{margin-top:6px}
+.pd-dp-sec.dp-brk{margin-top:22px;padding-top:16px;border-top:1px dashed rgba(10,23,48,.2)}
+.pd-dp-sub{font-size:.8rem;font-weight:700;color:var(--gold-deep);margin:0 0 8px;letter-spacing:.02em}
+.pd-cp1-box{margin:0 20px 18px;padding:12px 14px!important;background:#FFF5F5;border:1px solid rgba(220,38,38,.18);border-radius:10px}
+.pd-cp1-box .row{color:rgba(10,23,48,.82)}
+.sn-common-toggle{display:flex;align-items:center;gap:8px;margin:2px 0 8px;font-size:.8rem;font-weight:700;color:var(--nm-text);cursor:pointer}
+.sn-common-toggle input{width:auto!important;margin:0}
+.sn-common-toggle em{font-style:normal;font-weight:500;color:var(--nm-text-soft);font-size:.74rem}
+.notebox-ta{width:100%;box-sizing:border-box;padding:12px 14px;border:none;border-radius:var(--nm-r-sm);background:#fff;box-shadow:var(--nm-shadow-inset);font:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);resize:vertical}
 .pd-guide-slot{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
-.pd-guide-overview{font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
+.pd-guide-overview{white-space:pre-line;font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
 .pd-guide-note{padding:12px 14px!important;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:10px;font-size:.8rem;gap:5px!important}
 .pd-guide-note .row{font-size:.8rem;color:rgba(10,23,48,.78)}
 .pd-guide-note .row .ic:empty{display:none}
@@ -1603,6 +1612,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-divider-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px;color:var(--nm-text-soft);font-size:.74rem;font-weight:600;letter-spacing:.12em}
 .pe-divider-line{flex:1;height:0;border-top:2px dashed rgba(10,23,48,.28)}
 .pe-divider-row .pee-del{flex-shrink:0}
+.dp-add-row{display:flex;gap:6px;flex-wrap:wrap}
+.dp-list .pe-divider-row.dp-marker{margin:4px 0 8px}
+.dp-group-row{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
+.dp-group-lbl{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.06em}
+.dp-group-row input{flex:1;min-width:0}
 /* 자세히 보기 요금표의 항목 사이 구분선 */
 .pd-pe-divider{height:0;border-top:2px solid rgba(10,23,48,.2);margin:6px 4px}
 .add-product-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press)}
@@ -1774,6 +1788,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .rtf-color-pop label.rtf-sw-custom input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:none}
 .rtf-editable{padding:12px 14px;min-height:150px;font-family:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);outline:none;white-space:pre-wrap;overflow-wrap:break-word}
 .rtf-editable:empty:before{content:attr(data-placeholder);color:var(--nm-text-soft);white-space:pre-line}
+.rtf-editable.white-field{background:#fff}
 .rtf-editable.included-field{background:#E6F6EA}
 .rtf-editable.notincluded-field{background:#FDECEC}
 /* [수정] 포함/불포함사항 입력란의 가이드(placeholder) 예시 문구는 연한 회색으로 통일 */
@@ -5139,6 +5154,9 @@ function ensureExtended(p){
   if (p.linkUrl===undefined) p.linkUrl='';
   if (p.scheduleOverview===undefined) p.scheduleOverview='';
   if (p.scheduleNote===undefined) p.scheduleNote='';
+  // [추가] 안내 박스는 기본으로 "체크포인트1 - 주의사항"(p.checkpoint1)의 값을 그대로 쓴다(공통값 사용). 예전에 안내 박스에
+  // 직접 입력해 둔 내용이 있는 상품은 그 내용을 지키도록 공통값 사용을 꺼 둔다
+  if (p.scheduleNoteCommon===undefined) p.scheduleNoteCommon = !String(p.scheduleNote||'').replace(/<[^>]*>/g,'').trim();
   // [Phase] 기간별(시즌/월) 소팅에 쓰이는 추천 판매 시기(1~12월, 복수 선택) — 미선택 시 모든 필터에 노출
   if (!Array.isArray(p.months)) p.months=[];
   // [수정] 요금 항목이 없어도 입력 가능한 상품 레벨 "공통" 레이블·일정
@@ -5273,10 +5291,53 @@ function _peTextKey(v){
   const doc = new DOMParser().parseFromString(s.replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|tr|li)>/gi,'\n'), 'text/html');
   return (doc.body.textContent||'').split('\n').map(x=>x.replace(/ /g,' ').trim()).filter(Boolean).join('\n');
 }
-function _peDayKey(list){ return (list||[]).filter(d=>d.day && d.price).map(d=>d.day+':'+Number(d.price)).join('|'); }
+// 출발 요일별 요금·공휴일 요금 목록에는 일반 행 사이에 구분선({kind:'divider'})·부제목({kind:'group',title})
+// 표식이 들어갈 수 있다. 금액이 하나도 없으면 표식만 있어도 "값 없음"이고, 있으면 표식 위치도 비교 키에 포함한다
+function _dpMarkKey(x){ return x.kind==='divider' ? '#' : (x.kind==='group' ? '@'+String(x.title||'').trim() : null); }
+function _peDayKey(list){
+  const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
+  return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
+}
 function _peHolKey(list){
-  return (list||[]).filter(h=>h.date && h.price)
-    .map(h=>[h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':')).join('|');
+  const l=list||[]; if (!l.some(h=>h.date && h.price)) return '';
+  return l.map(h=>{ const m=_dpMarkKey(h); return m!==null ? m : ((h.date && h.price) ? [h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':') : ''); }).filter(Boolean).join('|');
+}
+// ── 출발 요일별 요금 · 공휴일 요금 표시(구분선 · 부제목 지원) ─────────────────────────────
+// 구분선을 기준으로 묶음을 나눠 간격을 두고, 부제목이 있으면 그 묶음 위에 작은 제목으로 노출한다.
+// 구분선·부제목이 하나도 없으면 예전과 똑같은 마크업을 그대로 쓴다
+function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group')); }
+function dpSections(list){
+  const secs=[]; let cur=null, brk=false;
+  (list||[]).forEach(it=>{
+    if (it && it.kind==='divider'){ cur=null; brk=true; return; }
+    if (it && it.kind==='group'){ cur={title:String(it.title||'').trim(), items:[], brk}; brk=false; secs.push(cur); return; }
+    if (!cur){ cur={title:'', items:[], brk}; brk=false; secs.push(cur); }
+    cur.items.push(it);
+  });
+  return secs;
+}
+function dpRenderSections(list, cellFn, valid, wrapFn){
+  const out=[]; let pend=false;
+  dpSections(list).forEach(sc=>{
+    const cells=sc.items.filter(valid).map(cellFn);
+    if (!cells.length){ pend = pend || sc.brk; return; }
+    out.push({title:sc.title, cells, brk: out.length>0 && (sc.brk || pend)}); pend=false;
+  });
+  if (!out.length) return '';
+  if (out.length===1 && !out[0].title) return wrapFn(out[0].cells);
+  return out.map(sc=>`<div class="pd-dp-sec${sc.brk?' dp-brk':''}">${sc.title?`<div class="pd-dp-sub">${escapeAttr(sc.title)}</div>`:''}${wrapFn(sc.cells)}</div>`).join('');
+}
+function dayPriceSectionsHTML(list, cls){
+  return dpRenderSections(list, d=>{
+    const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
+    return `<div class="pd-day-price-cell ${dcls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
+  }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table${cls?' '+cls:''}">${cells.join('')}</div>`);
+}
+function holidaySectionsHTML(list, cls){
+  return dpRenderSections(list, h=>{
+    const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
+    return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
+  }, h=>h.date && h.price, cells=>`<div class="pd-holiday-price-row${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
 // 일정은 Tee Off Time(레이블에 저장됨)과 한 묶음으로 비교한다. 노출 체크를 끈 일정은 "값 없음"
 function _peSchKey(v){
@@ -9392,6 +9453,14 @@ document.addEventListener('paste', e=>{
   if (t.classList.contains('ctag-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
   document.execCommand('insertHTML', false, clean);
 }, true);
+// 안내 박스 "공통값 사용" 토글 — 켜면 체크포인트1 - 주의사항(p.checkpoint1)을 그대로 쓰고, 끄면 이 상품 전용 내용을 직접 입력한다.
+// 끌 때 전용 내용이 비어 있으면 현재 공통값을 복사해 둬서 거기서부터 고칠 수 있게 한다
+function toggleScheduleNoteCommon(checked){
+  const p=getAdvProduct(); if (!p) return;
+  p.scheduleNoteCommon = !!checked;
+  if (!checked && !String(p.scheduleNote||'').replace(/<[^>]*>/g,'').trim()) p.scheduleNote = scheduleNoteRich(p.checkpoint1||'');
+  saveAdvChange(); renderAdvBody();
+}
 // 안내 박스(p.scheduleNote)는 예전에 일반 텍스트(줄바꿈·탭 하위서식)로 저장됐다 — 서식 편집기에 넣을 때 HTML로 바꿔준다
 function scheduleNoteRich(v){
   v = String(v||'');
@@ -12208,6 +12277,22 @@ function renderProductDetail(p,cat,idx){
     </div>`;
   }
 
+  // [수정] "📅 출발 요일별 요금" — 포함 · 불포함 · 참고사항 바로 위로 이동(제목 변경). 공통값(또는 모든 요금 항목이 같은 값)을 한 번만
+  // 보여준다. 구분선을 기준으로 간격을 두고, 부제목이 있으면 묶음마다 제목을 단다
+  {
+    const commonDayHTML = dayPriceSectionsHTML(plan.dayPrices.value||[], '');
+    const commonHolHTML = holidaySectionsHTML(plan.holidayPrices.value||[], '');
+    if (commonDayHTML || commonHolHTML){
+      html += `<div class="pd-slot"><div class="pd-section-title">📅 출발 요일별 요금</div>
+        <div style="padding:0 20px 18px">
+          ${commonDayHTML}
+          ${commonHolHTML}
+          ${commonOverrideNote(['dayPrices','holidayPrices'])}
+        </div>
+      </div>`;
+    }
+  }
+
   // [추가] 공통 포함 · 불포함 · 참고사항 — 공통값(또는 모든 요금 항목이 같은 값)을 한 번만 노출.
   // [수정] 요금표보다 먼저 확인할 수 있도록 요금표 바로 위로 이동
   // 포함사항은 옅은 초록색, 불포함사항은 옅은 빨간색 박스로(요금 항목별 미리보기와 동일한 스타일)
@@ -12237,7 +12322,7 @@ function renderProductDetail(p,cat,idx){
   // [수정] 일정 요약 타임라인에서 분리한 "상단 개요 문구"·"안내 박스" — 요금표 바로 위 별도 박스로 노출
   {
     const ovTxt = String(p.scheduleOverview||'').trim();
-    const noteRows = bulletRowsRich(scheduleNoteRich(p.scheduleNote), '');
+    const noteRows = bulletRowsRich(scheduleNoteRich(p.scheduleNoteCommon!==false ? p.checkpoint1 : p.scheduleNote), '');
     if (ovTxt || noteRows){
       html += `<div class="pd-slot pd-guide-slot">
         ${ovTxt?`<div class="pd-guide-overview">${escapeAttr(ovTxt)}</div>`:''}
@@ -12299,17 +12384,9 @@ function renderProductDetail(p,cat,idx){
             }).join('');
             const meta = metaItems ? `<div class="pd-pe-meta ${cls}">${metaItems}</div>` : '';
             // [수정] 판매가와 별도인 출발 요일별 요금 — 토요일은 파란색, 일요일은 빨간색으로 강조
-            const dayCells = (pick('dayPrices', full)||[]).filter(d=>d.day && d.price).map(d=>{
-              const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
-              return `<div class="pd-day-price-cell ${dcls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
-            }).join('');
-            const dayTable = dayCells ? `<div class="pd-day-price-table ${cls}">${dayCells}</div>` : '';
+            const dayTable = dayPriceSectionsHTML(pick('dayPrices', full)||[], cls);
             // [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 한 줄로
-            const holItems = (pick('holidayPrices', full)||[]).filter(h=>h.date && h.price).map(h=>{
-              const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
-              return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
-            });
-            const holRow = holItems.length ? `<div class="pd-holiday-price-row ${cls}">${holItems.join('')}</div>` : '';
+            const holRow = holidaySectionsHTML(pick('holidayPrices', full)||[], cls);
             // [수정] "출발 요일"은 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출
             const dd = arrTxt(pick('departureDay', full));
             const ddLabel = dd ? `<div class="pd-pe-departure-day-label ${cls}"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(dd)}</span></div>` : '';
@@ -12387,26 +12464,6 @@ function renderProductDetail(p,cat,idx){
     </div>`;
   }
 
-  // [추가] 공통 출발 요일별 · 공휴일 요금 — 공통값(또는 모든 요금 항목이 같은 값)을 여기서 한 번만
-  // 보여준다. 요금 항목별 렌더링과 동일한 방식
-  const commonDayPriceCells = (plan.dayPrices.value||[]).filter(d=>d.day && d.price).map(d=>{
-    const cls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
-    return `<div class="pd-day-price-cell ${cls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
-  }).join('');
-  const commonHolidayItems = (plan.holidayPrices.value||[]).filter(h=>h.date && h.price).map(h=>{
-    const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
-    return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
-  });
-  const commonHolidayPriceRow = commonHolidayItems.length ? `<div class="pd-holiday-price-row">${commonHolidayItems.join('')}</div>` : '';
-  if (commonDayPriceCells || commonHolidayPriceRow){
-    html += `<div class="pd-slot"><div class="pd-section-title">🗓️ 출발 요일별 · 공휴일 요금</div>
-      <div style="padding:0 20px 18px">
-        ${commonDayPriceCells?`<div class="pd-day-price-table">${commonDayPriceCells}</div>`:''}
-        ${commonHolidayPriceRow}
-        ${commonOverrideNote(['dayPrices','holidayPrices'])}
-      </div>
-    </div>`;
-  }
   // [수정] 공통 일정 요약 타임라인 — 공통 일정(또는 모든 요금 항목이 같은 일정)을 여기서 한 번만
   // 보여준다. 공통과 다른 일정을 쓰는 요금 항목은 그 항목의 "상세보기" 안에서 따로 보여준다
   if (plan.schedule.key){
@@ -12434,6 +12491,16 @@ function renderProductDetail(p,cat,idx){
         : `<div class="row"><span class="label">${escapeAttr(f.label||'')}</span><span class="amount">${escapeAttr(f.amount||'')}</span></div>`
       ).join('')}</div>
     </div>`;
+  }
+
+  // [추가] "체크포인트1 - 주의사항"(p.checkpoint1)을 추가 요금 안내 아래에도 노출 — 상품 카드의 아래쪽 강조 박스와 같은 값·같은 박스 색
+  {
+    const cp1Rows = bulletRowsRich(scheduleNoteRich(p.checkpoint1||''), '•');
+    if (cp1Rows){
+      html += `<div class="pd-slot"><div class="pd-section-title">⚠️ 주의사항</div>
+        <div class="pd-cp1-box pd-check-list plain"${cpBoxStyleAttr(p.checkpoint1Bg)}>${cp1Rows}</div>
+      </div>`;
+    }
   }
 
   // [수정] 공통 안내와 동일한 이유로, 공백/줄바꿈만 입력된 경우 빈 섹션이 노출되지 않도록
@@ -13943,14 +14010,12 @@ function renderProductAdmin(catId){
   // 그대로 유지한다(인덱스가 바뀌어도 같은 상품 객체를 따라감). 같은 국가 목록을 처음 그릴 때만 "최근 작업"
   // 상품을 자동으로 펼친다
   const prevObjs = (list.dataset.cat===activeProductCat && list._apcObjs) ? list._apcObjs : null;
-  const openObjs = new Set();
-  if (prevObjs) list.querySelectorAll('.admin-product-card').forEach(c=>{ if (c.open) openObjs.add(prevObjs[+c.dataset.idx]); });
   list.dataset.cat = activeProductCat;
   list._apcObjs = products.slice();
   const dropAttrs = i=>`data-idx="${i}" ondragover="productDragOver(event)" ondragleave="productDragLeave(event)" ondrop="productDrop(event,${i})"`;
   const handleAttrs = i=>`draggable="true" ondragstart="productDragStart(event,${i})" ondragend="productDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
   list.innerHTML=products.map((p,i)=>`
-    <details class="admin-product-card" ${openObjs.has(p)?'open':''} style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
+    <details class="admin-product-card" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
       <summary class="apc-head">
         <span class="apc-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</span>
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
@@ -13989,8 +14054,8 @@ function renderProductAdmin(catId){
           ? `<input type="text" value="${escapeAttr(richToPlain(p.cardTag1))}" readonly title="서식이 적용된 태그는 고급 편집에서 수정할 수 있습니다" style="opacity:.75;cursor:not-allowed">`
           : `<input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)">`}</div>
         <div class="full"><label>🔗 연결 링크 · URL</label><input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://... (상품 상세의 '상품 정보' 박스에 '상세보기→'로 노출)" oninput="updateProduct(${i},'linkUrl',this.value)"></div>
-        <div class="full">${cpEditorHTML(p, 'checkpoint2', '체크포인트1(참고사항)', '(상품 카드의 라운드·숙박 정보 아래 강조 박스 + 자세히 보기 "참고사항"에 노출 · 참고사항과 자동 동기화)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
-        <div class="full">${cpEditorHTML(p, 'checkpoint1', '체크포인트2(주의사항)', '(상품 카드의 카드 태그 아래, 구분선 다음에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
+        <div class="full">${cpEditorHTML(p, 'checkpoint1', '체크포인트1 - 주의사항', '(상품 카드의 카드 태그 아래, 구분선 다음 + 자세히 보기 "추가 요금 안내" 아래에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
+        <div class="full">${cpEditorHTML(p, 'checkpoint2', '체크포인트2 - 참고사항', '(상품 카드의 라운드·숙박 정보 아래 강조 박스 + 자세히 보기 "참고사항"에 노출 · "포함·불포함·참고사항"의 참고사항과 같은 입력란)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateProduct(${i},${k},${v})`)}</div>
       </div>
     </details>`).join('');
   adminFocusLastProduct(list, !prevObjs);
@@ -14002,7 +14067,7 @@ function adminFocusLastProduct(list, autoOpen){
   if (fi<0) return;
   const card=list.querySelector(`.admin-product-card[data-idx="${fi}"]`);
   if (!card) return;
-  if (autoOpen!==false || adminPosScrollPending) card.open=true;
+  // [수정] 상품 카드는 항상 접힌 상태로 둔다 — 편집을 마치고 돌아와도 펼치지 않고, "최근 작업" 표시와 스크롤 위치만 복원한다
   card.classList.add('apc-last');
   const title=card.querySelector('.apc-title-preview');
   if (title) title.insertAdjacentHTML('afterend','<span class="apc-last-badge">최근 작업</span>');
@@ -14482,7 +14547,7 @@ function advBasicHTML(p){
   const schOn = !!_peSchKey({s:p.schedule, t:p.labels.teeOffTimes});
   const schN = schOn?1:0;
   const feeN = (p.extraFees||[]).filter(x=> x.kind==='group' ? x.title : (x.label||x.amount)).length;
-  const detailSecN = [f(p.notes), f(p.scheduleOverview)+f(p.scheduleNote), airN, dpN, incN, schN, feeN, f(p.bookingPolicy), f(p.linkUrl)].filter(Boolean).length;
+  const detailSecN = [f(p.notes), f(p.scheduleOverview)+f(p.scheduleNoteCommon!==false?p.checkpoint1:p.scheduleNote), airN, dpN, incN, schN, feeN, f(p.bookingPolicy), f(p.linkUrl)].filter(Boolean).length;
   const nEntries = p.priceEntries.length;
   return `
     <!-- [추가] 빠른 이동 — 스크롤 위치와 무관하게 상단에 고정, 그룹으로 바로 이동·펼치기/접기 -->
@@ -14589,6 +14654,17 @@ function advBasicHTML(p){
         </div>
         <span class="mw-hint" style="margin-top:6px">"한 줄로"를 켜면 카드 하단 meta 영역에서 그 항목이 한 줄 전체를 차지합니다</span>
 
+        <details class="adv-collapsible" ${advDetailsAttrs('card-move', false)}>
+          <summary>🚘 교통 · ✈️ 비행 · 이동 정보 ${hint('(카드 하단 meta 영역)')} ${advFillBadge(moveN, isDomestic?2:3)}</summary>
+          <div class="adv-collapsible-body">
+            <div class="grid-2">
+              <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
+              <div class="full"><div class="mw-label-row"><label>공항→호텔/골프텔 이동시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
+              <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+            </div>
+          </div>
+        </details>
+
         ${sub('💰 가격 · 태그')}
         <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
         <div class="cardprice-box">
@@ -14621,20 +14697,17 @@ function advBasicHTML(p){
         </div>
         <!-- [수정] 체크포인트1(참고사항)·체크포인트2(주의사항) — 제목·위치를 서로 바꾸고 서식 편집·박스 색상 지정 추가.
              체크포인트1은 "자세히 보기 > 참고사항"과 같은 값이라 여기서 입력하면 상세페이지에도 함께 반영된다 -->
-        ${cpEditorHTML(p, 'checkpoint2', '체크포인트1(참고사항)', '(상품 카드의 라운드·숙박 정보 아래 강조 박스 + 자세히 보기 "참고사항"에 노출)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateAdvField(${k},${v})`)}
-        ${cpEditorHTML(p, 'checkpoint1', '체크포인트2(주의사항)', '(상품 카드의 카드 태그 아래, 구분선 다음에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateAdvField(${k},${v})`)}
-
-
-        <details class="adv-collapsible" ${advDetailsAttrs('card-move', false)}>
-          <summary>✈️ 비행 · 이동 시간 ${hint('(카드 하단 meta 영역)')} ${advFillBadge(moveN, isDomestic?2:3)}</summary>
-          <div class="adv-collapsible-body">
-            <div class="grid-2">
-              <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
-              <div class="full"><div class="mw-label-row"><label>공항→호텔/골프텔 이동시간</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
-              <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
-            </div>
+        ${cpEditorHTML(p, 'checkpoint1', '체크포인트1 - 주의사항', '(상품 카드의 카드 태그 아래, 구분선 다음 + 자세히 보기 "추가 요금 안내" 아래에 노출)', CHECKPOINT1_GUIDE, 'bottom', (k,v)=>`updateAdvField(${k},${v})`)}
+        <!-- 체크포인트2 - 참고사항은 "자세히 보기(공통) > 포함 · 불포함 · 참고사항"의 참고사항과 같은 입력란 하나로 통일 — 여기서는 바로가기만 -->
+        <div class="cp-editor cp-editor-ref">
+          <div class="cp-editor-head"><label class="cp-editor-title">체크포인트2 - 참고사항 <span class="cp-editor-hint">(상품 카드의 라운드·숙박 정보 아래 강조 박스 · 카드에는 제목 없이 내용만 노출)</span></label></div>
+          <div class="adv-cp2-note">
+            ${(p.checkpoint2||p.commonPrecautions)?`<div class="adv-cp2-preview"${cpBoxStyleAttr(p.checkpoint2Bg)}>${cpBodyHTML(p.checkpoint2||p.commonPrecautions)}</div>`:`<span>입력된 참고사항이 없습니다</span>`}
+            <button type="button" class="apc-btn-sm" onclick="advJumpCp('checkpoint2')">"포함 · 불포함 · 참고사항"에서 ${(p.checkpoint2||p.commonPrecautions)?'수정':'입력'} →</button>
           </div>
-        </details>
+        </div>
+
+
       </div>
     </details>
 
@@ -14648,42 +14721,12 @@ function advBasicHTML(p){
           ${labelsHTML(p, -1, false)}
           <div class="pe-labels-departure-day">${departureDayFieldHTML(p.labels, -1)}</div>
         </details>
-        <details class="pe-labels" ${advDetailsAttrs('d-inc', false)}>
-          <summary>💰 포함 · 불포함 · 참고사항 ${advFillBadge(incN,3)}</summary>
-          <div class="pe-labels-body">
-            <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'200px'})}
-            <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'200px'})}
-            <!-- [수정] 참고사항은 체크포인트1과 같은 값 — 서식 편집기는 상품 카드 그룹의 체크포인트1 한 곳에만 두고
-                 (같은 값을 두 편집기가 동시에 고치면 서로 덮어쓸 수 있어서) 여기서는 미리보기 + 바로가기만 제공 -->
-            <label>🌟 참고사항 ${hint('(= 체크포인트1 · 불포함사항 바로 아래 + 상품 카드 강조 박스에 노출)')}</label>
-            <div class="adv-cp2-note">
-              ${(p.checkpoint2||p.commonPrecautions)?`<div class="adv-cp2-preview"${cpBoxStyleAttr(p.checkpoint2Bg)}>${cpBodyHTML(p.checkpoint2||p.commonPrecautions)}</div>`:`<span>입력된 참고사항이 없습니다</span>`}
-              <button type="button" class="apc-btn-sm" onclick="advJumpCpTop()">체크포인트1에서 ${(p.checkpoint2||p.commonPrecautions)?'수정':'입력'} →</button>
-            </div>
-          </div>
-        </details>
-        <!-- 상세 페이지에서 요금표 바로 위에 노출 -->
-        <details class="pe-labels" ${advDetailsAttrs('d-notes', false)}>
-          <summary>✳️ 공통 안내 ${advFillBadge(f(p.notes),1)}</summary>
-          <div class="pe-labels-body">${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {placeholder:NOTES_GUIDE, minHeight:'160px'})}</div>
-        </details>
-        <!-- [수정] 일정 요약 타임라인에 있던 "상단 개요 문구"·"안내 박스"를 분리 — 자세히 보기에서 요금표 바로 위 별도 박스로 노출 -->
-        <details class="pe-labels" ${advDetailsAttrs('d-notebox', false)}>
-          <summary>📝 상단 개요 문구 · 안내 박스 ${advFillBadge(f(p.scheduleOverview)+f(p.scheduleNote),2)}</summary>
-          <div class="pe-labels-body">
-            <span class="mw-hint">자세히 보기 "요금표" 바로 위에 별도 박스로 노출됩니다</span>
-            <label>상단 개요 문구</label>
-            <input type="text" value="${escapeAttr(p.scheduleOverview||'')}" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">
-            <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
-            ${richTextFieldHTML(scheduleNoteRich(p.scheduleNote), "updateAdvField('scheduleNote',__HTML__)", {placeholder:'예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다.', minHeight:'110px'})}
-          </div>
-        </details>
         <details class="pe-labels" ${advDetailsAttrs('d-dp', false)}>
-          <summary>🗓️ 출발 요일별 · 공휴일 요금 ${advFillBadge(dpN,2)}</summary>
+          <summary>📅 출발 요일별 요금 ${advFillBadge(dpN,2)}</summary>
           <div class="pe-labels-body">
             <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
             <div class="dp-list">
-              ${(p.commonDayPrices||[]).map((d,di)=>`
+              ${(p.commonDayPrices||[]).map((d,di)=>dpIsMarker(d) ? dpMarkerRowHTML(d,-1,'day',di) : `
               <div class="dp-row">
                 <select onchange="updateCommonDayPrice(${di},'day',this.value)">
                   <option value="">요일 선택</option>
@@ -14693,11 +14736,15 @@ function advBasicHTML(p){
                 <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
               </div>`).join('')}
             </div>
-            <button class="apc-btn-sm" onclick="addCommonDayPrice()">+ 요일별 요금 추가</button>
+            <div class="dp-add-row">
+              <button class="apc-btn-sm" onclick="addCommonDayPrice()">+ 요일별 요금 추가</button>
+              <button class="apc-btn-sm" onclick="addDpMarker(-1,'day','divider')" title="요금표에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
+              <button class="apc-btn-sm" onclick="addDpMarker(-1,'day','group')" title="아래에 입력하는 요금들을 묶는 부제목">+ 부제목 추가</button>
+            </div>
 
             <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
             <div class="dp-list">
-              ${(p.commonHolidayPrices||[]).map((h,hi)=>`
+              ${(p.commonHolidayPrices||[]).map((h,hi)=>dpIsMarker(h) ? dpMarkerRowHTML(h,-1,'hol',hi) : `
               <div class="dp-row dp-row-holiday">
                 <select onchange="updateCommonHolidayPrice(${hi},'type',this.value)">
                   <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
@@ -14709,7 +14756,41 @@ function advBasicHTML(p){
                 <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
               </div>`).join('')}
             </div>
-            <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
+            <div class="dp-add-row">
+              <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
+              <button class="apc-btn-sm" onclick="addDpMarker(-1,'hol','divider')" title="요금표에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
+            </div>
+          </div>
+        </details>
+        <details class="pe-labels" ${advDetailsAttrs('d-inc', false)}>
+          <summary>💰 포함 · 불포함 · 참고사항 ${advFillBadge(incN,3)}</summary>
+          <div class="pe-labels-body">
+            <label>✅ 포함사항</label>${richTextFieldHTML(p.commonIncluded, "updateAdvField('commonIncluded',__HTML__)", {cls:'included-field', placeholder:INCLUDED_GUIDE, minHeight:'200px'})}
+            <label>❌ 불포함사항</label>${richTextFieldHTML(p.commonNotIncluded, "updateAdvField('commonNotIncluded',__HTML__)", {cls:'notincluded-field', placeholder:NOT_INCLUDED_GUIDE, minHeight:'200px'})}
+            <!-- 참고사항 = 체크포인트2 - 참고사항 (같은 값). 자세히 보기에는 "참고사항"으로 노출되고, 상품 카드에는 제목 없이 내용만 강조 박스로 노출 -->
+            ${cpEditorHTML(p, 'checkpoint2', '🌟 체크포인트2 - 참고사항', '(자세히 보기에는 "참고사항"으로 불포함사항 바로 아래 노출 · 상품 카드의 라운드·숙박 정보 아래 강조 박스에는 제목 없이 내용만 노출)', CHECKPOINT_GUIDE, 'top', (k,v)=>`updateAdvField(${k},${v})`)}
+          </div>
+        </details>
+        <!-- 상세 페이지에서 요금표 바로 위에 노출 -->
+        <details class="pe-labels" ${advDetailsAttrs('d-notes', false)}>
+          <summary>✳️ 공통 안내 ${advFillBadge(f(p.notes),1)}</summary>
+          <div class="pe-labels-body">${richTextFieldHTML(p.notes, "updateAdvField('notes',__HTML__)", {cls:'white-field', placeholder:NOTES_GUIDE, minHeight:'160px'})}</div>
+        </details>
+        <!-- [수정] 일정 요약 타임라인에 있던 "상단 개요 문구"·"안내 박스"를 분리 — 자세히 보기에서 요금표 바로 위 별도 박스로 노출 -->
+        <details class="pe-labels" ${advDetailsAttrs('d-notebox', false)}>
+          <summary>📝 상단 개요 문구 · 안내 박스 ${advFillBadge(f(p.scheduleOverview)+f(p.scheduleNoteCommon!==false?p.checkpoint1:p.scheduleNote),2)}</summary>
+          <div class="pe-labels-body">
+            <span class="mw-hint">자세히 보기 "요금표" 바로 위에 별도 박스로 노출됩니다</span>
+            <label>상단 개요 문구</label>
+            <textarea class="notebox-ta" style="min-height:110px" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">${escapeAttr(p.scheduleOverview||'')}</textarea>
+            <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
+            <label class="sn-common-toggle" title="켜면 체크포인트1 - 주의사항에 입력한 내용을 그대로 씁니다. 끄면 이 상품의 안내 박스에만 다른 내용을 넣을 수 있습니다">
+              <input type="checkbox" ${p.scheduleNoteCommon!==false?'checked':''} onchange="toggleScheduleNoteCommon(this.checked)">
+              <span>공통값 사용</span> <em>체크포인트1 - 주의사항과 같은 내용</em>
+            </label>
+            ${p.scheduleNoteCommon!==false
+              ? `<div class="adv-cp2-note"><div class="adv-cp2-preview"${cpBoxStyleAttr(p.checkpoint1Bg)}>${richToPlain(p.checkpoint1||'') ? cpBodyHTML(p.checkpoint1) : '<span style="opacity:.6">체크포인트1 - 주의사항에 입력된 내용이 없습니다</span>'}</div><button type="button" class="apc-btn-sm" onclick="advJumpCp('checkpoint1')">체크포인트1 - 주의사항에서 수정 →</button></div>`
+              : richTextFieldHTML(scheduleNoteRich(p.scheduleNote), "updateAdvField('scheduleNote',__HTML__)", {cls:'white-field', placeholder:'예: 시즌 A는 오전 도착(TW9617 07:30 출발) 편으로 도착 당일 체크인 및 중식 후 바로 라운드 진행 / 시즌 B는 오후 도착 편으로 도착 당일은 호텔 체크인만 하고 라운드는 다음날부터 시작됩니다.', minHeight:'110px'})}
           </div>
         </details>
         <details class="pe-labels" id="schDetails-1" ${advDetailsAttrs('d-sch', false)}>
@@ -14728,7 +14809,7 @@ function advBasicHTML(p){
         </details>
         <details class="pe-labels" ${advDetailsAttrs('d-policy', false)}>
           <summary>⏰ 예약 · 결제 · 취소 규정 ${advFillBadge(f(p.bookingPolicy),1)}</summary>
-          <div class="pe-labels-body">${richTextFieldHTML(p.bookingPolicy, "updateAdvField('bookingPolicy',__HTML__)", {placeholder:'예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ...', minHeight:'120px'})}</div>
+          <div class="pe-labels-body">${richTextFieldHTML(p.bookingPolicy, "updateAdvField('bookingPolicy',__HTML__)", {cls:'white-field', placeholder:'예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ...', minHeight:'120px'})}</div>
         </details>
         <details class="pe-labels" ${advDetailsAttrs('d-link', false)}>
           <summary>🔗 연결 링크 · URL ${advFillBadge(f(p.linkUrl),1)}</summary>
@@ -14786,10 +14867,11 @@ function cpResetBg(btn){
   const ed=btn.closest('.cp-editor').querySelector('.rtf-editable');
   ed.setAttribute('style', (ed.getAttribute('style')||'').replace(/background:[^;]*;?|border-color:[^;]*;?|(^|;)color:[^;]*;?/g,'$1'));
 }
-// "자세히 보기 > 참고사항"에서 체크포인트1 편집기로 이동
-function advJumpCpTop(){
-  const g=document.querySelector('#advBody details[data-ck="g-card"]'); if (g) g.open=true;
-  const el=document.querySelector('#advBody .cp-editor[data-field="checkpoint2"]'); if (!el) return;
+// 체크포인트 편집기로 이동 — checkpoint1(주의사항)은 상품 카드 그룹, checkpoint2(참고사항)는 "포함 · 불포함 · 참고사항"에 있다
+function advJumpCp(field){
+  const open = k=>{ const d=document.querySelector(`#advBody details[data-ck="${k}"]`); if (d) d.open=true; };
+  if (field==='checkpoint2'){ open('g-detail'); open('d-inc'); } else open('g-card');
+  const el=document.querySelector(`#advBody .cp-editor[data-field="${field}"]`); if (!el) return;
   const body=document.getElementById('advBody'), nav=body.querySelector('.adv-quicknav');
   body.scrollTo({top: body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav?nav.offsetHeight:0) - 10, behavior:'smooth'});
   setTimeout(()=>{ const ed=el.querySelector('.rtf-editable'); if (ed) ed.focus({preventScroll:true}); }, 450);
@@ -15189,12 +15271,12 @@ function priceEntryHTML(pe, i, popupCount, p){
     <!-- [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 특정 요일(구간)·날짜의 금액을 함께 안내.
          상세페이지 요금표 하단에 "월~목 출발 / 금 출발 / 토 출발 / 일 출발" 식의 표로 노출된다 -->
     <details class="pe-labels pe-sec" ${advDetailsAttrs(`pe${i}-dp`, sDp.hasOwn)}>
-      <summary>🗓️ 출발 요일별 · 공휴일 요금 ${sDp.badges}</summary>
+      <summary>📅 출발 요일별 요금 ${sDp.badges}</summary>
       <div class="pe-labels-body">
         <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
         ${peInhHintHTML(p,pe,i,'dayPrices',true)}
         <div class="dp-list">
-          ${(pe.dayPrices||[]).map((d,di)=>`
+          ${(pe.dayPrices||[]).map((d,di)=>dpIsMarker(d) ? dpMarkerRowHTML(d,i,'day',di) : `
           <div class="dp-row">
             <select onchange="updateDayPrice(${i},${di},'day',this.value)">
               <option value="">요일 선택</option>
@@ -15204,12 +15286,16 @@ function priceEntryHTML(pe, i, popupCount, p){
             <button class="pee-del" onclick="removeDayPrice(${i},${di})">삭제</button>
           </div>`).join('')}
         </div>
-        <button class="apc-btn-sm" onclick="addDayPrice(${i})">+ 요일별 요금 추가</button>
+        <div class="dp-add-row">
+          <button class="apc-btn-sm" onclick="addDayPrice(${i})">+ 요일별 요금 추가</button>
+          <button class="apc-btn-sm" onclick="addDpMarker(${i},'day','divider')" title="요금표에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
+          <button class="apc-btn-sm" onclick="addDpMarker(${i},'day','group')" title="아래에 입력하는 요금들을 묶는 부제목">+ 부제목 추가</button>
+        </div>
 
         <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
         ${peInhHintHTML(p,pe,i,'holidayPrices',true)}
         <div class="dp-list">
-          ${(pe.holidayPrices||[]).map((h,hi)=>`
+          ${(pe.holidayPrices||[]).map((h,hi)=>dpIsMarker(h) ? dpMarkerRowHTML(h,i,'hol',hi) : `
           <div class="dp-row dp-row-holiday">
             <select onchange="updateHolidayPrice(${i},${hi},'type',this.value)">
               <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
@@ -15221,7 +15307,10 @@ function priceEntryHTML(pe, i, popupCount, p){
             <button class="pee-del" onclick="removeHolidayPrice(${i},${hi})">삭제</button>
           </div>`).join('')}
         </div>
-        <button class="apc-btn-sm" onclick="addHolidayPrice(${i})">+ 공휴일 요금 추가</button>
+        <div class="dp-add-row">
+          <button class="apc-btn-sm" onclick="addHolidayPrice(${i})">+ 공휴일 요금 추가</button>
+          <button class="apc-btn-sm" onclick="addDpMarker(${i},'hol','divider')" title="요금표에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
+        </div>
       </div>
     </details>
 
@@ -15534,6 +15623,32 @@ function duplicatePriceEntry(i){
   const order = p.priceEntries.map((_,k)=>k); order.splice(i+1, 0, i);
   advRemapEntryState(order);
   p.priceEntries.splice(i+1, 0, clone);
+  saveAdvChange(); renderAdvBody();
+}
+// [추가] 출발 요일별 요금·공휴일 요금 목록의 구분선/부제목 — peIdx가 -1이면 상품 공통, 아니면 그 요금 항목. kind: 'day' | 'hol'
+function dpMarkerRowHTML(m, peIdx, kind, i){
+  if (m.kind==='divider'){
+    return `<div class="pe-divider-row dp-marker"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})" title="구분선 삭제">✕</button></div>`;
+  }
+  return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span><input type="text" value="${escapeAttr(m.title||'')}" placeholder="예: 주중 출발 / 주말 출발 (다음 구분선·부제목 전까지의 금액을 묶는 제목)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.value)"><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
+}
+function dpListOf(p, peIdx, kind){
+  if (peIdx<0) return kind==='hol' ? p.commonHolidayPrices : p.commonDayPrices;
+  const pe=p.priceEntries[peIdx]; return kind==='hol' ? pe.holidayPrices : pe.dayPrices;
+}
+function addDpMarker(peIdx, kind, mk){
+  const p=getAdvProduct(); if (!p) return;
+  dpListOf(p,peIdx,kind).push(mk==='group' ? {kind:'group', title:''} : {kind:'divider'});
+  saveAdvChange(); renderAdvBody();
+}
+function updateDpGroupTitle(peIdx, kind, i, val){
+  const p=getAdvProduct(); if (!p) return;
+  const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
+  m.title=val; saveAdvChange();
+}
+function removeDpItem(peIdx, kind, i){
+  const p=getAdvProduct(); if (!p) return;
+  dpListOf(p,peIdx,kind).splice(i,1);
   saveAdvChange(); renderAdvBody();
 }
 // [수정] 출발 요일별 요금 — 판매가와 별도로 특정 요일(또는 요일 구간)에 대한 금액을 추가 안내

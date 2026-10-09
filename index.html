@@ -733,7 +733,7 @@ section.block{padding:100px 24px;position:relative}
    추가 축소(42px→35.7px)했던 것을, 다시 90% 크기로 한 번 더 축소(35.7px→32.13px) */
 .pd-close{flex-shrink:0;width:32.13px;height:32.13px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:.91035rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-close:hover{background:var(--gold);color:#fff}
-/* [수정] 상단 제목 박스 — 딥 네이비 바탕 + 두툼한 금색 메탈 베벨 테두리 + 안쪽 가는 금색 라인 + 유리 반사(대각선 광택).
+/* [수정] 상단 제목 박스 — 검은빛 도는 딥 네이비 가죽 질감(assets/leather-navy.jpg, 엠보싱 그레인 타일) 바탕 + 두툼한 금색 메탈 베벨 테두리 + 안쪽 가는 금색 라인 + 유리 반사(대각선 광택).
    - 테두리(5px): 위쪽 밝은 크림골드 → 중간 짙은 호박색 → 아래쪽 다시 밝은 금으로, 입체 베벨 느낌
    - 안쪽 라인: inset 그림자로 "짙은 간격 + 금색 가는 선 + 흰색 마감선"을 만들어, 네이비 영역과 금색 테두리의 경계를 또렷하게 표현
    - ::after: 윗면 광택 + 좌측의 부드러운 곡면 광택과 비스듬한 빛줄기(하드 경계 없음), ::before: 바깥을 감싸는 흰 유리 림과 글로우 */
@@ -741,7 +741,8 @@ section.block{padding:100px 24px;position:relative}
   min-height:60px;padding:5px 8px 5px 5px;margin:8px 0 18px;border:5px solid transparent;border-radius:100px;
   background:
     radial-gradient(120% 140% at 10% -30%,rgba(214,176,86,.2),rgba(214,176,86,0) 55%),
-    linear-gradient(180deg,#10265a 0%,#0a1838 48%,#050f2a 100%) padding-box,
+    linear-gradient(180deg,rgba(16,26,48,.28) 0%,rgba(0,0,0,.3) 100%) padding-box,
+    url(assets/leather-navy.jpg) 0 0/400px 400px repeat padding-box,
     linear-gradient(180deg,#fff6c8 0%,#f3d06a 22%,#c58f26 48%,#8d5d10 66%,#d9a73c 84%,#ffeaa0 100%) border-box;
   box-shadow:
     inset 0 0 0 2.5px #08142f,

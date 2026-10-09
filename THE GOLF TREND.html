@@ -756,15 +756,8 @@ section.block{padding:100px 24px;position:relative}
   box-shadow:inset 0 1px 2px rgba(255,255,255,.8),inset 0 -1px 2px rgba(255,236,170,.6),0 0 12px rgba(255,255,255,.45),0 10px 22px rgba(3,13,38,.2);
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .pd-nav-bar::after{content:'';position:absolute;inset:5.5px;border-radius:100px;pointer-events:none;box-shadow:0 0 0 1.5px rgba(255,255,255,.96);
-  /* 투명 유리판 참고 이미지처럼: 우상단 윗변을 따라 가는 광택선 + 좌하단 아랫변의 짧은 광택선 + 비스듬히 가로지르는
-     넓고 옅은 면 반사와 가는 빛줄기. 모두 부드러운 그래디언트(하드 경계 없음)라 계단 현상이 없다 */
-  background:
-    radial-gradient(ellipse 120px 1.8px at 80% 1px,rgba(255,255,255,.95),rgba(255,255,255,0) 100%),
-    radial-gradient(ellipse 170px 9px at 80% 0,rgba(255,255,255,.42),rgba(255,255,255,0) 100%),
-    radial-gradient(ellipse 110px 1.8px at 18% calc(100% - 1px),rgba(255,255,255,.9),rgba(255,255,255,0) 100%),
-    radial-gradient(ellipse 160px 9px at 18% 100%,rgba(255,255,255,.3),rgba(255,255,255,0) 100%),
-    linear-gradient(112deg,rgba(255,255,255,0) 22%,rgba(255,255,255,.07) 33%,rgba(255,255,255,.17) 46%,rgba(255,255,255,.05) 62%,rgba(255,255,255,0) 74%),
-    linear-gradient(112deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.14) 36%,rgba(255,255,255,0) 42%)}
+  /* 제공받은 알파 반사 이미지(assets/glass-reflection.png)를 윗부분 기준으로 꽉 채워(cover) 얹는다 — 위젯과 같은 이미지 */
+  background:url(assets/glass-reflection.png) center top/cover no-repeat}
 .pd-nav-bar > *{position:relative;z-index:1}
 .pd-nav-region{text-shadow:0 1px 3px rgba(0,0,0,.5),0 0 12px rgba(214,176,86,.35)}
 .pd-nav-count{color:rgba(246,226,160,.9)}
@@ -2614,18 +2607,12 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
    position:fixed로(부모 위치와 무관하게) 그대로 동작한다 */
 .mobile-widget-row,.widget-drag-wrap,.mobile-weather-pair{display:contents}
 .widget-peek-handle{display:none}
-/* [추가] 위젯 박스 유리판 반사 — 투명 유리판 참고 이미지처럼: ① 우상단 모서리 윗변을 따라 가늘고 밝은 광택선(글린트)
-   ② 좌하단 아랫변을 따라 짧은 광택선 ③ 가운데를 비스듬히 가로지르는 넓고 옅은 면 반사 + 가는 빛줄기.
-   모두 부드럽게 번지는 그래디언트(하드 경계 없음)라 선이 계단처럼 깨지지 않고, 글자 가독성을 위해 면 반사는 옅게 유지.
-   pointer-events:none, 박스 크기와 무관하게 광택선 길이는 px 고정 */
+/* [추가] 위젯 박스 유리판 반사 — 제공받은 알파(투명도) 반사 이미지(assets/glass-reflection.png, 흰색+알파 1024×563)를
+   박스 위에 얹는다. 윗부분을 기준(center top)으로 박스를 꽉 채우도록(cover) 맞춰 박스 비율이 달라도 이미지가 찌그러지지
+   않고, 이미지 자체가 안티앨리어싱된 부드러운 가장자리를 가져 계단 현상이 없다. 안쪽에 가는 흰 테두리를 함께 둔다.
+   pointer-events:none이라 클릭/드래그에 영향 없음 */
 .widget-box::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
-  background:
-    radial-gradient(ellipse 54px 1.6px at 84% 1px,rgba(255,255,255,.95),rgba(255,255,255,0) 100%),
-    radial-gradient(ellipse 80px 9px at 84% 0,rgba(255,255,255,.42),rgba(255,255,255,0) 100%),
-    radial-gradient(ellipse 56px 1.6px at 22% calc(100% - 1px),rgba(255,255,255,.9),rgba(255,255,255,0) 100%),
-    radial-gradient(ellipse 84px 9px at 22% 100%,rgba(255,255,255,.34),rgba(255,255,255,0) 100%),
-    linear-gradient(120deg,rgba(255,255,255,0) 26%,rgba(255,255,255,.07) 36%,rgba(255,255,255,.17) 50%,rgba(255,255,255,.05) 68%,rgba(255,255,255,0) 80%),
-    linear-gradient(120deg,rgba(255,255,255,0) 34%,rgba(255,255,255,.14) 40%,rgba(255,255,255,0) 46%);
+  background:url(assets/glass-reflection.png) center top/cover no-repeat;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 1px 1px rgba(255,255,255,.7)}
 /* [수정] 웹: 액션 버튼 3개가 화면 하단 코너로 옮겨가면서 다시 비게 된 탑바 우측 끝 아래 자리에
    위젯을 세로로 쌓는다(--topbar-h 기준). 순서는 환율 위젯이 위, 날씨 위젯이 그 아래 — 환율

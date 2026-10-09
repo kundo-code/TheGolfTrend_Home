@@ -1613,6 +1613,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-divider-line{flex:1;height:0;border-top:2px dashed rgba(10,23,48,.28)}
 .pe-divider-row .pee-del{flex-shrink:0}
 .dp-add-row{display:flex;gap:6px;flex-wrap:wrap}
+.dp-item{display:flex;align-items:center;gap:6px;border-radius:8px}
+.dp-item.drag-over{outline:2px dashed var(--nm-blue-deep);outline-offset:2px}
+.dp-item-body{flex:1;min-width:0}
+.dp-move{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.dp-handle{cursor:grab;color:var(--nm-text-soft);font-size:1rem;line-height:1;padding:2px 3px;user-select:none}
+.dp-mv{width:22px;height:22px;padding:0;border:none;border-radius:6px;background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);color:var(--nm-blue-deep);font-size:.6rem;line-height:1;cursor:pointer}
+.dp-mv:hover{background:var(--nm-gold-grad);color:#fff}
+.dp-item-body > .pe-divider-row{margin:0}
+.dp-item-body > .dp-group-row{margin:0}
 .dp-list .pe-divider-row.dp-marker{margin:4px 0 8px}
 .dp-group-row{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
 .dp-group-lbl{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.06em}
@@ -14726,7 +14735,7 @@ function advBasicHTML(p){
           <div class="pe-labels-body">
             <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
             <div class="dp-list">
-              ${(p.commonDayPrices||[]).map((d,di)=>dpIsMarker(d) ? dpMarkerRowHTML(d,-1,'day',di) : `
+              ${(p.commonDayPrices||[]).map((d,di)=>dpItemWrap(-1,'day',di, dpIsMarker(d) ? dpMarkerRowHTML(d,-1,'day',di) : `
               <div class="dp-row">
                 <select onchange="updateCommonDayPrice(${di},'day',this.value)">
                   <option value="">요일 선택</option>
@@ -14734,7 +14743,7 @@ function advBasicHTML(p){
                 </select>
                 <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">
                 <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
-              </div>`).join('')}
+              </div>`)).join('')}
             </div>
             <div class="dp-add-row">
               <button class="apc-btn-sm" onclick="addCommonDayPrice()">+ 요일별 요금 추가</button>
@@ -14744,7 +14753,7 @@ function advBasicHTML(p){
 
             <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
             <div class="dp-list">
-              ${(p.commonHolidayPrices||[]).map((h,hi)=>dpIsMarker(h) ? dpMarkerRowHTML(h,-1,'hol',hi) : `
+              ${(p.commonHolidayPrices||[]).map((h,hi)=>dpItemWrap(-1,'hol',hi, dpIsMarker(h) ? dpMarkerRowHTML(h,-1,'hol',hi) : `
               <div class="dp-row dp-row-holiday">
                 <select onchange="updateCommonHolidayPrice(${hi},'type',this.value)">
                   <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
@@ -14754,7 +14763,7 @@ function advBasicHTML(p){
                 <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateCommonHolidayPrice(${hi},'endDate',this.value)">
                 <input type="number" value="${h.price||''}" placeholder="890000" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">
                 <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
-              </div>`).join('')}
+              </div>`)).join('')}
             </div>
             <div class="dp-add-row">
               <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
@@ -15276,7 +15285,7 @@ function priceEntryHTML(pe, i, popupCount, p){
         <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
         ${peInhHintHTML(p,pe,i,'dayPrices',true)}
         <div class="dp-list">
-          ${(pe.dayPrices||[]).map((d,di)=>dpIsMarker(d) ? dpMarkerRowHTML(d,i,'day',di) : `
+          ${(pe.dayPrices||[]).map((d,di)=>dpItemWrap(i,'day',di, dpIsMarker(d) ? dpMarkerRowHTML(d,i,'day',di) : `
           <div class="dp-row">
             <select onchange="updateDayPrice(${i},${di},'day',this.value)">
               <option value="">요일 선택</option>
@@ -15284,7 +15293,7 @@ function priceEntryHTML(pe, i, popupCount, p){
             </select>
             <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateDayPrice(${i},${di},'price',this.value,'number')">
             <button class="pee-del" onclick="removeDayPrice(${i},${di})">삭제</button>
-          </div>`).join('')}
+          </div>`)).join('')}
         </div>
         <div class="dp-add-row">
           <button class="apc-btn-sm" onclick="addDayPrice(${i})">+ 요일별 요금 추가</button>
@@ -15295,7 +15304,7 @@ function priceEntryHTML(pe, i, popupCount, p){
         <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
         ${peInhHintHTML(p,pe,i,'holidayPrices',true)}
         <div class="dp-list">
-          ${(pe.holidayPrices||[]).map((h,hi)=>dpIsMarker(h) ? dpMarkerRowHTML(h,i,'hol',hi) : `
+          ${(pe.holidayPrices||[]).map((h,hi)=>dpItemWrap(i,'hol',hi, dpIsMarker(h) ? dpMarkerRowHTML(h,i,'hol',hi) : `
           <div class="dp-row dp-row-holiday">
             <select onchange="updateHolidayPrice(${i},${hi},'type',this.value)">
               <option value="single" ${h.type!=='range'?'selected':''}>단일 날짜</option>
@@ -15305,7 +15314,7 @@ function priceEntryHTML(pe, i, popupCount, p){
             <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateHolidayPrice(${i},${hi},'endDate',this.value)">
             <input type="number" value="${h.price||''}" placeholder="890000" oninput="updateHolidayPrice(${i},${hi},'price',this.value,'number')">
             <button class="pee-del" onclick="removeHolidayPrice(${i},${hi})">삭제</button>
-          </div>`).join('')}
+          </div>`)).join('')}
         </div>
         <div class="dp-add-row">
           <button class="apc-btn-sm" onclick="addHolidayPrice(${i})">+ 공휴일 요금 추가</button>
@@ -15635,6 +15644,39 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
 function dpListOf(p, peIdx, kind){
   if (peIdx<0) return kind==='hol' ? p.commonHolidayPrices : p.commonDayPrices;
   const pe=p.priceEntries[peIdx]; return kind==='hol' ? pe.holidayPrices : pe.dayPrices;
+}
+// [추가] 출발 요일별 요금·공휴일 요금 목록의 행(금액·구분선·부제목)을 위/아래 버튼 또는 손잡이(⠿) 드래그로 옮긴다 — 옮긴 순서가
+// 그대로 저장되어 자세히 보기의 구분선 간격·부제목 위치에 반영된다
+function dpItemWrap(peIdx, kind, i, inner){
+  return `<div class="dp-item" data-i="${i}" ondragover="dpDragOver(event)" ondragleave="dpDragLeave(event)" ondrop="dpDrop(event,${peIdx},'${kind}',${i})">
+    <span class="dp-move">
+      <span class="dp-handle" draggable="true" title="드래그하여 순서 변경" ondragstart="dpDragStart(event,${peIdx},'${kind}',${i})" ondragend="dpDragEnd()">⠿</span>
+      <button type="button" class="dp-mv" title="위로" onclick="moveDpItem(${peIdx},'${kind}',${i},-1)">▲</button>
+      <button type="button" class="dp-mv" title="아래로" onclick="moveDpItem(${peIdx},'${kind}',${i},1)">▼</button>
+    </span>
+    <div class="dp-item-body">${inner}</div>
+  </div>`;
+}
+let _dpDrag = null;
+function dpDragStart(e, peIdx, kind, i){ _dpDrag={peIdx, kind, i}; e.dataTransfer.effectAllowed='move'; try{ e.dataTransfer.setData('text/plain','dp'); }catch(x){} }
+function dpDragOver(e){ if (!_dpDrag) return; e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dpDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+function dpDragEnd(){ _dpDrag=null; document.querySelectorAll('.dp-item.drag-over').forEach(x=>x.classList.remove('drag-over')); }
+function dpDrop(e, peIdx, kind, to){
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  const d=_dpDrag; _dpDrag=null;
+  if (!d || d.peIdx!==peIdx || d.kind!==kind || d.i===to) return;
+  const p=getAdvProduct(); if (!p) return;
+  const arr=dpListOf(p,peIdx,kind); if (!arr[d.i]) return;
+  arr.splice(to, 0, arr.splice(d.i,1)[0]);
+  saveAdvChange(); renderAdvBody();
+}
+function moveDpItem(peIdx, kind, i, dir){
+  const p=getAdvProduct(); if (!p) return;
+  const arr=dpListOf(p,peIdx,kind), j=i+dir;
+  if (j<0 || j>=arr.length) return;
+  const t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+  saveAdvChange(); renderAdvBody();
 }
 function addDpMarker(peIdx, kind, mk){
   const p=getAdvProduct(); if (!p) return;

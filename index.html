@@ -4208,6 +4208,41 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 }
 /* [수정] 글자가 커진 한글 문구(핵심 가치 설명·소개문·비전 문구)가 단어 중간에서 줄바꿈되지 않고 단어 단위로 줄바꿈되게 한다 */
 .hv-desc,.hv-ko,.hero-vision p,.hero .lead{word-break:keep-all;overflow-wrap:break-word}
+
+/* ═══ [수정] 모바일·상세 보정 묶음 ═══ */
+/* ① 이미지 갤러리 안의 이전/다음 버튼: 60% 반투명 + 크기 85%(44px→37.4px) */
+.pd-gallery-nav{width:37.4px;height:37.4px;font-size:.935rem;opacity:.6}
+@media(max-width:780px){
+  /* ② 핵심 가치(정직·신속함·공감·고객중심) 글자를 한 단계(약 2pt) 줄이고, 윗줄(정직·신속함)과 아랫줄(공감·고객중심) 사이에 가로 구분선 */
+  .hv-ko{font-size:calc(1.5rem + 1pt)}
+  .hv-en{font-size:calc(.82rem + 1pt)}
+  .hv-desc{font-size:calc(.95rem + 1pt)}
+  .hero-values{row-gap:0}
+  .hv-item:nth-child(n+3){border-top:1px solid rgba(221,179,103,.35);margin-top:22px;padding-top:22px}
+  .hv-item:nth-child(n+3)::before{top:28px}
+  /* ③ 모바일에도 "문의하기" 플로팅 버튼 노출 — 전화하기 바로 위에 쌓고 관리자 버튼은 그 위로 */
+  .tb-booking-fab{
+    display:flex;align-items:center;justify-content:center;
+    position:fixed;top:auto;right:16px;bottom:calc(16px + 44.8px + 10px + env(safe-area-inset-bottom));
+    width:44.8px;height:44.8px;border-radius:50%;background:none;border:none;
+    font-size:1.2rem;text-decoration:none;transition:transform .2s;
+  }
+  .tb-booking-fab .fab-img{width:1.3em;height:1.3em}
+  .tb-booking-fab:hover,.tb-booking-fab:active{transform:scale(1.08) rotate(30deg)}
+  .tb-booking-fab::after{font-size:.66rem;padding:5px 9px}
+  .admin-fab{bottom:calc(16px + (44.8px + 10px) * 2 + env(safe-area-inset-bottom))}
+  /* ④ 지정일(공휴일) 요금 — 한 줄에 2개씩(3개일 때 금액이 겹치던 문제) */
+  .pd-holiday-price-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pd-holiday-price-item{padding:4px 8px;gap:4px;justify-content:center}
+  .pd-holiday-price-item:nth-child(3n){border-right:1px dashed rgba(10,23,48,.16)}
+  .pd-holiday-price-item:nth-child(2n),.pd-holiday-price-item:last-child{border-right:none}
+  .pd-holiday-price-item .dt{font-size:.78rem}
+  .pd-holiday-price-item .v{font-size:1.15rem}
+  /* ⑤ 환율 위젯 아래의 날씨 위젯 2개 묶음을 환율 위젯과 같은 폭으로(사이 간격 8px 유지) — 관리자 크기 배율과 상관없이 폭이 어긋나지 않게 scale을 모바일에서는 적용하지 않는다 */
+  .mobile-weather-pair{width:348px;max-width:100%}
+  .widget-drag-wrap[data-widget="weather"],.widget-drag-wrap[data-widget="weatherJapan"]{flex:1 1 0;min-width:0}
+  .weather-widget,.weather-widget-jp{max-width:none;transform:none}
+}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.

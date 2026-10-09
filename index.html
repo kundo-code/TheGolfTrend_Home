@@ -1007,6 +1007,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-dp-sec + .pd-dp-sec{margin-top:6px}
 /* 구분선은 간격만 확보하고 선 자체는 보이지 않게 한다(투명 1px로 예전 간격 유지) */
 .pd-dp-sec.dp-brk{margin-top:22px;padding-top:16px;border-top:1px solid transparent}
+.pd-dp-sec.dp-brk.dp-line{border-top-color:rgba(10,23,48,.22)}
 .pd-dp-sub{font-size:.8rem;font-weight:700;color:rgb(74,85,99);margin:0 0 8px;letter-spacing:.02em}
 .pd-cp1-box{margin:0 20px 18px;padding:12px 14px!important;background:#FFF5F5;border:1px solid rgba(220,38,38,.18);border-radius:10px}
 .pd-cp1-box .row{color:rgba(10,23,48,.82)}
@@ -1614,6 +1615,10 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .pe-divider-row{display:flex;align-items:center;gap:10px;margin:2px 0 12px;color:var(--nm-text-soft);font-size:.74rem;font-weight:600;letter-spacing:.12em}
 .pe-divider-line{flex:1;height:0;border-top:2px dashed rgba(10,23,48,.28)}
 .pe-divider-row .pee-del{flex-shrink:0}
+.dp-line-toggle{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;font-size:.72rem;font-weight:600;letter-spacing:0;color:var(--nm-text);cursor:pointer;white-space:nowrap}
+.dp-line-toggle{line-height:1}
+.dp-line-toggle input{width:14px!important;height:14px;margin:0;flex-shrink:0}
+.dp-line-toggle span{display:inline-block;line-height:14px}
 .dp-add-row{display:flex;gap:6px;flex-wrap:wrap}
 .dp-item{display:flex;align-items:center;gap:6px;border-radius:8px}
 .dp-item.drag-over{outline:2px dashed var(--nm-blue-deep);outline-offset:2px}
@@ -5304,7 +5309,7 @@ function _peTextKey(v){
 }
 // 출발 요일별 요금·공휴일 요금 목록에는 일반 행 사이에 구분선({kind:'divider'})·부제목({kind:'group',title})
 // 표식이 들어갈 수 있다. 금액이 하나도 없으면 표식만 있어도 "값 없음"이고, 있으면 표식 위치도 비교 키에 포함한다
-function _dpMarkKey(x){ return x.kind==='divider' ? '#' : (x.kind==='group' ? '@'+String(x.title||'').trim() : null); }
+function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+String(x.title||'').trim() : null); }
 function _peDayKey(list){
   const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
   return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
@@ -5318,25 +5323,26 @@ function _peHolKey(list){
 // 구분선·부제목이 하나도 없으면 예전과 똑같은 마크업을 그대로 쓴다
 function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group')); }
 function dpSections(list){
-  const secs=[]; let cur=null, brk=false;
+  const secs=[]; let cur=null, brk=false, line=false;
   (list||[]).forEach(it=>{
-    if (it && it.kind==='divider'){ cur=null; brk=true; return; }
-    if (it && it.kind==='group'){ cur={title:String(it.title||'').trim(), items:[], brk}; brk=false; secs.push(cur); return; }
-    if (!cur){ cur={title:'', items:[], brk}; brk=false; secs.push(cur); }
+    if (it && it.kind==='divider'){ cur=null; brk=true; line = line || !!it.showLine; return; }
+    if (it && it.kind==='group'){ cur={title:String(it.title||'').trim(), items:[], brk, line}; brk=false; line=false; secs.push(cur); return; }
+    if (!cur){ cur={title:'', items:[], brk, line}; brk=false; line=false; secs.push(cur); }
     cur.items.push(it);
   });
   return secs;
 }
 function dpRenderSections(list, cellFn, valid, wrapFn){
-  const out=[]; let pend=false;
+  const out=[]; let pend=false, pendLine=false;
   dpSections(list).forEach(sc=>{
     const cells=sc.items.filter(valid).map(cellFn);
-    if (!cells.length){ pend = pend || sc.brk; return; }
-    out.push({title:sc.title, cells, brk: out.length>0 && (sc.brk || pend)}); pend=false;
+    if (!cells.length){ pend = pend || sc.brk; pendLine = pendLine || sc.line; return; }
+    const brk = out.length>0 && (sc.brk || pend);
+    out.push({title:sc.title, cells, brk, line: brk && (sc.line || pendLine)}); pend=false; pendLine=false;
   });
   if (!out.length) return '';
   if (out.length===1 && !out[0].title) return wrapFn(out[0].cells);
-  return out.map(sc=>`<div class="pd-dp-sec${sc.brk?' dp-brk':''}">${sc.title?`<div class="pd-dp-sub">${escapeAttr(sc.title)}</div>`:''}${wrapFn(sc.cells)}</div>`).join('');
+  return out.map(sc=>`<div class="pd-dp-sec${sc.brk?' dp-brk':''}${sc.line?' dp-line':''}">${sc.title?`<div class="pd-dp-sub">${escapeAttr(sc.title)}</div>`:''}${wrapFn(sc.cells)}</div>`).join('');
 }
 function dayPriceSectionsHTML(list, cls){
   return dpRenderSections(list, d=>{
@@ -15639,7 +15645,7 @@ function duplicatePriceEntry(i){
 // [추가] 출발 요일별 요금·공휴일 요금 목록의 구분선/부제목 — peIdx가 -1이면 상품 공통, 아니면 그 요금 항목. kind: 'day' | 'hol'
 function dpMarkerRowHTML(m, peIdx, kind, i){
   if (m.kind==='divider'){
-    return `<div class="pe-divider-row dp-marker"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})" title="구분선 삭제">✕</button></div>`;
+    return `<div class="pe-divider-row dp-marker"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><label class="dp-line-toggle" title="켜면 자세히 보기에 이 구분선의 선이 보입니다. 끄면 간격만 확보하고 선은 보이지 않습니다"><input type="checkbox" ${m.showLine?'checked':''} onchange="setDpDividerLine(${peIdx},'${kind}',${i},this.checked)"><span>선 노출</span></label><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})" title="구분선 삭제">✕</button></div>`;
   }
   return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span><input type="text" value="${escapeAttr(m.title||'')}" placeholder="예: 주중 출발 / 주말 출발 (다음 구분선·부제목 전까지의 금액을 묶는 제목)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.value)"><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
 }
@@ -15684,6 +15690,11 @@ function addDpMarker(peIdx, kind, mk){
   const p=getAdvProduct(); if (!p) return;
   dpListOf(p,peIdx,kind).push(mk==='group' ? {kind:'group', title:''} : {kind:'divider'});
   saveAdvChange(); renderAdvBody();
+}
+function setDpDividerLine(peIdx, kind, i, on){
+  const p=getAdvProduct(); if (!p) return;
+  const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
+  m.showLine = !!on; saveAdvChange();
 }
 function updateDpGroupTitle(peIdx, kind, i, val){
   const p=getAdvProduct(); if (!p) return;

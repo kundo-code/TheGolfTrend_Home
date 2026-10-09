@@ -2442,7 +2442,8 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    "모바일에서도 함께 반영"되게 한다 */
 .top-bar{
   width:100%;
-  background:#0e1522;
+  /* [수정] 탑바 바탕 — 상품 자세히 보기 상단 박스와 같은 검은빛 도는 딥 네이비 가죽 질감(assets/leather-navy.jpg) */
+  background:linear-gradient(180deg,rgba(16,26,48,.28) 0%,rgba(0,0,0,.3) 100%),url(assets/leather-navy.jpg) 0 0/400px 400px repeat,#0a0f18;
   border-bottom:1px solid rgba(221,179,103,.18);
   padding:20px 40px 18px;
   /* FIX: iOS 노치/다이내믹 아일랜드가 topbar 위에 겹치지 않도록 safe-area만큼 위쪽 여백을 더한다.
@@ -7451,7 +7452,7 @@ async function idbDelete(key){
     tx.onerror=()=>reject(tx.error);
   });
 }
-const DEFAULT_LOGO    = 'assets/topbar-brand.png';
+const DEFAULT_LOGO    = 'assets/topbar-brand-gold.png'; // 골드 메탈(브러시드 골드) 질감을 입힌 기본 로고 — 원본은 assets/topbar-brand.png
 const DEFAULT_TAGLINE = '정직 / 신속 / 공감 / 고객중심으로 믿고 맡길 수 있는 파트너, (주)더골프트렌드 입니다.';
 
 let logoOverride=null, taglineOverride=null, aboutBannerOverride=null;

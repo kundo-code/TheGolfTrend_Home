@@ -1004,17 +1004,11 @@ section.block{padding:100px 24px;position:relative}
 /* 일정 요약 타임라인 */
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
-.pd-dp-sec + .pd-dp-sec{margin-top:6px}
-/* 구분선은 간격만 확보하고 선 자체는 보이지 않게 한다(투명 1px로 예전 간격 유지) */
-.pd-dp-sec.dp-brk{margin-top:22px;padding-top:16px;border-top:1px solid transparent}
-.pd-dp-sec.dp-brk.dp-line{border-top-color:rgba(10,23,48,.22)}
+.pd-dp-gap{position:relative;height:39px}
+.pd-dp-gap.dp-line::after{content:'';position:absolute;left:0;right:0;top:22px;border-top:1px solid rgba(10,23,48,.22)}
 .pd-dp-sub{font-size:.8rem;font-weight:700;color:rgb(74,85,99);margin:0 0 8px;letter-spacing:.02em}
-.pd-cp1-box{margin:0 20px 18px;padding:12px 14px!important;background:#FFF5F5;border:1px solid rgba(220,38,38,.18);border-radius:10px}
-.pd-cp1-box .row{color:rgba(10,23,48,.82)}
-.sn-common-toggle{display:flex;align-items:center;gap:8px;margin:2px 0 8px;font-size:.8rem;font-weight:700;color:var(--nm-text);cursor:pointer}
-.sn-common-toggle input{width:auto!important;margin:0}
-.sn-common-toggle em{font-style:normal;font-weight:500;color:var(--nm-text-soft);font-size:.74rem}
-.notebox-ta{width:100%;box-sizing:border-box;padding:12px 14px;border:none;border-radius:var(--nm-r-sm);background:#fff;box-shadow:var(--nm-shadow-inset);font:inherit;font-size:.9rem;line-height:1.6;color:var(--nm-text);resize:vertical}
+.pd-dp-sub:has(+ .pd-dp-sub){margin-bottom:3px}
+.pd-day-price-table + .pd-dp-sub,.pd-holiday-price-row + .pd-dp-sub{margin-top:18px}
 .pd-guide-slot{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
 .pd-guide-overview{white-space:pre-line;font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
 .pd-guide-note{padding:12px 14px!important;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:10px;font-size:.8rem;gap:5px!important}
@@ -5322,27 +5316,36 @@ function _peHolKey(list){
 // 구분선을 기준으로 묶음을 나눠 간격을 두고, 부제목이 있으면 그 묶음 위에 작은 제목으로 노출한다.
 // 구분선·부제목이 하나도 없으면 예전과 똑같은 마크업을 그대로 쓴다
 function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group')); }
-function dpSections(list){
-  const secs=[]; let cur=null, brk=false, line=false;
-  (list||[]).forEach(it=>{
-    if (it && it.kind==='divider'){ cur=null; brk=true; line = line || !!it.showLine; return; }
-    if (it && it.kind==='group'){ cur={title:String(it.title||'').trim(), items:[], brk, line}; brk=false; line=false; secs.push(cur); return; }
-    if (!cur){ cur={title:'', items:[], brk, line}; brk=false; line=false; secs.push(cur); }
-    cur.items.push(it);
-  });
-  return secs;
-}
+// 목록을 처음부터 끝까지 순서대로 그린다 — 구분선마다 자기 간격 칸(선 노출을 켠 구분선은 선도)을 하나씩, 부제목마다 자기 제목 줄을 하나씩.
+// 그래서 부제목 아래 부제목, 구분선 아래 구분선을 연달아 넣으면 입력한 개수만큼 그대로 나온다.
+// 금액이 하나도 없는 묶음(구분선으로 나뉜 구간)은 통째로 숨기고, 맨 앞·맨 뒤 구분선과 아래에 금액이 없는 맨 끝 부제목은 내용이 없으니 생략한다
 function dpRenderSections(list, cellFn, valid, wrapFn){
-  const out=[]; let pend=false, pendLine=false;
-  dpSections(list).forEach(sc=>{
-    const cells=sc.items.filter(valid).map(cellFn);
-    if (!cells.length){ pend = pend || sc.brk; pendLine = pendLine || sc.line; return; }
-    const brk = out.length>0 && (sc.brk || pend);
-    out.push({title:sc.title, cells, brk, line: brk && (sc.line || pendLine)}); pend=false; pendLine=false;
+  const L=list||[];
+  if (!L.some(dpIsMarker)){ const cells=L.filter(valid).map(cellFn); return cells.length ? wrapFn(cells) : ''; }
+  const segs=[]; let gaps=[], seg=null;
+  L.forEach(it=>{
+    if (it && it.kind==='divider'){ seg=null; gaps.push(!!it.showLine); return; }
+    if (!seg){ seg={gaps, els:[]}; gaps=[]; segs.push(seg); }
+    if (it && it.kind==='group') seg.els.push({t:String(it.title||'').trim()});
+    else if (valid(it)) seg.els.push({c:cellFn(it)});
   });
-  if (!out.length) return '';
-  if (out.length===1 && !out[0].title) return wrapFn(out[0].cells);
-  return out.map(sc=>`<div class="pd-dp-sec${sc.brk?' dp-brk':''}${sc.line?' dp-line':''}">${sc.title?`<div class="pd-dp-sub">${escapeAttr(sc.title)}</div>`:''}${wrapFn(sc.cells)}</div>`).join('');
+  let out='', pend=[], first=true;
+  segs.forEach(sg=>{
+    pend = pend.concat(sg.gaps);
+    const els=sg.els.slice();
+    while (els.length && els[els.length-1].t!==undefined) els.pop();
+    if (!els.some(e=>e.c!==undefined)) return;
+    if (!first) out += pend.map(line=>`<div class="pd-dp-gap${line?' dp-line':''}"></div>`).join('');
+    pend=[]; first=false;
+    let run=[];
+    const flush=()=>{ if (run.length){ out+=wrapFn(run); run=[]; } };
+    els.forEach(e=>{
+      if (e.t!==undefined){ flush(); if (e.t) out+=`<div class="pd-dp-sub">${escapeAttr(e.t)}</div>`; }
+      else run.push(e.c);
+    });
+    flush();
+  });
+  return out;
 }
 function dayPriceSectionsHTML(list, cls){
   return dpRenderSections(list, d=>{

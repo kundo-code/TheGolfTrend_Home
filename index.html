@@ -2443,7 +2443,16 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .top-bar{
   width:100%;
   /* [수정] 탑바 바탕 — 상품 자세히 보기 상단 박스와 같은 검은빛 도는 딥 네이비 가죽 질감(assets/leather-navy.jpg) */
-  background:linear-gradient(180deg,rgba(16,26,48,.28) 0%,rgba(0,0,0,.3) 100%),url(assets/leather-navy.jpg) 0 0/400px 400px repeat,#0a0f18;
+  /* [수정] 질감을 더 세밀하게(assets/leather-navy-fine.jpg, 타일 300px — 이전 대비 결이 약 40% 작음) 바꾸고, 빛이 비치는
+     느낌이 나도록 screen 혼합의 광원 레이어 2장(좌상단의 넓은 빛 + 비스듬한 부드러운 빛줄기)을 얹는다. screen은 어두운
+     바탕을 위로 끌어올리면서도 결의 명암 차이를 그대로 남겨, 빛이 닿은 쪽의 질감이 더 도드라져 보인다 */
+  background:
+    radial-gradient(ellipse 62% 150% at 16% -25%,rgba(150,176,236,.34) 0%,rgba(150,176,236,.12) 45%,rgba(150,176,236,0) 75%),
+    linear-gradient(104deg,rgba(255,255,255,0) 26%,rgba(255,255,255,.075) 42%,rgba(255,255,255,0) 58%),
+    linear-gradient(180deg,rgba(16,26,48,.2) 0%,rgba(0,0,0,.26) 100%),
+    url(assets/leather-navy-fine.jpg) 0 0/300px 300px repeat,
+    #0a0f18;
+  background-blend-mode:screen,screen,normal,normal,normal;
   border-bottom:1px solid rgba(221,179,103,.18);
   padding:20px 40px 18px;
   /* FIX: iOS 노치/다이내믹 아일랜드가 topbar 위에 겹치지 않도록 safe-area만큼 위쪽 여백을 더한다.
@@ -2510,7 +2519,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 }
 .nav ul li a{
   display:block;padding:6px 16px;border-radius:8px;
-  color:rgba(247,245,240,.8);font-size:.88rem;font-weight:500;
+  color:rgba(247,245,240,.8);font-size:.971rem;font-weight:500; /* [수정] 메뉴 글자 크기 +1pt (.88rem→.971rem) */
   letter-spacing:.02em;transition:all .2s;white-space:nowrap;
 }
 .nav ul li a:hover{color:var(--pine-deep);background:var(--gold)}
@@ -2529,7 +2538,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
     overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
   .nav ul::-webkit-scrollbar{display:none}
   .nav ul li{flex-shrink:0}
-  .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.74rem}
+  .nav ul li a{padding:8px 10px;border-radius:8px;width:auto;font-size:.823rem} /* [수정] 모바일 메뉴 글자 +1pt (.74rem→.823rem) */
   .nav .menu-btn{display:none}
   /* [수정] "관리자"·"전화하기" 두 아이콘을 화면 우측 최하단 코너에 세로로 쌓는다(스크롤과 무관하게
      항상 같은 자리 — position:fixed + bottom/right이라 스크롤 실측 없이도 항상 고정).

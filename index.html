@@ -5326,7 +5326,7 @@ function _peHolKey(list){
 function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group')); }
 // 목록을 처음부터 끝까지 순서대로 그린다 — 구분선마다 자기 간격 칸(선 노출을 켠 구분선은 선도)을 하나씩, 부제목마다 자기 제목 줄을 하나씩.
 // 그래서 부제목 아래 부제목, 구분선 아래 구분선을 연달아 넣으면 입력한 개수만큼 그대로 나온다.
-// 금액이 하나도 없는 묶음(구분선으로 나뉜 구간)은 통째로 숨기고, 맨 앞·맨 뒤 구분선과 아래에 금액이 없는 맨 끝 부제목은 내용이 없으니 생략한다
+// 금액이 하나도 없는 묶음(구분선으로 나뉜 구간)은 통째로 숨기고, 맨 앞 구분선과 아래에 금액이 없는 맨 끝 부제목은 내용이 없으니 생략한다(맨 아래 구분선은 아래쪽 간격으로 남긴다)
 // 부제목 값은 서식이 들어간 HTML이거나(편집기에서 입력) 예전 일반 텍스트
 function dpTitleHTML(t){ t=String(t||''); return /<[a-z]/i.test(t) ? sanitizeRichHTML(t) : escapeAttr(t.trim()); }
 function dpTitleEmpty(t){ t=String(t||''); return !(/<[a-z]/i.test(t) ? richToPlain(t) : t).trim(); }
@@ -5356,6 +5356,8 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
     });
     flush();
   });
+  // 맨 아래 구분선(과 금액이 없어 숨겨진 구간 뒤의 구분선)도 입력한 개수만큼 아래쪽 간격으로 남긴다(선 노출을 켠 것만 선 표시)
+  if (!first) out += pend.concat(gaps).map(line=>`<div class="pd-dp-gap${line?' dp-line':''}"></div>`).join('');
   return out;
 }
 function dayPriceSectionsHTML(list, cls){

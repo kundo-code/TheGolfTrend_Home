@@ -1005,8 +1005,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
 .pd-dp-sec + .pd-dp-sec{margin-top:6px}
-.pd-dp-sec.dp-brk{margin-top:22px;padding-top:16px;border-top:1px dashed rgba(10,23,48,.2)}
-.pd-dp-sub{font-size:.8rem;font-weight:700;color:var(--gold-deep);margin:0 0 8px;letter-spacing:.02em}
+/* 구분선은 간격만 확보하고 선 자체는 보이지 않게 한다(투명 1px로 예전 간격 유지) */
+.pd-dp-sec.dp-brk{margin-top:22px;padding-top:16px;border-top:1px solid transparent}
+.pd-dp-sub{font-size:.8rem;font-weight:700;color:rgb(74,85,99);margin:0 0 8px;letter-spacing:.02em}
 .pd-cp1-box{margin:0 20px 18px;padding:12px 14px!important;background:#FFF5F5;border:1px solid rgba(220,38,38,.18);border-radius:10px}
 .pd-cp1-box .row{color:rgba(10,23,48,.82)}
 .sn-common-toggle{display:flex;align-items:center;gap:8px;margin:2px 0 8px;font-size:.8rem;font-weight:700;color:var(--nm-text);cursor:pointer}

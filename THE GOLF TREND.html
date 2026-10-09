@@ -4044,14 +4044,14 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 .pc-nav-btn,.pd-close{border-radius:50%}
 .pd-close{width:36px;height:36px}
 .pd-close,.pc-nav-btn{padding:0}
-.spot-cta a{padding:4px 14px;font-size:.8rem;display:inline-block}
+.spot-cta a{padding:4px 14px;font-size:.8rem;display:inline-block;white-space:nowrap;flex-shrink:0}
 .btn-primary,.btn-ghost{padding:13px 28px}
 .admin-fab::before,.tb-booking-fab::before,.mobile-call-fab::before{
   border:3px solid transparent;
   background:var(--gb-gloss) padding-box,radial-gradient(circle at 50% 55%,#f2c257 0%,#d89b2c 55%,#b27613 100%) padding-box,var(--gb-rim) border-box;
   backdrop-filter:none;-webkit-backdrop-filter:none;
   box-shadow:inset 0 0 0 1px rgba(255,226,140,.7),inset 0 -8px 12px rgba(120,60,10,.28),0 6px 16px rgba(60,35,5,.32);
-  opacity:.55}
+  opacity:.65}
 
 /* [추가] 골드 버튼 디자인 — 2차 적용(나머지 공개 화면 버튼): 갤러리·패키지 이전/다음, 라이트박스, 팝업 닫기 등 원형 버튼,
    탭·필터·"전체 보기" 같은 알약 버튼, 카카오 채널(브랜드 노란색 면 + 금색 테두리) */
@@ -4130,6 +4130,27 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 .ai-submit-btn:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
 .ai-submit-btn:active{filter:brightness(.95);transform:translateY(1px)}
 @media(min-width:781px){.ai-submit-btn{padding:13px 32px}}
+
+/* [수정] 히어로 레이아웃 — "필드에서 시작되는 완벽한 여행" 소개 박스를 위(가로로 긴 형태), "Editor's Pick · 이번 주 추천" 카드는 아래에 배치.
+   (소개 박스 안의 "국내외 여행지·해외 골프 운영·B2B 파트너" 숫자 요약은 삭제) */
+.hero-inner{grid-template-columns:1fr;gap:28px}
+.hero-actions{margin-bottom:0}
+.hero-main{padding-bottom:28px}
+@media(min-width:781px){
+  /* 소개 박스: 왼쪽(인사말·슬로건·소개·버튼) | 오른쪽(핵심 가치 2×2 + 비전 문구) 의 가로로 긴 2단 구성 */
+  .hero-main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:56px;align-content:center;padding:44px 52px}
+  .hero-main > .eyebrow{grid-column:1;grid-row:1;justify-self:start;align-self:start}
+  .hero-main > h1{grid-column:1;grid-row:2;margin-bottom:28px;font-size:clamp(2.4rem,4.2vw,3.8rem)} /* 왼쪽 단 폭에 맞춰 "필드에서 시작되는,"가 한 줄에 들어가도록 */
+  .hero-main > .hero-slogan{grid-column:1;grid-row:3}
+  .hero-main > .lead{grid-column:1;grid-row:4;max-width:none}
+  .hero-main > .hero-actions{grid-column:1;grid-row:5;align-self:end}
+  .hero-main > .hero-values{grid-column:2;grid-row:1 / span 3;grid-template-columns:repeat(2,1fr);gap:26px 8px;align-self:center;margin-bottom:0;padding-bottom:0;border-bottom:none}
+  .hero-main > .hero-values .hv-item:nth-child(odd)::before{display:none}
+  .hero-main > .hero-vision{grid-column:2;grid-row:4 / span 2;align-self:end;margin-bottom:0}
+  /* 추천 카드 2장은 가로로 나란히 */
+  .spotlight-grid{flex-direction:row}
+  .spotlight{flex:1 1 0;min-width:0}
+}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.
@@ -4357,11 +4378,6 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
           <div class="hv-en">Customer First</div>
           <div class="hv-desc">고객 감성<br>최우선</div>
         </div>
-      </div>
-      <div class="mini-stats">
-        <div class="mini-stat"><span class="n">15+</span><span class="l">국내외 여행지</span></div>
-        <div class="mini-stat"><span class="n">20년+</span><span class="l">해외 골프 운영</span></div>
-        <div class="mini-stat"><span class="n">40+</span><span class="l">B2B 파트너</span></div>
       </div>
       <!-- [수정] 회사소개 섹션에 있던 비전 문구를 이 요약 박스의 분위기에 맞춰 이동 -->
       <div class="hero-vision">

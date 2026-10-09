@@ -2610,7 +2610,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   /* [수정] 블러를 10px→1px로 줄여 뒤 배경(탑바 가죽 질감)이 뭉개지지 않고 반투명하게 비쳐 보이게 한다 */
   backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);
   border-radius:16px;border:1px solid rgba(255,255,255,.55);
-  box-shadow:0 8px 24px rgba(10,23,48,.18),inset 0 1px 0 rgba(255,255,255,.5);
+  box-shadow:0 8px 24px rgba(10,23,48,.18);
   /* [추가] 관리자 패널 "위젯 전체 설정"에서 조절하는 글자 색상 — 미설정 시 기존 색(--pine-deep) 그대로 */
   padding:10px 14px;color:var(--widget-font-color, var(--pine-deep));overflow:hidden;box-sizing:border-box;
 }
@@ -2624,8 +2624,8 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
    않고, 이미지 자체가 안티앨리어싱된 부드러운 가장자리를 가져 계단 현상이 없다. 안쪽에 가는 흰 테두리를 함께 둔다.
    pointer-events:none이라 클릭/드래그에 영향 없음 */
 .widget-box::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
-  background:url(assets/glass-reflection.png) center top/cover no-repeat;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 1px 1px rgba(255,255,255,.7)}
+  background:url(assets/glass-reflection.png) center top/cover no-repeat}
+/* [수정] 위젯 외곽 흰색 라인은 .widget-box의 1px 테두리 하나만 남긴다(안쪽 겹선·하이라이트 그림자 제거) */
 /* [수정] 웹: 액션 버튼 3개가 화면 하단 코너로 옮겨가면서 다시 비게 된 탑바 우측 끝 아래 자리에
    위젯을 세로로 쌓는다(--topbar-h 기준). 순서는 환율 위젯이 위, 날씨 위젯이 그 아래 — 환율
    위젯의 높이(100px)에 그 자신의 스케일을 곱한 값만큼 아래로 내려 날씨 위젯을 배치해, 관리자가
@@ -4051,7 +4051,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   background:var(--gb-gloss) padding-box,radial-gradient(circle at 50% 55%,#f2c257 0%,#d89b2c 55%,#b27613 100%) padding-box,var(--gb-rim) border-box;
   backdrop-filter:none;-webkit-backdrop-filter:none;
   box-shadow:inset 0 0 0 1px rgba(255,226,140,.7),inset 0 -8px 12px rgba(120,60,10,.28),0 6px 16px rgba(60,35,5,.32);
-  opacity:.94}
+  opacity:.55}
 
 /* [추가] 골드 버튼 디자인 — 2차 적용(나머지 공개 화면 버튼): 갤러리·패키지 이전/다음, 라이트박스, 팝업 닫기 등 원형 버튼,
    탭·필터·"전체 보기" 같은 알약 버튼, 카카오 채널(브랜드 노란색 면 + 금색 테두리) */
@@ -4112,6 +4112,24 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 }
 .pd-contact a:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
 .pd-contact a:active{filter:brightness(.95);transform:translateY(1px)}
+
+/* [추가] 플로팅 버튼 — 문의하기 아이콘은 말풍선(?) 이미지, 전화하기 이모지는 90% 크기 */
+.fab-img{width:1em;height:1em;object-fit:contain;pointer-events:none}
+.mobile-call-fab .fab-icon{font-size:.9em}
+/* [추가] AI 추천 받기 — 참고 이미지의 사각 골드 버튼: 두툼한 금속 금색 프레임 + 안쪽 짙은 선/밝은 금색 선(이중 프레임) + 골드 면 */
+.ai-submit-btn,.ai-submit-btn:hover,.ai-submit-btn:active,.ai-submit-btn:focus-visible{
+  border:4px solid transparent;border-radius:14px;
+  background:
+    linear-gradient(168deg,rgba(255,255,255,0) 38%,rgba(255,240,180,.30) 54%,rgba(255,255,255,0) 70%) padding-box,
+    radial-gradient(ellipse 70% 100% at 12% 0%,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 65%) padding-box,
+    linear-gradient(160deg,#d8a31f 0%,#c4900a 48%,#cf9a1c 100%) padding-box,
+    linear-gradient(180deg,#ffeea8 0%,#e9bb48 16%,#b97e10 46%,#8e5a06 60%,#dca83a 82%,#ffe99a 100%) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.5);
+  box-shadow:inset 0 0 0 1.5px #8a5a0a,inset 0 0 0 3px rgba(255,226,130,.92),0 5px 12px rgba(122,80,8,.32),0 0 0 1px rgba(255,255,255,.55);
+}
+.ai-submit-btn:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
+.ai-submit-btn:active{filter:brightness(.95);transform:translateY(1px)}
+@media(min-width:781px){.ai-submit-btn{padding:13px 32px}}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.
@@ -4913,7 +4931,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 <!-- [수정] 웹(데스크톱)·모바일 모두 화면 우측 최하단 코너에 "전화하기"·"문의하기"·"관리자"
      (모바일은 문의하기 제외 두 개만) 아이콘 버튼을 세로로 쌓는다. position:fixed라 DOM 위치와
      무관하게 CSS만으로 두 레이아웃을 전환할 수 있어 실제 배치는 아래 미디어쿼리에서 결정한다 -->
-<a href="#booking" class="tb-booking-fab" aria-label="문의하기"><span class="fab-icon">⛳</span></a>
+<a href="#booking" class="tb-booking-fab" aria-label="문의하기"><img class="fab-icon fab-img" src="assets/icons/icon-inquiry.png" alt="" width="256" height="256" draggable="false"></a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기"><span class="fab-icon">📞</span></button>
 <!-- ADMIN -->
 <!-- [수정][설정 버튼 컴포넌트] 이모지(⚙️)는 OS·브라우저마다 색·굵기가 달라 참고 이미지의 "선명한

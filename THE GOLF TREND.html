@@ -862,7 +862,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-title-media{aspect-ratio:16/10;position:relative;background:linear-gradient(160deg,#1C2F5C,#142544);overflow:hidden}
 .pd-title-media img,.pd-title-media video{width:100%;height:100%;object-fit:cover;display:block}
 .pd-title-media::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55) 100%);pointer-events:none}
-.pd-info-table{padding:14px 20px 18px;display:flex;flex-direction:column;gap:9px}
+.pd-section-title:has(+ .pd-info-table),.pd-section-title:has(+ .pd-label-rows){padding-bottom:4px} /* 상품기본정보·이동정보 제목↔내용 간격 절반 */
+.pd-info-table{padding:7px 20px 18px;display:flex;flex-direction:column;gap:9px}
 .pd-info-row{display:flex;gap:14px;font-size:.85rem;line-height:1.5}
 .pd-info-row .k{flex:0 0 84px;color:var(--gold-deep);font-weight:600;font-size:.75rem;letter-spacing:.04em}
 .pd-info-row .v{flex:1;color:rgba(10,23,48,.82)}
@@ -924,6 +925,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-meta span.pd-pe-meta-border-r{padding-right:10px;border-right:1px dashed rgba(10,23,48,.18)}
 /* [수정] "한 줄로" 토글을 켠 항목은 내용이 길어도 줄바꿈 없이 혼자 한 줄 전체를 차지 */
 .pd-pe-meta span.pd-pe-meta-full{flex:0 0 100%}
+.pd-pe-meta.pd-pe-meta-nolines{border-top:none;padding-top:0}
 /* [수정] 판매가와 별도인 출발 요일별·공휴일별 요금표 — 요금표(.prices) 바로 아래, 한 줄 또는
    두 줄로 자동 줄바꿈. 요일 폰트는 "포함사항" 제목과 동일(.86rem), 금액 폰트는 판매가(1.82rem)의 75% */
 .pd-day-price-table{display:flex;flex-wrap:wrap;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px}
@@ -967,6 +969,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-share-btn:disabled{opacity:.6;cursor:default}
 /* [수정] 포함/불포함/참고사항 등 하위 항목 제목 — 가독성 개선을 위해 폰트 120%, 아래 여백 확대 */
 .pd-pe-more-sub .t{font-size:.82rem;font-weight:700;color:#4B5563;letter-spacing:.04em;margin-bottom:10px}
+.pd-pe-more-sub .t:has(+ .pd-label-rows){margin-bottom:5px}
 /* [수정] 요금 항목별 일정 요약 타임라인 — "+요금 항목 추가"에서 그 항목에 지정된 accent 색상과 같은
    색을 반영하되, 더 이상 블록 전체를 왼쪽 테두리로 감싸 들여쓰지 않는다(타이틀·일정 내용이 위 "출발
    공항" 레이블 줄과 같은 왼쪽 기준선에 맞춰지도록, 그리고 가로 폭을 더 넓게 쓸 수 있도록). 대신 옅은
@@ -1003,7 +1006,7 @@ section.block{padding:100px 24px;position:relative}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
-.pd-label-rows{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
+.pd-label-rows{padding:2px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
 /* [추가] 요금 항목 ↔ 공통값 상속 — 공통 섹션에서 한 번 보여준 값은 각 요금 항목 카드에서 숨기는데,
    카드 한 장을 이미지로 공유할 때는 공통값까지 모두 담겨야 하므로 화면용(pe-only-screen)·캡처용
@@ -4251,8 +4254,13 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 .product-foot{flex-wrap:wrap;gap:6px 12px}
 .product-foot .price{font-size:calc(1.869rem * 1.5)}
 .product-foot .price .unit{font-size:calc(.792rem * 1.5)}
-.product-foot .price .from{font-size:calc(.792rem * 1.5)}
-.product-foot .details{font-size:calc(.85rem * 1.5);margin-left:auto}
+.product-foot .price .from{font-size:calc(.792rem * 1.5)} /* "원"과 같은 크기 */
+.product-foot .details{font-size:calc(.792rem * 1.5);margin-left:auto} /* "자세히 →"는 ~부터와 같은 크기(한 줄에 들어오도록) */
+/* 모바일: 금액(최대 7자리)·원·~부터·자세히 →가 카드 폭 안에서 한 줄에 들어오도록 화면 폭이 좁을 때만 비례해서 줄임(약 460px 이상 폭에서는 1.5배 그대로) */
+@media(max-width:780px){
+  .product-foot .price{font-size:min(calc(1.869rem * 1.5), calc((70vw - 48px) / 6.9))}
+  .product-foot .price .unit,.product-foot .price .from,.product-foot .details{font-size:min(calc(.792rem * 1.5), calc((70vw - 48px) / 16.3))}
+}
 /* [수정] 모바일 출발 요일별 요금표 — 4개는 한 줄에 4칸, 5개 이상이면 한 줄 3칸(예: 3+2). 글자는 한두 단계 줄이고 칸 사이·줄 사이에 점선 구분선 */
 @media(max-width:780px){
   .pd-day-price-table{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding-top:8px}
@@ -4261,11 +4269,19 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   .pd-day-price-table > .pd-day-price-cell:nth-child(4n){border-right:none}
   .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) > .pd-day-price-cell:nth-child(4n){border-right:1px dashed rgba(10,23,48,.22)}
   .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) > .pd-day-price-cell:nth-child(3n){border-right:none}
-  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) > .pd-day-price-cell:nth-child(n+4){border-top:1px dashed rgba(10,23,48,.22);margin-top:6px;padding-top:10px}
+  /* 5개 이상(3열) — 줄 사이 구분선은 윗줄 칸의 아래선으로 그려 마지막 줄이 덜 찬 경우에도 끝까지 이어지게 함 */
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) > .pd-day-price-cell:nth-child(n+4){padding-top:10px}
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) > .pd-day-price-cell:nth-child(-n+3){padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.22)}
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(7)) > .pd-day-price-cell:nth-child(-n+6){padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.22)}
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(10)) > .pd-day-price-cell:nth-child(-n+9){padding-bottom:10px;border-bottom:1px dashed rgba(10,23,48,.22)}
   .pd-day-price-table > .pd-day-price-cell:last-child{border-right:none}
-  .pd-day-price-cell .d{font-size:.74rem}
-  .pd-day-price-cell .v{font-size:1.1rem}
-  .pd-day-price-cell .v .unit{font-size:.54rem}
+  .pd-day-price-cell .d{font-size:calc(.74rem + 1pt)}
+  .pd-day-price-cell .v{font-size:min(calc(1.1rem + 1pt), calc((100vw - 78px) / 16.8))} /* 좁은 폰에서도 4칸 안에 금액이 들어오도록 */
+  .pd-day-price-cell .v .unit{font-size:calc(.54rem + 1pt)}
+  /* 5개 이상(3열)일 때는 4열 기준보다 1pt 더 키워 총 +2pt */
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) .pd-day-price-cell .d{font-size:calc(.74rem + 2pt)}
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) .pd-day-price-cell .v{font-size:calc(1.1rem + 2pt)}
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(5)) .pd-day-price-cell .v .unit{font-size:calc(.54rem + 2pt)}
 }
 
 /* [수정] 위젯(환율·날씨)과 히어로 소개 박스 사이 간격을 40px로 — 위젯 줄 아래쪽 여백(46px)을 없애고 히어로 위쪽 여백을 40px로 맞춘다 */
@@ -12786,18 +12802,22 @@ function renderProductDetail(p,cat,idx){
             // [수정] 요금 항목별 라운드·숙박·식사 — 금액/최소 인원 바로 아래 구분선을 두고 노출.
             // "한 줄로" 토글(pe.metaWide)을 켠 항목은 혼자 한 줄 전체를 차지하고, 같은 줄에 있는
             // 항목 사이에만 구분선을 넣는다(상품 카드 meta 그리드와 같은 방식)
+            // [수정] "한 줄로" 토글은 이 항목에 따로 켠 값이 없으면 상품 공통(기본 정보)의 토글을 따른다
+            const mwOn = k => (peMW[k]!==undefined && peMW[k]!==null) ? !!peMW[k] : !!(p.metaWide && p.metaWide[k]);
             const metaData = [
-              {full:!!peMW.rounds, v:_peStrKey(pick('rounds', full)), ic:'⛳'},
-              {full:!!peMW.stay,   v:_peStrKey(pick('stay', full)),   ic:'🏨'},
-              {full:!!peMW.meals,  v:_peStrKey(pick('meals', full)),  ic:'🍽'},
+              {full:mwOn('rounds'), v:_peStrKey(pick('rounds', full)), ic:'⛳'},
+              {full:mwOn('stay'),   v:_peStrKey(pick('stay', full)),   ic:'🏨'},
+              {full:mwOn('meals'),  v:_peStrKey(pick('meals', full)),  ic:'🍽'},
             ].filter(m=>m.v);
+            // [수정] 하나라도 "한 줄로"로 표기하면 이 영역의 구분선(위쪽 점선·항목 사이 세로선)을 모두 숨긴다
+            const metaNoLines = metaData.some(m=>m.full);
             const metaItems = metaData.map((item,mi)=>{
               const next = metaData[mi+1];
-              const border = !item.full && next && !next.full;
+              const border = !metaNoLines && !item.full && next && !next.full;
               const mcls = [item.full?'pd-pe-meta-full':'', border?'pd-pe-meta-border-r':''].filter(Boolean).join(' ');
               return `<span class="${mcls}">${item.ic} <b class="pd-pe-meta-value">${escapeAttr(item.v)}</b></span>`;
             }).join('');
-            const meta = metaItems ? `<div class="pd-pe-meta ${cls}">${metaItems}</div>` : '';
+            const meta = metaItems ? `<div class="pd-pe-meta${metaNoLines?' pd-pe-meta-nolines':''} ${cls}">${metaItems}</div>` : '';
             // [수정] 판매가와 별도인 출발 요일별 요금 — 토요일은 파란색, 일요일은 빨간색으로 강조
             const dayTable = dayPriceSectionsHTML(pick('dayPrices', full)||[], cls);
             // [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 한 줄로

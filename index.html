@@ -220,7 +220,7 @@ header{padding-top:var(--topbar-h,108px)}
 .btn-ghost:active{background:rgba(255,255,255,.08);transform:translateY(1px);box-shadow:var(--btn-press)}
 .hero-side{display:flex;flex-direction:column}
 .spotlight-header{margin-bottom:14px}
-.spotlight-header .kicker{font-size:1.08rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
+.spotlight-header .kicker{font-size:calc(1.08rem + 2pt);letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-shadow:0 2px 6px rgba(3,13,38,.55),0 6px 24px rgba(3,13,38,.4);font-weight:600;display:flex;align-items:center;gap:8px}
 .spotlight-header .kicker::before{content:'';width:24px;height:1px;background:var(--gold)}
 .spotlight-grid{flex:1;display:flex;flex-direction:column;gap:16px}
 /* [Phase] touch-action:pan-y — 카드 위에서 가로로 스와이프할 때 브라우저가 이를 페이지 전체의
@@ -4151,6 +4151,54 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   .spotlight-grid{flex-direction:row}
   .spotlight{flex:1 1 0;min-width:0}
 }
+
+/* [수정] 히어로 소개 박스 — 왼쪽(제목·슬로건·소개문)과 핵심 가치(정직·신속함·공감·고객중심) 글자를 3pt 키우고,
+   웹에서는 왼쪽·오른쪽 영역 사이에 세로 구분선을 둔다 */
+.hero-divider{display:none}
+.hero h1{font-size:calc(clamp(2.6rem,5.5vw,4.6rem) + 3pt)}
+.hero-slogan-main{font-size:calc(clamp(1.15rem,2.4vw,1.75rem) + 3pt)}
+.hero-slogan-sub{font-size:calc(clamp(.85rem,1.4vw,1.15rem) + 3pt)}
+.hero .lead{font-size:calc(1.05rem + 3pt)}
+.hv-ko{font-size:calc(1.2rem + 3pt)}
+.hv-en{font-size:calc(.74rem + 3pt)}
+.hv-desc{font-size:calc(.86rem + 3pt)}
+@media(max-width:780px){
+  .hero h1{font-size:calc(clamp(1.6rem,7.8vw,2.4rem) + 3pt)}
+  .hv-ko{font-size:calc(1.5rem + 3pt)}
+  .hv-en{font-size:calc(.82rem + 3pt)}
+  .hv-desc{font-size:calc(.95rem + 3pt)}
+}
+@media(min-width:781px){
+  .hero-main{grid-template-columns:minmax(0,1.25fr) 1px minmax(0,1fr);column-gap:44px}
+  .hero-main > h1{font-size:calc(clamp(2rem,3.7vw,3.6rem) + 3pt)}
+  .hero-main > .hero-divider{display:block;grid-column:2;grid-row:1 / span 5;width:1px;background:linear-gradient(180deg,rgba(221,179,103,0),rgba(221,179,103,.6) 18%,rgba(221,179,103,.6) 82%,rgba(221,179,103,0))}
+  .hero-main > .hero-values,.hero-main > .hero-vision{grid-column:3}
+}
+/* [수정] EDITOR'S PICK "해외/국내" — 클릭하면 해당 여행지 구역으로 이동하는 크림 알약 버튼 */
+button.spot-region-tag{cursor:pointer;font-family:inherit;border:1.5px solid transparent;border-radius:100px;padding:5px 16px;
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;text-shadow:none;box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);transition:filter .2s,transform .2s}
+button.spot-region-tag:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
+button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
+/* [수정] AI가 고른 추천 여행의 버튼(상세보기·상담 신청) — 사각 골드 버튼(AI 추천 받기와 같은 디자인, 크림/골드 2종) */
+.ai-detail-btn,.ai-detail-btn:hover,.ai-detail-btn:active,.ai-inquire-btn,.ai-inquire-btn:hover,.ai-inquire-btn:active{
+  border:3px solid transparent;border-radius:12px;padding:8px 18px;
+  box-shadow:inset 0 0 0 1.5px #8a5a0a,inset 0 0 0 2.5px rgba(255,226,130,.92),0 4px 10px rgba(122,80,8,.28)}
+.ai-inquire-btn,.ai-inquire-btn:hover,.ai-inquire-btn:active{
+  background:
+    linear-gradient(168deg,rgba(255,255,255,0) 38%,rgba(255,240,180,.30) 54%,rgba(255,255,255,0) 70%) padding-box,
+    radial-gradient(ellipse 70% 100% at 12% 0%,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 65%) padding-box,
+    linear-gradient(160deg,#d8a31f 0%,#c4900a 48%,#cf9a1c 100%) padding-box,
+    linear-gradient(180deg,#ffeea8 0%,#e9bb48 16%,#b97e10 46%,#8e5a06 60%,#dca83a 82%,#ffe99a 100%) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.5)}
+.ai-detail-btn,.ai-detail-btn:hover,.ai-detail-btn:active{
+  background:
+    radial-gradient(ellipse 70% 100% at 12% 0%,rgba(255,255,255,.7) 0%,rgba(255,255,255,0) 65%) padding-box,
+    linear-gradient(180deg,#fffef9 0%,#fff6dd 68%,#fdeccb 100%) padding-box,
+    linear-gradient(180deg,#ffeea8 0%,#e9bb48 16%,#b97e10 46%,#8e5a06 60%,#dca83a 82%,#ffe99a 100%) border-box;
+  color:#7d4f0f}
+.ai-detail-btn:hover,.ai-inquire-btn:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
+.ai-detail-btn:active,.ai-inquire-btn:active{filter:brightness(.95);transform:translateY(1px)}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.
@@ -4353,6 +4401,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
         <span class="hero-slogan-sub">Curated Golf Travel &amp; Lifestyle</span>
       </p>
       <p class="lead">20년 이상 해외 골프 운영 경험을 가진 (주)더골프트렌드가 선보이는 프리미엄 골프 여행 브랜드. 국내 6개 권역부터 아시아 9개국 명문 코스까지 — 당신의 다음 한 라운드를 설계합니다.</p>
+      <div class="hero-divider" aria-hidden="true"></div>
       <div class="hero-values">
         <div class="hv-item">
           <svg class="hv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
@@ -4396,7 +4445,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
       </div>
       <div class="spotlight-grid">
         <div class="spotlight">
-          <span class="spot-region-tag">해외</span>
+          <button type="button" class="spot-region-tag" onclick="goDestRegion('overseas')" aria-label="해외 골프 여행지로 이동">해외</button>
           <div class="spot-stack">
             <div class="spot-content" id="spotLayer0a">
               <div class="spot-visual" id="spotVisual0a"></div>
@@ -4421,7 +4470,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
           </div>
         </div>
         <div class="spotlight">
-          <span class="spot-region-tag">국내</span>
+          <button type="button" class="spot-region-tag" onclick="goDestRegion('domestic')" aria-label="국내 골프 여행지로 이동">국내</button>
           <div class="spot-stack">
             <div class="spot-content" id="spotLayer1a">
               <div class="spot-visual" id="spotVisual1a"></div>
@@ -16714,6 +16763,14 @@ function computeAiRecommendations(criteria){
     if (final.length>=6) break;
   }
   return final;
+}
+// [추가] EDITOR'S PICK의 "해외/국내" 버튼 — "권역별·국가별 골프 여행지" 섹션의 해당(해외/국내) 구역으로 부드럽게 스크롤한다
+// (html의 scroll-padding-top이 고정 탑바·메뉴바 높이만큼 여백을 잡아 준다)
+function goDestRegion(kind){
+  const grid = document.getElementById(kind==='overseas' ? 'catGridOverseas' : 'catGridDomestic');
+  const block = grid && grid.closest('.dest-region-block');
+  if (!block) return;
+  (block.querySelector('.dest-region-head') || block).scrollIntoView({behavior:'smooth', block:'start'});
 }
 function renderAiResults(results){
   const wrap=document.getElementById('aiResults');

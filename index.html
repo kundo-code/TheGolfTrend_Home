@@ -995,8 +995,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-check-list.plain .row .ic{color:var(--gold-deep);font-weight:900}
 /* [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액 표 형식, 항목 사이 구분선 */
 .pd-fee-table{padding:4px 20px 18px;display:flex;flex-direction:column}
-.pd-fee-table .row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;font-size:.85rem;border-bottom:1px dashed rgba(10,23,48,.14)}
-.pd-fee-table .row:last-child{border-bottom:none}
+.pd-fee-table .row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;font-size:.85rem} /* 항목 사이 점선 구분선은 노출하지 않음 */
 .pd-fee-table .label{color:rgba(10,23,48,.68)}
 .pd-fee-table .amount{color:var(--gold-deep);font-weight:600;text-align:right;flex-shrink:0}
 .pd-fee-table .group-title{padding:10px 0 4px;font-size:.82rem;font-weight:700;color:var(--gold-deep)}
@@ -1007,7 +1006,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-fee-table .row.ef-ind-1 .label{padding-left:1.5em}
 .pd-fee-table .row.ef-ind-2 .label{padding-left:3em}
 .pd-fee-table .row.ef-ind-3 .label{padding-left:4.5em}
-.pd-fee-table .row:has(+ .pd-dp-gap){border-bottom:none}
+.pd-fee-table .pd-dp-gap{height:20px} /* 추가 요금 안내의 구분선 간격: 기본(39px)의 50% */
+.pd-fee-table .pd-dp-gap.dp-line::after{top:11px}
 /* 일정 요약 타임라인 */
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}

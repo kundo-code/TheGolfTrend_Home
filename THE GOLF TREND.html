@@ -4012,6 +4012,106 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   .period-filter-row{background:#FDFBF6;border:1px solid rgba(10,23,48,.08);border-radius:16px;box-shadow:0 6px 18px rgba(10,23,48,.12);padding:10px 12px 12px;margin-bottom:12px}
   .period-filter-row .period-filter-label{color:rgba(10,23,48,.6)}
 }
+
+/* ═══════════════ [추가] 골드 버튼 디자인 시스템 ═══════════════
+   참고 이미지(금색 테두리의 알약·원형 버튼)를 사이트 전체 버튼에 적용한다.
+   - 테두리(rim): 위·아래가 밝고 가운데가 짙은 금속 금색 그라데이션(border-box) + 안쪽에 가는 금색 라인(inset 그림자)
+   - 면(face): 두 종류 — ① 골드(주요 버튼: 호박빛 금색 그라데이션 + 흰 글자) ② 크림(보조 버튼: 아이보리 면 + 갈색 글자)
+   - 광택: 좌상단에서 번지는 부드러운 하이라이트(하드 경계 없음)
+   모든 버튼은 알약(둥근) 형태. 호버는 밝기/위치, 눌림은 살짝 어둡게. 관리자 패널 내부 버튼은 제외 */
+:root{
+  --gb-rim:linear-gradient(180deg,#ffeaa0 0%,#e8b94c 18%,#b47a12 48%,#97620a 62%,#dba83c 82%,#ffe493 100%);
+  --gb-gloss:radial-gradient(ellipse 72% 95% at 16% 0%,rgba(255,255,255,.5) 0%,rgba(255,255,255,.14) 48%,rgba(255,255,255,0) 72%),linear-gradient(112deg,rgba(255,255,255,0) 42%,rgba(255,255,255,.13) 53%,rgba(255,255,255,0) 64%);
+  --gb-gold-face:linear-gradient(135deg,#e6ab3b 0%,#bb821b 40%,#a87111 56%,#d69d2f 78%,#f2bf52 100%);
+  --gb-cream-face:linear-gradient(180deg,#fffef9 0%,#fff6dd 68%,#fdeccb 100%);
+  --gb-shadow:0 4px 10px rgba(122,80,8,.28),0 1px 2px rgba(122,80,8,.2);
+}
+.btn-primary,.btn-primary:hover,.btn-primary:active,.btn-primary:focus-visible,.submit-btn,.submit-btn:hover,.submit-btn:active,.submit-btn:focus-visible,.popup-cta.primary,.popup-cta.primary:hover,.popup-cta.primary:active,.popup-cta.primary:focus-visible,.cur-calc-btn,.cur-calc-btn:hover,.cur-calc-btn:active,.cur-calc-btn:focus-visible,.period-filter-btn.active,.period-filter-btn.active:hover,.period-filter-btn.active:active,.period-filter-btn.active:focus-visible,.pd-close,.pd-close:hover,.pd-close:active,.pd-close:focus-visible,.nm-btn-primary,.nm-btn-primary:hover,.nm-btn-primary:active,.nm-btn-primary:focus-visible{
+  border:2px solid transparent;border-radius:100px;
+  background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
+}
+.btn-ghost,.btn-ghost:hover,.btn-ghost:active,.btn-ghost:focus-visible,.call-btn,.call-btn:hover,.call-btn:active,.call-btn:focus-visible,.popup-cta.ghost,.popup-cta.ghost:hover,.popup-cta.ghost:active,.popup-cta.ghost:focus-visible,.period-filter-btn,.period-filter-btn:hover,.period-filter-btn:active,.period-filter-btn:focus-visible,.pd-share button,.pd-share button:hover,.pd-share button:active,.pd-share button:focus-visible,.pd-pe-share-btn,.pd-pe-share-btn:hover,.pd-pe-share-btn:active,.pd-pe-share-btn:focus-visible,.pc-nav-btn,.pc-nav-btn:hover,.pc-nav-btn:active,.pc-nav-btn:focus-visible,.cv-close,.cv-close:hover,.cv-close:active,.cv-close:focus-visible,.spot-cta a,.spot-cta a:hover,.spot-cta a:active,.spot-cta a:focus-visible{
+  border:2px solid transparent;border-radius:100px;
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;text-shadow:none;
+  box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
+}
+.btn-primary:hover,.submit-btn:hover,.popup-cta.primary:hover,.cur-calc-btn:hover,.period-filter-btn.active:hover,.pd-close:hover,.nm-btn-primary:hover,.btn-ghost:hover,.call-btn:hover,.popup-cta.ghost:hover,.period-filter-btn:hover,.pd-share button:hover,.pd-pe-share-btn:hover,.pc-nav-btn:hover,.cv-close:hover,.spot-cta a:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
+.btn-primary:active,.submit-btn:active,.popup-cta.primary:active,.cur-calc-btn:active,.period-filter-btn.active:active,.pd-close:active,.nm-btn-primary:active,.btn-ghost:active,.call-btn:active,.popup-cta.ghost:active,.period-filter-btn:active,.pd-share button:active,.pd-pe-share-btn:active,.pc-nav-btn:active,.cv-close:active,.spot-cta a:active{filter:brightness(.95);transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(90,50,0,.3),0 1px 2px rgba(122,80,8,.2)}
+.period-filter-btn,.period-filter-btn.active,.pd-pe-share-btn,.cv-close,.cur-calc-btn,.spot-cta a{border-width:1.5px}
+.pc-nav-btn,.pd-close{border-radius:50%}
+.pd-close{width:36px;height:36px}
+.pd-close,.pc-nav-btn{padding:0}
+.spot-cta a{padding:4px 14px;font-size:.8rem;display:inline-block}
+.btn-primary,.btn-ghost{padding:13px 28px}
+.admin-fab::before,.tb-booking-fab::before,.mobile-call-fab::before{
+  border:3px solid transparent;
+  background:var(--gb-gloss) padding-box,radial-gradient(circle at 50% 55%,#f2c257 0%,#d89b2c 55%,#b27613 100%) padding-box,var(--gb-rim) border-box;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.7),inset 0 -8px 12px rgba(120,60,10,.28),0 6px 16px rgba(60,35,5,.32);
+  opacity:.94}
+
+/* [추가] 골드 버튼 디자인 — 2차 적용(나머지 공개 화면 버튼): 갤러리·패키지 이전/다음, 라이트박스, 팝업 닫기 등 원형 버튼,
+   탭·필터·"전체 보기" 같은 알약 버튼, 카카오 채널(브랜드 노란색 면 + 금색 테두리) */
+.plb-detail-link,.plb-detail-link:hover,.plb-detail-link:active,.plb-detail-link:focus-visible,.pa-more,.pa-more:hover,.pa-more:active,.pa-more:focus-visible,.pa-tab.active,.pa-tab.active:hover,.pa-tab.active:active,.pa-tab.active:focus-visible,.cv-nav-item.active,.cv-nav-item.active:hover,.cv-nav-item.active:active,.cv-nav-item.active:focus-visible{
+  border:2px solid transparent;border-radius:100px;
+  background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
+}
+.pa-tab,.pa-tab:hover,.pa-tab:active,.pa-tab:focus-visible,.cv-nav-item,.cv-nav-item:hover,.cv-nav-item:active,.cv-nav-item:focus-visible,.sec-more,.sec-more:hover,.sec-more:active,.sec-more:focus-visible{
+  border:2px solid transparent;border-radius:100px;
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;text-shadow:none;
+  box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
+}
+.kakao-btn,.kakao-btn:hover,.kakao-btn:active,.kakao-btn:focus-visible{
+  border:2px solid transparent;border-radius:100px;
+  background:var(--gb-gloss) padding-box,linear-gradient(180deg,#fff27a 0%,#FEE500 55%,#f1d300 100%) padding-box,var(--gb-rim) border-box;
+  color:#391B1B;text-shadow:none;
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.8),var(--gb-shadow);
+}
+.pkg-nav-btn,.pkg-nav-btn:hover,.pkg-nav-btn:active,.pkg-nav-btn:focus-visible,.pd-gallery-nav,.pd-gallery-nav:hover,.pd-gallery-nav:active,.pd-gallery-nav:focus-visible,.plb-prev,.plb-prev:hover,.plb-prev:active,.plb-prev:focus-visible,.plb-next,.plb-next:hover,.plb-next:active,.plb-next:focus-visible,.plb-close,.plb-close:hover,.plb-close:active,.plb-close:focus-visible,.ep-popup-nav,.ep-popup-nav:hover,.ep-popup-nav:active,.ep-popup-nav:focus-visible,.popup-close,.popup-close:hover,.popup-close:active,.popup-close:focus-visible,.pd-side-nav,.pd-side-nav:hover,.pd-side-nav:active,.pd-side-nav:focus-visible{
+  border:2px solid transparent;border-radius:50%;padding:0;
+  background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
+}
+.pa-x,.pa-x:hover,.pa-x:active,.pa-x:focus-visible,.pc-chooser-x,.pc-chooser-x:hover,.pc-chooser-x:active,.pc-chooser-x:focus-visible,.notice-popup-close,.notice-popup-close:hover,.notice-popup-close:active,.notice-popup-close:focus-visible,.legal-modal-close,.legal-modal-close:hover,.legal-modal-close:active,.legal-modal-close:focus-visible,.widget-detail-close,.widget-detail-close:hover,.widget-detail-close:active,.widget-detail-close:focus-visible{
+  border:2px solid transparent;border-radius:50%;padding:0;width:30px;height:30px;line-height:1;
+  display:inline-grid;place-items:center;font-size:1.1rem;
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;text-shadow:none;
+  box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
+}
+.plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.kakao-btn:hover,.pkg-nav-btn:hover,.pd-gallery-nav:hover,.plb-prev:hover,.plb-next:hover,.plb-close:hover,.ep-popup-nav:hover,.popup-close:hover,.pd-side-nav:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{filter:brightness(1.05) saturate(1.05)}
+.plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.kakao-btn:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{transform:translateY(-1px)}
+.pkg-nav-btn:active,.pd-gallery-nav:active,.plb-prev:active,.plb-next:active,.plb-close:active,.ep-popup-nav:active,.popup-close:active,.pd-side-nav:active,.pa-x:active,.pc-chooser-x:active,.notice-popup-close:active,.legal-modal-close:active,.widget-detail-close:active,.plb-detail-link:active,.pa-more:active,.pa-tab.active:active,.cv-nav-item.active:active,.pa-tab:active,.cv-nav-item:active,.sec-more:active,.kakao-btn:active{filter:brightness(.95)}
+.sec-more{padding:6px 16px;font-size:.85rem;border-width:1.5px;display:inline-flex}
+.sec-more:hover{gap:10px}
+.pa-tab,.cv-nav-item{border-width:1.5px}
+.pa-more{padding:11px 34px}
+.pd-side-nav:hover,.pd-gallery-nav:hover{transform:translateY(-50%)}
+
+/* [추가] 상세 페이지 "문의하기" 버튼 3종 — 전화(골드) / 카카오 채널(노란 면+금 테두리) / 예약 문의(크림) */
+.pd-contact a,.pd-contact a:hover,.pd-contact a:active{
+  border:2px solid transparent;border-radius:100px;padding:12px;
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
+}
+.pd-contact a.phone,.pd-contact a.phone:hover,.pd-contact a.phone:active{
+  background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
+}
+.pd-contact a.kakao,.pd-contact a.kakao:hover,.pd-contact a.kakao:active{
+  background:var(--gb-gloss) padding-box,linear-gradient(180deg,#fff27a 0%,#FEE500 55%,#f1d300 100%) padding-box,var(--gb-rim) border-box;
+  color:#391B1B;box-shadow:inset 0 0 0 1px rgba(255,226,140,.8),var(--gb-shadow);
+}
+.pd-contact a:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
+.pd-contact a:active{filter:brightness(.95);transform:translateY(1px)}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.

@@ -733,6 +733,39 @@ section.block{padding:100px 24px;position:relative}
    추가 축소(42px→35.7px)했던 것을, 다시 90% 크기로 한 번 더 축소(35.7px→32.13px) */
 .pd-close{flex-shrink:0;width:32.13px;height:32.13px;border-radius:50%;background:rgba(255,255,255,.9);border:none;color:var(--pine-deep);font-size:.91035rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,23,48,.12)}
 .pd-close:hover{background:var(--gold);color:#fff}
+/* [수정] 상단 제목 박스 — 딥 네이비 바탕 + 금색 메탈 테두리 + 바깥을 감싸는 유리 재질(반사광) 디자인.
+   - 바탕: 깊은 네이비 그라데이션 위에 금빛 결(곡선 하이라이트)을 은은하게 얹음
+   - 테두리: border-box 그라데이션으로 금속 광택(밝은 금 ↔ 짙은 금)을 표현
+   - 유리: ::before가 박스 바깥 4px을 감싸는 투명 유리 테두리(상단 반사·하단 굴절광), ::after가 윗면 광택과 좌상단 빛 번짐
+   높이는 기존(약 42px)보다 높은 56px(최소) */
+.pd-nav-bar{
+  min-height:58px;padding:7px 9px 7px 7px;margin:8px 0 18px;border:3px solid transparent;border-radius:100px;
+  background:
+    radial-gradient(120% 140% at 10% -30%,rgba(214,176,86,.22),rgba(214,176,86,0) 55%),
+    repeating-linear-gradient(115deg,rgba(214,176,86,.05) 0 2px,rgba(214,176,86,0) 2px 9px),
+    linear-gradient(180deg,#0f2250 0%,#0a1838 45%,#050f2a 100%) padding-box,
+    linear-gradient(170deg,#fff6cf 0%,#e8c765 14%,#9c7424 34%,#5e4312 46%,#d9b24f 60%,#fff0b0 74%,#b8872c 90%,#7a5a1c 100%) border-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255,236,170,.55),
+    inset 0 -10px 16px rgba(0,0,0,.45),
+    0 6px 18px rgba(3,13,38,.38),
+    0 0 22px rgba(214,176,86,.4),
+    0 0 0 1px rgba(255,236,170,.35);
+}
+.pd-nav-bar::before{content:'';position:absolute;inset:-7px;border-radius:100px;pointer-events:none;z-index:-1;
+  border:1px solid rgba(255,255,255,.65);
+  background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.06) 42%,rgba(255,255,255,.02) 60%,rgba(255,236,170,.26) 100%);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.6),inset 0 -1px 2px rgba(255,236,170,.5),0 10px 22px rgba(3,13,38,.22);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pd-nav-bar::after{content:'';position:absolute;left:16px;right:16px;top:4px;height:40%;border-radius:100px;pointer-events:none;
+  background:
+    radial-gradient(70px 16px at 8% 25%,rgba(255,255,255,.28),rgba(255,255,255,0) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0))}
+.pd-nav-bar > *{position:relative;z-index:1}
+.pd-nav-region{text-shadow:0 1px 3px rgba(0,0,0,.5),0 0 12px rgba(214,176,86,.35)}
+.pd-nav-count{color:rgba(246,226,160,.85)}
+.pd-close{background:linear-gradient(180deg,#fffbe8,#e9d08a 60%,#c9a24a);color:#050f2a;box-shadow:0 2px 6px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.8);width:36px;height:36px}
+.pd-close:hover{background:linear-gradient(180deg,#fff,#f6e39a);color:#030d26}
 /* [수정] #pdContent 슬라이드·페이드 전환 — 이전/다음 상품으로 넘어갈 때, 데스크톱 버튼 클릭과
    모바일 스와이프가 같은 로직(pdMove)을 타므로 전환 애니메이션도 동일하게 적용된다 */
 #pdContent{touch-action:pan-y}

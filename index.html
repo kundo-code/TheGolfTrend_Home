@@ -1001,6 +1001,13 @@ section.block{padding:100px 24px;position:relative}
 .pd-fee-table .amount{color:var(--gold-deep);font-weight:600;text-align:right;flex-shrink:0}
 .pd-fee-table .group-title{padding:10px 0 4px;font-size:.82rem;font-weight:700;color:var(--gold-deep)}
 .pd-fee-table .group-title.spaced{margin-top:10px} /* 그룹 사이 한 줄 간격 */
+.pd-fee-table .group-title.ef-ind-1{padding-left:1.5em}
+.pd-fee-table .group-title.ef-ind-2{padding-left:3em}
+.pd-fee-table .group-title.ef-ind-3{padding-left:4.5em}
+.pd-fee-table .row.ef-ind-1 .label{padding-left:1.5em}
+.pd-fee-table .row.ef-ind-2 .label{padding-left:3em}
+.pd-fee-table .row.ef-ind-3 .label{padding-left:4.5em}
+.pd-fee-table .row:has(+ .pd-dp-gap){border-bottom:none}
 /* 일정 요약 타임라인 */
 .pd-schedule{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
 .pd-schedule-overview{padding:0 4px;font-size:.82rem;color:rgba(10,23,48,.68);line-height:1.6}
@@ -2012,10 +2019,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .link-visible-row .from-toggle{white-space:nowrap}
 /* [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액 분리 입력 리스트 */
 .ef-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
-.ef-row{display:grid;grid-template-columns:18px 1fr 1fr auto;gap:8px;align-items:center}
+.ef-row{display:grid;grid-template-columns:18px 1fr 1fr auto;gap:8px;align-items:start}
+.ef-row.ef-divider{grid-template-columns:18px 1fr auto;align-items:center}
+.ef-row.ef-divider .pe-divider-row{margin:0}
 .ef-row input{min-width:0}
 .ef-row.ef-group{grid-template-columns:18px 1fr auto;margin-top:6px}
-.ef-row.ef-group input{font-weight:700;color:var(--nm-blue-deep)}
+.ef-row.ef-group .dp-title-edit{font-weight:700;color:var(--nm-blue-deep)}
 /* [Phase 3 상품등록 개선 v5] 드래그 앤 드롭 순서 변경 */
 .ef-drag-handle{font-size:1.1rem;color:var(--nm-text-soft);cursor:grab;user-select:none;line-height:1;text-align:center}
 .ef-drag-handle:active{ cursor:grabbing; }
@@ -5165,8 +5174,9 @@ function ensureExtended(p){
   }
   // [Phase 3 상품등록 개선 v4] 추가 요금 안내 항목을 그룹으로 묶어 표시 가능 — kind:'group'(제목만) / 'item'(항목·금액)
   p.extraFees.forEach(f=>{
-    if (f.kind!=='group') f.kind='item'; // 기존 데이터(구분 없음)는 모두 일반 항목으로 간주
-    if (f.kind==='group'){ if (f.title===undefined) f.title=''; }
+    if (f.kind!=='group' && f.kind!=='divider') f.kind='item'; // 기존 데이터(구분 없음)는 모두 일반 항목으로 간주
+    if (f.kind==='divider'){ f.showLine = !!f.showLine; }
+    else if (f.kind==='group'){ if (f.title===undefined) f.title=''; }
     else { if (f.label===undefined) f.label=''; if (f.amount===undefined) f.amount=''; }
   });
   if (p.linkUrl===undefined) p.linkUrl='';
@@ -5329,6 +5339,41 @@ function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group'))
 // 금액이 하나도 없는 묶음(구분선으로 나뉜 구간)은 통째로 숨기고, 맨 앞 구분선과 아래에 금액이 없는 맨 끝 부제목은 내용이 없으니 생략한다(맨 아래 구분선은 아래쪽 간격으로 남긴다)
 // 부제목 값은 서식이 들어간 HTML이거나(편집기에서 입력) 예전 일반 텍스트
 function dpTitleHTML(t){ t=String(t||''); return /<[a-z]/i.test(t) ? sanitizeRichHTML(t) : escapeAttr(t.trim()); }
+// 추가 요금 안내 표시 — 목록을 입력한 순서대로 그린다. 구분선마다 간격 칸 하나(선 노출을 켠 구분선은 선 포함),
+// 그룹 제목은 아래에 보여줄 항목이 있을 때만(연달아 있으면 모두), 항목은 항목명·금액 중 하나라도 있으면 표시.
+// 구분선으로 나뉜 구간에 보여줄 항목이 하나도 없으면 그 구간은 숨기고, 맨 앞 구분선은 생략·맨 아래 구분선은 아래쪽 간격으로 남긴다
+function extraFeesDetailHTML(list){
+  const L=list||[];
+  const isItem=f=>f.kind!=='group' && f.kind!=='divider' && !(dpTitleEmpty(f.label) && dpTitleEmpty(f.amount));
+  const segs=[]; let gaps=[], seg=null;
+  L.forEach(f=>{
+    if (f && f.kind==='divider'){ seg=null; gaps.push(!!f.showLine); return; }
+    if (!seg){ seg={gaps, els:[]}; gaps=[]; segs.push(seg); }
+    if (f.kind==='group') seg.els.push({g:f}); else if (isItem(f)) seg.els.push({i:f});
+  });
+  let out='', pend=[], first=true, prev='';
+  const gapHTML=a=>a.map(line=>`<div class="pd-dp-gap${line?' dp-line':''}"></div>`).join('');
+  segs.forEach(sg=>{
+    pend=pend.concat(sg.gaps);
+    const els=sg.els.slice();
+    while (els.length && els[els.length-1].g) els.pop();
+    if (!els.some(e=>e.i)) return;
+    if (!first && pend.length){ out+=gapHTML(pend); prev='gap'; }
+    pend=[]; first=false;
+    els.forEach(e=>{
+      if (e.g){
+        if (dpTitleEmpty(e.g.title)) return;
+        const ind=Math.max(0, Math.min(3, Number(e.g.indent)||0));
+        out+=`<div class="group-title${prev==='item'?' spaced':''}${ind?' ef-ind-'+ind:''}">${dpTitleHTML(e.g.title)}</div>`; prev='group';
+      } else {
+        const ind=Math.max(0, Math.min(3, Number(e.i.indent)||0));
+        out+=`<div class="row${ind?' ef-ind-'+ind:''}"><span class="label">${dpTitleHTML(e.i.label)}</span><span class="amount">${dpTitleHTML(e.i.amount)}</span></div>`; prev='item';
+      }
+    });
+  });
+  if (!first && (pend.length||gaps.length)) out+=gapHTML(pend.concat(gaps));
+  return out;
+}
 function dpTitleEmpty(t){ t=String(t||''); return !(/<[a-z]/i.test(t) ? richToPlain(t) : t).trim(); }
 function dpRenderSections(list, cellFn, valid, wrapFn){
   const L=list||[];
@@ -12515,14 +12560,10 @@ function renderProductDetail(p,cat,idx){
   // [수정] 추가 요금 안내를 일정 요약 타임라인 하단으로 이동
   // [Phase 3 상품등록 개선 v4] 그룹 제목이 있으면 그룹 사이 한 줄 간격을 두고 제목을 굵게 노출
   // [수정] 아래에 항목이 하나도 없는 그룹 제목(예: 기본값의 "🏨 [숙박 선택 옵션]"을 비워 둔 경우)은 고객 화면에서 숨긴다
-  const extraFees = (p.extraFees||[]).filter(f=> f.kind==='group' ? f.title : (f.label||f.amount))
-    .filter((f,i,arr)=> f.kind!=='group' || (arr[i+1] && arr[i+1].kind!=='group'));
-  if (extraFees.length){
+  const feeHTML = extraFeesDetailHTML(p.extraFees||[]);
+  if (feeHTML){
     html += `<div class="pd-slot"><div class="pd-section-title">💰 추가 요금 안내</div>
-      <div class="pd-fee-table">${extraFees.map((f,i)=> f.kind==='group'
-        ? `<div class="group-title${i>0?' spaced':''}">${escapeAttr(f.title)}</div>`
-        : `<div class="row"><span class="label">${escapeAttr(f.label||'')}</span><span class="amount">${escapeAttr(f.amount||'')}</span></div>`
-      ).join('')}</div>
+      <div class="pd-fee-table">${feeHTML}</div>
     </div>`;
   }
 
@@ -14948,6 +14989,15 @@ function defaultExtraFees(){
   ];
 }
 // [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액을 분리 입력하는 표 형식 리스트
+// 추가 요금 안내 입력란(그룹 제목·항목·금액)은 서식 편집 가능(들여쓰기·글자 크기·글꼴·굵게·기울임·밑줄·색상) — 입력란을 누르면 서식 도구가 나타난다.
+// 값은 HTML로 저장하고 예전 일반 텍스트도 그대로 읽힌다. 항목·그룹 제목의 들여쓰기는 행 단위(indent)로 저장
+function efEditorHTML(i, field, value, placeholder, indent){
+  const hasInd = indent!==undefined;
+  const lv = Math.max(0, Math.min(3, Number(indent)||0));
+  let tb = rtfToolbarHTML();
+  if (hasInd) tb = tb.replace(/<\/div>\s*$/, indentSelectHTML(`setEfIndent(${i},this)`, lv)+'</div>');
+  return `<div class="rtf-wrap dp-group-rtf ef-rtf">${tb}<div class="rtf-editable dp-title-edit"${hasInd?` style="padding-left:calc(14px + ${lv*1.5}em)"`:''} contenteditable="true" data-placeholder="${escapeAttr(placeholder)}" oninput="updateExtraFee(${i},'${field}',this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(value||'')}</div></div>`;
+}
 function extraFeesHTML(p){
   const fees = p.extraFees||[];
   // [수정] draggable은 손잡이(⠿)에만 지정 — 행 전체에 지정하면 입력 필드 안의 텍스트를
@@ -14957,23 +15007,44 @@ function extraFeesHTML(p){
   const handleAttrs = i => `draggable="true" ondragstart="efDragStart(event,${i})" ondragend="efDragEnd(event)"`;
   return `
   <div class="ef-list">
-    ${fees.map((f,i)=> f.kind==='group' ? `
+    ${fees.map((f,i)=> f.kind==='divider' ? `
+    <div class="ef-row ef-divider" ${rowDropAttrs(i)}>
+      <div class="ef-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</div>
+      <div class="pe-divider-row"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><label class="dp-line-toggle" title="켜면 자세히 보기에 이 구분선의 선이 보입니다. 끄면 간격만 확보하고 선은 보이지 않습니다"><input type="checkbox" ${f.showLine?'checked':''} onchange="setEfDividerLine(${i},this.checked)"><span>선 노출</span></label></div>
+      <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
+    </div>` : f.kind==='group' ? `
     <div class="ef-row ef-group" ${rowDropAttrs(i)}>
       <div class="ef-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</div>
-      <input type="text" value="${escapeAttr(f.title||'')}" placeholder="그룹 제목 (예: 인원별 추가 요금)" oninput="updateExtraFee(${i},'title',this.value)">
+      ${efEditorHTML(i,'title',f.title,'그룹 제목 (예: 인원별 추가 요금) — 눌러서 입력하면 서식 도구가 나타납니다', f.indent||0)}
       <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
     </div>` : `
     <div class="ef-row" ${rowDropAttrs(i)}>
       <div class="ef-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</div>
-      <input type="text" value="${escapeAttr(f.label||'')}" placeholder="예: 2인 단독 출발 시" oninput="updateExtraFee(${i},'label',this.value)">
-      <input type="text" value="${escapeAttr(f.amount||'')}" placeholder="예: 1인당 150,000원 추가" oninput="updateExtraFee(${i},'amount',this.value)">
+      ${efEditorHTML(i,'label',f.label,'예: 2인 단독 출발 시', f.indent||0)}
+      ${efEditorHTML(i,'amount',f.amount,'예: 1인당 150,000원 추가')}
       <button class="apc-btn-sm apc-delete" onclick="removeExtraFee(${i})">삭제</button>
     </div>`).join('')}
   </div>
-  <div style="display:flex;gap:8px">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
     <button class="apc-btn-sm" onclick="addExtraFeeGroup()">+ 그룹 제목 추가</button>
     <button class="apc-btn-sm" onclick="addExtraFee()">+ 추가 요금 항목 추가</button>
+    <button class="apc-btn-sm" onclick="addExtraFeeDivider()" title="자세히 보기에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
   </div>`;
+}
+function addExtraFeeDivider(){
+  const p=getAdvProduct(); if (!p) return;
+  p.extraFees.push({kind:'divider', showLine:false});
+  saveAdvChange(); renderAdvBody();
+}
+function setEfDividerLine(i, on){
+  const p=getAdvProduct(); if (!p || !p.extraFees[i]) return;
+  p.extraFees[i].showLine = !!on; saveAdvChange();
+}
+function setEfIndent(i, selEl){
+  const p=getAdvProduct(); if (!p || !p.extraFees[i]) return;
+  const lv=Math.max(0, Math.min(3, Number(selEl.value)||0));
+  p.extraFees[i].indent=lv; saveAdvChange();
+  const ed=selEl.closest('.dp-group-rtf').querySelector('.dp-title-edit'); if (ed) ed.style.paddingLeft=`calc(14px + ${lv*1.5}em)`;
 }
 function addExtraFee(){
   const p=getAdvProduct(); if (!p) return;
@@ -15666,7 +15737,7 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
   // 부제목은 서식 편집 가능(글자 크기·글꼴·굵게·기울임·밑줄·색상) — 입력란을 누르면 서식 도구가 나타난다. 값은 HTML로 저장(예전 일반 텍스트도 그대로 읽힘)
   // 서식 도구에 "들여쓰기"(1.5글자 단위, 최대 3단계) 선택을 더한다 — 값은 부제목 항목의 indent로 저장
   const ind = Math.max(0, Math.min(3, Number(m.indent)||0));
-  const indSel = `<select class="rtf-ind-sel" title="들여쓰기" onchange="setDpTitleIndent(${peIdx},'${kind}',${i},this)">${['들여쓰기 없음','들여쓰기 1단계','들여쓰기 2단계','들여쓰기 3단계'].map((t,k)=>`<option value="${k}"${ind===k?' selected':''}>${t}</option>`).join('')}</select>`;
+  const indSel = indentSelectHTML(`setDpTitleIndent(${peIdx},'${kind}',${i},this)`, ind);
   const toolbar = rtfToolbarHTML().replace(/<\/div>\s*$/, indSel+'</div>');
   return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span>
     <div class="rtf-wrap dp-group-rtf">${toolbar}
@@ -15720,6 +15791,10 @@ function setDpDividerLine(peIdx, kind, i, on){
   const p=getAdvProduct(); if (!p) return;
   const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
   m.showLine = !!on; saveAdvChange();
+}
+// 서식 도구에 붙는 "들여쓰기"(없음/1~3단계, 단계당 1.5글자) 선택 — onchangeCall은 선택 요소(this)를 받는 호출문
+function indentSelectHTML(onchangeCall, lv){
+  return `<select class="rtf-ind-sel" title="들여쓰기" onchange="${onchangeCall}">${['들여쓰기 없음','들여쓰기 1단계','들여쓰기 2단계','들여쓰기 3단계'].map((t,k)=>`<option value="${k}"${lv===k?' selected':''}>${t}</option>`).join('')}</select>`;
 }
 function setDpTitleIndent(peIdx, kind, i, selEl){
   const p=getAdvProduct(); if (!p) return;

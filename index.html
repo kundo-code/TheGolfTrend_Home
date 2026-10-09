@@ -2598,7 +2598,8 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
    유지하면서 유리 재질감만 더한다 */
 .widget-box{
   display:none;position:fixed;z-index:202;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  /* [수정] 블러를 10px→1px로 줄여 뒤 배경(탑바 가죽 질감)이 뭉개지지 않고 반투명하게 비쳐 보이게 한다 */
+  backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);
   border-radius:16px;border:1px solid rgba(255,255,255,.55);
   box-shadow:0 8px 24px rgba(10,23,48,.18),inset 0 1px 0 rgba(255,255,255,.5);
   /* [추가] 관리자 패널 "위젯 전체 설정"에서 조절하는 글자 색상 — 미설정 시 기존 색(--pine-deep) 그대로 */
@@ -7471,9 +7472,9 @@ try{ const lx = JSON.parse(localStorage.getItem(LOGO_XFORM_KEY)||'null'); if (lx
 // 우측 상단(탑바 쪽 모서리)을 기준으로 통째로 확대/축소한다
 const WIDGET_CFG_KEY = 'kundo_widget_cfg_v2';
 const WIDGET_CFG_DEFAULT = {
-  weather:{scale:100,x:0,y:0,opacity:50}, // 날씨 위젯(국내, 서울)
-  weatherJp:{scale:100,x:0,y:0,opacity:50}, // 날씨 위젯(해외, 일본) — 국내 위젯과 완전히 독립된 자체 기준 위치를 가짐
-  currency:{scale:100,x:0,y:0,opacity:50},
+  weather:{scale:100,x:0,y:0,opacity:30}, // 날씨 위젯(국내, 서울)
+  weatherJp:{scale:100,x:0,y:0,opacity:30}, // 날씨 위젯(해외, 일본) — 국내 위젯과 완전히 독립된 자체 기준 위치를 가짐
+  currency:{scale:100,x:0,y:0,opacity:30},
   popup:{opacity:100}, // [추가] 날씨·환율 상세 팝업창(.widget-detail-card) 바탕색 투명도
   // [추가] 환율·날씨(국내)·날씨(해외) 3개 위젯 전체를 한 번에 조절하는 상위 설정 — 크기·투명도는
   // 각 위젯 자신의 값에 곱해지고(기본값 100%는 곱해도 값이 그대로라 아무 효과 없음), 가로·세로
@@ -7502,6 +7503,15 @@ try{
     ['weather','weatherJp','currency'].forEach(k=>{ widgetConfig[k].x=0; widgetConfig[k].y=0; });
     widgetConfig.globalWidget.x=0; widgetConfig.globalWidget.y=0;
     localStorage.setItem('kundo_widget_layout_v','2');
+    localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig));
+  }
+}catch(e){}
+// [추가] 위젯 기본 투명도를 50%→30%로 낮춰(탑바 가죽 질감이 비쳐 보이도록) — 예전 기본값(50) 그대로 저장돼 있던
+// 경우에만 한 번 30으로 바꾸고, 관리자가 직접 다른 값으로 조절해 둔 투명도는 그대로 둔다
+try{
+  if (localStorage.getItem('kundo_widget_opa_v')!=='1'){
+    ['weather','weatherJp','currency'].forEach(k=>{ if (widgetConfig[k].opacity===50) widgetConfig[k].opacity=30; });
+    localStorage.setItem('kundo_widget_opa_v','1');
     localStorage.setItem(WIDGET_CFG_KEY, JSON.stringify(widgetConfig));
   }
 }catch(e){}

@@ -1008,6 +1008,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-dp-gap.dp-line::after{content:'';position:absolute;left:0;right:0;top:22px;border-top:1px solid rgba(10,23,48,.22)}
 .pd-dp-sub{font-size:.8rem;font-weight:700;color:rgb(74,85,99);margin:0 0 8px;letter-spacing:.02em}
 .pd-dp-sub:has(+ .pd-dp-sub){margin-bottom:3px}
+.pd-dp-sub.dp-ind-1{padding-left:1.5em}
+.pd-dp-sub.dp-ind-2{padding-left:3em}
+.pd-dp-sub.dp-ind-3{padding-left:4.5em}
 .pd-day-price-table + .pd-dp-sub,.pd-holiday-price-row + .pd-dp-sub{margin-top:18px}
 .pd-guide-slot{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
 .pd-guide-overview{white-space:pre-line;font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
@@ -1779,7 +1782,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .rtf-btn{width:32px;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);cursor:pointer;font-size:.8rem;box-shadow:var(--nm-shadow-raised-sm)}
 .rtf-btn:hover{box-shadow:var(--nm-shadow-hover)}
 .rtf-btn.rtf-clear{width:auto;padding:0 8px;font-size:.68rem}
-.rtf-toolbar select.rtf-size-sel,.rtf-toolbar select.rtf-font-sel,.rtf-toolbar select.rtf-lh-sel{width:auto;flex:0 0 auto;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.68rem;padding:0 3px;box-shadow:var(--nm-shadow-raised-sm)}
+.rtf-toolbar select.rtf-size-sel,.rtf-toolbar select.rtf-font-sel,.rtf-toolbar select.rtf-lh-sel,.rtf-toolbar select.rtf-ind-sel{width:auto;flex:0 0 auto;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.68rem;padding:0 3px;box-shadow:var(--nm-shadow-raised-sm)}
 /* [수정] 색상 아이콘 높이를 다른 아이콘(32px)과 정확히 맞춤 — 확대 후 잘라내는 방식 대신
    input[type=color] 내부의 브라우저 기본 여백(swatch-wrapper padding)을 직접 제거해 32px를 꽉 채움 */
 /* [수정] 색상 아이콘을 툴바 맨 우측 끝으로 고정 배치하고, 스와치 위에 흰색 "T" 글자를 올려
@@ -5308,7 +5311,7 @@ function _peTextKey(v){
 }
 // 출발 요일별 요금·공휴일 요금 목록에는 일반 행 사이에 구분선({kind:'divider'})·부제목({kind:'group',title})
 // 표식이 들어갈 수 있다. 금액이 하나도 없으면 표식만 있어도 "값 없음"이고, 있으면 표식 위치도 비교 키에 포함한다
-function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+String(x.title||'').trim() : null); }
+function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+String(x.title||'').trim() : null); }
 function _peDayKey(list){
   const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
   return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
@@ -5334,7 +5337,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
   L.forEach(it=>{
     if (it && it.kind==='divider'){ seg=null; gaps.push(!!it.showLine); return; }
     if (!seg){ seg={gaps, els:[]}; gaps=[]; segs.push(seg); }
-    if (it && it.kind==='group') seg.els.push({t:String(it.title||'')});
+    if (it && it.kind==='group') seg.els.push({t:String(it.title||''), ind:Math.max(0, Math.min(3, Number(it.indent)||0))});
     else if (valid(it)) seg.els.push({c:cellFn(it)});
   });
   let out='', pend=[], first=true;
@@ -5348,7 +5351,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
     let run=[];
     const flush=()=>{ if (run.length){ out+=wrapFn(run); run=[]; } };
     els.forEach(e=>{
-      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)) out+=`<div class="pd-dp-sub">${dpTitleHTML(e.t)}</div>`; }
+      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)) out+=`<div class="pd-dp-sub${e.ind?' dp-ind-'+e.ind:''}">${dpTitleHTML(e.t)}</div>`; }
       else run.push(e.c);
     });
     flush();
@@ -15659,9 +15662,13 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
     return `<div class="pe-divider-row dp-marker"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><label class="dp-line-toggle" title="켜면 자세히 보기에 이 구분선의 선이 보입니다. 끄면 간격만 확보하고 선은 보이지 않습니다"><input type="checkbox" ${m.showLine?'checked':''} onchange="setDpDividerLine(${peIdx},'${kind}',${i},this.checked)"><span>선 노출</span></label><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})" title="구분선 삭제">✕</button></div>`;
   }
   // 부제목은 서식 편집 가능(글자 크기·글꼴·굵게·기울임·밑줄·색상) — 입력란을 누르면 서식 도구가 나타난다. 값은 HTML로 저장(예전 일반 텍스트도 그대로 읽힘)
+  // 서식 도구에 "들여쓰기"(1.5글자 단위, 최대 3단계) 선택을 더한다 — 값은 부제목 항목의 indent로 저장
+  const ind = Math.max(0, Math.min(3, Number(m.indent)||0));
+  const indSel = `<select class="rtf-ind-sel" title="들여쓰기" onchange="setDpTitleIndent(${peIdx},'${kind}',${i},this)">${['들여쓰기 없음','들여쓰기 1단계','들여쓰기 2단계','들여쓰기 3단계'].map((t,k)=>`<option value="${k}"${ind===k?' selected':''}>${t}</option>`).join('')}</select>`;
+  const toolbar = rtfToolbarHTML().replace(/<\/div>\s*$/, indSel+'</div>');
   return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span>
-    <div class="rtf-wrap dp-group-rtf">${rtfToolbarHTML()}
-      <div class="rtf-editable dp-title-edit" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>
+    <div class="rtf-wrap dp-group-rtf">${toolbar}
+      <div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em)" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>
     </div>
     <button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
 }
@@ -15711,6 +15718,13 @@ function setDpDividerLine(peIdx, kind, i, on){
   const p=getAdvProduct(); if (!p) return;
   const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
   m.showLine = !!on; saveAdvChange();
+}
+function setDpTitleIndent(peIdx, kind, i, selEl){
+  const p=getAdvProduct(); if (!p) return;
+  const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
+  const lv=Math.max(0, Math.min(3, Number(selEl.value)||0));
+  m.indent=lv; saveAdvChange();
+  const ed=selEl.closest('.dp-group-rtf').querySelector('.dp-title-edit'); if (ed) ed.style.paddingLeft=`calc(14px + ${lv*1.5}em)`;
 }
 function updateDpGroupTitle(peIdx, kind, i, val){
   const p=getAdvProduct(); if (!p) return;

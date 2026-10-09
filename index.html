@@ -245,7 +245,7 @@ header{padding-top:var(--topbar-h,108px)}
 .spot-visual .sv-bg{position:absolute;inset:-2px;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .spot-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .spotlight:hover .spot-visual .sv-bg,.spotlight:hover .spot-visual video{transform:scale(1.06)}
-.spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.44rem;font-weight:500;color:#fff;margin-bottom:4px}
+.spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.44rem + 2pt);font-weight:500;color:#fff;margin-bottom:4px}
 .spot-meta{display:flex;gap:16px;font-size:.94rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
 /* [수정] EDITOR'S PICK 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
 .spot-tag-row{margin-bottom:8px;text-align:left}
@@ -584,7 +584,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-top-title .cat-row .cat{margin-bottom:0;min-width:0}
 .pd-top-title .cat-row .pt-months{flex-shrink:0;margin-left:auto;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
 .product-visual-title{margin-bottom:12px;min-height:6px;display:flex;align-items:flex-end}
-.product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.25rem;font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem + 2pt);font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 /* [수정] 타이틀 바로 아래 줄에 "🌙 박수"(좌측)와 "🗓 기간 · Nights"(우측)를 함께 배치 —
    최소인원(👥)은 그대로 meta 아래 product-period-row에 남는다. 두 배지 중 하나만 있어도
    각자의 자리(좌/우)를 유지하도록 prt-left/prt-right 래퍼로 감싸 justify-content:space-between.
@@ -1626,7 +1626,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .dp-list .pe-divider-row.dp-marker{margin:4px 0 8px}
 .dp-group-row{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
 .dp-group-lbl{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.06em}
-.dp-group-row input{flex:1;min-width:0}
+.dp-group-rtf{flex:1;min-width:0}
+.dp-group-rtf .rtf-toolbar{display:none}
+.dp-group-rtf:focus-within .rtf-toolbar{display:flex}
+.dp-group-rtf .rtf-lh-sel,.dp-group-rtf .rtf-sub-btn,.dp-group-rtf .rtf-btn[title="표 넣기"]{display:none}
+.rtf-editable.dp-title-edit{min-height:0!important;padding:9px 14px;background:#fff;font-size:.9rem;line-height:1.4}
+.rtf-editable.dp-title-edit:empty:before{white-space:normal;font-size:.8rem}
 /* 자세히 보기 요금표의 항목 사이 구분선 */
 .pd-pe-divider{height:0;border-top:2px solid rgba(10,23,48,.2);margin:6px 4px}
 .add-product-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press)}
@@ -1914,7 +1919,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .popup-emph.special{background:linear-gradient(135deg,#FF6B6B,#EE5A6F);color:#fff}
 .popup-body{padding:18px 20px 20px}
 .popup-cat{font-size:.68rem;color:var(--gold);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
-.popup-title{font-size:1.15rem;color:#fff;margin:0 0 8px;line-height:1.35;font-weight:700;font-family:'Bebas Neue','Noto Sans KR',sans-serif}
+.popup-title{font-size:calc(1.15rem + 2pt);color:#fff;margin:0 0 8px;line-height:1.35;font-weight:700;font-family:'Bebas Neue','Noto Sans KR',sans-serif}
 .popup-headline{font-size:.85rem;color:rgba(247,245,240,.75);margin:0 0 14px;line-height:1.45}
 .popup-price{display:flex;align-items:baseline;gap:6px;margin-bottom:14px}
 .popup-price b{font-size:1.4rem;color:var(--gold);font-weight:800}
@@ -3847,7 +3852,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 .ai-result-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .ai-result-cat{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);font-weight:700}
 .ai-result-tag{font-size:.72rem;padding:2px 9px;background:rgba(221,179,103,.15);border:1px solid rgba(221,179,103,.35);border-radius:100px;color:var(--gold-deep)}
-.ai-result-body h4{font-size:1.15rem;color:var(--pine-deep);font-weight:600;margin-bottom:6px}
+.ai-result-body h4{font-size:calc(1.15rem + 2pt);color:var(--pine-deep);font-weight:600;margin-bottom:6px}
 .ai-result-meta{font-size:.86rem;color:rgba(10,23,48,.6);margin-bottom:10px}
 .ai-result-reasons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .ai-reason-chip{font-size:.74rem;padding:4px 10px;background:rgba(10,23,48,.06);border-radius:100px;color:var(--pine)}
@@ -5319,6 +5324,9 @@ function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group'))
 // 목록을 처음부터 끝까지 순서대로 그린다 — 구분선마다 자기 간격 칸(선 노출을 켠 구분선은 선도)을 하나씩, 부제목마다 자기 제목 줄을 하나씩.
 // 그래서 부제목 아래 부제목, 구분선 아래 구분선을 연달아 넣으면 입력한 개수만큼 그대로 나온다.
 // 금액이 하나도 없는 묶음(구분선으로 나뉜 구간)은 통째로 숨기고, 맨 앞·맨 뒤 구분선과 아래에 금액이 없는 맨 끝 부제목은 내용이 없으니 생략한다
+// 부제목 값은 서식이 들어간 HTML이거나(편집기에서 입력) 예전 일반 텍스트
+function dpTitleHTML(t){ t=String(t||''); return /<[a-z]/i.test(t) ? sanitizeRichHTML(t) : escapeAttr(t.trim()); }
+function dpTitleEmpty(t){ t=String(t||''); return !(/<[a-z]/i.test(t) ? richToPlain(t) : t).trim(); }
 function dpRenderSections(list, cellFn, valid, wrapFn){
   const L=list||[];
   if (!L.some(dpIsMarker)){ const cells=L.filter(valid).map(cellFn); return cells.length ? wrapFn(cells) : ''; }
@@ -5326,7 +5334,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
   L.forEach(it=>{
     if (it && it.kind==='divider'){ seg=null; gaps.push(!!it.showLine); return; }
     if (!seg){ seg={gaps, els:[]}; gaps=[]; segs.push(seg); }
-    if (it && it.kind==='group') seg.els.push({t:String(it.title||'').trim()});
+    if (it && it.kind==='group') seg.els.push({t:String(it.title||'')});
     else if (valid(it)) seg.els.push({c:cellFn(it)});
   });
   let out='', pend=[], first=true;
@@ -5340,7 +5348,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
     let run=[];
     const flush=()=>{ if (run.length){ out+=wrapFn(run); run=[]; } };
     els.forEach(e=>{
-      if (e.t!==undefined){ flush(); if (e.t) out+=`<div class="pd-dp-sub">${escapeAttr(e.t)}</div>`; }
+      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)) out+=`<div class="pd-dp-sub">${dpTitleHTML(e.t)}</div>`; }
       else run.push(e.c);
     });
     flush();
@@ -9340,7 +9348,7 @@ document.addEventListener('keydown', e=>{
   if (e.key!=='Enter' || e.shiftKey || e.isComposing || e.keyCode===229) return;
   const t = e.target;
   // 서식 입력란(contenteditable)
-  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit')){
+  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit') && !t.classList.contains('dp-title-edit')){
     const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
     const n = rtfCaretBlock(t, sel);
     if (!n || n.nodeType!==1 || !n.classList.contains('rtf-sub')) return;
@@ -9408,7 +9416,7 @@ document.addEventListener('input', e=>{
     }
     return;
   }
-  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit')){
+  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit') && !t.classList.contains('dp-title-edit')){
     const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
     const n = rtfCaretBlock(t, sel);
     if (!n || n.nodeType!==1 || n.tagName!=='DIV' || !n.classList.contains('rtf-sub') || !rtfBlockEmpty(n)) return;
@@ -9470,7 +9478,7 @@ document.addEventListener('paste', e=>{
   if (!html) return; // 일반 텍스트 붙여넣기는 브라우저 기본 동작 그대로
   e.preventDefault();
   let clean = rtfCleanPastedHTML(html, t);
-  if (t.classList.contains('ctag-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
+  if (t.classList.contains('ctag-edit') || t.classList.contains('dp-title-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
   document.execCommand('insertHTML', false, clean);
 }, true);
 // 안내 박스 "공통값 사용" 토글 — 켜면 체크포인트1 - 주의사항(p.checkpoint1)을 그대로 쓰고, 끄면 이 상품 전용 내용을 직접 입력한다.
@@ -15650,7 +15658,12 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
   if (m.kind==='divider'){
     return `<div class="pe-divider-row dp-marker"><span class="pe-divider-line"></span><span class="pe-divider-lbl">구분선</span><span class="pe-divider-line"></span><label class="dp-line-toggle" title="켜면 자세히 보기에 이 구분선의 선이 보입니다. 끄면 간격만 확보하고 선은 보이지 않습니다"><input type="checkbox" ${m.showLine?'checked':''} onchange="setDpDividerLine(${peIdx},'${kind}',${i},this.checked)"><span>선 노출</span></label><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})" title="구분선 삭제">✕</button></div>`;
   }
-  return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span><input type="text" value="${escapeAttr(m.title||'')}" placeholder="예: 주중 출발 / 주말 출발 (다음 구분선·부제목 전까지의 금액을 묶는 제목)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.value)"><button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
+  // 부제목은 서식 편집 가능(글자 크기·글꼴·굵게·기울임·밑줄·색상) — 입력란을 누르면 서식 도구가 나타난다. 값은 HTML로 저장(예전 일반 텍스트도 그대로 읽힘)
+  return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span>
+    <div class="rtf-wrap dp-group-rtf">${rtfToolbarHTML()}
+      <div class="rtf-editable dp-title-edit" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>
+    </div>
+    <button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
 }
 function dpListOf(p, peIdx, kind){
   if (peIdx<0) return kind==='hol' ? p.commonHolidayPrices : p.commonDayPrices;

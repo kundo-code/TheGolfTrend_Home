@@ -1220,6 +1220,7 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .pc-opt.pc-opt-map.kakao{background:#FEE500;color:#391B1B}
 .pc-opt.pc-opt-map.kakao .pc-opt-emoji{background:rgba(57,27,27,.1)}
 .pc-opt.pc-opt-map.google{background:#4285F4}
+.pc-opt.pc-opt-map.naver{background:#03C75A}
 .pc-opt.pc-opt-map.other{background:var(--pine-deep)}
 /* [추가] 관리자 — 위치 정보 노출 링크 편집 */
 .loc-editor{margin-top:14px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.12)}
@@ -4308,6 +4309,182 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 @media(min-width:781px){
   body.widgets-compact .mobile-widget-row{padding-bottom:0}
   body.widgets-compact .hero{padding-top:calc(40px + var(--widget-row-h,0px))}
+}
+
+/* [수정] 모바일 관리자 패널·고급편집 글자 크기 정리 — 9~21px까지 제각각이던 크기를 4단계(10.5 / 11.5 / 12.5 / 14px)로 통일.
+   입력칸(input·select·textarea)은 iOS 확대(zoom) 방지를 위해 위쪽 규칙대로 16px 유지 */
+@media(max-width:780px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  #adminPanel .file-hint,
+  .adv-editor-overlay .file-hint,
+  #adminPanel .mw-hint,
+  .adv-editor-overlay .mw-hint,
+  #adminPanel .cp-editor-hint,
+  .adv-editor-overlay .cp-editor-hint,
+  #adminPanel .adv-sub-note,
+  .adv-editor-overlay .adv-sub-note,
+  #adminPanel .adv-where,
+  .adv-editor-overlay .adv-where,
+  #adminPanel .adv-badge,
+  .adv-editor-overlay .adv-badge,
+  #adminPanel .bf-chip,
+  .adv-editor-overlay .bf-chip,
+  #adminPanel .region-tag,
+  .adv-editor-overlay .region-tag,
+  #adminPanel .lai-badge,
+  .adv-editor-overlay .lai-badge,
+  #adminPanel .lai-field-label,
+  .adv-editor-overlay .lai-field-label,
+  #adminPanel .aab-no-img,
+  .adv-editor-overlay .aab-no-img,
+  #adminPanel .cbf-sub,
+  .adv-editor-overlay .cbf-sub,
+  #adminPanel .apc-period-badge,
+  .adv-editor-overlay .apc-period-badge,
+  #adminPanel .ctag-bg-reset,
+  .adv-editor-overlay .ctag-bg-reset,
+  #adminPanel .lai-test,
+  .adv-editor-overlay .lai-test,
+  #adminPanel .aab-en,
+  .adv-editor-overlay .aab-en,
+  #adminPanel .ai-xform-unit,
+  .adv-editor-overlay .ai-xform-unit,
+  #adminPanel .loc-count,
+  .adv-editor-overlay .loc-count,
+  #adminPanel .pe-inh-btn,
+  .adv-editor-overlay .pe-inh-btn,
+  #adminPanel .adv-qn-mini,
+  .adv-editor-overlay .adv-qn-mini{font-size:10.5px}
+  #adminPanel label:not([class]),
+  .adv-editor-overlay label:not([class]),
+  #adminPanel .cp-editor-title,
+  .adv-editor-overlay .cp-editor-title,
+  #adminPanel .abc-label,
+  .adv-editor-overlay .abc-label,
+  #adminPanel .apc-btn-sm,
+  .adv-editor-overlay .apc-btn-sm,
+  #adminPanel .abc-img-btn,
+  .adv-editor-overlay .abc-img-btn,
+  #adminPanel .file-btn,
+  .adv-editor-overlay .file-btn,
+  #adminPanel .link-admin-del,
+  .adv-editor-overlay .link-admin-del,
+  #adminPanel .pee-del,
+  .adv-editor-overlay .pee-del,
+  #adminPanel .adv-chip,
+  .adv-editor-overlay .adv-chip,
+  #adminPanel .pt-lbl,
+  .adv-editor-overlay .pt-lbl,
+  #adminPanel .ast-season-label,
+  .adv-editor-overlay .ast-season-label,
+  #adminPanel .tc-label,
+  .adv-editor-overlay .tc-label,
+  #adminPanel .cbf-head,
+  .adv-editor-overlay .cbf-head,
+  #adminPanel .rtf-btn,
+  .adv-editor-overlay .rtf-btn,
+  #adminPanel .rtf-color-t,
+  .adv-editor-overlay .rtf-color-t,
+  #adminPanel .media-btn,
+  .adv-editor-overlay .media-btn,
+  #adminPanel .loc-empty,
+  .adv-editor-overlay .loc-empty,
+  #adminPanel .loc-group-title,
+  .adv-editor-overlay .loc-group-title,
+  #adminPanel .pe-title-preview,
+  .adv-editor-overlay .pe-title-preview,
+  #adminPanel .apc-title-preview,
+  .adv-editor-overlay .apc-title-preview,
+  #adminPanel .idx,
+  .adv-editor-overlay .idx,
+  #adminPanel .k,
+  .adv-editor-overlay .k{font-size:11.5px}
+  #adminPanel .admin-info-box,
+  .adv-editor-overlay .admin-info-box,
+  #adminPanel .reset-btn,
+  .adv-editor-overlay .reset-btn,
+  #adminPanel .apply-btn,
+  .adv-editor-overlay .apply-btn,
+  #adminPanel .reset-cat-btn,
+  .adv-editor-overlay .reset-cat-btn,
+  #adminPanel .abc-btn-sm,
+  .adv-editor-overlay .abc-btn-sm,
+  #adminPanel .aab-name,
+  .adv-editor-overlay .aab-name,
+  #adminPanel .aab-section-label,
+  .adv-editor-overlay .aab-section-label,
+  #adminPanel .name,
+  .adv-editor-overlay .name,
+  #adminPanel .leads-refresh-btn,
+  .adv-editor-overlay .leads-refresh-btn,
+  #adminPanel .leads-export-btn,
+  .adv-editor-overlay .leads-export-btn,
+  #adminPanel .leads-empty,
+  .adv-editor-overlay .leads-empty,
+  #adminPanel .notice-empty,
+  .adv-editor-overlay .notice-empty,
+  #adminPanel .add-product-btn,
+  .adv-editor-overlay .add-product-btn,
+  #adminPanel .cancel,
+  .adv-editor-overlay .cancel,
+  #adminPanel .save,
+  .adv-editor-overlay .save,
+  #adminPanel .adv-sub-title,
+  .adv-editor-overlay .adv-sub-title,
+  #adminPanel .pe-inh-banner-text,
+  .adv-editor-overlay .pe-inh-banner-text,
+  #adminPanel .cpb-warn,
+  .adv-editor-overlay .cpb-warn,
+  #adminPanel .cpb-store,
+  .adv-editor-overlay .cpb-store,
+  #adminPanel .pe-sum-price,
+  .adv-editor-overlay .pe-sum-price,
+  #adminPanel .admin-tabs button,
+  .adv-editor-overlay .admin-tabs button,
+  #adminPanel .adv-tabs button,
+  .adv-editor-overlay .adv-tabs button,
+  #adminPanel .pe-chevron,
+  .adv-editor-overlay .pe-chevron,
+  #adminPanel .apc-chevron,
+  .adv-editor-overlay .apc-chevron{font-size:12.5px}
+  #adminPanel .adv-g-title,
+  .adv-editor-overlay .adv-g-title,
+  #adminPanel .admin-h4-lg,
+  .adv-editor-overlay .admin-h4-lg{font-size:14px}
+  #adminPanel .admin-item-info .n,.adv-editor-overlay .admin-item-info .n,
+  #adminPanel .admin-headline-info .n,.adv-editor-overlay .admin-headline-info .n,
+  #adminPanel .ai-no-banner,.adv-editor-overlay .ai-no-banner,
+  #adminPanel .theme-radio span,.adv-editor-overlay .theme-radio span,
+  #adminPanel .season-theme-btn,.adv-editor-overlay .season-theme-btn,
+  #adminPanel .lai-label,.adv-editor-overlay .lai-label,
+  #adminPanel .leads-toolbar span,.adv-editor-overlay .leads-toolbar span,
+  #adminPanel .ctag-bg,.adv-editor-overlay .ctag-bg{font-size:12.5px}
+  #adminPanel .abc-label em,.adv-editor-overlay .abc-label em{font-size:11.5px}
+  #adminPanel .pe-disabled-note,.adv-editor-overlay .pe-disabled-note,
+  #adminPanel .pe-inh-hint,.adv-editor-overlay .pe-inh-hint,
+  #adminPanel .gallery-set-count,.adv-editor-overlay .gallery-set-count,
+  #adminPanel .adv-cp2-note,.adv-editor-overlay .adv-cp2-note,
+  #adminPanel .gallery-add-slot .add-lbl,.adv-editor-overlay .gallery-add-slot .add-lbl,
+  #adminPanel .dp-mv,.adv-editor-overlay .dp-mv{font-size:10.5px}
+  #adminPanel .adv-quicknav,.adv-editor-overlay .adv-quicknav,
+  #adminPanel .adv-quicknav b,.adv-editor-overlay .adv-quicknav b,
+  #adminPanel .adv-quicknav span,.adv-editor-overlay .adv-quicknav span,
+  #adminPanel .from-toggle,.adv-editor-overlay .from-toggle,
+  #adminPanel .from-toggle span,.adv-editor-overlay .from-toggle span,
+  #adminPanel .sn-common-toggle,.adv-editor-overlay .sn-common-toggle,
+  #adminPanel .sn-common-toggle span,.adv-editor-overlay .sn-common-toggle span,
+  #adminPanel .sn-common-toggle em,.adv-editor-overlay .sn-common-toggle em,
+  #adminPanel .adv-cp2-preview,.adv-editor-overlay .adv-cp2-preview{font-size:11.5px}
+  #adminPanel .gallery-set-title,.adv-editor-overlay .gallery-set-title,
+  #adminPanel .media-slot,.adv-editor-overlay .media-slot,
+  #adminPanel .ctag-bg span,.adv-editor-overlay .ctag-bg span{font-size:12.5px}
+  #adminPanel .adv-quicknav button,.adv-editor-overlay .adv-quicknav button,#adminPanel .media-slot>div,.adv-editor-overlay .media-slot>div{font-size:11.5px}
+  #adminPanel [style*="font-size:.7rem"],.adv-editor-overlay [style*="font-size:.7rem"]{font-size:10.5px!important}
+  #adminPanel summary,.adv-editor-overlay summary{font-size:12.5px}
+  #adminPanel h3,.adv-editor-overlay h3{font-size:16px}
+  #adminPanel h4,#adminPanel h5,.adv-editor-overlay h4,.adv-editor-overlay h5{font-size:12.5px}
+  #adminPanel .admin-h4-lg,.adv-editor-overlay .admin-h4-lg{font-size:14px}
+  #adminPanel .admin-close,.adv-editor-overlay .adv-close,.admin-side-toggle{font-size:18px}
 }
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
@@ -11215,6 +11392,7 @@ function locSafeUrl(u){
 function locMapBrand(url){
   if (/(^|\.)(kakao\.com|kko\.to|kakaomap\.com)(\/|$|:)/i.test(url.replace(/^https?:\/\//i,''))) return 'kakao';
   if (/(google\.[a-z.]+\/maps|maps\.google|goo\.gl\/maps|maps\.app\.goo\.gl|g\.page)/i.test(url)) return 'google';
+  if (/(^|\.)(naver\.com|naver\.me)(\/|$|:)/i.test(url.replace(/^https?:\/\//i,''))) return 'naver';
   return 'other';
 }
 function pdLocLinks(p){
@@ -11234,12 +11412,12 @@ function openLocChooser(){
   // 링크가 하나뿐이면 선택창 없이 바로 이동
   if (items.length===1){ window.open(items[0].url, '_blank', 'noopener'); return; }
   closePostChooser();
-  const brandName = {kakao:'카카오맵', google:'구글맵', other:'지도'};
+  const brandName = {kakao:'카카오맵', google:'구글맵', naver:'네이버', other:'지도'};
   const groups = LOC_KINDS.map(([kind,title])=>{
     const list = items.filter(x=>x.kind===kind); if (!list.length) return '';
     return `<div class="pc-loc-group">${title}</div>` + list.map(x=>`<a class="pc-opt pc-opt-map ${x.brand}" href="${escapeAttr(x.url)}" target="_blank" rel="noopener" onclick="closePostChooser()">
       <span class="pc-opt-ic pc-opt-emoji">${kind==='stay'?'🏨':'⛳'}</span>
-      <span class="pc-opt-tx"><b>${escapeAttr(x.label||title.replace(/^\S+\s/,''))}</b><em>${brandName[x.brand]}에서 보기</em></span><span class="pc-opt-arr">→</span></a>`).join('');
+      <span class="pc-opt-tx"><b>${escapeAttr(x.label||title.replace(/^\S+\s/,''))}</b><em>${x.brand==='naver' && /map/i.test(x.url) ? '네이버지도' : brandName[x.brand]}에서 보기</em></span><span class="pc-opt-arr">→</span></a>`).join('');
   }).join('');
   const el = document.createElement('div');
   el.className = 'pc-chooser'; el.id = 'postChooser';
@@ -15438,7 +15616,7 @@ function efEditorHTML(i, field, value, placeholder, indent){
 }
 // [추가] 위치 정보 노출 링크 — "자세히 보기 > 문의하기 > 📍 위치보기" 버튼의 이동 주소.
 // 숙박 위치·골프장 위치 두 묶음이 있고, 각 묶음마다 이름(선택)+주소를 여러 개 추가·삭제·위/아래 이동할 수 있다
-const LOC_KINDS = [['stay','🏨 숙박 위치'], ['golf','⛳ 골프장 위치']];
+const LOC_KINDS = [['golf','⛳ 골프장 위치'], ['stay','🏨 숙박 위치']]; // 골프장 위치가 먼저(관리자 입력·선택창 모두 이 순서)
 function locListOf(p, kind){
   if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[]};
   if (!Array.isArray(p.locLinks[kind])) p.locLinks[kind]=[];

@@ -1215,6 +1215,22 @@ html.pa-open,html.pa-open body{overflow:hidden}
 /* 긴 이름도 말줄임 없이 줄바꿈 — 같은 이름 상품을 구분하는 "【 10월 】"이 잘리지 않도록 */
 .pc-opt-tx em{font-style:normal;font-size:.74rem;opacity:.95;line-height:1.35;white-space:normal;overflow-wrap:anywhere}
 .pc-opt-arr{font-weight:800}
+/* [추가] 위치보기 선택창 — 카카오맵(노랑)·구글맵(파랑) 구분 */
+.pc-loc-group{font-size:.78rem;font-weight:800;color:rgba(10,23,48,.55);padding:4px 2px 0}
+.pc-opt.pc-opt-map.kakao{background:#FEE500;color:#391B1B}
+.pc-opt.pc-opt-map.kakao .pc-opt-emoji{background:rgba(57,27,27,.1)}
+.pc-opt.pc-opt-map.google{background:#4285F4}
+.pc-opt.pc-opt-map.other{background:var(--pine-deep)}
+/* [추가] 관리자 — 위치 정보 노출 링크 편집 */
+.loc-editor{margin-top:14px;padding-top:10px;border-top:1px dashed rgba(10,23,48,.12)}
+.loc-group{margin:10px 0;padding:10px;border:1px solid rgba(10,23,48,.1);border-radius:10px;background:rgba(10,23,48,.02)}
+.loc-group-title{font-weight:700;font-size:.82rem;margin-bottom:8px}
+.loc-count{font-weight:500;font-size:.72rem;color:var(--nm-text-soft)}
+.loc-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) auto;gap:6px;align-items:center;margin-bottom:6px}
+.loc-btns{display:flex;gap:4px}
+.loc-btns .apc-btn-sm[disabled]{opacity:.35;cursor:default}
+.loc-empty{font-size:.76rem;color:var(--nm-text-soft);padding:6px 2px}
+@media(max-width:780px){ .loc-row{grid-template-columns:1fr} .loc-btns{justify-content:flex-end} }
 .post-tag-red{background:#e64545}
 .post-tag-yellow{background:#dca82c}
 .post-tag-default{background:rgba(221,179,103,.9)}
@@ -5479,6 +5495,10 @@ function ensureExtended(p){
   if (p.gallerySubtitle===undefined) p.gallerySubtitle='';
   if (!Array.isArray(p.extraGalleries)) p.extraGalleries=[];
   if (!p.videoGallery) p.videoGallery=[]; // [Phase 3 상품등록 개선]
+  // [추가] 상세 "문의하기 > 📍 위치보기" 링크 — 숙박 위치·골프장 위치(각각 여러 개, 국내는 카카오맵·해외는 구글맵)
+  if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[]};
+  if (!Array.isArray(p.locLinks.stay)) p.locLinks.stay=[];
+  if (!Array.isArray(p.locLinks.golf)) p.locLinks.golf=[];
   if (p.pkgPoster===undefined) p.pkgPoster=null; // [Phase 3 상품등록 개선]
   if (p.editorsPick===undefined) p.editorsPick=false; // [Phase 3 상품등록 개선]
   if (p.editorsPickPopup===undefined) p.editorsPickPopup=false; // [수정] EDITOR'S PICK 상품을 홈 진입 팝업으로도 노출할지 여부
@@ -11186,6 +11206,48 @@ function cpResetGroups(prefix){
   _pgPrefix = prefix;
   Object.keys(_postGroups).forEach(k=>{ if (k.startsWith(prefix+'pg')) delete _postGroups[k]; });
 }
+// [추가] 상세 "📍 위치보기" — 등록된 숙박·골프장 위치 링크 목록(http/https만 허용)과 선택창
+function locSafeUrl(u){
+  let v = String(u||'').trim(); if (!v) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(v)) v = 'https://' + v.replace(/^\/+/, '');
+  return /^https?:\/\//i.test(v) ? v : '';
+}
+function locMapBrand(url){
+  if (/(^|\.)(kakao\.com|kko\.to|kakaomap\.com)(\/|$|:)/i.test(url.replace(/^https?:\/\//i,''))) return 'kakao';
+  if (/(google\.[a-z.]+\/maps|maps\.google|goo\.gl\/maps|maps\.app\.goo\.gl|g\.page)/i.test(url)) return 'google';
+  return 'other';
+}
+function pdLocLinks(p){
+  const out = [];
+  LOC_KINDS.forEach(([kind,title])=>{
+    ((p && p.locLinks && p.locLinks[kind]) || []).forEach(it=>{
+      const url = locSafeUrl(it && it.url); if (!url) return;
+      out.push({kind, title, label:String((it&&it.label)||'').trim(), url, brand:locMapBrand(url)});
+    });
+  });
+  return out;
+}
+function openLocChooser(){
+  if (!currentPd) return;
+  const p = getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
+  const items = pdLocLinks(p); if (!items.length) return;
+  // 링크가 하나뿐이면 선택창 없이 바로 이동
+  if (items.length===1){ window.open(items[0].url, '_blank', 'noopener'); return; }
+  closePostChooser();
+  const brandName = {kakao:'카카오맵', google:'구글맵', other:'지도'};
+  const groups = LOC_KINDS.map(([kind,title])=>{
+    const list = items.filter(x=>x.kind===kind); if (!list.length) return '';
+    return `<div class="pc-loc-group">${title}</div>` + list.map(x=>`<a class="pc-opt pc-opt-map ${x.brand}" href="${escapeAttr(x.url)}" target="_blank" rel="noopener" onclick="closePostChooser()">
+      <span class="pc-opt-ic pc-opt-emoji">${kind==='stay'?'🏨':'⛳'}</span>
+      <span class="pc-opt-tx"><b>${escapeAttr(x.label||title.replace(/^\S+\s/,''))}</b><em>${brandName[x.brand]}에서 보기</em></span><span class="pc-opt-arr">→</span></a>`).join('');
+  }).join('');
+  const el = document.createElement('div');
+  el.className = 'pc-chooser'; el.id = 'postChooser';
+  el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
+  el.innerHTML = `<div class="pc-chooser-card"><div class="pc-chooser-head">📍 어느 위치를 볼까요?<button type="button" class="pc-chooser-x" aria-label="닫기" onclick="closePostChooser()">×</button></div>${groups}</div>`;
+  el.addEventListener('click', e=>{ if (e.target===el) closePostChooser(); });
+  document.body.appendChild(el);
+}
 function openPostChooser(key){
   const g = _postGroups[key]; if (!g) return;
   closePostChooser();
@@ -12966,6 +13028,9 @@ function renderProductDetail(p,cat,idx){
   if (kfriend) contactBtns.push(`<a href="${escapeAttr(kfriend)}" target="_blank" rel="noopener" class="kakao">➕ 카톡 친구 추가</a>`);
   // Always offer booking form as fallback
   contactBtns.push(`<a onclick="closeProductDetail();document.getElementById('bookDest').value='${cat.ko}';window.scrollTo({top:scrollTargetY(document.getElementById('booking')),behavior:'smooth'})">✈ 예약 문의</a>`);
+  // [추가] 예약 문의 오른쪽에 "📍 위치보기" — 관리자에서 등록한 숙박·골프장 위치 링크(국내 카카오맵 / 해외 구글맵)로 이동.
+  // 등록된 링크가 하나도 없으면 버튼을 노출하지 않는다
+  if (pdLocLinks(p).length) contactBtns.push(`<a class="loc" role="button" tabindex="0" onclick="openLocChooser()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLocChooser()}">📍 위치보기</a>`);
   html += `<div class="pd-slot"><div class="pd-section-title">📞 문의하기</div>
     <div class="pd-contact">${contactBtns.join('')}</div></div>`;
 
@@ -13063,6 +13128,21 @@ function prepareCloneForCapture(target){
 // (갤러리·일정·요금표·문의하기까지 이어지는 세로로 매우 긴 요소)를 scale:2 그대로 캡처하면 이
 // 한계를 쉽게 넘을 수 있어, 실제 캡처 대상 크기에 맞춰 scale을 동적으로 낮춘다(작게 잘리는
 // 요소는 원래 요청한 배율 그대로 유지)
+// [수정] 공유 이미지를 만들 때 html2canvas는 캡처 대상만 그리는 게 아니라 "문서 전체"를 숨은 iframe에
+// 통째로 복제하고, 그 안의 사진·동영상을 전부 다시 내려받아 디코딩한다 — 이미지 갤러리(최대 3세트)와
+// 동영상 갤러리가 큰 상품일수록 휴대폰 메모리·시간이 폭증해 "이미지 생성에 실패했습니다"로 끝났다.
+// 캡처 대상(과 그 조상) 밖의 요소는 복제 자체를 건너뛰게(ignoreElements) 해서, 갤러리·동영상은
+// 아예 수집하지 않는다. 문서의 스타일(head)은 그대로 둬 카드 모양은 달라지지 않는다
+function captureIgnoreFilter(target){
+  return function(el){
+    if (!el || el===target) return false;
+    if (target.contains(el) || el.contains(target)) return false;
+    const tag = el.tagName;
+    if (tag==='STYLE' || tag==='LINK' || tag==='META' || tag==='TITLE' || tag==='HEAD' || tag==='BASE') return false;
+    if (el.closest && el.closest('head')) return false;
+    return true;
+  };
+}
 const SHARE_CAPTURE_MAX_DIM = 4096;
 const SHARE_CAPTURE_TIMEOUT_MS = 25000;
 function safeCaptureScale(target, requestedScale){
@@ -13108,7 +13188,7 @@ function captureAndShare(opts){
   const stopTicking = ()=>clearInterval(tickTimer);
   try{
     if (beforeCapture) beforeCapture();
-    const finalCanvasOpts = { ...canvasOpts, scale: safeCaptureScale(target, canvasOpts.scale||1) };
+    const finalCanvasOpts = { ignoreElements: captureIgnoreFilter(target), ...canvasOpts, scale: safeCaptureScale(target, canvasOpts.scale||1) };
     const timeout = new Promise((_,reject)=>setTimeout(()=>reject(new Error('capture-timeout')), SHARE_CAPTURE_TIMEOUT_MS));
     Promise.race([html2canvas(target, finalCanvasOpts), timeout]).then(canvas=>{
       if (stale()) return;
@@ -15243,10 +15323,11 @@ function advBasicHTML(p){
           <div class="pe-labels-body">${richTextFieldHTML(p.bookingPolicy, "updateAdvField('bookingPolicy',__HTML__)", {cls:'white-field', placeholder:'예: 예약금 30% 선입금 / 출발 14일 전 취소 시 전액 환불, 7일 전 50% ...', minHeight:'120px'})}</div>
         </details>
         <details class="pe-labels" ${advDetailsAttrs('d-link', false)}>
-          <summary>🔗 연결 링크 · URL ${advFillBadge(f(p.linkUrl),1)}</summary>
+          <summary>🔗 연결 링크 · URL ${advFillBadge(f(p.linkUrl),1)} ${locLinkCount(p)?advBadge(`📍 위치 ${locLinkCount(p)}건`,'ok'):''}</summary>
           <div class="pe-labels-body">
             <span class="mw-hint">각 요금 항목 카드 하단에 "블로그에서 보기 →" 버튼으로 노출</span>
             <input type="text" value="${escapeAttr(p.linkUrl||'')}" placeholder="https://..." oninput="updateAdvField('linkUrl',this.value)">
+            ${locLinksEditorHTML(p, isDomestic)}
           </div>
         </details>
       </div>
@@ -15354,6 +15435,66 @@ function efEditorHTML(i, field, value, placeholder, indent){
   let tb = rtfToolbarHTML();
   if (hasInd) tb = tb.replace(/<\/div>\s*$/, indentSelectHTML(`setEfIndent(${i},this)`, lv)+'</div>');
   return `<div class="rtf-wrap dp-group-rtf ef-rtf">${tb}<div class="rtf-editable dp-title-edit"${hasInd?` style="padding-left:calc(14px + ${lv*1.5}em)"`:''} contenteditable="true" data-placeholder="${escapeAttr(placeholder)}" oninput="updateExtraFee(${i},'${field}',this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(value||'')}</div></div>`;
+}
+// [추가] 위치 정보 노출 링크 — "자세히 보기 > 문의하기 > 📍 위치보기" 버튼의 이동 주소.
+// 숙박 위치·골프장 위치 두 묶음이 있고, 각 묶음마다 이름(선택)+주소를 여러 개 추가·삭제·위/아래 이동할 수 있다
+const LOC_KINDS = [['stay','🏨 숙박 위치'], ['golf','⛳ 골프장 위치']];
+function locListOf(p, kind){
+  if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[]};
+  if (!Array.isArray(p.locLinks[kind])) p.locLinks[kind]=[];
+  return p.locLinks[kind];
+}
+function locLinkCount(p){ return LOC_KINDS.reduce((n,[k])=>n+locListOf(p,k).filter(x=>x && String(x.url||'').trim()).length, 0); }
+function locLinksEditorHTML(p, isDomestic){
+  const mapName = isDomestic ? '카카오맵' : '구글맵';
+  const ph = isDomestic ? 'https://map.kakao.com/... 또는 https://kko.to/...' : 'https://maps.app.goo.gl/... 또는 https://www.google.com/maps/...';
+  return `<div class="loc-editor">
+    <div class="adv-sub-title">📍 위치 정보 노출 링크 <span class="adv-sub-note">자세히 보기 "문의하기"의 📍 위치보기 버튼 · ${isDomestic?'국내 상품: 카카오맵':'해외 상품: 구글맵'} 주소를 입력하세요</span></div>
+    ${LOC_KINDS.map(([kind,title])=>{
+      const list = locListOf(p, kind);
+      return `<div class="loc-group">
+        <div class="loc-group-title">${title} <span class="loc-count">${list.filter(x=>String(x.url||'').trim()).length}건</span></div>
+        ${list.length ? list.map((it,i)=>`<div class="loc-row">
+          <input type="text" class="loc-name" value="${escapeAttr(it.label||'')}" placeholder="이름 (예: ${kind==='stay'?'골프텔 본관':'한맥CC 클럽하우스'})" oninput="updateLocLink('${kind}',${i},'label',this.value)">
+          <input type="text" class="loc-url" value="${escapeAttr(it.url||'')}" placeholder="${ph}" oninput="updateLocLink('${kind}',${i},'url',this.value)">
+          <div class="loc-btns">
+            <button type="button" class="apc-btn-sm" title="위로 이동" onclick="moveLocLink('${kind}',${i},-1)" ${i===0?'disabled':''}>▲</button>
+            <button type="button" class="apc-btn-sm" title="아래로 이동" onclick="moveLocLink('${kind}',${i},1)" ${i===list.length-1?'disabled':''}>▼</button>
+            <button type="button" class="apc-btn-sm apc-delete" onclick="removeLocLink('${kind}',${i})">삭제</button>
+          </div>
+        </div>`).join('') : `<div class="loc-empty">등록된 ${title.replace(/^\S+\s/,'')} 링크가 없습니다</div>`}
+        <button type="button" class="apc-btn-sm" onclick="addLocLink('${kind}')">+ ${title.replace(/^\S+\s/,'')} 링크 추가 (${mapName})</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function addLocLink(kind){
+  const p=getAdvProduct(); if (!p) return;
+  locListOf(p,kind).push({label:'', url:''});
+  saveAdvChange(); renderAdvBody();
+}
+function refreshLocCounts(){
+  document.querySelectorAll('.loc-group').forEach(g=>{
+    const n=[...g.querySelectorAll('.loc-url')].filter(x=>x.value.trim()).length;
+    const c=g.querySelector('.loc-count'); if (c) c.textContent=n+'건';
+  });
+}
+function updateLocLink(kind, i, key, value){
+  const p=getAdvProduct(); if (!p) return;
+  const it = locListOf(p,kind)[i]; if (!it) return;
+  it[key] = value; saveAdvChange(); refreshLocCounts();
+}
+function moveLocLink(kind, i, dir){
+  const p=getAdvProduct(); if (!p) return;
+  const list = locListOf(p,kind), j = i+dir;
+  if (j<0 || j>=list.length) return;
+  const t = list[i]; list[i]=list[j]; list[j]=t;
+  saveAdvChange(); renderAdvBody();
+}
+function removeLocLink(kind, i){
+  const p=getAdvProduct(); if (!p) return;
+  locListOf(p,kind).splice(i,1);
+  saveAdvChange(); renderAdvBody();
 }
 function extraFeesHTML(p){
   const fees = p.extraFees||[];

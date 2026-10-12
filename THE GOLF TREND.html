@@ -468,7 +468,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(108%)로
    자연스럽게 커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다. transform-origin:top이라 카드
    윗변은 그 자리에 고정된 채 아래·양옆으로만 커져 상단 내비게이션 바를 절대 침범하지 않는다 */
-.pc-track>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
+@media(hover:hover){.pc-track>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}}
 /* [수정] 데스크톱(3장 노출)에서는 3장 중 가운데(중앙에 가장 가까운) 카드만 선명하게 두고 양옆
    카드는 반투명 처리해 현재 선택된 카드의 가독성을 높인다 — 요금 포스터 캐러셀의 pkg-dim과 동일한
    방식. 반투명 카드에 마우스를 올리면 다시 100%로 보인다(아래 :hover가 dim보다 나중에 선언되어
@@ -526,7 +526,7 @@ section.block{padding:100px 24px;position:relative}
    (Chromium/Safari 공통 현상) — translateZ(0)로 미리 별도 GPU 레이어를 만들어두고 hover 상태에서도
    같은 3D 변환을 유지해, 레이어가 새로 생성/제거되지 않고 그대로 갱신만 되도록 한다 */
 .product{min-width:0;padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(10,23,48,.16),0 2px 6px rgba(10,23,48,.08);transform:translateZ(0);will-change:transform}
-.product:hover{transform:translateY(-6px) translateZ(0);border-color:var(--gold);background:#fff;box-shadow:0 26px 54px rgba(10,23,48,.26),0 8px 18px rgba(10,23,48,.16)}
+@media(hover:hover){.product:hover{transform:translateY(-6px) translateZ(0);border-color:var(--gold);background:#fff;box-shadow:0 26px 54px rgba(10,23,48,.26),0 8px 18px rgba(10,23,48,.16)}}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출.
    [수정] 이미지 레이어(.pv-bg)를 배지(save-btn·region-pill)와 분리된 별도 레이어로 두어,
    1) 카드 경계보다 사방 2px씩 더 크게(inset:-2px) 채워 서브픽셀 반올림으로 생기던 1~2px 어두운
@@ -541,7 +541,7 @@ section.block{padding:100px 24px;position:relative}
    않도록 옅은 배경색만 우선 깔아둔다(로딩 스켈레톤과 같은 색 톤) */
 .pv-bg.lazy-bg{background-color:rgba(10,23,48,.06)}
 .product-visual video{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform}
-.product:hover .product-visual .pv-bg,.product:hover .product-visual video{transform:scale(1.06)}
+@media(hover:hover){.product:hover .product-visual .pv-bg,.product:hover .product-visual video{transform:scale(1.06)}}
 /* [수정] 상품 카드 이미지 위 하트 모양 "찜하기" 버튼은 더 이상 노출하지 않음(하이드) —
    레이아웃 계산에 영향을 주지 않도록 DOM은 유지하고 화면에서만 숨긴다 */
 .product-visual .save-btn{display:none;position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:50%;place-items:center;color:#fff;cursor:pointer;font-size:.85rem}
@@ -700,6 +700,13 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 라이트 버전으로 전환 — 어두운 오버레이/유리 패널 대신 밝은 배경 + 다크 네이비 텍스트로 가독성 개선 */
 .pd-overlay{position:fixed;inset:0;z-index:207;background:rgba(247,244,236,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
 .pd-overlay.show{display:block;opacity:1}
+/* [수정] 모바일(특히 iOS Safari) — 크고 스크롤되는 전체 화면 창에 backdrop-filter+opacity 전환을 함께 쓰면 일부 영역만 그려지고 나머지는
+   뒤의 페이지가 그대로 비쳐 "상세 페이지가 화면 뒤쪽에 열린 것처럼" 보이는 문제가 있었다. 모바일에서는 블러·전환을 빼고 불투명 바탕으로 바꾸며,
+   상세가 열려 있는 동안(html.pd-open)에는 뒤의 페이지 본문(탑바·메뉴·본문·푸터)을 아예 숨겨 어떤 경우에도 비쳐 보이지 않게 한다 */
+@media(max-width:780px){
+  .pd-overlay{background:#f7f4ec;backdrop-filter:none;-webkit-backdrop-filter:none;transition:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  html.pd-open header,html.pd-open #mainNav,html.pd-open main,html.pd-open footer{visibility:hidden}
+}
 .pd-container{max-width:560px;margin:40px auto;padding:0 16px 40px;position:relative}
 /* [수정] 상단 고정 내비게이션 바 — 이전/다음 상품 버튼(데스크톱), 현재 권역명·순번, 닫기 버튼을 한 줄에 배치.
    [수정] 국가별/권역별 이름(.pd-nav-region) 글자 크기를 2배로 키우고, "N / 전체" 카운터(.pd-nav-count)를
@@ -2542,7 +2549,9 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
   color:rgba(247,245,240,.8);font-size:.971rem;font-weight:500; /* [수정] 메뉴 글자 크기 +1pt (.88rem→.971rem) */
   letter-spacing:.02em;transition:all .2s;white-space:nowrap;
 }
-.nav ul li a:hover{color:var(--pine-deep);background:var(--gold)}
+@media(hover:hover){.nav ul li a:hover{color:var(--pine-deep);background:var(--gold)}}
+/* [추가] 지금 보고 있는 섹션의 메뉴(스크롤 위치 기준) — 터치 기기에서 손가락이 닿았던 자리의 메뉴가 hover로 남아 엉뚱한 메뉴가 활성처럼 보이던 문제를 막고 실제 현재 섹션을 강조한다 */
+.nav ul li a.active{color:var(--pine-deep);background:var(--gold)}
 .nav ul li a:active{color:var(--pine-deep);background:var(--gold);box-shadow:var(--btn-press)}
 .nav .menu-btn{display:none;background:none;border:none;color:#fff;font-size:1.4rem;cursor:pointer}
 /* [수정] "문의하기"는 웹 전용(아래 @media(min-width:781px))이고, 모바일에서는 노출하지 않는다
@@ -2711,6 +2720,29 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
     z-index:205;
   }
   .weather-widget-jp:hover{box-shadow:0 10px 28px rgba(10,23,48,.28)}
+}
+/* [수정] 웹(데스크톱) 탑바 위에 떠 있는 위젯 — 탑바 뒤 배경을 backdrop-filter로 비춰 보이면 큰 화면(고해상도·넓은 창)에서
+   그 질감이 흐릿하게 뭉개져 탑바보다 성기게 보였다. 비춰 보는 대신 탑바와 같은 가죽 질감 이미지(assets/leather-navy-fine.jpg,
+   300px 타일)를 위젯 자신의 바탕으로 직접 깔고 그 위에 반투명 흰 막(관리자 투명도 설정값)을 얹어 탑바와 똑같이 촘촘한 질감으로 보이게
+   한다. 위젯 크기(scale)를 바꿔도 질감 입자 크기가 변하지 않도록 타일 크기를 배율로 나눠 보정한다 */
+@media(min-width:781px){
+  body:not(.widgets-compact) .currency-widget,
+  body:not(.widgets-compact) .weather-widget,
+  body:not(.widgets-compact) .weather-widget-jp{
+    backdrop-filter:none;-webkit-backdrop-filter:none;
+  }
+  body:not(.widgets-compact) .currency-widget{
+    background:linear-gradient(rgba(255,255,255,var(--currency-opacity,.3)),rgba(255,255,255,var(--currency-opacity,.3))),
+      url(assets/leather-navy-fine.jpg) 0 0/calc(300px / var(--currency-scale,1)) calc(300px / var(--currency-scale,1)) repeat,#0a0f18;
+  }
+  body:not(.widgets-compact) .weather-widget{
+    background:linear-gradient(rgba(255,255,255,var(--weather-opacity,.3)),rgba(255,255,255,var(--weather-opacity,.3))),
+      url(assets/leather-navy-fine.jpg) 0 0/calc(300px / var(--weather-scale,1)) calc(300px / var(--weather-scale,1)) repeat,#0a0f18;
+  }
+  body:not(.widgets-compact) .weather-widget-jp{
+    background:linear-gradient(rgba(255,255,255,var(--weather-jp-opacity,.3)),rgba(255,255,255,var(--weather-jp-opacity,.3))),
+      url(assets/leather-navy-fine.jpg) 0 0/calc(300px / var(--weather-jp-scale,1)) calc(300px / var(--weather-jp-scale,1)) repeat,#0a0f18;
+  }
 }
 /* [수정] 웹(데스크톱)이라도 화면 가로폭이 좁아져 위젯 클러스터가 로고 영역과 겹칠 정도가 되면,
    JS(syncWidgetLayoutMode)가 body에 widgets-compact 클래스를 붙여 모바일과 같은 방식(메뉴바 바로
@@ -4668,7 +4700,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   </div>
   <div class="mobile-weather-pair">
     <div class="widget-drag-wrap" id="weatherDragWrap" data-widget="weather">
-      <div class="widget-box weather-widget" id="weatherWidget" onclick="toggleWeatherDetail()" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
+      <div class="widget-box weather-widget" id="weatherWidget" onclick="openWeatherDetailFor('main')" role="button" tabindex="0" aria-label="날씨 상세보기"></div>
       <button type="button" class="widget-peek-handle" id="weatherPeekHandle" onclick="setWidgetHidden('weather',false)" aria-label="날씨 위젯 다시 보기">‹</button>
     </div>
     <div class="widget-drag-wrap" id="weatherJapanDragWrap" data-widget="weatherJapan">
@@ -5304,7 +5336,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
       <h4>🌤️ 날씨</h4>
       <button type="button" class="widget-detail-close" onclick="toggleWeatherDetail()" aria-label="닫기">×</button>
     </div>
-    <select class="wx-location-select" id="weatherLocationSelect" onchange="setWeatherDetailLocation(this.value)"></select>
+    <select class="wx-location-select" id="weatherLocationSelect" onchange="setWeatherDetailLocation(this.value,true)"></select>
     <div class="widget-detail-tabs" id="weatherDetailTabs">
       <button type="button" data-tab="daily" class="active" onclick="setWeatherDetailTab('daily')">일별예보</button>
       <button type="button" data-tab="hourly" onclick="setWeatherDetailTab('hourly')">시간별예보</button>
@@ -8191,23 +8223,48 @@ async function fetchWeatherData(){
   renderWeatherWidget();
   if (document.getElementById('weatherDetailOverlay')?.classList.contains('show')) renderWeatherDetail();
 }
-function renderWeatherWidget(){
-  const el = document.getElementById('weatherWidget');
+// [수정] 날씨 위젯(서울 기본·일본 기본)은 각자 "지금 보여줄 지역"을 기억한다 — 날씨 상세 팝업에서 다른
+// 권역/국가를 골라 닫으면 그 위젯이 선택한 지역의 날씨를 그대로 보여준다(새로 고쳐도 유지)
+const WEATHER_WIDGET_LOC_KEY = 'kundo_weather_widget_loc_v1';
+const weatherWidgetLoc = {main:'default', japan:'japan'};
+try{
+  const sv = JSON.parse(localStorage.getItem(WEATHER_WIDGET_LOC_KEY)||'{}');
+  ['main','japan'].forEach(k=>{ if (sv[k] && WEATHER_LOCATIONS.some(l=>l.id===sv[k])) weatherWidgetLoc[k]=sv[k]; });
+}catch(e){}
+function saveWeatherWidgetLoc(){ try{ localStorage.setItem(WEATHER_WIDGET_LOC_KEY, JSON.stringify(weatherWidgetLoc)); }catch(e){} }
+function weatherDataFor(id){ return id==='default' ? (weatherFetchFailed && !weatherData ? 'failed' : weatherData) : weatherLocData[id]; }
+function renderWeatherWidgetInto(elId, locId){
+  const el = document.getElementById(elId);
   if (!el) return;
-  if (!weatherData || !weatherData.current){
-    el.innerHTML = `<div class="wgt-loading">${weatherFetchFailed?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
+  const loc = WEATHER_LOCATIONS.find(l=>l.id===locId) || WEATHER_LOCATIONS[0];
+  const data = weatherDataFor(loc.id);
+  if (!data || data==='failed' || !data.current){
+    el.innerHTML = `<div class="wgt-loading">${data==='failed'?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
     scheduleWidgetSync();
     return;
   }
-  const cur = weatherData.current;
+  const cur = data.current;
   const info = wmoInfo(cur.weather_code);
   el.innerHTML = `
-    <div class="wx-loc">${escapeAttr(WEATHER_LOCATION.name)}</div>
+    <div class="wx-loc">${escapeAttr(loc.name)}</div>
     <div class="wx-main"><span class="wx-icon">${info.icon}</span><span class="wx-temp">${Math.round(cur.temperature_2m)}°</span></div>
     <div class="wx-label">${info.label}</div>
     <div class="wx-sub">체감 ${Math.round(cur.apparent_temperature)}° · 습도 ${Math.round(cur.relative_humidity_2m)}%</div>
   `;
   scheduleWidgetSync();
+}
+function renderWeatherWidget(){ renderWeatherWidgetInto('weatherWidget', weatherWidgetLoc.main); }
+// 위젯이 가리키는 지역의 예보가 아직 없으면(기본 서울·일본은 자체 갱신 함수가 따로 가져온다) 가져와 다시 그린다
+async function ensureWidgetLocData(id){
+  if (id==='default' || id==='japan' || (weatherLocData[id] && weatherLocData[id]!=='failed')) return;
+  const loc = WEATHER_LOCATIONS.find(l=>l.id===id); if (!loc) return;
+  try{ weatherLocData[id] = await fetchWeatherJSON(loc.lat, loc.lon); }
+  catch(e){ console.error('[weather] 위젯 지역 조회 실패:', id, e); weatherLocData[id] = 'failed'; }
+  renderWeatherWidget(); renderWeatherWidgetJapan();
+}
+function refreshWidgetLocData(){
+  // 15분마다: 위젯이 서울·일본 외 지역을 보여주고 있으면 그 지역도 새로 가져온다
+  ['main','japan'].forEach(k=>{ const id=weatherWidgetLoc[k]; if (id!=='default' && id!=='japan'){ delete weatherLocData[id]; ensureWidgetLocData(id); } });
 }
 function toggleWeatherDetail(){
   const overlay = document.getElementById('weatherDetailOverlay');
@@ -8215,6 +8272,7 @@ function toggleWeatherDetail(){
   const willShow = !overlay.classList.contains('show');
   overlay.classList.toggle('show', willShow);
   document.body.style.overflow = willShow ? 'hidden' : '';
+  if (!willShow && window.syncNavState) setTimeout(window.syncNavState, 50);
   if (willShow) renderWeatherDetail();
 }
 let weatherDetailTab = 'daily';
@@ -8222,8 +8280,14 @@ function setWeatherDetailTab(tab){ weatherDetailTab = tab; renderWeatherDetail()
 // [추가] 날씨 상세 팝업에서 선택한 위치의 데이터를 캐시 — 같은 위치를 다시 고르면 재요청하지 않는다
 const weatherLocData = {}; // { locationId: {json 응답} | 'failed' }
 let weatherSelectedLocId = 'default';
-async function setWeatherDetailLocation(id){
+let weatherDetailOpener = 'main'; // 상세 팝업을 연 위젯 — 팝업에서 지역을 고르면 이 위젯이 그 지역을 보여준다
+async function setWeatherDetailLocation(id, fromUser){
   weatherSelectedLocId = id;
+  if (fromUser){
+    weatherWidgetLoc[weatherDetailOpener] = id; saveWeatherWidgetLoc();
+    renderWeatherWidget(); renderWeatherWidgetJapan(); // 팝업을 닫기 전에도 위젯은 이미 선택한 지역으로 바뀐다
+    ensureWidgetLocData(id);
+  }
   renderWeatherDetail(); // 즉시 지역명 갱신 + 필요 시 로딩중 표시
   if (id==='default' || weatherLocData[id]) return; // 기본 위치는 weatherData를 직접 참조, 나머지는 캐시 있으면 재요청 안 함
   const loc = WEATHER_LOCATIONS.find(l=>l.id===id);
@@ -8306,29 +8370,16 @@ async function fetchWeatherDataJapan(){
   renderWeatherWidgetJapan();
   if (document.getElementById('weatherDetailOverlay')?.classList.contains('show') && weatherSelectedLocId==='japan') renderWeatherDetail();
 }
-function renderWeatherWidgetJapan(){
-  const el = document.getElementById('weatherWidgetJapan');
-  if (!el) return;
-  const data = weatherLocData.japan;
-  if (!data || data==='failed' || !data.current){
-    el.innerHTML = `<div class="wgt-loading">${data==='failed'?'날씨 정보를 불러오지 못했습니다':'날씨 정보를 불러오는 중…'}</div>`;
-    scheduleWidgetSync();
-    return;
-  }
-  const cur = data.current;
-  const info = wmoInfo(cur.weather_code);
-  el.innerHTML = `
-    <div class="wx-loc">${escapeAttr(JAPAN_LOCATION.name)}</div>
-    <div class="wx-main"><span class="wx-icon">${info.icon}</span><span class="wx-temp">${Math.round(cur.temperature_2m)}°</span></div>
-    <div class="wx-label">${info.label}</div>
-    <div class="wx-sub">체감 ${Math.round(cur.apparent_temperature)}° · 습도 ${Math.round(cur.relative_humidity_2m)}%</div>
-  `;
-  scheduleWidgetSync();
-}
-function toggleJapanWeatherDetail(){
-  setWeatherDetailLocation('japan');
+function renderWeatherWidgetJapan(){ renderWeatherWidgetInto('weatherWidgetJapan', weatherWidgetLoc.japan); }
+// 위젯(서울 기본 / 일본 기본)을 눌러 상세 팝업을 열 때 — 그 위젯이 지금 보여주는 지역을 먼저 선택해 보여준다
+function openWeatherDetailFor(widgetKey){
+  weatherDetailOpener = widgetKey;
+  const id = weatherWidgetLoc[widgetKey];
+  weatherSelectedLocId = id;
+  ensureWidgetLocData(id);
   toggleWeatherDetail();
 }
+function toggleJapanWeatherDetail(){ openWeatherDetailFor('japan'); }
 // ══ 환율 위젯(웹 전용) ═══════════════════════════════════════════════
 // [추가] open.er-api.com — 별도 API 키 없이 무료로 쓸 수 있는 환율 API. 각국 중앙은행/은행 간
 // 기준환율을 하루 1회 갱신해 제공한다(특정 은행의 실시간 매매기준율과는 다를 수 있어 위젯·계산기
@@ -8390,6 +8441,7 @@ function toggleCurrencyDetail(){
   const willShow = !overlay.classList.contains('show');
   overlay.classList.toggle('show', willShow);
   document.body.style.overflow = willShow ? 'hidden' : '';
+  if (!willShow && window.syncNavState) setTimeout(window.syncNavState, 50);
   if (willShow) renderCurrencyDetail();
 }
 let currencyCalcAmount = 10000, currencyCalcFrom = 'KRW', currencyCalcCode = 'USD';
@@ -8440,6 +8492,8 @@ function initWeatherCurrencyWidgets(){
   fetchCurrencyData();
   setInterval(fetchWeatherData, WEATHER_REFRESH_MS);
   setInterval(fetchWeatherDataJapan, WEATHER_REFRESH_MS);
+  ensureWidgetLocData(weatherWidgetLoc.main); ensureWidgetLocData(weatherWidgetLoc.japan);
+  setInterval(refreshWidgetLocData, WEATHER_REFRESH_MS);
   setInterval(fetchCurrencyData, CURRENCY_REFRESH_MS);
 }
 window.addEventListener('resize', ()=>{
@@ -8672,11 +8726,28 @@ document.addEventListener('click', e=>{
   window.scrollTo({top: scrollTargetY(el), behavior:'smooth'});
   if (history.replaceState) history.replaceState(null, '', '#'+id);
 });
+// [추가] 메뉴바에서 "지금 보고 있는 섹션"을 활성(.active)으로 표시 — 스크롤 위치 기준(메뉴바 아래쪽 선을 지난
+// 섹션 중 가장 아래에서 시작한 것). 전체 보기·상세 같은 창을 닫고 돌아와도 원래 있던 섹션의 메뉴가 활성이다
+function updateNavActive(){
+  const links = Array.from(document.querySelectorAll('#navMenu a[href^="#"]'));
+  if (!links.length) return;
+  const nav = document.getElementById('mainNav');
+  const line = (nav ? nav.getBoundingClientRect().bottom : 54) + 24;
+  const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+  let cur = null, curTop = -Infinity;
+  links.forEach(a=>{
+    const el = document.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    if ((top <= line || atBottom) && top > curTop){ cur = a; curTop = top; }
+  });
+  links.forEach(a=>{ if (a.classList.contains('active') !== (a===cur)) a.classList.toggle('active', a===cur); });
+}
 (function initMobileTopbarScroll(){
   const headlineEl = document.querySelector('.headline');
   let ticking = false;
   function update(){
     ticking = false;
+    updateNavActive();
     const isNarrow = window.innerWidth <= 780 || document.body.classList.contains('widgets-compact');
     if (!isNarrow){
       document.body.classList.remove('mobile-topbar-hidden');
@@ -8701,6 +8772,17 @@ document.addEventListener('click', e=>{
     requestAnimationFrame(update);
   });
   safeRender(update);
+  // [수정] 상세·전체 보기·위젯 팝업 같은 전체 화면 창을 닫거나 앱으로 돌아왔을 때(스크롤 이벤트가 없어도) 탑바 숨김
+  // 상태와 메뉴바 위치(헤드라인 이후엔 항상 화면 맨 위)·활성 메뉴를 곧바로 현재 스크롤 위치에 맞춰 다시 계산한다.
+  // iOS는 body 스크롤 잠금을 풀 때 스크롤 이벤트 없이 위치만 바뀌는 경우가 있어, 짧은 주기의 안전망도 함께 둔다
+  const kick = ()=>{ if (ticking) return; ticking = true; requestAnimationFrame(update); };
+  window.syncNavState = kick;
+  window.addEventListener('pageshow', kick);
+  window.addEventListener('focus', kick);
+  window.addEventListener('orientationchange', kick);
+  document.addEventListener('visibilitychange', kick);
+  if (window.visualViewport){ window.visualViewport.addEventListener('resize', kick); window.visualViewport.addEventListener('scroll', kick); }
+  setInterval(()=>{ if (!document.hidden) kick(); }, 500);
   // [수정] 스크립트 실행 시점엔 이미지 등이 아직 로드 전이라 nav 레이아웃이 최종 값이 아닐 수
   // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
   window.addEventListener('load', update);
@@ -11455,7 +11537,7 @@ function openPostChooser(key){
   el.addEventListener('click', e=>{ if (e.target===el) closePostChooser(); });
   document.body.appendChild(el);
 }
-function closePostChooser(){ const el = document.getElementById('postChooser'); if (el) el.remove(); }
+function closePostChooser(){ if (window.syncNavState) setTimeout(window.syncNavState, 0); const el = document.getElementById('postChooser'); if (el) el.remove(); }
 document.addEventListener('keydown', e=>{ if (e.key==='Escape') closePostChooser(); });
 // ═══ [추가] "여행 이야기" 전체 보기 — 탭(전체/블로그/유튜브) · 지역(연결 상품 기준) · 제목 검색 · 더 보기 ═══
 const _pa = {type:'', region:'', q:'', entries:[], offset:0, done:false, loading:false, pool:null, seq:0};
@@ -11620,6 +11702,7 @@ function openPostArchive(){
   paRenderGrid(); paLoadMore();
 }
 function closePostArchive(){
+  if (window.syncNavState) setTimeout(window.syncNavState, 0);
   const el = document.getElementById('postArchive'); if (el) el.remove();
   document.documentElement.classList.remove('pa-open');
 }
@@ -12373,11 +12456,14 @@ function openProductDetail(catId, idx){
   if (pdSeqPos<0) pdSeqPos=0;
   pdRenderAt(catId, idx);
   document.getElementById('pdOverlay').classList.add('show');
+  document.documentElement.classList.add('pd-open');
   document.body.style.overflow='hidden';
 }
 function closeProductDetail(){
+  if (window.syncNavState) setTimeout(window.syncNavState, 50);
   pdShareToken++; // 진행 중이던 이미지 공유 작업이 있다면 더 이상 화면에 반영하지 않음
   document.getElementById('pdOverlay').classList.remove('show');
+  document.documentElement.classList.remove('pd-open');
   document.body.style.overflow='';
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
   if (pdGalleryObserver){ pdGalleryObserver.disconnect(); pdGalleryObserver=null; }

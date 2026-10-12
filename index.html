@@ -4128,6 +4128,12 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   background:var(--gb-gloss) padding-box,linear-gradient(180deg,#fff27a 0%,#FEE500 55%,#f1d300 100%) padding-box,var(--gb-rim) border-box;
   color:#391B1B;box-shadow:inset 0 0 0 1px rgba(255,226,140,.8),var(--gb-shadow);
 }
+/* [추가] 예약 문의 버튼 앞 아이콘 — 화면의 문의하기(상담) 아이콘 이미지 */
+.pd-contact .pd-contact-ic{width:1.6em;height:1.6em;object-fit:contain;margin:-.3em 0;pointer-events:none}
+/* [추가] 데스크탑: 문의하기 버튼이 3개 이상이면 한 줄에 2개씩(2줄) 배치 */
+@media(min-width:781px){
+  .pd-contact:has(> a:nth-child(3)){grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 .pd-contact a:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
 .pd-contact a:active{filter:brightness(.95);transform:translateY(1px)}
 
@@ -13205,7 +13211,7 @@ function renderProductDetail(p,cat,idx){
   if (kchan)   contactBtns.push(`<a href="${escapeAttr(kchan)}" target="_blank" rel="noopener" class="kakao">💬 카카오 채널</a>`);
   if (kfriend) contactBtns.push(`<a href="${escapeAttr(kfriend)}" target="_blank" rel="noopener" class="kakao">➕ 카톡 친구 추가</a>`);
   // Always offer booking form as fallback
-  contactBtns.push(`<a onclick="closeProductDetail();document.getElementById('bookDest').value='${cat.ko}';window.scrollTo({top:scrollTargetY(document.getElementById('booking')),behavior:'smooth'})">✈ 예약 문의</a>`);
+  contactBtns.push(`<a onclick="closeProductDetail();document.getElementById('bookDest').value='${cat.ko}';window.scrollTo({top:scrollTargetY(document.getElementById('booking')),behavior:'smooth'})"><img class="pd-contact-ic" src="assets/icons/icon-inquiry.png" alt="" width="64" height="64" draggable="false"> 예약 문의</a>`);
   // [추가] 예약 문의 오른쪽에 "📍 위치보기" — 관리자에서 등록한 숙박·골프장 위치 링크(국내 카카오맵 / 해외 구글맵)로 이동.
   // 등록된 링크가 하나도 없으면 버튼을 노출하지 않는다
   if (pdLocLinks(p).length) contactBtns.push(`<a class="loc" role="button" tabindex="0" onclick="openLocChooser()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLocChooser()}">📍 위치보기</a>`);

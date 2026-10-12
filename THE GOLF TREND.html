@@ -10986,6 +10986,7 @@ function refreshCategoryProducts(regionKey){
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
     initProductCarousel(regionKey);
     fitProductCardsToScreen(grid);
+    setTimeout(()=>fitProductCardsToScreen(grid), 600); // 글꼴·이미지가 자리 잡은 뒤 한 번 더 맞춤
   } else {
     // [수정] 등록된 상품이 1개뿐이면 그리드(데스크톱 3열/모바일 가로 스크롤) 안에서 좌측으로
     // 치우쳐 보이지 않도록 .single-item 클래스를 얹어 가로 폭 기준 중앙에 배치한다
@@ -11009,6 +11010,7 @@ function refreshCategoryProducts(regionKey){
     // 데스크톱(가로 스크롤이 없는 그리드)에서는 스크롤할 내용이 없어 사실상 아무 효과가 없다
     initCarouselDrag(grid);
     fitProductCardsToScreen(grid);
+    setTimeout(()=>fitProductCardsToScreen(grid), 600); // 글꼴·이미지가 자리 잡은 뒤 한 번 더 맞춤
     if (mobileLoop){
       // [수정] 범퍼가 맨 앞에 붙으므로, scrollIntoView 대신 grid 자신의 scrollLeft만 직접 계산해
       // 실제 첫 상품이 중앙에 오도록 즉시(애니메이션 없이) 맞춘다(여행이야기 캐러셀과 동일한 방식)
@@ -11159,8 +11161,13 @@ function fitProductCardsToScreen(grid){
   if (!cards.length) return;
   // 화면 높이에서 카드 위에 놓이는 고정 요소(내비게이션·지역/국가 선택 바·기간별 필터 등)와
   // 아래쪽 여백을 위한 예산을 뺀 나머지가 카드에 배정할 수 있는 높이다
-  const available = window.innerHeight - 320;
-  const minScale = 0.72;
+  // [수정] 모바일 여행지 섹션은 메뉴바(54px) + 국가별/권역별·시즌별/월별 고정 바(약 93px) 아래에서 카드가 시작하므로, 그 두 영역과
+  // 카드 위·아래 여백(약 20px)을 뺀 나머지 화면 높이 안에 카드(접힌 상태 기준)가 통째로 들어오도록 배율을 계산한다.
+  // 카드에 정보가 많아 길어져도 화면에 다 들어오게 하되, 글자가 너무 작아지지 않도록 최소 배율(0.6)은 둔다
+  const navEl = document.getElementById('mainNav');
+  const navH = navEl ? navEl.getBoundingClientRect().height : 54;
+  const available = window.innerHeight - navH - (typeof DEST_BAR_H==='number' ? DEST_BAR_H+1 : 93) - 28;
+  const minScale = 0.6;
   // [버그 수정] 예전에는 카드마다 따로 높이를 재서 각자 다른 zoom을 줬다 — 카드들이 한 줄에서 같은
   // 높이로 늘어나는(stretch) 탓에, 측정 순서에 따라(특히 모바일 주소창이 나타나고 사라질 때마다
   // 발생하는 resize 이후) 내용이 적은 카드는 덜 축소되고 많은 카드는 더 축소되어 카드끼리 가로 폭·
@@ -11168,9 +11175,27 @@ function fitProductCardsToScreen(grid){
   // 같은 배율을 계산해 한 줄의 모든 카드에 똑같이 적용한다
   cards.forEach(card=>{ card.style.zoom = ''; });
   let tallest = 0;
-  cards.forEach(card=>{ tallest = Math.max(tallest, card.offsetHeight); }); // offsetHeight — 좌우 카드 축소(transform)와 무관한 실제 높이
-  const z = (available>0 && tallest>available) ? Math.max(minScale, available/tallest) : 0;
+  // 펼쳐 둔 카드(.expanded)는 일부러 길게 본 것이므로 배율 계산에서 제외(접힌 카드 기준으로 맞춘다)
+  cards.forEach(card=>{ if (!card.classList.contains('expanded')) tallest = Math.max(tallest, card.offsetHeight); }); // offsetHeight — 좌우 카드 축소(transform)와 무관한 실제 높이
+  let z = (available>0 && tallest>available) ? Math.max(minScale, available/tallest) : 0;
   if (z) cards.forEach(card=>{ card.style.zoom = z; });
+  // [추가] zoom은 줄어든 글자 크기만큼 줄바꿈도 달라져 높이가 정확히 비례해 줄지 않는다 — 실제로 그려진 높이를 다시 재서
+  // 화면 안에 들어올 때까지(최대 3회) 배율을 보정한다. 좌우 카드는 모바일에서 0.9배로 축소돼 있으므로 그만큼 되돌려 잰다
+  for (let i=0; z && i<3; i++){
+    let actual = 0;
+    cards.forEach(card=>{
+      if (card.classList.contains('expanded')) return;
+      let sc = 1;
+      try{ const tf = getComputedStyle(card).transform; if (tf && tf!=='none') sc = new DOMMatrix(tf).d || 1; }catch(e){}
+      const h = card.getBoundingClientRect().height / sc;
+      if (h>actual) actual=h;
+    });
+    if (!actual || actual <= available) break; // 이미 들어오면 그대로(줄바꿈 때문에 높이가 비선형이라 키우는 방향의 보정은 하지 않는다)
+    const nz = Math.min(1, Math.max(minScale, z*available/actual));
+    if (Math.abs(nz-z) < 0.004) break;
+    z = nz;
+    cards.forEach(card=>{ card.style.zoom = z; });
+  }
 }
 window.addEventListener('resize', ()=>{
   document.querySelectorAll('.product-grid, .pc-track').forEach(fitProductCardsToScreen);

@@ -468,6 +468,12 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(108%)로
    자연스럽게 커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다. transform-origin:top이라 카드
    윗변은 그 자리에 고정된 채 아래·양옆으로만 커져 상단 내비게이션 바를 절대 침범하지 않는다 */
+/* [추가] 상품이 3개 이하라 캐러셀이 아닌 그리드(.product-grid)로 보이는 경우(해외 국가 등)도 캐러셀과 똑같이 호버 시 108%로 확대 */
+@media(hover:hover) and (min-width:781px){
+  .product-grid{--pc-hover-scale:1.08}
+  .product-grid>.product{transform-origin:top}
+  .product-grid>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
+}
 @media(hover:hover){.pc-track>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}}
 /* [수정] 데스크톱(3장 노출)에서는 3장 중 가운데(중앙에 가장 가까운) 카드만 선명하게 두고 양옆
    카드는 반투명 처리해 현재 선택된 카드의 가독성을 높인다 — 요금 포스터 캐러셀의 pkg-dim과 동일한
@@ -10970,12 +10976,12 @@ function refreshCategoryProducts(regionKey){
   if (tagEl) tagEl.textContent=cat.tagline+` · 총 ${filtered.length}개 상품`+(filterOn && filtered.length!==allProducts.length?` (전체 ${allProducts.length}개 중 필터 적용)`:'');
   pauseVideosIn(grid); // 새로 그리기 전에 기존 상품 카드의 자동재생 동영상 정지
   if (filtered.length===0){
-    grid.className='product-grid';
+    grid.className='product-grid'; grid.style.paddingBottom='';
     grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="big">🔧</div><p>${filterOn?'선택하신 시기에 맞는 상품이 없습니다.':'이 지역의 상품은 곧 업데이트됩니다.'}</p></div>`;
   } else if (allProducts.length>3){
     // [수정] 화면 배치는 "전체"일 때와 같게 — 이 국가/권역의 전체 상품이 4개 이상이면, 시즌/월 필터로
     // 남은 상품이 3개 이하여도 같은 캐러셀(이전·다음 버튼·도트·카운터) 배치로 보여준다
-    grid.className='product-carousel-host';
+    grid.className='product-carousel-host'; grid.style.paddingBottom='';
     grid.innerHTML=productCarouselHTML(filtered.map(x=>x.p), selectedId, regionKey, filtered.map(x=>x.i));
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
     initProductCarousel(regionKey);
@@ -11013,6 +11019,7 @@ function refreshCategoryProducts(regionKey){
       });
     }
     initMobileCardFocus(grid); // [추가] 모바일 가운데 카드 강조
+    gridRecalcPadding(grid);   // [추가] 데스크탑 호버 확대용 아래 여유 공간
   }
 }
 
@@ -11228,15 +11235,38 @@ function pcRecalcPadding(regionKey){
   // window.innerWidth<=1024에서 pc-dim도 함께 꺼지므로(pcUpdateCenterDim과 동일 기준) 호버 여유
   // 공간이 통째로 낭비되어 카드와 바로 아래 네비게이션 바(.pc-controls, 이전/다음·도트·카운터)
   // 사이 간격이 불필요하게 넓어 보였다 — 그 구간에서는 최소 여백만 남긴다
-  if (window.innerWidth<=1024){
+  // [수정] 호버 확대는 모바일(≤780px)이 아니라 마우스가 있는 화면(≥781px)에서 일어나므로, 창을 좁혀 2장씩 보이는
+  // 781~1024px 구간에서도 아래쪽 여유 공간을 확보한다(예전엔 1024px 이하에서 16px뿐이라 확대된 카드 아래가 잘렸다)
+  if (window.innerWidth<=780){
     track.style.paddingBottom = '16px';
     return;
   }
+  watchCardHeights(track, ()=>pcRecalcPadding(regionKey));
   let maxH = 0;
   cards.forEach(c=>{ const h=c.getBoundingClientRect().height; if (h>maxH) maxH=h; });
   const scale = parseFloat(getComputedStyle(track).getPropertyValue('--pc-hover-scale')) || 1.08;
   const growth = maxH * (scale - 1);
   track.style.paddingBottom = Math.ceil(growth + PC_HOVER_SHADOW_SPREAD + 16) + 'px'; // +16px 추가 안전 여유
+}
+// [추가] 카드 높이가 나중에 바뀌어도(글꼴·이미지 로딩, 카드 내용 변경) 호버 확대용 아래 여유 공간을 다시 계산
+function watchCardHeights(container, fn){
+  if (!container || container._cardRO || typeof ResizeObserver==='undefined') return;
+  let t=null;
+  container._cardRO = new ResizeObserver(()=>{ clearTimeout(t); t=setTimeout(fn, 60); });
+  container.querySelectorAll('.product').forEach(c=>container._cardRO.observe(c));
+}
+// [추가] 상품이 3개 이하라 캐러셀이 아닌 일반 그리드(.product-grid)도 캐러셀과 똑같이 마우스를 올리면 카드가 확대된다(해외 상품 포함).
+// 확대돼 커지는 높이 + 그림자만큼 그리드 아래쪽에 여유 공간을 확보해 잘리거나 아래 요소와 겹치지 않게 한다
+function gridRecalcPadding(grid){
+  if (!grid || grid.classList.contains('product-carousel-host')) return;
+  if (window.innerWidth<=780){ grid.style.paddingBottom=''; return; }
+  const cards = grid.querySelectorAll('.product');
+  if (!cards.length){ grid.style.paddingBottom=''; return; }
+  watchCardHeights(grid, ()=>gridRecalcPadding(grid));
+  let maxH = 0;
+  cards.forEach(c=>{ const h=c.offsetHeight; if (h>maxH) maxH=h; });
+  const scale = parseFloat(getComputedStyle(grid).getPropertyValue('--pc-hover-scale')) || 1.08;
+  grid.style.paddingBottom = Math.ceil(maxH*(scale-1) + PC_HOVER_SHADOW_SPREAD + 8) + 'px';
 }
 // [수정] 데스크톱(3장 노출)에서 트랙 중앙에 가장 가까운(=가운데) 카드만 선명하게 두고 나머지는
 // 반투명(.pc-dim) 처리 — 요금 포스터 캐러셀(pkgUpdateActiveCard)과 동일한 "가장 가까운 카드 찾기"
@@ -11317,6 +11347,7 @@ let pcResizeTimer=null;
 window.addEventListener('resize', ()=>{
   clearTimeout(pcResizeTimer);
   pcResizeTimer=setTimeout(()=>{
+    document.querySelectorAll('.product-grid').forEach(gridRecalcPadding);
     ['domestic','overseas'].forEach(regionKey=>{
       const track = document.getElementById('pcTrack_'+regionKey);
       if (track){

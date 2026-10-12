@@ -4064,29 +4064,26 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 }
 
 
-/* ═══ [추가] 모바일 시즌별/월별 보기 고정 바 — 메뉴바처럼 가로 폭을 꽉 채우고 한 줄로 노출 ═══ */
+/* ═══ [추가] 모바일 국가별·권역별 + 시즌별·월별 보기 고정 바 — 메뉴바 바로 아래 가로 폭을 꽉 채운 두 줄(위: 국가/권역, 아래: 시즌/월).
+   바탕색과 버튼은 데스크탑 상품 목록 패널(.category-view 크림 바탕 + .cv-nav-item/.period-filter-btn 골드 알약 버튼)과 똑같은 것을 그대로 쓴다 ═══ */
 .dest-period-wrap{display:none}
 @media(max-width:780px){
   .dest-period-wrap{display:block;position:sticky;top:54px;height:0;z-index:190;pointer-events:none}
   .dest-period-bar{
-    position:absolute;left:calc(50% - 50vw);width:100vw;top:0;height:46px;box-sizing:border-box;
-    background:rgba(0,0,0,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-    border-bottom:1px solid rgba(221,179,103,.15);
+    position:absolute;left:calc(50% - 50vw);width:100vw;top:0;box-sizing:border-box;
+    background:#FDFBF6;border-bottom:1px solid rgba(10,23,48,.10);box-shadow:0 6px 16px rgba(10,23,48,.14);
     opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;pointer-events:none;
   }
   .dest-period-wrap.show .dest-period-bar{opacity:1;transform:none;pointer-events:auto}
-  .dest-period-bar .dpb-inner{display:flex;align-items:center;width:100%;height:100%;transition:opacity .16s}
-  .dest-period-bar.swap .dpb-inner{opacity:0}
-  .dest-period-bar .dpb-fixed{flex:0 0 auto;display:flex;align-items:center;height:100%;padding:0 10px 0 14px;border-right:1px solid rgba(255,255,255,.14)}
+  .dest-period-bar .dpb-row{display:flex;align-items:center;width:100%;height:46px;transition:opacity .16s}
+  .dest-period-bar .dpb-row + .dpb-row{border-top:1px solid rgba(10,23,48,.08)}
+  .dest-period-bar.swap .dpb-row{opacity:0}
+  .dest-period-bar .dpb-fixed{flex:0 0 auto;display:flex;align-items:center;height:100%;padding:0 10px 0 14px;border-right:1px solid rgba(10,23,48,.10)}
   .dest-period-bar .dpb-track{flex:1 1 auto;min-width:0;height:100%;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;padding:0 14px 0 10px;overflow-x:auto;scrollbar-width:none}
+  .dest-period-bar .dpb-track{scroll-padding-left:10px}
   .dest-period-bar .dpb-track::-webkit-scrollbar{display:none}
-  .dest-period-bar .period-filter-btn,.dest-period-bar .period-filter-btn:hover,.dest-period-bar .period-filter-btn:active{
-    flex:0 0 auto;white-space:nowrap;padding:5px 14px;font-size:.78rem;font-weight:500;border-radius:100px;
-    border:1.5px solid rgba(255,255,255,.28);background:transparent;color:rgba(247,245,240,.85);box-shadow:none;text-shadow:none;transform:none;
-  }
-  .dest-period-bar .period-filter-btn.active,.dest-period-bar .period-filter-btn.active:hover,.dest-period-bar .period-filter-btn.active:active{
-    background:var(--gold);border-color:var(--gold);color:var(--pine-deep);font-weight:700;
-  }
+  .dest-period-bar .dpb-track .cv-nav-item,.dest-period-bar .dpb-track .period-filter-btn,.dest-period-bar .dpb-fixed .period-filter-btn{flex:0 0 auto;white-space:nowrap}
+  .dest-period-bar .dpb-track .cv-nav-item{padding:5px 14px;font-size:.78rem}
 }
 
 /* ═══════════════ [추가] 골드 버튼 디자인 시스템 ═══════════════
@@ -10458,7 +10455,7 @@ function regionNavHTML(regionKey, selectedId){
 // [추가] 모바일 시즌별/월별 고정 바 — 전체(고정) + 현재 기준 "이전·현재·다음" 순서로 시작해 좌/우로 나머지를 볼 수 있다.
 // 해외=시즌(전체 + 이전 시즌·현재 시즌·다음 시즌·남은 시즌), 국내=월(전체 + 이전달·현재달·다음달·…). 화면에 보이는 지역이
 // 해외에서 국내로(또는 반대로) 바뀌면 바 내용이 시즌별↔월별로 부드럽게 교체된다
-const DEST_BAR_H = 46;
+const DEST_BAR_H = 92; // 두 줄(46px × 2)
 let destBarRegion = null;
 function periodBarItems(regionKey){
   if (regionKey==='overseas'){
@@ -10468,18 +10465,40 @@ function periodBarItems(regionKey){
   const cur = currentMonthNum();
   return Array.from({length:12}, (_,i)=>{ const m = ((cur-2+i+12)%12)+1; return {value:m, label:m+'월'}; });
 }
+// 고정 바 윗줄의 국가/권역 버튼을 누르면 — 이미 열려 있는 곳이면 닫지 않고 그 패널로 이동만, 아니면 데스크탑 카드 선택과 같이 열기
+function pickDestCategory(id){
+  const isOverseas = CATEGORIES.overseas.some(c=>c.id===id);
+  const cur = isOverseas ? selectedOverseasId : selectedDomesticId;
+  if (cur===id){
+    const panel = document.getElementById(isOverseas?'categoryPanelOverseas':'categoryPanelDomestic');
+    if (panel) smoothScrollToEl(panel, 400, -(DEST_BAR_H+8));
+    return;
+  }
+  selectCategory(id);
+}
 function destPeriodBarHTML(regionKey){
   const active = catFilter[regionKey];
   const arg = v => v===null ? 'null' : (typeof v==='number' ? v : `'${v}'`);
   const btn = (v, label, cls) => `<button type="button" class="period-filter-btn ${cls||''} ${active===v||(v===null&&!active)?'active':''}" onclick="setPeriodFilter('${regionKey}',${arg(v)})">${label}</button>`;
-  return `<div class="dpb-inner" data-region="${regionKey}"><div class="dpb-fixed">${btn(null,'전체','dpb-all')}</div>`
+  const selectedId = regionKey==='overseas' ? selectedOverseasId : selectedDomesticId;
+  const navItems = visibleCategories(regionKey).map(c=>`<button type="button" class="cv-nav-item ${c.id===selectedId?'active':''}" onclick="pickDestCategory('${c.id}')">${escapeAttr(c.ko)}</button>`).join('');
+  return `<div class="dpb-row dpb-nav" data-region="${regionKey}"><div class="dpb-track cv-nav-track">${navItems}</div></div>`
+    + `<div class="dpb-row dpb-period" data-region="${regionKey}"><div class="dpb-fixed">${btn(null,'전체','dpb-all')}</div>`
     + `<div class="period-filter-track dpb-track">${periodBarItems(regionKey).map(it=>btn(it.value,it.label)).join('')}</div></div>`;
 }
-function renderDestPeriodBar(){
+function renderDestPeriodBar(opts){
+  opts = opts || {};
   const host = document.getElementById('destPeriodBar'); if (!host) return;
+  // 렌더 전 스크롤 위치를 기억해 다시 그려도 두 줄이 있던 자리에서 움직이지 않게 한다(지역이 바뀌어 새로 그릴 땐 처음부터)
+  const keep = opts.reset ? [] : Array.from(host.querySelectorAll('.dpb-track')).map(t=>t.scrollLeft);
   host.innerHTML = destPeriodBarHTML(destBarRegion || 'overseas');
-  const track = host.querySelector('.dpb-track');
-  if (track){ initCarouselDrag(track); revealActiveFilterChip(track); }
+  host.querySelectorAll('.dpb-track').forEach((t,i)=>{ initCarouselDrag(t); if (keep[i]) t.scrollLeft = keep[i]; });
+  // 선택된 국가/권역·기간이 화면 밖이면 그 칩이 보이도록 (처음 그릴 때만 — 이후엔 사용자가 민 위치 유지)
+  if (!keep.length || opts.revealNav){
+    const navTrack = host.querySelector('.dpb-nav .dpb-track'); const act = navTrack && navTrack.querySelector('.cv-nav-item.active');
+    if (act) navTrack.scrollLeft = Math.max(0, act.offsetLeft - navTrack.offsetLeft - (navTrack.clientWidth-act.offsetWidth)/2);
+    if (!keep.length) revealActiveFilterChip(host.querySelector('.dpb-period .dpb-track'));
+  }
 }
 function updateDestPeriodBar(){
   const wrap = document.getElementById('destPeriodWrap'), sec = document.getElementById('destinations');
@@ -10497,9 +10516,9 @@ function updateDestPeriodBar(){
   const first = destBarRegion===null;
   destBarRegion = region;
   const host = document.getElementById('destPeriodBar');
-  if (first || !host){ renderDestPeriodBar(); return; }
+  if (first || !host){ renderDestPeriodBar({reset:true}); return; }
   host.classList.add('swap');
-  setTimeout(()=>{ renderDestPeriodBar(); host.classList.remove('swap'); }, 160);
+  setTimeout(()=>{ renderDestPeriodBar({reset:true}); host.classList.remove('swap'); }, 160);
 }
 // [Phase] 국가별(해외)=시즌, 권역별(국내)=월 단위 기간별 소팅 버튼 — 국가/지역 선택 버튼 바로 아래 배치
 function periodFilterHTML(regionKey){
@@ -10576,6 +10595,7 @@ function renderRegionGrid(regionKey){
   gridEl.innerHTML=visible.map(c=>catCardHTML(c, c.id===selectedId)).join('');
   const panelHost=document.getElementById(regionKey==='overseas'?'catPanelHostOverseas':'catPanelHostDomestic');
   panelHost.innerHTML=categoryPanelHTML(regionKey);
+  if (destBarRegion===regionKey) renderDestPeriodBar({revealNav:true}); // 고정 바의 국가/권역 선택 표시를 맞춘다
   if (selectedId){
     refreshCategoryProducts(regionKey);
     // [Phase] 패널이 새로 그려질 때마다(카드 선택/전환) 권역·국가 이동 버튼 줄(.cv-nav-track)과

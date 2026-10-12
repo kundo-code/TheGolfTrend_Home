@@ -2641,7 +2641,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   border-radius:16px;border:1px solid rgba(255,255,255,.55);
   box-shadow:0 8px 24px rgba(10,23,48,.18);
   /* [추가] 관리자 패널 "위젯 전체 설정"에서 조절하는 글자 색상 — 미설정 시 기존 색(--pine-deep) 그대로 */
-  padding:10px 14px;color:var(--widget-font-color, var(--pine-deep));overflow:hidden;box-sizing:border-box;
+  padding:10px 14px;color:var(--widget-font-color, #fff);overflow:hidden;box-sizing:border-box;
 }
 /* [추가] 위젯을 감싸는 래퍼(.mobile-widget-row/.widget-drag-wrap)는 모바일 전용 레이아웃이다.
    웹에서는 display:contents로 스스로는 박스를 만들지 않아, 자식 .widget-box가 기존처럼
@@ -2962,10 +2962,10 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 /* [추가] 날씨·환율 작은 위젯(.widget-box) 안의 텍스트만 관리자 글자 색상 설정을 따르도록 범위를
    좁힘 — 상세 팝업(.widget-detail-card)은 같은 클래스명(.wgt-loading/.cur-name 등)을 재사용하지만
    .widget-box 밖에 있어 이 규칙의 영향을 받지 않고 항상 기존 색을 유지한다 */
-.widget-box .wgt-loading{color:color-mix(in srgb, var(--widget-font-color, #030D26) 45%, transparent)}
-.widget-box .wx-loc{color:color-mix(in srgb, var(--widget-font-color, #030D26) 55%, transparent)}
-.widget-box .wx-label{color:color-mix(in srgb, var(--widget-font-color, #030D26) 70%, transparent)}
-.widget-box .wx-sub{color:color-mix(in srgb, var(--widget-font-color, #030D26) 50%, transparent)}
+.widget-box .wgt-loading{color:color-mix(in srgb, var(--widget-font-color, #fff) 45%, transparent)}
+.widget-box .wx-loc{color:color-mix(in srgb, var(--widget-font-color, #fff) 55%, transparent)}
+.widget-box .wx-label{color:color-mix(in srgb, var(--widget-font-color, #fff) 70%, transparent)}
+.widget-box .wx-sub{color:color-mix(in srgb, var(--widget-font-color, #fff) 50%, transparent)}
 .cur-title{font-size:.8rem;font-weight:700;margin-bottom:4px}
 /* [수정] 위젯 안의 실시간 환율은 국가별 통화 항목 사이에 구분선을 두고 한 줄로 가로로 길게
    배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
@@ -2987,7 +2987,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 .cur-list .cur-row:last-child{border-right:none}
 .cur-flag{font-size:1rem}
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
-.widget-box .cur-name{color:color-mix(in srgb, var(--widget-font-color, #030D26) 70%, transparent)}
+.widget-box .cur-name{color:color-mix(in srgb, var(--widget-font-color, #fff) 70%, transparent)}
 .cur-list .cur-name{flex:none}
 .cur-rate{font-weight:700}
 /* [수정] 세로 길이를 2px 늘리기 위해 상하 padding만 5px→6px로(좌우는 그대로 5px) — 버튼 폭은
@@ -8001,7 +8001,7 @@ const WIDGET_CFG_DEFAULT = {
   // 각 위젯 자신의 값에 곱해지고(기본값 100%는 곱해도 값이 그대로라 아무 효과 없음), 가로·세로
   // 위치는 각 위젯 자신의 값에 더해진다(기본값 0px 역시 더해도 변화 없음) — 즉 기본 상태에서는
   // 전체 설정이 개별 위젯에 아무 영향을 주지 않다가, 관리자가 이 값을 조절하면 3개 위젯이 함께 반응한다
-  // [추가] fontColor: null이면 기본 글자색(--pine-deep) 그대로, 값이 있으면 3개 위젯 전체 글자색을
+  // [추가] fontColor: null이면 기본 글자색(흰색) 그대로, 값이 있으면 3개 위젯 전체 글자색을
   // 그 색으로 덮어쓴다(개별 위젯 단위가 아닌 전체 설정에만 존재 — 3개 위젯이 항상 같은 색을 쓰도록)
   globalWidget:{scale:100,opacity:100,x:0,y:0,fontColor:null},
 };
@@ -8119,7 +8119,7 @@ function applyWidgetConfigCSS(){
   setH('--weather-h', w.h); setH('--weather-jp-h', wj.h); setH('--currency-h', c.h);
   root.style.setProperty('--popup-opacity', p.opacity/100);
   // [추가] 위젯 전체 설정의 글자 색상 — 값이 없으면(기본) 변수를 아예 없애 CSS의 기본값
-  // (var(--widget-font-color, var(--pine-deep)))이 그대로 적용되게 한다
+  // (var(--widget-font-color, #fff), 흰색)이 그대로 적용되게 한다
   if (g.fontColor) root.style.setProperty('--widget-font-color', g.fontColor);
   else root.style.removeProperty('--widget-font-color');
   if (typeof syncWidgetLayoutMode==='function') syncWidgetLayoutMode(); // 환율 위젯 크기 조절 시 로고와의 겹침 여부도 다시 판정
@@ -9297,7 +9297,7 @@ function renderAdminWidgets(){
       <span class="file-hint" id="widgetXformVals_globalWidget">크기 ${g.scale}% · 투명도 ${g.opacity}% · 가로 ${g.x}px · 세로 ${g.y}px</span>
       <div class="theme-color-row" style="margin-top:8px">
         <span class="tc-label">글자 색상</span>
-        <input type="color" value="${escapeAttr(g.fontColor||'#030D26')}" onchange="setWidgetConfig('globalWidget',{fontColor:this.value})">
+        <input type="color" value="${escapeAttr(g.fontColor||'#ffffff')}" onchange="setWidgetConfig('globalWidget',{fontColor:this.value})">
         ${g.fontColor?`<button type="button" class="file-btn" onclick="setWidgetConfig('globalWidget',{fontColor:null})">기본값</button>`:''}
       </div>
       ${gChanged?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('globalWidget')" style="margin-top:6px">전체 설정 초기화</button>`:''}

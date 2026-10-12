@@ -636,8 +636,7 @@ section.block{padding:100px 24px;position:relative}
 .airfare-excluded{color:#D6293E !important}
 .airfare-normal{color:#1d4ed8 !important}
 .product-divider{border-top:1px dashed rgba(10,23,48,.14);margin-bottom:10px}
-/* [추가] 카드 펼쳐보기 버튼 — 모바일에서만 노출(데스크탑은 체크포인트 박스를 항상 펼쳐서 보여준다) */
-.product-expand{display:none}
+
 /* [수정] 기본 바탕색 — 체크포인트1(참고사항, 위쪽) RGB(245,245,245) / 체크포인트2(주의사항, 카드 태그 아래)
    RGB(255,245,245). 글자는 두 박스 모두 볼드 해제 + RGB(100,100,100). 박스 색상은 관리자에서 바꿀 수 있다 */
 .product-tag-row + .product-divider-cp2{margin-top:2px}
@@ -4072,19 +4071,20 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 }
 
 
-/* [추가] 모바일 상품 카드 — 📍숙소위치 위쪽 기본정보와 가격만 보이고, 그 아래(비행·이동 정보·체크포인트·태그)는 접어 두며 "펼쳐보기"로 펼친다 */
-@media(max-width:780px){
-  .product.has-cp:not(.expanded) .card-fold,
-  .product.has-cp:not(.expanded) .product-checkpoint1,
-  .product.has-cp:not(.expanded) .product-divider-cp1,
-  .product.has-cp:not(.expanded) .product-divider-cp2,
-  .product.has-cp:not(.expanded) .product-checkpoint2{display:none}
-  .product-expand{display:flex;align-items:center;justify-content:center;align-self:center;margin:0 0 12px;padding:6px 18px;border-radius:100px;
-    border:1.5px solid rgba(221,179,103,.55);background:rgba(221,179,103,.14);color:var(--gold-deep);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
-  .product-expand .pe-close{display:none}
-  .product.expanded .product-expand .pe-open{display:none}
-  .product.expanded .product-expand .pe-close{display:inline}
-}
+/* [추가] 상품 카드(모바일·데스크탑 공통) — 📍숙소위치 위쪽 기본정보와 가격만 보이고, 그 아래(비행·이동 정보·체크포인트·태그)는 기본으로 접어 두며 "펼쳐보기"로 펼친다 */
+.product.has-cp:not(.expanded) .card-fold,
+.product.has-cp:not(.expanded) .product-checkpoint1,
+.product.has-cp:not(.expanded) .product-divider-cp1,
+.product.has-cp:not(.expanded) .product-divider-cp2,
+.product.has-cp:not(.expanded) .product-checkpoint2{display:none}
+.product-expand{display:flex;align-items:center;justify-content:center;align-self:center;margin:0 0 12px;padding:6px 18px;border-radius:100px;
+  border:1.5px solid rgba(221,179,103,.55);background:rgba(221,179,103,.14);color:var(--gold-deep);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+.product-expand .pe-close{display:none}
+.product.expanded .product-expand .pe-open{display:none}
+.product.expanded .product-expand .pe-close{display:inline}
+/* [버그 수정] 한 줄의 카드는 기본으로 가장 긴 카드 높이에 맞춰 늘어난다(stretch) — 카드를 여러 장 펼쳐 둔 뒤 하나를 접어도 다른 펼친 카드 높이에
+   끌려 접힌 길이로 돌아오지 않았다. 펼친 카드가 하나라도 있으면 각 카드가 자기 내용 높이만큼만 차지하게 해 접으면 바로 접힌 길이로 돌아온다 */
+.product-grid:has(> .product.expanded),.pc-track:has(> .product.expanded){align-items:flex-start}
 
 /* ═══ [추가] 모바일 국가별·권역별 + 시즌별·월별 보기 고정 바 — 메뉴바 바로 아래 가로 폭을 꽉 채운 두 줄(위: 국가/권역, 아래: 시즌/월).
    바탕색과 버튼은 데스크탑 상품 목록 패널(.category-view 크림 바탕 + .cv-nav-item/.period-filter-btn 골드 알약 버튼)과 똑같은 것을 그대로 쓴다 ═══ */
@@ -10791,8 +10791,8 @@ function cardCp2HTML(p){
   if (!richToPlain(v) && !/<table/i.test(v)) return '';
   return `<div class="product-divider product-divider-cp2"></div><div class="product-checkpoint2"${cpBoxStyleAttr(p.checkpoint1Bg)}>${cpBodyHTML(v)}</div>`;
 }
-// [추가] 모바일 상품 카드 접기/펼치기 — 접힌 카드(체크포인트 박스가 있는 카드)를 누르면 상세로 가지 않고 펼쳐지며,
-// 펼쳐진 카드를 누르면 상세 페이지로 이동한다. "자세히 →"는 항상 바로 상세로 이동. 데스크탑은 항상 바로 상세로 이동
+// [추가] 상품 카드 접기/펼치기(모바일·데스크탑 공통) — 접힌 카드(접을 내용이 있는 카드)를 누르면 상세로 가지 않고 펼쳐지며,
+// 펼쳐진 카드를 누르면 상세 페이지로 이동한다. "자세히 →"는 항상 바로 상세로 이동
 function toggleProductCard(e, btn){
   if (e) e.stopPropagation();
   const card = btn.closest('.product'); if (!card) return;
@@ -10802,8 +10802,7 @@ function toggleProductCard(e, btn){
 function productCardClick(e, catId, idx, card){
   const t = e && e.target;
   const onDetailsBtn = t && t.closest && t.closest('.details');
-  const isMobile = window.matchMedia && window.matchMedia('(max-width:780px)').matches;
-  if (isMobile && card && card.classList.contains('has-cp') && !card.classList.contains('expanded') && !onDetailsBtn){
+  if (card && card.classList.contains('has-cp') && !card.classList.contains('expanded') && !onDetailsBtn){
     const btn = card.querySelector('.product-expand');
     if (btn) toggleProductCard(null, btn); else card.classList.add('expanded');
     return;

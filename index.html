@@ -2641,7 +2641,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   border-radius:16px;border:1px solid rgba(255,255,255,.55);
   box-shadow:0 8px 24px rgba(10,23,48,.18);
   /* [추가] 관리자 패널 "위젯 전체 설정"에서 조절하는 글자 색상 — 미설정 시 기존 색(--pine-deep) 그대로 */
-  padding:10px 14px;color:var(--widget-font-color, #fff);overflow:hidden;box-sizing:border-box;
+  padding:10px 14px;color:var(--widget-font-color, var(--widget-default-fc,#fff));overflow:hidden;box-sizing:border-box;
 }
 /* [추가] 위젯을 감싸는 래퍼(.mobile-widget-row/.widget-drag-wrap)는 모바일 전용 레이아웃이다.
    웹에서는 display:contents로 스스로는 박스를 만들지 않아, 자식 .widget-box가 기존처럼
@@ -2744,6 +2744,10 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
       url(assets/leather-navy-fine.jpg) 0 0/calc(300px / var(--weather-jp-scale,1)) calc(300px / var(--weather-jp-scale,1)) repeat,#0a0f18;
   }
 }
+/* [수정] 위젯이 탑바 위에 떠 있을 때는 글자가 흰색(기본), 화면이 좁아져 메뉴바 아래 줄로 내려오는 경우(모바일·컴팩트)에는
+   밝은 배경 위에 놓이므로 검정색이 기본이다. 관리자 "위젯 전체 설정 > 글자 색상"으로 정한 값은 두 경우 모두 그대로 우선한다 */
+@media(max-width:780px){ .widget-box{--widget-default-fc:#000} }
+body.widgets-compact .widget-box{--widget-default-fc:#000}
 /* [수정] 웹(데스크톱)이라도 화면 가로폭이 좁아져 위젯 클러스터가 로고 영역과 겹칠 정도가 되면,
    JS(syncWidgetLayoutMode)가 body에 widgets-compact 클래스를 붙여 모바일과 같은 방식(메뉴바 바로
    아래 별도 줄)으로 위젯을 내려서 배치한다. 이미 모바일 레이아웃에 쓰던 .mobile-widget-row/
@@ -2962,10 +2966,10 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 /* [추가] 날씨·환율 작은 위젯(.widget-box) 안의 텍스트만 관리자 글자 색상 설정을 따르도록 범위를
    좁힘 — 상세 팝업(.widget-detail-card)은 같은 클래스명(.wgt-loading/.cur-name 등)을 재사용하지만
    .widget-box 밖에 있어 이 규칙의 영향을 받지 않고 항상 기존 색을 유지한다 */
-.widget-box .wgt-loading{color:color-mix(in srgb, var(--widget-font-color, #fff) 45%, transparent)}
-.widget-box .wx-loc{color:color-mix(in srgb, var(--widget-font-color, #fff) 55%, transparent)}
-.widget-box .wx-label{color:color-mix(in srgb, var(--widget-font-color, #fff) 70%, transparent)}
-.widget-box .wx-sub{color:color-mix(in srgb, var(--widget-font-color, #fff) 50%, transparent)}
+.widget-box .wgt-loading{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 45%, transparent)}
+.widget-box .wx-loc{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 55%, transparent)}
+.widget-box .wx-label{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 70%, transparent)}
+.widget-box .wx-sub{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 50%, transparent)}
 .cur-title{font-size:.8rem;font-weight:700;margin-bottom:4px}
 /* [수정] 위젯 안의 실시간 환율은 국가별 통화 항목 사이에 구분선을 두고 한 줄로 가로로 길게
    배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
@@ -2987,7 +2991,7 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
 .cur-list .cur-row:last-child{border-right:none}
 .cur-flag{font-size:1rem}
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
-.widget-box .cur-name{color:color-mix(in srgb, var(--widget-font-color, #fff) 70%, transparent)}
+.widget-box .cur-name{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 70%, transparent)}
 .cur-list .cur-name{flex:none}
 .cur-rate{font-weight:700}
 /* [수정] 세로 길이를 2px 늘리기 위해 상하 padding만 5px→6px로(좌우는 그대로 5px) — 버튼 폭은
@@ -4055,12 +4059,34 @@ html:not(.is-admin-ui) .admin-fab{display:none!important}
   /* [수정] 시즌별/월별 보기와 제목(설명 문단) 사이의 줄 간격을 지금보다 50%로 좁힘 —
      cv-head 아래쪽 여백(24px→12px, 20px→10px)과 period-filter-row 위쪽 여백(14px→7px)을 각각 절반으로 */
   .cv-head{padding-bottom:12px;margin-bottom:10px}
-  .period-filter-row{padding-top:7px}
-  /* [수정] 모바일은 상품 목록 패널(.category-view)의 밝은 바탕을 없애 어두운 섹션 배경 위에 바로 놓이므로,
-     시즌별/월별 보기 제목·버튼(진한 회색 글자)이 잘 안 보였다 — 데스크톱 패널과 같은 밝은 바탕(#FDFBF6)
-     박스로 감싸고 버튼도 데스크톱과 같은 모양 그대로 보이게 한다 */
-  .period-filter-row{background:#FDFBF6;border:1px solid rgba(10,23,48,.08);border-radius:16px;box-shadow:0 6px 18px rgba(10,23,48,.12);padding:10px 12px 12px;margin-bottom:12px}
-  .period-filter-row .period-filter-label{color:rgba(10,23,48,.6)}
+  /* [수정] 모바일에서는 패널 안의 시즌별/월별 보기 줄을 없애고, 여행지 섹션 위쪽의 고정 바(.dest-period-bar)가 대신한다 */
+  .period-filter-row{display:none}
+}
+
+
+/* ═══ [추가] 모바일 시즌별/월별 보기 고정 바 — 메뉴바처럼 가로 폭을 꽉 채우고 한 줄로 노출 ═══ */
+.dest-period-wrap{display:none}
+@media(max-width:780px){
+  .dest-period-wrap{display:block;position:sticky;top:54px;height:0;z-index:190;pointer-events:none}
+  .dest-period-bar{
+    position:absolute;left:calc(50% - 50vw);width:100vw;top:0;height:46px;box-sizing:border-box;
+    background:rgba(0,0,0,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(221,179,103,.15);
+    opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;pointer-events:none;
+  }
+  .dest-period-wrap.show .dest-period-bar{opacity:1;transform:none;pointer-events:auto}
+  .dest-period-bar .dpb-inner{display:flex;align-items:center;width:100%;height:100%;transition:opacity .16s}
+  .dest-period-bar.swap .dpb-inner{opacity:0}
+  .dest-period-bar .dpb-fixed{flex:0 0 auto;display:flex;align-items:center;height:100%;padding:0 10px 0 14px;border-right:1px solid rgba(255,255,255,.14)}
+  .dest-period-bar .dpb-track{flex:1 1 auto;min-width:0;height:100%;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;padding:0 14px 0 10px;overflow-x:auto;scrollbar-width:none}
+  .dest-period-bar .dpb-track::-webkit-scrollbar{display:none}
+  .dest-period-bar .period-filter-btn,.dest-period-bar .period-filter-btn:hover,.dest-period-bar .period-filter-btn:active{
+    flex:0 0 auto;white-space:nowrap;padding:5px 14px;font-size:.78rem;font-weight:500;border-radius:100px;
+    border:1.5px solid rgba(255,255,255,.28);background:transparent;color:rgba(247,245,240,.85);box-shadow:none;text-shadow:none;transform:none;
+  }
+  .dest-period-bar .period-filter-btn.active,.dest-period-bar .period-filter-btn.active:hover,.dest-period-bar .period-filter-btn.active:active{
+    background:var(--gold);border-color:var(--gold);color:var(--pine-deep);font-weight:700;
+  }
 }
 
 /* ═══════════════ [추가] 골드 버튼 디자인 시스템 ═══════════════
@@ -4876,6 +4902,9 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 
 <!-- DESTINATIONS -->
 <section class="block sec-bg-pattern" id="destinations">
+  <!-- [추가] 모바일 전용 시즌별/월별 보기 바 — 여행지 섹션에 들어서면 메뉴바 바로 아래에 가로 폭을 꽉 채워 한 줄로 고정되고,
+       화면에 보이는 지역(해외=시즌별 / 국내=월별)에 맞춰 내용이 자연스럽게 바뀐다. 높이 0인 sticky 래퍼라 레이아웃에는 영향이 없다 -->
+  <div class="dest-period-wrap" id="destPeriodWrap"><div class="dest-period-bar" id="destPeriodBar" role="toolbar" aria-label="기간별 보기"></div></div>
   <div class="wrap">
     <div class="sec-head">
       <div class="left">
@@ -8119,7 +8148,7 @@ function applyWidgetConfigCSS(){
   setH('--weather-h', w.h); setH('--weather-jp-h', wj.h); setH('--currency-h', c.h);
   root.style.setProperty('--popup-opacity', p.opacity/100);
   // [추가] 위젯 전체 설정의 글자 색상 — 값이 없으면(기본) 변수를 아예 없애 CSS의 기본값
-  // (var(--widget-font-color, #fff), 흰색)이 그대로 적용되게 한다
+  // (var(--widget-font-color, var(--widget-default-fc,#fff)), 흰색)이 그대로 적용되게 한다
   if (g.fontColor) root.style.setProperty('--widget-font-color', g.fontColor);
   else root.style.removeProperty('--widget-font-color');
   if (typeof syncWidgetLayoutMode==='function') syncWidgetLayoutMode(); // 환율 위젯 크기 조절 시 로고와의 겹침 여부도 다시 판정
@@ -8748,6 +8777,7 @@ function updateNavActive(){
   function update(){
     ticking = false;
     updateNavActive();
+    try{ updateDestPeriodBar(); }catch(e){} // 초기 호출 시점엔 아래쪽 상태 변수가 아직 선언 전일 수 있음
     const isNarrow = window.innerWidth <= 780 || document.body.classList.contains('widgets-compact');
     if (!isNarrow){
       document.body.classList.remove('mobile-topbar-hidden');
@@ -10425,6 +10455,52 @@ function regionNavHTML(regionKey, selectedId){
   ).join('');
   return `${label}<div class="cv-nav-track">${items}</div>`;
 }
+// [추가] 모바일 시즌별/월별 고정 바 — 전체(고정) + 현재 기준 "이전·현재·다음" 순서로 시작해 좌/우로 나머지를 볼 수 있다.
+// 해외=시즌(전체 + 이전 시즌·현재 시즌·다음 시즌·남은 시즌), 국내=월(전체 + 이전달·현재달·다음달·…). 화면에 보이는 지역이
+// 해외에서 국내로(또는 반대로) 바뀌면 바 내용이 시즌별↔월별로 부드럽게 교체된다
+const DEST_BAR_H = 46;
+let destBarRegion = null;
+function periodBarItems(regionKey){
+  if (regionKey==='overseas'){
+    const n = SEASON_DEFS.length, ci = Math.max(0, SEASON_DEFS.findIndex(d=>d.key===currentSeasonKey()));
+    return Array.from({length:n}, (_,i)=>{ const d = SEASON_DEFS[(ci-1+i+n)%n]; return {value:d.key, label:d.label}; });
+  }
+  const cur = currentMonthNum();
+  return Array.from({length:12}, (_,i)=>{ const m = ((cur-2+i+12)%12)+1; return {value:m, label:m+'월'}; });
+}
+function destPeriodBarHTML(regionKey){
+  const active = catFilter[regionKey];
+  const arg = v => v===null ? 'null' : (typeof v==='number' ? v : `'${v}'`);
+  const btn = (v, label, cls) => `<button type="button" class="period-filter-btn ${cls||''} ${active===v||(v===null&&!active)?'active':''}" onclick="setPeriodFilter('${regionKey}',${arg(v)})">${label}</button>`;
+  return `<div class="dpb-inner" data-region="${regionKey}"><div class="dpb-fixed">${btn(null,'전체','dpb-all')}</div>`
+    + `<div class="period-filter-track dpb-track">${periodBarItems(regionKey).map(it=>btn(it.value,it.label)).join('')}</div></div>`;
+}
+function renderDestPeriodBar(){
+  const host = document.getElementById('destPeriodBar'); if (!host) return;
+  host.innerHTML = destPeriodBarHTML(destBarRegion || 'overseas');
+  const track = host.querySelector('.dpb-track');
+  if (track){ initCarouselDrag(track); revealActiveFilterChip(track); }
+}
+function updateDestPeriodBar(){
+  const wrap = document.getElementById('destPeriodWrap'), sec = document.getElementById('destinations');
+  if (!wrap || !sec) return;
+  if (window.innerWidth > 780){ wrap.classList.remove('show'); return; }
+  const nav = document.getElementById('mainNav');
+  const navBottom = nav ? nav.getBoundingClientRect().bottom : 54;
+  const r = sec.getBoundingClientRect();
+  const show = r.top <= navBottom + 1 && r.bottom > navBottom + 10;
+  if (wrap.classList.contains('show') !== show) wrap.classList.toggle('show', show);
+  if (!show) return;
+  const div = sec.querySelector('.dest-region-divider');
+  const region = (div && div.getBoundingClientRect().top <= navBottom + DEST_BAR_H + 40) ? 'domestic' : 'overseas';
+  if (region === destBarRegion) return;
+  const first = destBarRegion===null;
+  destBarRegion = region;
+  const host = document.getElementById('destPeriodBar');
+  if (first || !host){ renderDestPeriodBar(); return; }
+  host.classList.add('swap');
+  setTimeout(()=>{ renderDestPeriodBar(); host.classList.remove('swap'); }, 160);
+}
 // [Phase] 국가별(해외)=시즌, 권역별(국내)=월 단위 기간별 소팅 버튼 — 국가/지역 선택 버튼 바로 아래 배치
 function periodFilterHTML(regionKey){
   const active = catFilter[regionKey];
@@ -10445,6 +10521,7 @@ function setPeriodFilter(regionKey, value){
     const trackEl = row.querySelector('.period-filter-track');
     if (trackEl){ initCarouselDrag(trackEl); revealActiveFilterChip(trackEl); }
   }
+  if (destBarRegion===regionKey) renderDestPeriodBar();
   refreshCategoryProducts(regionKey);
 }
 // 상품에 등록된 p.months(1~12 복수 선택)로 현재 기간별 필터 조건에 맞는지 판정.
@@ -10573,11 +10650,10 @@ function selectCategory(id, opts){
         // [수정] 1단계 이동(0.5초) 후 머무는 시간을 0.5초 늘려(1초 → 1.5초 뒤 시작) 제목을 충분히 보여준 뒤
         // 2단계 스크롤을 시작한다
         setTimeout(()=>{
-          const filterRow=document.getElementById(regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic');
-          // [수정] 두 번째 단계는 약 0.3초간 이어지는 커스텀 이징 스크롤. 최종 위치는 시즌별/월별 보기
-          // 제목(밝은 박스 윗변)이 메뉴바 바로 아래에 오도록 — 예전에는 버튼 높이의 3배만큼 더 내려가
-          // 제목이 메뉴바 뒤로 가려졌다
-          smoothScrollToEl(filterRow, 300, 0);
+          // [수정] 모바일은 시즌별/월별 보기가 메뉴바 아래 고정 바로 옮겨졌으므로, 두 번째 단계는 상품 카드 목록 윗변이
+          // 메뉴바+고정 바 바로 아래에 오도록 약 0.3초간 이어지는 커스텀 이징 스크롤로 이동한다
+          const gridEl=document.getElementById(regionKey==='overseas'?'productGridOverseas':'productGridDomestic');
+          smoothScrollToEl(gridEl, 300, -(DEST_BAR_H+12));
         }, 1500);
       }
     },100);

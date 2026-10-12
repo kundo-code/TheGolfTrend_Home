@@ -10294,10 +10294,10 @@ function productPeriodBadgeText(p, catId){
 // 독립적으로 "열려있는 카드"를 추적한다 — 해외에서 하나, 국내에서 하나, 동시에 열려있을 수 있다
 let selectedOverseasId=null, selectedDomesticId=null, spotOverseasIdx=0, spotDomesticIdx=0, heroSlideIdx=0;
 // [Phase] 기간별 소팅 필터 상태 — overseas: SEASON_DEFS의 key(또는 null=전체), domestic: 1~12(또는 null=전체)
-// [수정] 처음 열 때 기본 선택은 "전체"가 아니라 오늘 날짜 기준 — 해외(시즌별)는 이번 시즌, 국내(월별)는 이번 달
+// [수정] 처음 열 때 기본 선택 — 해외(시즌별)는 "전체", 국내(월별)는 이번 달(오늘 날짜 기준)
 function currentMonthNum(){ return new Date().getMonth()+1; }
 function currentSeasonKey(){ const m=currentMonthNum(); const s=SEASON_DEFS.find(d=>d.months.includes(m)); return s?s.key:null; }
-let catFilter = {overseas:currentSeasonKey(), domestic:currentMonthNum()};
+let catFilter = {overseas:null, domestic:currentMonthNum()}; // 해외(시즌별)는 처음에 "전체" 보기, 국내(월별)는 이번 달
 let activeAdminTab='images', activeProductCat='gangwon';
 let currentPd=null; // {catId, idx}
 // [버그 수정] 공유 이미지를 만드는 동안(수 초 이상 걸릴 수 있음) 사용자가 "반응이 없다"고 여겨
@@ -15454,6 +15454,7 @@ function advBasicHTML(p){
             <div class="dp-add-row">
               <button class="apc-btn-sm" onclick="addCommonHolidayPrice()">+ 공휴일 요금 추가</button>
               <button class="apc-btn-sm" onclick="addDpMarker(-1,'hol','divider')" title="요금표에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
+          <button class="apc-btn-sm" onclick="addDpMarker(-1,'hol','group')" title="아래에 입력하는 요금들을 묶는 부제목">+ 부제목 추가</button>
             </div>
           </div>
         </details>
@@ -16096,6 +16097,7 @@ function priceEntryHTML(pe, i, popupCount, p){
         <div class="dp-add-row">
           <button class="apc-btn-sm" onclick="addHolidayPrice(${i})">+ 공휴일 요금 추가</button>
           <button class="apc-btn-sm" onclick="addDpMarker(${i},'hol','divider')" title="요금표에서 이 위치를 기준으로 간격을 둡니다">+ 구분선 추가</button>
+          <button class="apc-btn-sm" onclick="addDpMarker(${i},'hol','group')" title="아래에 입력하는 요금들을 묶는 부제목">+ 부제목 추가</button>
         </div>
       </div>
     </details>

@@ -883,7 +883,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-section-title:has(+ .pd-info-table),.pd-section-title:has(+ .pd-label-rows){padding-bottom:4px} /* 상품기본정보·이동정보 제목↔내용 간격 절반 */
 .pd-info-table{padding:7px 20px 18px;display:flex;flex-direction:column;gap:9px}
 .pd-info-row{display:flex;gap:14px;font-size:.85rem;line-height:1.5}
-.pd-info-row .k{flex:0 0 84px;color:var(--gold-deep);font-weight:600;font-size:.75rem;letter-spacing:.04em}
+.pd-info-row .k{flex:0 0 96px;color:var(--gold-deep);font-weight:600;font-size:12.5pt;line-height:1.35;letter-spacing:.02em}
 .pd-info-row .v{flex:1;color:rgba(10,23,48,.82)}
 .pd-note-block{padding:4px 20px 18px;font-size:.85rem;line-height:1.7;color:rgba(10,23,48,.72);white-space:pre-line}
 .pd-gallery{padding:0}
@@ -1004,16 +1004,16 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] "포함사항"·"불포함사항" 모두 상세보기를 펼치지 않아도 바로 보이도록 가격 정보 바로 아래에
    나란히 미리보기 노출 — 포함사항은 옅은 초록, 불포함사항은 옅은 빨간 톤 배경으로 구분해 가독성을 높인다 */
 .pd-pe-included-preview{padding:12px 14px;background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.2);border-radius:10px}
-.pd-pe-included-preview .t{font-size:.82rem;font-weight:700;color:#15803d;letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-included-preview .t{font-size:12.5pt;font-weight:700;color:#15803d;letter-spacing:.02em;margin-bottom:8px}
 .pd-pe-included-preview .pd-check-list{padding:0}
 .pd-pe-included-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
 .pd-pe-notincluded-preview{padding:12px 14px;background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-radius:10px}
-.pd-pe-notincluded-preview .t{font-size:.82rem;font-weight:700;color:#b91c1c;letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-notincluded-preview .t{font-size:12.5pt;font-weight:700;color:#b91c1c;letter-spacing:.02em;margin-bottom:8px}
 .pd-pe-notincluded-preview .pd-check-list{padding:0}
 .pd-pe-notincluded-preview .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* [추가] 참고사항 — 포함/불포함사항과 같은 박스 서식이되, 옅은 회색 톤으로 구분 */
 .pd-pe-precautions-box{padding:12px 14px;background:rgba(10,23,48,.045);border:1px solid rgba(10,23,48,.14);border-radius:10px}
-.pd-pe-precautions-box .t{font-size:.82rem;font-weight:700;color:rgba(10,23,48,.6);letter-spacing:.02em;margin-bottom:8px}
+.pd-pe-precautions-box .t{font-size:12.5pt;font-weight:700;color:rgba(10,23,48,.6);letter-spacing:.02em;margin-bottom:8px}
 .pd-pe-precautions-box .pd-check-list{padding:0}
 .pd-pe-precautions-box .pd-check-list .row{color:rgba(10,23,48,.92)}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
@@ -1021,6 +1021,8 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
 .pd-pe-departure-day-label .dd-label{color:#000000;font-size:1.2em}
 .pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:1.2em}
+/* [추가] 출발 요일 값 중 일요일·공휴일은 빨간색 */
+.dd-red,.pd-pe-departure-day-label .dd-value .dd-red{color:#DC2626}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
@@ -1036,7 +1038,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-slot > .pd-common-note{margin:-10px 20px 16px}
 .pd-label-row{display:flex;gap:10px;font-size:.85rem;line-height:1.5}
 /* [수정] 공통 항공/이동 정보에 "✈️ 항공 포함 여부"(가장 긴 라벨)가 추가되면서 값 열이 어긋나지 않도록 폭을 넓힘 */
-.pd-label-row .k{flex-shrink:0;color:rgba(10,23,48,.5);min-width:112px}
+.pd-label-row .k{flex-shrink:0;color:var(--gold-deep);font-size:12.5pt;font-weight:600;line-height:1.35;min-width:150px} /* 항공/이동정보 제목(.pd-section-title)과 같은 색 */
+.pd-label-row .v{align-self:center}
 .pd-label-row .v{color:rgba(10,23,48,.82);font-weight:500}
 /* 포함사항/불포함사항/공통 안내/참고사항/예약·결제·취소 규정 — 동일한 체크리스트 서식 */
 .pd-check-list{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
@@ -3274,6 +3277,9 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .notice-popup-item-body a:hover{color:#1E3A8A}
 .notice-popup-item-body table{border-collapse:collapse;margin:6px 0}
 .notice-popup-item-body td,.notice-popup-item-body th{border:1px solid rgba(10,23,48,.2);padding:4px 8px}
+.notice-tpl-helper{margin:10px 0;border:1px dashed rgba(10,23,48,.25);border-radius:10px;padding:8px 12px;background:rgba(10,23,48,.03)}
+.notice-tpl-helper>summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--nm-text-soft,#4B5563)}
+.notice-tpl-helper[open]>summary{margin-bottom:8px}
 .rtf-link-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;background:#EEF4FF;border-bottom:1px solid rgba(37,99,235,.25)}
 .rtf-link-bar[hidden]{display:none}
 .rtf-link-bar.warn{background:#FFF7E6;border-bottom-color:rgba(217,119,6,.35)}
@@ -5964,6 +5970,11 @@ function _peHolKey(list){
 // ── 출발 요일별 요금 · 공휴일 요금 표시(구분선 · 부제목 지원) ─────────────────────────────
 // 구분선을 기준으로 묶음을 나눠 간격을 두고, 부제목이 있으면 그 묶음 위에 작은 제목으로 노출한다.
 // 구분선·부제목이 하나도 없으면 예전과 똑같은 마크업을 그대로 쓴다
+// [추가] 출발 요일 값 표시 — 일요일(일, 일~화 등 일요일이 들어간 값)과 공휴일은 빨간색 span으로 감싼다
+function depDayIsRed(t){ t=String(t||'').trim(); return /^일($|~)/.test(t) || /~일$/.test(t) || /공휴일/.test(t); }
+function depDayHTML(arr){
+  return (Array.isArray(arr)?arr:[]).filter(Boolean).map(t=>depDayIsRed(t) ? `<span class="dd-red">${escapeAttr(t)}</span>` : escapeAttr(t)).join(', ');
+}
 function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group')); }
 // 목록을 처음부터 끝까지 순서대로 그린다 — 구분선마다 자기 간격 칸(선 노출을 켠 구분선은 선도)을 하나씩, 부제목마다 자기 제목 줄을 하나씩.
 // 그래서 부제목 아래 부제목, 구분선 아래 구분선을 연달아 넣으면 입력한 개수만큼 그대로 나온다.
@@ -6038,7 +6049,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
 }
 function dayPriceSectionsHTML(list, cls){
   return dpRenderSections(list, d=>{
-    const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : '');
+    const dcls = d.day==='토' ? 'sat' : (depDayIsRed(d.day) ? 'sun' : '');
     return `<div class="pd-day-price-cell ${dcls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
@@ -7247,7 +7258,6 @@ const NOTICE_TYPES = {
     fields: [
       {key:'siteName', label:'웹사이트 이름', placeholder:'예: 더골프트렌드'},
       {key:'noticeTitle', label:'공지 제목', placeholder:'예: 홈페이지 개편 안내'},
-      {key:'purpose', label:'공지 목적/상세 내용', type:'textarea', placeholder:'공지의 목적과 상세 내용을 입력하세요'},
       {key:'period', label:'적용 일시/기간', placeholder:'예: 2025년 1월 1일부터'},
       {key:'target', label:'대상', placeholder:'예: 전체 고객'},
     ],
@@ -7429,6 +7439,7 @@ function setNoticeField(id, key, val){
   const list = getNoticesList();
   const idx = findNoticeIdx(list, id); if (idx<0) return;
   list[idx][key] = val;
+  if (key==='body') list[idx].bodyEdited = true; // 서식 편집기로 직접 고친 본문은 이후 템플릿 입력으로 덮어쓰지 않는다
   list[idx].updatedAt = new Date().toISOString();
   saveNoticesList(list);
   // 제목/본문 직접 수정 입력창 자체이므로 다시 렌더링하지 않는다(포커스 유지)
@@ -7443,7 +7454,8 @@ function setNoticeFormField(id, fieldKey, val){
   list[idx].fields[fieldKey] = val;
   const built = NOTICE_TYPES[list[idx].type].build(list[idx].fields);
   list[idx].title = built.title;
-  list[idx].body = built.body;
+  const keepBody = !!list[idx].bodyEdited; // 직접 서식을 넣어 고친 본문은 보존(템플릿으로 다시 생성 버튼을 눌렀을 때만 교체)
+  if (!keepBody) list[idx].body = built.body;
   list[idx].updatedAt = new Date().toISOString();
   saveNoticesList(list);
   const item = document.querySelector(`.notice-admin-item[data-id="${id}"]`);
@@ -7451,7 +7463,7 @@ function setNoticeFormField(id, fieldKey, val){
     const titleInput = item.querySelector('[data-notice-title]');
     const bodyInput = item.querySelector('[data-notice-body]');
     if (titleInput) titleInput.value = list[idx].title;
-    if (bodyInput){
+    if (bodyInput && !keepBody){
       if (bodyInput.isContentEditable) bodyInput.innerHTML = noticeBodyToRichInit(list[idx].body);
       else bodyInput.value = list[idx].body;
     }
@@ -7465,6 +7477,7 @@ function setNoticeType(id, newType){
   const built = NOTICE_TYPES[list[idx].type].build({});
   list[idx].title = built.title;
   list[idx].body = built.body;
+  list[idx].bodyEdited = false;
   list[idx].updatedAt = new Date().toISOString();
   saveNoticesList(list);
   renderAdminNotices();
@@ -7472,6 +7485,8 @@ function setNoticeType(id, newType){
 function regenerateNoticeContent(id){
   const list = getNoticesList();
   const idx = findNoticeIdx(list, id); if (idx<0) return;
+  if (list[idx].bodyEdited && !confirm('직접 편집한 공지 본문(서식·링크 포함)이 템플릿 내용으로 바뀝니다. 계속할까요?')) return;
+  list[idx].bodyEdited = false;
   const built = NOTICE_TYPES[list[idx].type].build(list[idx].fields || {});
   list[idx].title = built.title;
   list[idx].body = built.body;
@@ -7553,7 +7568,7 @@ function noticeFieldInputHTML(n, f){
   const val = (n.fields && n.fields[f.key]) || '';
   if (f.type==='textarea'){
     // 라벨을 값 위 한 줄로 올리고, 약 40줄 분량이 들어가는 넉넉한 높이의 전체 너비 입력창으로 노출
-    return `<div class="abc-field-row abc-field-row-stack"><label class="abc-label">${escapeAttr(f.label)}</label><textarea class="abc-input" rows="40" placeholder="${escapeAttr(f.placeholder||'')}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)">${escapeAttr(val)}</textarea></div>`;
+    return `<div class="abc-field-row abc-field-row-stack"><label class="abc-label">${escapeAttr(f.label)}</label><textarea class="abc-input" rows="4" placeholder="${escapeAttr(f.placeholder||'')}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)">${escapeAttr(val)}</textarea></div>`;
   }
   return `<div class="abc-field-row"><label class="abc-label">${escapeAttr(f.label)}</label><input type="text" class="abc-input" placeholder="${escapeAttr(f.placeholder||'')}" value="${escapeAttr(val)}" oninput="setNoticeFormField('${n.id}','${f.key}',this.value)"></div>`;
 }
@@ -7570,6 +7585,10 @@ function noticeEditFormHTML(n){
     <div class="abc-field-row">
       <label class="abc-label">공지 제목</label>
       <input type="text" class="abc-input" data-notice-title value="${escapeAttr(n.title||'')}" oninput="setNoticeField('${n.id}','title',this.value)">
+    </div>
+    <div class="abc-field-row">
+      <label class="abc-label">공지 본문</label>
+      ${richTextFieldHTML(noticeBodyToRichInit(n.body||''), `setNoticeField('${n.id}','body',__HTML__)`, {raw:true, link:true, noSub:true, attrs:'data-notice-body', minHeight:'180px', placeholder:'공지 내용을 입력하세요. 글자를 드래그해 선택한 뒤 🔗링크로 주소를 걸 수 있어요.'})}
     </div>
     <div class="notice-schedule-row">
       <div class="abc-field-row">
@@ -7593,13 +7612,12 @@ function noticeEditFormHTML(n){
         </div>
       </div>
     </div>
-    <div class="admin-info-box">💡 아래 항목을 입력하면 "${escapeAttr(typeInfo.label)}" 성격에 맞는 공지 제목·본문이 자동으로 채워집니다. 생성된 내용은 자유롭게 다시 수정할 수 있습니다.</div>
-    ${typeInfo.fields.map(f=>noticeFieldInputHTML(n,f)).join('')}
-    <div class="notice-regen-row"><button type="button" class="abc-btn-sm" onclick="regenerateNoticeContent('${n.id}')">🪄 템플릿으로 다시 생성</button></div>
-    <div class="abc-field-row">
-      <label class="abc-label">공지 본문</label>
-      ${richTextFieldHTML(noticeBodyToRichInit(n.body||''), `setNoticeField('${n.id}','body',__HTML__)`, {raw:true, link:true, noSub:true, attrs:'data-notice-body', minHeight:'180px', placeholder:'공지 내용을 입력하세요. 글자를 드래그해 선택한 뒤 🔗링크로 주소를 걸 수 있어요.'})}
-    </div>`;
+    <div class="admin-info-box">💡 위 "공지 본문"이 고객에게 보이는 공지 내용입니다(서식·링크 그대로 노출). 아래 "템플릿 입력 도우미"는 처음 문구를 빠르게 채우는 용도이며, 본문을 직접 고친 뒤에는 도우미 입력이 본문을 덮어쓰지 않습니다.</div>
+    <details class="notice-tpl-helper">
+      <summary>🪄 템플릿 입력 도우미 — "${escapeAttr(typeInfo.label)}" (선택)</summary>
+      ${typeInfo.fields.map(f=>noticeFieldInputHTML(n,f)).join('')}
+      <div class="notice-regen-row"><button type="button" class="abc-btn-sm" onclick="regenerateNoticeContent('${n.id}')">🪄 템플릿으로 본문 다시 생성</button></div>
+    </details>`;
 }
 // 공지 목록 헤더에 "언제 노출되는지" 한눈에 보이도록 노출 기간을 짧은 문구로 요약
 function noticeScheduleSummary(n){
@@ -13354,12 +13372,12 @@ function renderProductDetail(p,cat,idx){
   if (plan.flightNo.key) commonLabelRowsList.push(['🎫 항공편', plan.flightNo.value]);
   if (plan.airfare.key) commonLabelRowsList.push(['✈️ 항공 포함 여부', AIRFARE_TXT[plan.airfare.value]||plan.airfare.value]);
   if (plan.stayDuration.key) commonLabelRowsList.push(['🏨 체류일', plan.stayDuration.value]);
-  if (plan.departureDay.key) commonLabelRowsList.push(['📅 출발 요일', planArr('departureDay')]);
+  if (plan.departureDay.key) commonLabelRowsList.push(['📅 출발 요일', planArr('departureDay'), depDayHTML(plan.departureDay.value)]);
   if (commonLabelRowsList.length){
     // [수정] "항공 포함 여부"가 포함/불포함이면 "항공/이동 정보 · 출발 요일", "없음(표시 안 함)"이면 항공 항목이 없으므로 "이동정보 · 출발 요일"
     const moveTitle = plan.airfare.key ? '🏷️ 항공/이동 정보 · 출발 요일' : '🏷️ 이동정보 · 출발 요일';
     html += `<div class="pd-slot"><div class="pd-section-title">${moveTitle}</div>
-      <div class="pd-label-rows">${commonLabelRowsList.map(([k,v])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${escapeAttr(v)}</span></div>`).join('')}</div>
+      <div class="pd-label-rows">${commonLabelRowsList.map(([k,v,h])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${h!==undefined?h:escapeAttr(v)}</span></div>`).join('')}</div>
       ${commonOverrideNote(['departureAirport','airPattern','arrAirport','flightNo','airfare','stayDuration','departureDay'])}
     </div>`;
   }
@@ -13480,7 +13498,7 @@ function renderProductDetail(p,cat,idx){
             const holRow = holidaySectionsHTML(pick('holidayPrices', full)||[], cls);
             // [수정] "출발 요일"은 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출
             const dd = arrTxt(pick('departureDay', full));
-            const ddLabel = dd ? `<div class="pd-pe-departure-day-label ${cls}"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(dd)}</span></div>` : '';
+            const ddLabel = dd ? `<div class="pd-pe-departure-day-label ${cls}"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(pick('departureDay', full))}</span></div>` : '';
             // [수정] "포함사항"은 옅은 초록색, "불포함사항"은 옅은 빨간색 박스로 가격 정보 바로 아래에
             // 나란히 미리보기 노출. 공백/줄바꿈만 입력된 경우는 표시할 내용이 없는 것으로 본다
             const incRows = bulletRowsRich(pick('included', full)||'','✓');
@@ -16597,6 +16615,8 @@ const PATTERN_OPTS=[['조조','조조'],['조석','조석'],['석석','석석']]
 const AIRPORT_OPTS=[['인천1','인천1'],['인천2','인천2'],['김해','김해'],['양양','양양'],['무안','무안'],['대구','대구'],['청주','청주'],['제주','제주']];
 const STAY_OPTS=[['none','없음'],['1박','1박'],['2박','2박'],['3박','3박'],['4박','4박'],['5박','5박'],['6박','6박'],['장박','장박']];
 const DAY_OPTS=[['월','월'],['화','화'],['수','수'],['목','목'],['금','금'],['토','토'],['일','일'],['월~화','월~화'],['월~수','월~수'],['월~목','월~목'],['일~화','일~화'],['금~토','금~토'],['매일출발','매일출발']];
+// 출발 요일 칩(복수 선택) 전용 — 요금 선택용 DAY_OPTS에 "공휴일"을 더한 목록(공휴일은 카드·상세에서 빨간색)
+const DEP_DAY_OPTS=DAY_OPTS.concat([['공휴일','공휴일']]);
 
 // ===== 요금 항목에 종속된 레이블 UI =====
 // [Phase 3 상품등록 개선] 출발/도착 공항·항공편은 여기(요금표 항목)에서만 입력하도록 통합.
@@ -16605,7 +16625,7 @@ const DAY_OPTS=[['월','월'],['화','화'],['수','수'],['목','목'],['금','
 // 아예 별도의 "공통 출발 요일" 섹션으로 빼내 쓰고(advBasicHTML 참고), 요금 항목별 항공정보에서는
 // 그대로 labelsHTML() 안에 포함해 하단에 노출한다. 노출 조건(값이 있을 때만 표시)은 이전과 동일
 function departureDayFieldHTML(L, peIdx){
-  return `<label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}`;
+  return `<label>출발 요일 (복수 선택 가능)</label>${chipMultiHTML(DEP_DAY_OPTS,L.departureDay,val=>`toggleLabelMulti(${peIdx},'departureDay','${val}')`)}`;
 }
 function labelsHTML(pe, peIdx, showDepartureDay, p){
   if (showDepartureDay===undefined) showDepartureDay=true;

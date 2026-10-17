@@ -3120,6 +3120,22 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .theme-color-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .theme-color-row:last-child{margin-bottom:0}
 .theme-color-row .tc-label{font-size:.82rem;color:var(--nm-text-soft);min-width:80px}
+.color-chip{width:44px;height:32px;border:1px solid rgba(10,23,48,.15);border-radius:8px;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer;padding:0}
+.color-pal{position:fixed;z-index:100000;width:min(300px,calc(100vw - 16px));padding:12px;background:#fff;border-radius:14px;box-shadow:0 14px 36px rgba(10,23,48,.28),0 0 0 1px rgba(10,23,48,.1);font-family:inherit;color:#0A1730}
+.cpal-title{font-size:.8rem;font-weight:700;margin-bottom:8px}
+.cpal-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.cpal-sw{aspect-ratio:1;border-radius:6px;border:none;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(10,23,48,.18)}
+.cpal-sw:hover{transform:scale(1.1)}
+.cpal-sw.on{box-shadow:inset 0 0 0 1px rgba(10,23,48,.18),0 0 0 2px #fff,0 0 0 4px var(--nm-blue,#2F6FED)}
+.cpal-custom{position:relative;display:flex;align-items:center;justify-content:center;height:30px;margin:8px 0;border-radius:8px;background:#eef1f6;font-size:.74rem;font-weight:600;cursor:pointer}
+.cpal-custom input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:none}
+.cpal-preview{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:.78rem}
+.cpal-preview .cp-old,.cpal-preview .cp-new{flex:1;text-align:center;padding:6px 8px;border-radius:8px;font-weight:700;box-shadow:inset 0 0 0 1px rgba(10,23,48,.15)}
+.cpal-preview .cp-hex{font-family:monospace;font-size:.72rem;color:#4B5563;min-width:62px}
+.cpal-actions{display:flex;gap:8px}
+.cpal-actions button{flex:1;height:34px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer}
+.cpal-cancel{background:#eef1f6;color:#4B5563}
+.cpal-ok{background:linear-gradient(135deg,#E0B866,#C8893A);color:#fff}
 .theme-color-row input[type=color]{width:44px;height:32px;border:none;border-radius:8px;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer;background:none;padding:2px}
 .theme-bgmode-row{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap}
 .theme-radio{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--nm-text);cursor:pointer}
@@ -9414,7 +9430,7 @@ function renderAdminWidgets(){
       <span class="file-hint" id="widgetXformVals_globalWidget">크기 ${g.scale}% · 투명도 ${g.opacity}% · 가로 ${g.x}px · 세로 ${g.y}px</span>
       <div class="theme-color-row" style="margin-top:8px">
         <span class="tc-label">글자 색상</span>
-        <input type="color" value="${escapeAttr(g.fontColor||'#ffffff')}" onchange="setWidgetConfig('globalWidget',{fontColor:this.value})">
+        <button type="button" class="color-chip" style="background:${escapeAttr(g.fontColor||'#ffffff')}" title="색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="글자 색상" data-value="${escapeAttr(g.fontColor||'#ffffff')}" data-apply="setWidgetConfig('globalWidget',{fontColor:__C__})"></button>
         ${g.fontColor?`<button type="button" class="file-btn" onclick="setWidgetConfig('globalWidget',{fontColor:null})">기본값</button>`:''}
       </div>
       ${gChanged?`<button type="button" class="file-btn danger" onclick="resetWidgetConfig('globalWidget')" style="margin-top:6px">전체 설정 초기화</button>`:''}
@@ -9452,7 +9468,7 @@ function renderAdminTheme(){
   const colorRow=(label,field,fallback)=>`
     <div class="theme-color-row">
       <span class="tc-label">${label}</span>
-      <input type="color" value="${escapeAttr(t[field]||fallback)}" onchange="updateTheme('${field}',this.value)">
+      <button type="button" class="color-chip" style="background:${escapeAttr(t[field]||fallback)}" title="색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="${escapeAttr(label)}" data-value="${escapeAttr(t[field]||fallback)}" data-apply="updateTheme('${field}',__C__)"></button>
       ${t[field]?`<button type="button" class="file-btn" onclick="updateTheme('${field}','')">기본값</button>`:''}
     </div>`;
   c.innerHTML=`
@@ -9476,7 +9492,7 @@ function renderAdminTheme(){
       ${bgMode==='color'?`
       <div class="theme-color-row">
         <span class="tc-label">배경 색상</span>
-        <input type="color" value="${escapeAttr(t.bgColor||'#F7F2E8')}" onchange="updateTheme('bgColor',this.value)">
+        <button type="button" class="color-chip" style="background:${escapeAttr(t.bgColor||'#F7F2E8')}" title="색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="배경 색상" data-value="${escapeAttr(t.bgColor||'#F7F2E8')}" data-apply="updateTheme('bgColor',__C__)"></button>
       </div>`:''}
       ${bgMode==='image'?`
       <div class="ai-row">
@@ -9896,11 +9912,7 @@ function rtfToolbarHTML(opts){
       ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button>`}
       <span class="rtf-color-group">
         <button type="button" class="rtf-btn rtf-color-apply" title="글자 색상 적용(밑줄 색) — 텍스트를 선택하고 누르면 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'foreColor',_rtfColor)"><span class="rtf-color-t">T</span><span class="rtf-color-bar"></span></button>
-        <button type="button" class="rtf-btn rtf-color-more" title="글자 색상 고르기" onmousedown="event.preventDefault()" onclick="rtfToggleColorPop(this)">▾</button>
-        <div class="rtf-color-pop" hidden>
-          ${RTF_COLORS.map(c=>`<button type="button" class="rtf-sw" style="background:${c}" title="${c}" onmousedown="event.preventDefault()" onclick="rtfPickColor(this,'${c}')"></button>`).join('')}
-          <label class="rtf-sw-custom" title="팔레트에 없는 색 직접 고르기"><input type="color" value="#0A1730" onchange="rtfPickColor(this,this.value)">🎨 직접 선택</label>
-        </div>
+        <button type="button" class="rtf-btn rtf-color-more" title="글자 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="글자 색상" data-apply="rtfPickColor(el,__C__)">▾</button>
       </span>
     </div>`;
 }
@@ -9913,6 +9925,82 @@ const RTF_COLORS = ['#0A1730','#4B5563','#9CA3AF','#FFFFFF','#D6293E','#EA580C',
                     '#16A34A','#0D9488','#0EA5E9','#2563EB','#1E3A8A','#7C3AED','#DB2777','#8B5A2B'];
 let _rtfColor = '#D6293E';
 document.documentElement.style.setProperty('--rtf-cur-color', _rtfColor);
+// [추가] 공용 색상 팔레트 — 관리자 패널의 모든 색상 변경(글자 색상·태그/체크포인트/대표 문구 박스 색상·화면 테마·위젯 글자색)이
+// 같은 팔레트를 쓴다. 색을 눌러 고르기만 해서는 아무것도 바뀌지 않고(팔레트 안 미리보기만 바뀜), [확인완료]를 눌러야 그 색이 적용된다.
+// 열 때는 호출한 요소의 data-value(현재 색)·data-title(제목)·data-apply(적용 코드, __C__ 자리에 "#rrggbb" 문자열이 들어가고 el은 호출한 요소)를 읽는다
+const COLOR_PAL_LIGHT = ['#F6ECD4','#FDE8E8','#E3F3E8','#E0F2FE','#EDE9FE','#FCE7F3','#FEF3C7','#F3F4F6'];
+let _colorPal = null;
+function colorPalClose(){
+  if (!_colorPal) return;
+  _colorPal.el.remove();
+  document.removeEventListener('mousedown', _colorPal.onDown, true);
+  document.removeEventListener('keydown', _colorPal.onKey, true);
+  window.removeEventListener('resize', colorPalClose);
+  _colorPal = null;
+}
+function colorPalSet(c){
+  if (!_colorPal) return;
+  _colorPal.pending = c;
+  const el = _colorPal.el;
+  el.querySelector('.cp-new').style.background = c;
+  el.querySelector('.cp-new').style.color = colorPalDark(c) ? '#fff' : '#0A1730';
+  el.querySelector('.cp-hex').textContent = c.toUpperCase();
+  el.querySelector('input[type=color]').value = c;
+  el.querySelectorAll('.cpal-sw').forEach(b=>b.classList.toggle('on', b.dataset.c.toLowerCase()===c.toLowerCase()));
+}
+function colorPalDark(c){
+  const r=parseInt(c.slice(1,3),16), g=parseInt(c.slice(3,5),16), b=parseInt(c.slice(5,7),16);
+  return (0.299*r+0.587*g+0.114*b)/255 < 0.6;
+}
+function colorPalApply(){
+  if (!_colorPal) return;
+  const { anchor, pending } = _colorPal;
+  const code = String(anchor.dataset.apply||'').split('__C__').join(JSON.stringify(pending));
+  colorPalClose();
+  if (anchor.classList.contains('color-chip')) anchor.style.background = pending;
+  try{ new Function('el', code)(anchor); }catch(e){ console.error('색상 적용 실패', e); }
+}
+function openColorPalette(anchor){
+  const reopen = _colorPal && _colorPal.anchor===anchor;
+  colorPalClose();
+  if (reopen) return; // 같은 버튼을 다시 누르면 닫기
+  let cur = String(anchor.classList.contains('rtf-color-more') ? _rtfColor : (anchor.dataset.value||'')).trim();
+  if (!/^#[0-9a-f]{6}$/i.test(cur)) cur = '#FFFFFF';
+  const el = document.createElement('div');
+  el.className = 'color-pal';
+  el.innerHTML = `
+    <div class="cpal-title">${escapeAttr(anchor.dataset.title||'색상 선택')}</div>
+    <div class="cpal-grid">${RTF_COLORS.concat(COLOR_PAL_LIGHT).map(c=>`<button type="button" class="cpal-sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div>
+    <label class="cpal-custom" title="팔레트에 없는 색 직접 고르기"><input type="color" value="${cur}">🎨 직접 선택</label>
+    <div class="cpal-preview"><span class="cp-old" style="background:${cur};color:${colorPalDark(cur)?'#fff':'#0A1730'}">현재</span><span class="cpal-arrow">→</span><span class="cp-new">선택</span><span class="cp-hex"></span></div>
+    <div class="cpal-actions"><button type="button" class="cpal-cancel">취소</button><button type="button" class="cpal-ok">확인완료</button></div>`;
+  document.body.appendChild(el);
+  const onDown = e=>{
+    if (el.contains(e.target) || anchor.contains(e.target)) return;
+    colorPalClose();
+    // 팔레트 바깥의 어두운 배경(오버레이)을 눌러 닫을 때는 그 클릭이 편집창까지 닫지 않게 삼킨다
+    if (typeof e.target.className==='string' && /overlay/.test(e.target.className)){
+      const swallow = ev=>{ ev.stopPropagation(); ev.preventDefault(); };
+      document.addEventListener('click', swallow, {capture:true, once:true});
+      setTimeout(()=>document.removeEventListener('click', swallow, true), 400);
+    }
+  };
+  const onKey = e=>{ if (e.key==='Escape'){ e.preventDefault(); colorPalClose(); } else if (e.key==='Enter' && el.contains(document.activeElement) && document.activeElement.tagName!=='BUTTON'){ e.preventDefault(); colorPalApply(); } };
+  _colorPal = { el, anchor, pending: cur, onDown, onKey };
+  document.addEventListener('mousedown', onDown, true);
+  document.addEventListener('keydown', onKey, true);
+  window.addEventListener('resize', colorPalClose);
+  el.addEventListener('mousedown', e=>{ if (!e.target.closest('input')) e.preventDefault(); }); // 편집 중이던 글의 선택 영역 유지
+  el.querySelectorAll('.cpal-sw').forEach(b=>b.addEventListener('click', ()=>colorPalSet(b.dataset.c)));
+  el.querySelector('input[type=color]').addEventListener('input', e=>colorPalSet(e.target.value));
+  el.querySelector('.cpal-cancel').addEventListener('click', colorPalClose);
+  el.querySelector('.cpal-ok').addEventListener('click', colorPalApply);
+  colorPalSet(cur);
+  const r = anchor.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  const left = Math.max(8, Math.min(r.left + r.width/2 - w/2, window.innerWidth - w - 8));
+  const top = (r.bottom + 8 + h > window.innerHeight && r.top - 8 - h > 8) ? r.top - 8 - h : Math.max(8, Math.min(r.bottom + 8, window.innerHeight - h - 8));
+  el.style.left = left + 'px'; el.style.top = top + 'px';
+}
 function rtfCloseColorPops(except){
   document.querySelectorAll('.rtf-color-pop:not([hidden])').forEach(p=>{ if (p!==except) p.hidden = true; });
 }
@@ -15938,7 +16026,7 @@ function advBasicHTML(p){
                 <div class="rtf-editable ctag-edit" contenteditable="true" data-placeholder="태그${n}${n===1?' · 예: BEST':''}" style="${cardTagBoxStyle(bg)}"
                      oninput="updateAdvField('cardTag${n}', this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()"
                      onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(p['cardTag'+n]||'')}</div>
-                <label class="ctag-bg" title="태그 박스 색상"><input type="color" value="${bg||'#e3f3e8'}" oninput="previewCardTagBg(this)" onchange="setCardTagBg(${n},this.value)"><span>🎨</span></label>
+                <label class="ctag-bg" role="button" tabindex="0" title="태그 박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="태그 박스 색상" data-value="${bg||'#e3f3e8'}" data-apply="setCardTagBg(${n},__C__)"><span>🎨</span></label>
                 ${bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setCardTagBg(${n},'')">기본</button>`:''}
               </div>`;
             }).join('')}
@@ -16103,16 +16191,16 @@ function cpEditorHTML(p, field, title, hintText, guide, pos, save){
     <div class="cp-editor-head">
       <label class="cp-editor-title">${title} <span class="cp-editor-hint">${hintText}</span></label>
       <span class="cp-bg-ctl">
-        <label class="ctag-bg" title="박스 색상"><input type="color" value="${bg||dflt}" oninput="cpPreviewBg(this)" onchange="${save(`'${field}Bg'`,'this.value')}"><span>🎨</span></label>
+        <label class="ctag-bg" role="button" tabindex="0" title="박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="박스 색상" data-value="${bg||dflt}" data-apply="${escapeAttr(`cpPreviewBg(el,__C__);${save(`'${field}Bg'`,'__C__')}`)}"><span>🎨</span></label>
         <button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="cpResetBg(this);${save(`'${field}Bg'`,"''")}">기본</button>
       </span>
     </div>
     ${richTextFieldHTML(val, save(`'${field}'`,'__HTML__'), {cls:`cp-field cp-${pos}-field`, placeholder:guide, minHeight:'110px', style:cardTagBoxStyle(bg)})}
   </div>`;
 }
-function cpPreviewBg(inp){
-  const ed=inp.closest('.cp-editor').querySelector('.rtf-editable');
-  ed.setAttribute('style', (ed.getAttribute('style')||'').replace(/background:[^;]*;?|border-color:[^;]*;?|(^|;)color:[^;]*;?/g,'$1') + cardTagBoxStyle(inp.value));
+function cpPreviewBg(el, color){
+  const ed=el.closest('.cp-editor').querySelector('.rtf-editable');
+  ed.setAttribute('style', (ed.getAttribute('style')||'').replace(/background:[^;]*;?|border-color:[^;]*;?|(^|;)color:[^;]*;?/g,'$1') + cardTagBoxStyle(color));
 }
 function cpResetBg(btn){
   const ed=btn.closest('.cp-editor').querySelector('.rtf-editable');
@@ -16130,10 +16218,6 @@ function advJumpCp(field){
 function prepPreviewText(v){
   const el=document.querySelector('#advBody .prep-preview-wrap .prep-overlay-text');
   if (el) el.textContent=(v||'').trim()||PREP_OVERLAY_DEFAULT;
-}
-function previewCardTagBg(inp){
-  const ed=inp.closest('.ctag-cell').querySelector('.ctag-edit');
-  ed.setAttribute('style', cardTagBoxStyle(inp.value));
 }
 // [추가] 카드 태그 드래그 순서 변경 — ⠿ 손잡이를 끌어 다른 칸에 놓으면 그 위치로 끼워 넣고 사이 태그는 한 칸씩 밀린다(태그 박스 색상도 함께 이동)
 let _ctagDragN = null;
@@ -16170,10 +16254,6 @@ function moveCardTag(from, to){
     if (x.bg) p['cardTagBg'+n]=x.bg; else delete p['cardTagBg'+n];
   });
   saveAdvChange(); renderAdvBody();
-}
-function previewHeadlineBg(inp){
-  const ed=inp.closest('.pe-hl-row').querySelector('.pe-headline-edit');
-  ed.setAttribute('style', cardTagBoxStyle(inp.value));
 }
 function setHeadlineBg(i, color){
   const p=getAdvProduct(); if (!p) return;
@@ -16617,7 +16697,7 @@ function priceEntryHTML(pe, i, popupCount, p){
             <div class="rtf-editable pe-headline-edit" contenteditable="true" data-placeholder="예: 2박3일 골프 패키지" style="${cardTagBoxStyle(pe.headlineBg)}"
                  oninput="updatePriceEntry(${i},'headline', this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()"
                  onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(pe.headline||'')}</div>
-            <label class="ctag-bg" title="박스 색상"><input type="color" value="${pe.headlineBg||'#f6ecd4'}" oninput="previewHeadlineBg(this)" onchange="setHeadlineBg(${i},this.value)"><span>🎨</span></label>
+            <label class="ctag-bg" role="button" tabindex="0" title="박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="대표 문구 박스 색상" data-value="${pe.headlineBg||'#f6ecd4'}" data-apply="setHeadlineBg(${i},__C__)"><span>🎨</span></label>
             ${pe.headlineBg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setHeadlineBg(${i},'')">기본</button>`:''}
           </div>
         </div>

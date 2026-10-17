@@ -882,8 +882,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-title-media::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55) 100%);pointer-events:none}
 .pd-section-title:has(+ .pd-info-table),.pd-section-title:has(+ .pd-label-rows){padding-bottom:4px} /* 상품기본정보·이동정보 제목↔내용 간격 절반 */
 .pd-info-table{padding:7px 20px 18px;display:flex;flex-direction:column;gap:9px}
-.pd-info-row{display:flex;gap:14px;font-size:.85rem;line-height:1.5}
-.pd-info-row .k{flex:0 0 96px;color:var(--gold-deep);font-weight:600;font-size:12.5pt;line-height:1.35;letter-spacing:.02em}
+.pd-info-row{display:flex;gap:14px;font-size:11.5pt;line-height:1.5}
+.pd-info-row .k{flex:0 0 90px;color:var(--gold-deep);font-weight:600;font-size:11.5pt;line-height:1.5;letter-spacing:.02em}
 .pd-info-row .v{flex:1;color:rgba(10,23,48,.82)}
 .pd-note-block{padding:4px 20px 18px;font-size:.85rem;line-height:1.7;color:rgba(10,23,48,.72);white-space:pre-line}
 .pd-gallery{padding:0}
@@ -1019,8 +1019,8 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
 .pd-pe-departure-day-label{display:inline-flex;align-items:center;gap:14px;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:#ffffff;border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
 /* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
-.pd-pe-departure-day-label .dd-label{color:#000000;font-size:1.2em}
-.pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:1.2em}
+.pd-pe-departure-day-label .dd-label{color:#000000;font-size:11.5pt}
+.pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:11.5pt}
 /* [추가] 출발 요일 값 중 일요일·공휴일은 빨간색 */
 .dd-red,.pd-pe-departure-day-label .dd-value .dd-red{color:#DC2626}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
@@ -1036,10 +1036,9 @@ section.block{padding:100px 24px;position:relative}
 /* 공통값과 다른 값을 쓰는 요금 항목이 있을 때 공통 섹션 하단에 붙는 안내 문구 */
 .pd-common-note{font-size:.74rem;line-height:1.5;color:rgba(10,23,48,.55)}
 .pd-slot > .pd-common-note{margin:-10px 20px 16px}
-.pd-label-row{display:flex;gap:10px;font-size:.85rem;line-height:1.5}
+.pd-label-row{display:flex;gap:10px;font-size:11.5pt;line-height:1.5}
 /* [수정] 공통 항공/이동 정보에 "✈️ 항공 포함 여부"(가장 긴 라벨)가 추가되면서 값 열이 어긋나지 않도록 폭을 넓힘 */
-.pd-label-row .k{flex-shrink:0;color:var(--gold-deep);font-size:12.5pt;font-weight:600;line-height:1.35;min-width:150px} /* 항공/이동정보 제목(.pd-section-title)과 같은 색 */
-.pd-label-row .v{align-self:center}
+.pd-label-row .k{flex-shrink:0;color:var(--gold-deep);font-size:11.5pt;font-weight:600;line-height:1.5;min-width:140px} /* 항공/이동정보 제목(.pd-section-title)과 같은 색 */
 .pd-label-row .v{color:rgba(10,23,48,.82);font-weight:500}
 /* 포함사항/불포함사항/공통 안내/참고사항/예약·결제·취소 규정 — 동일한 체크리스트 서식 */
 .pd-check-list{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}

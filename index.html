@@ -959,6 +959,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
 .pd-day-price-cell.sat .d,.pd-day-price-cell.sat .v,.pd-day-price-cell.sat .v .unit{color:#1877F2}
 .pd-day-price-cell.sun .d,.pd-day-price-cell.sun .v,.pd-day-price-cell.sun .v .unit{color:#DC2626}
+.pd-day-price-cell.fri .d,.pd-day-price-cell.fri .v,.pd-day-price-cell.fri .v .unit{color:#A3238E}
 /* [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 노출, 한 줄에 최대
    3개씩 배치하고 전체를 중앙 정렬한다. 여러 건이면 항목 사이에 구분선을 두고 간격을 둬 가독성을
    높인다(구분선은 3개마다·마지막 항목에는 넣지 않음). 날짜·금액 모두 빨간색 */
@@ -1028,6 +1029,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:10.5pt}
 /* [추가] 출발 요일 값 중 일요일·공휴일은 빨간색 */
 .dd-red,.pd-pe-departure-day-label .dd-value .dd-red{color:#DC2626}
+/* [수정] 출발 요일 글자색 — 월·화·수·목 검정, 금 자주, 토 파랑, 일 빨강(일~화처럼 구간이면 요일 글자마다 각자 색, "~"는 검정) */
+.dd-k{color:#000}.dd-f{color:#A3238E}.dd-s{color:#1877F2}.dd-u{color:#DC2626}
+.pd-pe-departure-day-label .dd-value{color:#000}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
@@ -5976,8 +5980,16 @@ function _peHolKey(list){
 // 구분선·부제목이 하나도 없으면 예전과 똑같은 마크업을 그대로 쓴다
 // [추가] 출발 요일 값 표시 — 일요일(일, 일~화 등 일요일이 들어간 값)과 공휴일은 빨간색 span으로 감싼다
 function depDayIsRed(t){ t=String(t||'').trim(); return /^일($|~)/.test(t) || /~일$/.test(t) || /공휴일/.test(t); }
+const DEP_DAY_CLS = {'월':'dd-k','화':'dd-k','수':'dd-k','목':'dd-k','금':'dd-f','토':'dd-s','일':'dd-u'};
+// "월" · "일~화" 같은 요일 값을 요일 글자마다 색을 입힌 HTML로 — 요일이 아닌 값(공휴일 등)은 일요일처럼 빨간색, 그 밖에는 그대로
+function depDayTokenHTML(t){
+  t = String(t||'').trim();
+  if (/^[월화수목금토일](~[월화수목금토일])?$/.test(t))
+    return t.split('').map(ch=>DEP_DAY_CLS[ch] ? `<span class="${DEP_DAY_CLS[ch]}">${ch}</span>` : `<span class="dd-k">${ch}</span>`).join('');
+  return depDayIsRed(t) ? `<span class="dd-red">${escapeAttr(t)}</span>` : escapeAttr(t);
+}
 function depDayHTML(arr){
-  return (Array.isArray(arr)?arr:[]).filter(Boolean).map(t=>depDayIsRed(t) ? `<span class="dd-red">${escapeAttr(t)}</span>` : escapeAttr(t)).join(', ');
+  return (Array.isArray(arr)?arr:[]).filter(Boolean).map(depDayTokenHTML).join(', ');
 }
 function dpIsMarker(x){ return !!(x && (x.kind==='divider' || x.kind==='group')); }
 // 목록을 처음부터 끝까지 순서대로 그린다 — 구분선마다 자기 간격 칸(선 노출을 켠 구분선은 선도)을 하나씩, 부제목마다 자기 제목 줄을 하나씩.
@@ -6053,8 +6065,8 @@ function dpRenderSections(list, cellFn, valid, wrapFn){
 }
 function dayPriceSectionsHTML(list, cls){
   return dpRenderSections(list, d=>{
-    const dcls = d.day==='토' ? 'sat' : (depDayIsRed(d.day) ? 'sun' : '');
-    return `<div class="pd-day-price-cell ${dcls}"><div class="d">${escapeAttr(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
+    const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)은 요일 글자만 각자 색
+    return `<div class="pd-day-price-cell ${dcls}"><div class="d">${depDayTokenHTML(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div></div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
 function holidaySectionsHTML(list, cls){

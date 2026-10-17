@@ -684,6 +684,12 @@ section.block{padding:100px 24px;position:relative}
 .adv-body label.ctag-bg,.apc-fields label.ctag-bg,label.ctag-bg{display:block;position:relative;flex-shrink:0;width:26px;height:26px;margin:0;border-radius:50%;overflow:hidden;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);text-transform:none}
 .rtf-editable.cp-top-field{background:#F5F5F5;color:#646464;font-weight:400}
 .rtf-editable.cp-bottom-field{background:#FFF5F5;color:#646464;font-weight:400}
+.ctag-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ctag-grip-off{visibility:hidden}
+.ctag-del{flex-shrink:0;width:22px;height:22px;border:none;border-radius:50%;background:var(--nm-surface-light,#eef1f6);color:#D6293E;font-size:.7rem;font-weight:700;cursor:pointer;line-height:1;padding:0;box-shadow:var(--nm-shadow-raised-sm)}
+.ctag-del:hover{background:#FDE8E8}
+.ctag-add-row{display:flex;align-items:center;gap:10px;padding:0 10px 10px}
+.ctag-empty-hint{font-size:.76rem;color:var(--nm-text-soft)}
 .ctag-cell{display:flex;align-items:center;gap:4px;min-width:0;border-radius:100px}
 .ctag-grip{flex-shrink:0;width:16px;text-align:center;cursor:grab;color:var(--nm-text-soft);font-size:.9rem;line-height:1;user-select:none;-webkit-user-select:none;touch-action:none}
 .ctag-grip:active{cursor:grabbing}
@@ -15673,7 +15679,7 @@ function renderLinkAdminGroup(group){
 
 // ========== ADVANCED PRODUCT EDITOR ==========
 function openAdvEditor(catId, idx){
-  currentAdv={catId, idx}; activeAdvTab='basic';
+  currentAdv={catId, idx}; activeAdvTab='basic'; _ctagPending=null; // 편집창을 새로 열면 입력 안 한 빈 태그 칸은 없앤다
   adminPosRememberProduct(catId, idx); adminPosSave({tab:'products', adv:true, advTab:'basic', advScroll:0});
   advResetEntryOpenState(); // 요금 항목 펼침 상태는 상품마다 따로 — 다른 상품을 열면 초기화
   const cat=findCat(catId);
@@ -16020,19 +16026,25 @@ function advBasicHTML(p){
              태그마다 박스 색상을 따로 지정한다. 편집 칸 자체가 실제 태그 모양이라 결과를 바로 확인할 수 있다 -->
         <div class="rtf-wrap card-tag-editor">
           ${rtfToolbarHTML()}
-          <div class="card-tag-grid">
-            ${Array.from({length:CARD_TAG_MAX},(_,k)=>k+1).map(n=>{
-              const bg=p['cardTagBg'+n]||'';
+          ${(()=>{
+            // [수정] 비어 있는 태그 칸은 보여주지 않는다 — 입력된 태그만(빈 칸은 없애고 앞으로 당김) + "방금 추가한" 빈 칸 1개
+            cardTagCompact(p);
+            const filled = cardTagCount(p), showNew = cardTagPendingFor() && filled < CARD_TAG_MAX ? 1 : 0;
+            const cells = Array.from({length:filled+showNew},(_,k)=>k+1).map(n=>{
+              const bg=p['cardTagBg'+n]||'', isNew = n>filled;
               return `<div class="ctag-cell" data-n="${n}" ondragover="ctagDragOver(event,${n})" ondragleave="this.classList.remove('drop-target')" ondrop="ctagDrop(event,${n})">
-                <span class="ctag-grip" draggable="true" title="끌어서 태그 순서 이동" ondragstart="ctagDragStart(event,${n})" ondragend="ctagDragEnd()">⠿</span>
+                ${isNew?'<span class="ctag-grip ctag-grip-off">⠿</span>':`<span class="ctag-grip" draggable="true" title="끌어서 태그 순서 이동" ondragstart="ctagDragStart(event,${n})" ondragend="ctagDragEnd()">⠿</span>`}
                 <div class="rtf-editable ctag-edit" contenteditable="true" data-placeholder="태그${n}${n===1?' · 예: BEST':''}" style="${cardTagBoxStyle(bg)}"
-                     oninput="updateAdvField('cardTag${n}', this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()"
+                     oninput="ctagInput(${n}, this)" onkeydown="if(event.key==='Enter')event.preventDefault()"
                      onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(p['cardTag'+n]||'')}</div>
                 <label class="ctag-bg" role="button" tabindex="0" title="태그 박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="태그 박스 색상" data-value="${bg||'#e3f3e8'}" data-apply="setCardTagBg(${n},__C__)"><span>🎨</span></label>
                 ${bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setCardTagBg(${n},'')">기본</button>`:''}
+                <button type="button" class="ctag-del" title="이 태그 삭제" onclick="removeCardTag(${n})">✕</button>
               </div>`;
-            }).join('')}
-          </div>
+            }).join('');
+            return `<div class="card-tag-grid ctag-grid2">${cells}</div>
+            <div class="ctag-add-row"><button type="button" class="apc-btn-sm" onclick="addCardTag()" ${filled+showNew>=CARD_TAG_MAX?'disabled':''}>+ 카드 태그 추가 (${filled}/${CARD_TAG_MAX})</button>${filled+showNew===0?'<span class="ctag-empty-hint">등록된 카드 태그가 없습니다</span>':''}</div>`;
+          })()}
         </div>
         <!-- [수정] 체크포인트1(참고사항)·체크포인트2(주의사항) — 제목·위치를 서로 바꾸고 서식 편집·박스 색상 지정 추가.
              체크포인트1은 "자세히 보기 > 참고사항"과 같은 값이라 여기서 입력하면 상세페이지에도 함께 반영된다 -->
@@ -16220,6 +16232,39 @@ function advJumpCp(field){
 function prepPreviewText(v){
   const el=document.querySelector('#advBody .prep-preview-wrap .prep-overlay-text');
   if (el) el.textContent=(v||'').trim()||PREP_OVERLAY_DEFAULT;
+}
+// [추가] 카드 태그 추가/삭제 — 입력된 태그만 1번부터 빈 칸 없이 모아 보여주고(cardTagCompact), "+ 카드 태그 추가"로 빈 칸을 한 개 더 연다
+function cardTagFilled(t){ const v=String(t==null?'':t); return !!(richToPlain(v) || /<table/i.test(v)); }
+function cardTagCount(p){ let c=0; for (let n=1;n<=CARD_TAG_MAX;n++) if (cardTagFilled(p['cardTag'+n])) c++; return c; }
+function cardTagCompact(p){
+  const arr=[];
+  for (let n=1;n<=CARD_TAG_MAX;n++){ if (cardTagFilled(p['cardTag'+n])) arr.push({t:p['cardTag'+n], bg:p['cardTagBg'+n]||''}); }
+  for (let n=1;n<=CARD_TAG_MAX;n++){ delete p['cardTag'+n]; delete p['cardTagBg'+n]; }
+  arr.forEach((x,k)=>{ p['cardTag'+(k+1)]=x.t; if (x.bg) p['cardTagBg'+(k+1)]=x.bg; });
+}
+let _ctagPending = null; // 방금 "추가"로 연 빈 태그 칸이 있는 상품(catId|idx) — 입력을 시작하거나 다른 상품을 열면 해제
+function ctagKey(){ return currentAdv ? currentAdv.catId+'|'+currentAdv.idx : ''; }
+function cardTagPendingFor(){ return _ctagPending && _ctagPending===ctagKey(); }
+function ctagInput(n, el){
+  const v = el.innerHTML==='<br>' ? '' : el.innerHTML;
+  updateAdvField('cardTag'+n, v);
+  if (cardTagFilled(v)) _ctagPending = null; // 입력을 시작했으니 더는 "빈 칸"이 아님
+}
+function addCardTag(){
+  const p=getAdvProduct(); if (!p) return;
+  cardTagCompact(p);
+  if (cardTagCount(p) >= CARD_TAG_MAX) return;
+  _ctagPending = ctagKey();
+  renderAdvBody();
+  const eds = document.querySelectorAll('#advBody .ctag-cell .ctag-edit');
+  const last = eds[eds.length-1]; if (last){ last.scrollIntoView({block:'center'}); last.focus(); }
+}
+function removeCardTag(n){
+  const p=getAdvProduct(); if (!p) return;
+  delete p['cardTag'+n]; delete p['cardTagBg'+n];
+  if (n > cardTagCount(p)) _ctagPending = null; // 빈 새 칸을 지운 경우
+  cardTagCompact(p);
+  saveAdvChange(); renderAdvBody();
 }
 // [추가] 카드 태그 드래그 순서 변경 — ⠿ 손잡이를 끌어 다른 칸에 놓으면 그 위치로 끼워 넣고 사이 태그는 한 칸씩 밀린다(태그 박스 색상도 함께 이동)
 let _ctagDragN = null;

@@ -929,7 +929,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .emph.normal{background:rgba(10,23,48,.06);color:rgba(10,23,48,.65)}
 .pd-price-entry .emph.value{background:rgba(221,179,103,.16);color:var(--gold-deep);border:1px solid rgba(221,179,103,.35)}
 .pd-price-entry .emph.special{background:rgba(255,107,74,.12);color:#D9502E;border:1px solid rgba(255,107,74,.35)}
-.pd-price-entry .pe-headline{display:block;box-sizing:border-box;width:100%;margin-top:3px;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);font-weight:600;font-size:calc(.98rem + 1pt);line-height:1.35;overflow-wrap:anywhere} /* 대표 문구 — 연한 색상 박스(박스 가로폭 전체), 글자 +1pt, 살짝 아래로 */
+.pd-price-entry .pe-headline{display:block;box-sizing:border-box;width:100%;margin-top:3px;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);font-weight:600;font-size:calc(.98rem + 1pt);line-height:1.35;overflow-wrap:anywhere;box-shadow:0 3px 9px rgba(10,23,48,.2),0 1px 2px rgba(10,23,48,.12),inset 0 -2px 0 rgba(10,23,48,.07)} /* 대표 문구 — 연한 색상 박스(박스 가로폭 전체)에 그림자 음영으로 가독성↑, 글자 +1pt, 살짝 아래로 */
 .pd-price-entry .prices{display:flex;align-items:baseline;gap:10px;margin-top:2px}
 .pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.184rem;font-weight:500;color:var(--pine-deep)}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.9rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
@@ -959,7 +959,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
 .pd-day-price-cell.sat .d,.pd-day-price-cell.sat .v,.pd-day-price-cell.sat .v .unit{color:#1877F2}
 .pd-day-price-cell.sun .d,.pd-day-price-cell.sun .v,.pd-day-price-cell.sun .v .unit{color:#DC2626}
-.pd-day-price-cell.fri .d,.pd-day-price-cell.fri .v,.pd-day-price-cell.fri .v .unit{color:#A3238E}
+.pd-day-price-cell.fri .d,.pd-day-price-cell.fri .v,.pd-day-price-cell.fri .v .unit{color:#FF5AF0}
 /* [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 노출, 한 줄에 최대
    3개씩 배치하고 전체를 중앙 정렬한다. 여러 건이면 항목 사이에 구분선을 두고 간격을 둬 가독성을
    높인다(구분선은 3개마다·마지막 항목에는 넣지 않음). 날짜·금액 모두 빨간색 */
@@ -1030,7 +1030,7 @@ section.block{padding:100px 24px;position:relative}
 /* [추가] 출발 요일 값 중 일요일·공휴일은 빨간색 */
 .dd-red,.pd-pe-departure-day-label .dd-value .dd-red{color:#DC2626}
 /* [수정] 출발 요일 글자색 — 월·화·수·목 검정, 금 자주, 토 파랑, 일 빨강(일~화처럼 구간이면 요일 글자마다 각자 색, "~"는 검정) */
-.dd-k{color:#000}.dd-f{color:#A3238E}.dd-s{color:#1877F2}.dd-u{color:#DC2626}
+.dd-k{color:#000}.dd-f{color:#FF5AF0}.dd-s{color:#1877F2}.dd-u{color:#DC2626}
 .pd-pe-departure-day-label .dd-value{color:#000}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}

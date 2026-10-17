@@ -883,8 +883,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-title-media::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.55) 100%);pointer-events:none}
 .pd-section-title:has(+ .pd-info-table),.pd-section-title:has(+ .pd-label-rows){padding-bottom:4px} /* 상품기본정보·이동정보 제목↔내용 간격 절반 */
 .pd-info-table{padding:7px 20px 18px;display:flex;flex-direction:column;gap:9px}
-.pd-info-row{display:flex;gap:14px;font-size:11.5pt;line-height:1.5}
-.pd-info-row .k{flex:0 0 90px;color:var(--gold-deep);font-weight:600;font-size:11.5pt;line-height:1.5;letter-spacing:.02em}
+.pd-info-row{display:flex;gap:14px;font-size:10.5pt;line-height:1.5}
+.pd-info-row .k{flex:0 0 86px;color:var(--gold-deep);font-weight:600;font-size:11pt;line-height:1.5;letter-spacing:.02em}
 .pd-info-row .v{flex:1;color:rgba(10,23,48,.82)}
 .pd-note-block{padding:4px 20px 18px;font-size:.85rem;line-height:1.7;color:rgba(10,23,48,.72);white-space:pre-line}
 .pd-gallery{padding:0}
@@ -1020,8 +1020,8 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] "출발 요일" 선택 내용 — 포함사항 미리보기 박스 바로 위에 옅은 파란색 박스로 노출 */
 .pd-pe-departure-day-label{display:inline-flex;align-items:center;gap:14px;font-size:.78rem;font-weight:700;letter-spacing:.02em;background:#ffffff;border:1px solid rgba(37,99,235,.25);border-radius:10px;padding:8px 12px}
 /* [수정] "출발 요일" 레이블 텍스트는 검정색, 실제 선택한 요일 값은 파란색 + 1.2배 크게 강조 */
-.pd-pe-departure-day-label .dd-label{color:#000000;font-size:11.5pt}
-.pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:11.5pt}
+.pd-pe-departure-day-label .dd-label{color:#000000;font-size:11pt}
+.pd-pe-departure-day-label .dd-value{color:#1d4ed8;font-size:10.5pt}
 /* [추가] 출발 요일 값 중 일요일·공휴일은 빨간색 */
 .dd-red,.pd-pe-departure-day-label .dd-value .dd-red{color:#DC2626}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
@@ -1037,9 +1037,9 @@ section.block{padding:100px 24px;position:relative}
 /* 공통값과 다른 값을 쓰는 요금 항목이 있을 때 공통 섹션 하단에 붙는 안내 문구 */
 .pd-common-note{font-size:.74rem;line-height:1.5;color:rgba(10,23,48,.55)}
 .pd-slot > .pd-common-note{margin:-10px 20px 16px}
-.pd-label-row{display:flex;gap:10px;font-size:11.5pt;line-height:1.5}
+.pd-label-row{display:flex;gap:10px;font-size:10.5pt;line-height:1.5}
 /* [수정] 공통 항공/이동 정보에 "✈️ 항공 포함 여부"(가장 긴 라벨)가 추가되면서 값 열이 어긋나지 않도록 폭을 넓힘 */
-.pd-label-row .k{flex-shrink:0;color:var(--gold-deep);font-size:11.5pt;font-weight:600;line-height:1.5;min-width:140px} /* 항공/이동정보 제목(.pd-section-title)과 같은 색 */
+.pd-label-row .k{flex-shrink:0;color:var(--gold-deep);font-size:11pt;font-weight:600;line-height:1.5;min-width:136px} /* 항공/이동정보 제목(.pd-section-title)과 같은 색 */
 .pd-label-row .v{color:rgba(10,23,48,.82);font-weight:500}
 /* 포함사항/불포함사항/공통 안내/참고사항/예약·결제·취소 규정 — 동일한 체크리스트 서식 */
 .pd-check-list{padding:4px 20px 18px;display:flex;flex-direction:column;gap:7px}
@@ -9974,6 +9974,13 @@ function rtfRestoreSelection(editable){
   }
 }
 function rtfCmd(btnEl, cmd, val){
+  // 실행 중 execCommand가 만드는 중간 상태(<font> 태그 등)는 실행 취소 기록에 남기지 않고, 끝난 결과 한 번만 기록한다
+  let ed = null;
+  _rtfRestoring = true;
+  try{ ed = rtfCmdRun(btnEl, cmd, val); } finally { _rtfRestoring = false; }
+  if (ed) ed.dispatchEvent(new Event('input', {bubbles:true}));
+}
+function rtfCmdRun(btnEl, cmd, val){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   editable.focus();
@@ -10009,8 +10016,99 @@ function rtfCmd(btnEl, cmd, val){
   } else {
     document.execCommand(cmd, false, val);
   }
-  editable.dispatchEvent(new Event('input', {bubbles:true}));
+  return editable;
 }
+// [버그 수정] 서식 입력란 실행 취소(Ctrl+Z) — 글자 크기·색·글꼴 같은 서식 적용은 execCommand로 만든 <font> 태그를 곧바로
+// <span style>으로 바꿔치기(DOM 직접 수정)하는데, 이 바꿔치기는 브라우저 기본 실행 취소 기록에 남지 않아 실행 취소하면
+// 이전 상태로 돌아가지 않고 글이 복제되곤 했다. 서식 입력란(.rtf-editable)은 브라우저 기본 실행 취소 대신,
+// 입력·서식 적용 때마다 편집 영역 내용(HTML)과 커서 위치를 저장하는 자체 기록으로 실행 취소/다시 실행을 처리한다
+const _rtfHist = new WeakMap();
+let _rtfRestoring = false;
+function rtfTextPos(root, node, off){
+  let n = 0; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let t; while ((t = w.nextNode())){ if (t===node) return n + off; n += t.nodeValue.length; }
+  // 커서가 요소 노드 안에 있으면 그 앞쪽 글자 수로 계산
+  const r = document.createRange(); r.setStart(root, 0);
+  try{ r.setEnd(node, off); }catch(e){ return n; }
+  return r.toString().length;
+}
+function rtfCaretState(ed){
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || !ed.contains(sel.anchorNode)) return null;
+  return {a: rtfTextPos(ed, sel.anchorNode, sel.anchorOffset), f: rtfTextPos(ed, sel.focusNode, sel.focusOffset)};
+}
+function rtfNodeAt(root, pos){
+  let n = 0; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let t, last = null;
+  while ((t = w.nextNode())){ last = t; if (pos <= n + t.nodeValue.length) return [t, pos - n]; n += t.nodeValue.length; }
+  return last ? [last, last.nodeValue.length] : [root, root.childNodes.length];
+}
+function rtfRestoreCaret(ed, st){
+  if (!st) return;
+  try{
+    const a = rtfNodeAt(ed, st.a), f = rtfNodeAt(ed, st.f);
+    const sel = window.getSelection(); sel.removeAllRanges();
+    sel.setBaseAndExtent(a[0], a[1], f[0], f[1]);
+  }catch(e){}
+}
+function rtfHistInit(ed){
+  let h = _rtfHist.get(ed);
+  if (!h){ h = {stack:[{html:ed.innerHTML, sel:null}], idx:0, t:0, typing:false}; _rtfHist.set(ed, h); }
+  else if (h.stack[h.idx].html !== ed.innerHTML){ h.stack = [{html:ed.innerHTML, sel:null}]; h.idx = 0; h.typing = false; } // 바깥에서 내용이 바뀐 경우 기록을 새로 시작
+  return h;
+}
+function rtfHistRecord(ed, e){
+  const h = _rtfHist.get(ed);
+  if (!h){ rtfHistInit(ed); return; } // 포커스 없이 바뀐 경우(프로그램 입력) — 지금 상태를 시작점으로
+  const cur = h.stack[h.idx];
+  if (cur.html === ed.innerHTML) { cur.sel = rtfCaretState(ed) || cur.sel; return; }
+  const typing = !!(e && e.isTrusted && /^(insertText|deleteContent)/.test(e.inputType||''));
+  const now = Date.now();
+  h.stack.length = h.idx + 1; // 되돌린 뒤 새로 입력하면 이후 기록은 버린다
+  if (typing && h.typing && now - h.t < 700){
+    h.stack[h.idx] = {html: ed.innerHTML, sel: rtfCaretState(ed)}; // 이어서 타이핑 중이면 한 단계로 묶는다
+  } else {
+    h.stack.push({html: ed.innerHTML, sel: rtfCaretState(ed)});
+    if (h.stack.length > 100) h.stack.shift();
+    h.idx = h.stack.length - 1;
+  }
+  h.typing = typing; h.t = now;
+}
+function rtfHistStep(ed, dir){
+  const h = rtfHistInit(ed);
+  const ni = h.idx + dir;
+  if (ni < 0 || ni >= h.stack.length) return;
+  h.idx = ni; h.typing = false;
+  _rtfRestoring = true;
+  try{
+    ed.innerHTML = h.stack[ni].html;
+    rtfRestoreCaret(ed, h.stack[ni].sel);
+    ed.dispatchEvent(new Event('input', {bubbles:true})); // 필드 저장 함수(oninput) 호출
+  } finally { _rtfRestoring = false; }
+}
+document.addEventListener('focusin', e=>{
+  const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
+  if (ed) rtfHistInit(ed);
+});
+document.addEventListener('input', e=>{
+  if (_rtfRestoring) return;
+  const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
+  if (ed) rtfHistRecord(ed, e);
+});
+document.addEventListener('keydown', e=>{
+  const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
+  if (!ed || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const k = (e.key||'').toLowerCase();
+  if (k==='z' || k==='y'){
+    e.preventDefault();
+    rtfHistStep(ed, (k==='y' || e.shiftKey) ? 1 : -1);
+  }
+}, true);
+document.addEventListener('beforeinput', e=>{
+  const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
+  if (!ed) return;
+  if (e.inputType==='historyUndo'){ e.preventDefault(); rtfHistStep(ed, -1); }
+  else if (e.inputType==='historyRedo'){ e.preventDefault(); rtfHistStep(ed, 1); }
+}, true);
 // [추가] 링크 — 전체 공지 본문 편집기 전용. 툴바의 🔗링크를 누르면 주소 입력줄이 열리고, 미리 선택해 둔 글자에
 // <a href target="_blank">를 건다(이미 링크 안이면 주소 수정/해제). 선택영역은 mousedown 시 rtfSaveSelection()이 저장해 둔 것을 쓴다
 function rtfLinkBarHTML(){
@@ -10070,9 +10168,12 @@ function rtfLinkApply(el){
   editable.focus();
   const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(_rtfLinkRange);
   const anc = (_rtfLinkRange.commonAncestorContainer.nodeType===3 ? _rtfLinkRange.commonAncestorContainer.parentNode : _rtfLinkRange.commonAncestorContainer).closest('a');
-  if (_rtfLinkRange.collapsed && anc){ anc.setAttribute('href', url); }
-  else document.execCommand('createLink', false, url);
-  editable.querySelectorAll('a[href]').forEach(a=>{ a.setAttribute('target','_blank'); a.setAttribute('rel','noopener noreferrer'); });
+  _rtfRestoring = true;
+  try{
+    if (_rtfLinkRange.collapsed && anc){ anc.setAttribute('href', url); }
+    else document.execCommand('createLink', false, url);
+    editable.querySelectorAll('a[href]').forEach(a=>{ a.setAttribute('target','_blank'); a.setAttribute('rel','noopener noreferrer'); });
+  } finally { _rtfRestoring = false; }
   editable.dispatchEvent(new Event('input', {bubbles:true}));
   bar.hidden = true; _rtfLinkRange = null;
 }
@@ -10086,7 +10187,8 @@ function rtfLinkRemove(el){
     if (_rtfLinkRange.collapsed && anc){
       const rg = document.createRange(); rg.selectNodeContents(anc); sel.removeAllRanges(); sel.addRange(rg);
     }
-    document.execCommand('unlink');
+    _rtfRestoring = true;
+    try{ document.execCommand('unlink'); } finally { _rtfRestoring = false; }
     editable.dispatchEvent(new Event('input', {bubbles:true}));
   }
   bar.hidden = true; _rtfLinkRange = null;

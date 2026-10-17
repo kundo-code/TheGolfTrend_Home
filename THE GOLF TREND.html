@@ -644,6 +644,8 @@ section.block{padding:100px 24px;position:relative}
 .product-checkpoint2{font-size:.84rem;line-height:1.5;color:#646464;font-weight:400;background:#FFF5F5;border:1px solid rgba(214,41,62,.18);border-radius:10px;padding:9px 12px;margin-bottom:10px;white-space:pre-line;text-align:left}
 .product-checkpoint2 div,.product-checkpoint2 p,.product-checkpoint1 div,.product-checkpoint1 p{margin:0}
 .product-checkpoint1,.product-checkpoint2,.product-tag-row .tag-inline,.product-visual-title h4{overflow-wrap:anywhere;max-width:100%}
+/* [수정] 카드의 참고사항 박스(.product-checkpoint1)는 "포함·불포함·참고사항" 서식 입력란과 같은 값이라 상세페이지용 글자 크기(pt)가 섞여 들어올 수 있다 — 카드에서는 주의사항 박스(.product-checkpoint2)와 같은 크기(.84rem)로 통일 */
+.product-checkpoint1 *{font-size:inherit!important}
 .product-checkpoint1 .rtf-table,.product-checkpoint2 .rtf-table{margin:2px 0;white-space:normal;max-width:100%;table-layout:fixed}
 .product-checkpoint1 .rtf-table td,.product-checkpoint2 .rtf-table td{font-size:inherit;padding:3px 6px;border-color:currentColor}
 /* [수정] 체크포인트2는 상품 카드에서 빨간색 텍스트로 강조 노출 */

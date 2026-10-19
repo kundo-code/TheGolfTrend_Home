@@ -907,9 +907,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;transition:background .2s}
 .pd-gallery-nav:hover{background:rgba(0,0,0,.75)}
 .pd-gallery-nav.prev{left:12px}.pd-gallery-nav.next{right:12px}
-.pd-cap{position:absolute;right:12px;bottom:12px;z-index:3;max-width:78%;padding:6px 12px;border-radius:10px;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);color:#fff;font-size:.82rem;font-weight:600;line-height:1.35;text-align:right;letter-spacing:.02em;display:none;overflow-wrap:anywhere} /* 사진별 설명 — 우측 하단 */
+.pd-cap{position:absolute;left:12px;bottom:12px;z-index:3;max-width:calc(100% - 110px);padding:6px 12px;border-radius:10px;background:rgba(0,0,0,.31);backdrop-filter:blur(6px);color:#fff;font-size:.82rem;font-weight:600;line-height:1.35;text-align:left;letter-spacing:.02em;display:none;overflow-wrap:anywhere} /* 사진별 설명 — 좌측 하단, 어두운 반투명 배경(투명도 50% 높임) */
 .pd-cap.active{display:block}
-.pd-gallery-counter{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;font-size:.72rem;padding:5px 12px;border-radius:100px;z-index:3;letter-spacing:.05em}
+.pd-gallery-counter{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;font-size:.72rem;padding:5px 12px;border-radius:100px;z-index:3;letter-spacing:.05em}
 .pd-thumbs{display:flex;gap:6px;padding:12px;overflow-x:auto;scrollbar-width:thin}
 .pd-thumbs::-webkit-scrollbar{height:6px}
 .pd-thumbs::-webkit-scrollbar-thumb{background:rgba(10,23,48,.15);border-radius:3px}
@@ -17497,7 +17497,7 @@ function galleryEditorHTML(p, set){
             <div class="g-actions">
               <button class="g-btn del" onclick="removeGallery(${i},${set})" title="삭제">×</button>
             </div>
-            <input type="text" class="g-cap" maxlength="60" placeholder="사진 설명 (우측 하단 노출)" value="${escapeAttr(g.caption||'')}" title="이 사진의 상세페이지 갤러리 우측 하단에 노출될 텍스트" onfocus="this.closest('.gallery-thumb').draggable=false" onblur="this.closest('.gallery-thumb').draggable=true" oninput="setGalleryCaption(${i},${set},this.value)">
+            <input type="text" class="g-cap" maxlength="60" placeholder="사진 설명 (좌측 하단 노출)" value="${escapeAttr(g.caption||'')}" title="이 사진의 상세페이지 갤러리 좌측 하단에 노출될 텍스트" onfocus="this.closest('.gallery-thumb').draggable=false" onblur="this.closest('.gallery-thumb').draggable=true" oninput="setGalleryCaption(${i},${set},this.value)">
           </div>`).join('')}
           ${!full ? `<label class="gallery-add-slot" title="빈 슬롯 · 클릭하여 이미지 추가 (다른 세트의 사진을 여기로 끌어 옮길 수도 있음)" ondragover="galDragOver(event)" ondragleave="galDragLeave(event)" ondrop="galDrop(event,${n},${set})">
             <input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this,${set})">

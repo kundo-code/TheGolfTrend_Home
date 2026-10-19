@@ -907,7 +907,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;transition:background .2s}
 .pd-gallery-nav:hover{background:rgba(0,0,0,.75)}
 .pd-gallery-nav.prev{left:12px}.pd-gallery-nav.next{right:12px}
-.pd-gallery-counter{position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;font-size:.72rem;padding:5px 12px;border-radius:100px;z-index:3;letter-spacing:.05em}
+.pd-cap{position:absolute;right:12px;bottom:12px;z-index:3;max-width:78%;padding:6px 12px;border-radius:10px;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);color:#fff;font-size:.82rem;font-weight:600;line-height:1.35;text-align:right;letter-spacing:.02em;display:none;overflow-wrap:anywhere} /* 사진별 설명 — 우측 하단 */
+.pd-cap.active{display:block}
+.pd-gallery-counter{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;font-size:.72rem;padding:5px 12px;border-radius:100px;z-index:3;letter-spacing:.05em}
 .pd-thumbs{display:flex;gap:6px;padding:12px;overflow-x:auto;scrollbar-width:thin}
 .pd-thumbs::-webkit-scrollbar{height:6px}
 .pd-thumbs::-webkit-scrollbar-thumb{background:rgba(10,23,48,.15);border-radius:3px}
@@ -1959,8 +1961,12 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .gallery-set-move .apc-btn-sm{min-width:30px;padding:4px 8px}
 .gallery-set-move .apc-btn-sm:disabled{opacity:.35;cursor:default}
 .gallery-thumb.video-thumb video{width:100%;height:100%;object-fit:cover;display:block} /* [Phase 3 상품등록 개선] 동영상 갤러리 */
+.gallery-thumb .g-cap{position:absolute;left:0;right:0;bottom:0;width:100%;height:28px;box-sizing:border-box;border:none;border-top:1px solid rgba(255,255,255,.25);background:rgba(10,23,48,.72);color:#fff;font-size:.66rem;padding:0 6px;outline:none;z-index:2;cursor:text}
+.gallery-thumb .g-cap::placeholder{color:rgba(255,255,255,.55)}
+.gallery-thumb .g-cap:focus{background:rgba(10,23,48,.92)}
 .gallery-thumb .g-actions{position:absolute;inset:0;background:rgba(10,23,48,.55);display:none;align-items:center;justify-content:center;gap:4px}
 .gallery-thumb:hover .g-actions{display:flex}
+.gallery-thumb:has(.g-cap) .g-actions{inset:0 0 28px 0}
 .gallery-thumb .g-btn{width:26px;height:26px;border-radius:50%;background:var(--nm-white);color:var(--nm-text);border:none;cursor:pointer;font-size:.72rem;display:grid;place-items:center;font-weight:700}
 .gallery-thumb .g-btn:hover{background:var(--nm-blue);color:#fff}
 .gallery-thumb .g-btn.del{background:var(--nm-danger);color:#fff}
@@ -13329,13 +13335,13 @@ function pdWheelHandler(e){
 })();
 // [수정] 동영상은 별도의 "동영상 갤러리" 섹션(마우스 오버 재생)으로 분리되어, 여기서는 이미지만 다룬다
 function pdMediaList(p){
-  return (p.gallery||[]).map(g=>({url:g.url,type:'image'}));
+  return (p.gallery||[]).map(g=>({url:g.url,type:'image',caption:g.caption||''}));
 }
 // [추가] 이미지 갤러리 세트 — 기본 갤러리(p.gallery) + 추가 세트(p.extraGalleries, 최대 5개).
 // 사진이 1장 이상 있는 세트만 순서대로 반환한다(골프장 2색·3색 구성을 코스별로 나눠 보여주기 위함)
 function pdGallerySets(p){
   const sets=[{subtitle:p.gallerySubtitle||'', items:pdMediaList(p)}];
-  (p.extraGalleries||[]).slice(0, GALLERY_SET_MAX-1).forEach(g=>sets.push({subtitle:(g&&g.subtitle)||'', items:((g&&g.items)||[]).map(x=>({url:x.url,type:'image'}))}));
+  (p.extraGalleries||[]).slice(0, GALLERY_SET_MAX-1).forEach(g=>sets.push({subtitle:(g&&g.subtitle)||'', items:((g&&g.items)||[]).map(x=>({url:x.url,type:'image',caption:x.caption||''}))}));
   return sets.filter(g=>g.items.length);
 }
 function pdGalleryEl(k){ return document.querySelector(`#pdContent .pd-gallery[data-gset="${k}"]`); }
@@ -13411,6 +13417,7 @@ function updateGalleryDisplay(k){
     if (el.dataset.src && near){ el.src=el.dataset.src; el.removeAttribute('data-src'); }
   });
   g.querySelectorAll('.pd-thumb').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  g.querySelectorAll('.pd-cap').forEach(c=>c.classList.toggle('active', +c.dataset.i===idx)); // 사진별 설명 — 지금 보이는 사진의 것만
   const counter=g.querySelector('.pd-gallery-counter');
   if (counter) counter.textContent=`${idx+1} / ${n}`;
 }
@@ -13541,6 +13548,7 @@ function renderProductDetail(p,cat,idx){
         ${items.map((m,i)=> i===0
           ? `<img src="${escapeAttr(m.url)}" class="active" alt="${altBase}${g.subtitle?' '+escapeAttr(g.subtitle):''} - 사진 1" loading="${k===0?'eager':'lazy'}" decoding="async">`
           : `<img data-src="${escapeAttr(m.url)}" alt="${altBase}${g.subtitle?' '+escapeAttr(g.subtitle):''} - 사진 ${i+1}" decoding="async">`).join('')}
+        ${items.map((m,i)=> m.caption && String(m.caption).trim() ? `<span class="pd-cap${i===0?' active':''}" data-i="${i}">${escapeAttr(String(m.caption).trim())}</span>` : '').join('')}
         ${n>1?`<button class="pd-gallery-nav prev" onclick="pdGalleryNext(-1,${k})" aria-label="이전">‹</button>
         <button class="pd-gallery-nav next" onclick="pdGalleryNext(1,${k})" aria-label="다음">›</button>
         <span class="pd-gallery-counter">1 / ${n}</span>`:''}
@@ -17489,6 +17497,7 @@ function galleryEditorHTML(p, set){
             <div class="g-actions">
               <button class="g-btn del" onclick="removeGallery(${i},${set})" title="삭제">×</button>
             </div>
+            <input type="text" class="g-cap" maxlength="60" placeholder="사진 설명 (우측 하단 노출)" value="${escapeAttr(g.caption||'')}" title="이 사진의 상세페이지 갤러리 우측 하단에 노출될 텍스트" onfocus="this.closest('.gallery-thumb').draggable=false" onblur="this.closest('.gallery-thumb').draggable=true" oninput="setGalleryCaption(${i},${set},this.value)">
           </div>`).join('')}
           ${!full ? `<label class="gallery-add-slot" title="빈 슬롯 · 클릭하여 이미지 추가 (다른 세트의 사진을 여기로 끌어 옮길 수도 있음)" ondragover="galDragOver(event)" ondragleave="galDragLeave(event)" ondrop="galDrop(event,${n},${set})">
             <input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this,${set})">
@@ -17498,6 +17507,12 @@ function galleryEditorHTML(p, set){
         </div>
       </div>
     </div>`;
+}
+function setGalleryCaption(i, set, val){
+  const p=getAdvProduct(); if (!p) return;
+  const it=galItems(p,set)[i]; if (!it) return;
+  if (val) it.caption=val; else delete it.caption;
+  saveAdvChange();
 }
 function galSetCount(p){ return 1 + Math.min((p.extraGalleries||[]).length, GALLERY_SET_MAX-1); }
 // [추가] 이미지 갤러리 세트 단위 순서 변경 — 세트(부제 + 사진 묶음)를 통째로 위/아래와 맞바꾼다.

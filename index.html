@@ -2257,6 +2257,11 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-global-hint.flash{display:block!important;color:#D6293E;font-weight:700}
 /* 한 줄 입력란(카드 태그·대표 문구 등)에서는 줄간격·표·하위서식 버튼을 숨기지 않고 흐리게 — 눌러도 적용되지 않는다 */
 .rtf-global.rtf-single .rtf-btn[title="표 넣기"],.rtf-global.rtf-single .rtf-sub-btn,.rtf-global.rtf-single .rtf-lh-sel{opacity:.38}
+.rtf-global.rtf-single.rtf-ind .rtf-sub-btn{opacity:1}
+/* 입력란 오른쪽에 항상 보이는 "들여쓰기" 선택(추가 요금 안내 항목·부제목) */
+.ind-line{display:flex;align-items:center;gap:6px}
+.ind-line .rtf-editable{flex:1;min-width:0}
+.ind-line select.rtf-ind-sel{flex:0 0 auto;width:auto;height:34px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.7rem;padding:0 4px;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer}
 .adv-editor-overlay .rtf-wrap:not(.rtf-global) > .rtf-toolbar{display:none!important}
 .adv-editor-overlay .rtf-editable.rtf-active-target{box-shadow:0 0 0 2px var(--nm-blue)}
 @media(max-width:640px){ .rtf-global .rtf-toolbar{flex-wrap:nowrap;overflow-x:auto;padding:6px 14px} .rtf-global .rtf-toolbar::-webkit-scrollbar{height:0} }
@@ -10148,6 +10153,7 @@ document.addEventListener('focusin', e=>{
   ed.classList.add('rtf-active-target');
   _rtfActiveEditable = ed;
   bar.classList.toggle('rtf-single', ed.matches(RTF_SINGLE_SEL));
+  bar.classList.toggle('rtf-ind', !!(ed.closest('.rtf-wrap') && ed.closest('.rtf-wrap').querySelector('.rtf-ind-sel'))); // 들여쓰기 선택이 붙은 줄은 하위서식 버튼이 들여쓰기를 전환
   bar.classList.add('has-target');
 });
 // [추가] 툴바 하나가 여러 편집 영역을 함께 쓰는 경우(카드 태그 10개) — 마지막으로 편집하던 영역에 적용
@@ -10491,6 +10497,13 @@ function rtfToggleSub(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   if (!editable){ rtfNoTargetHint(); return; }
+  // [추가] 추가 요금 안내 항목·부제목처럼 입력란 옆에 "들여쓰기" 선택이 있는 한 줄 입력란 — 하위서식 버튼은 그 줄의 들여쓰기를 없음 ↔ 1단계로 바꾼다
+  const indSel = editable.closest('.rtf-wrap') && editable.closest('.rtf-wrap').querySelector('.rtf-ind-sel');
+  if (indSel){
+    indSel.value = indSel.value==='0' ? '1' : '0';
+    indSel.dispatchEvent(new Event('change', {bubbles:true}));
+    return;
+  }
   if (rtfSingleBlocked(editable)) return;
   editable.focus();
   rtfRestoreSelection(editable);
@@ -16601,9 +16614,9 @@ function defaultExtraFees(){
 function efEditorHTML(i, field, value, placeholder, indent){
   const hasInd = indent!==undefined;
   const lv = Math.max(0, Math.min(3, Number(indent)||0));
-  let tb = rtfToolbarHTML();
-  if (hasInd) tb = tb.replace(/<\/div>\s*$/, indentSelectHTML(`setEfIndent(${i},this)`, lv)+'</div>');
-  return `<div class="rtf-wrap dp-group-rtf ef-rtf">${tb}<div class="rtf-editable dp-title-edit"${hasInd?` style="padding-left:calc(14px + ${lv*1.5}em)"`:''} contenteditable="true" data-placeholder="${escapeAttr(placeholder)}" oninput="updateExtraFee(${i},'${field}',this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(value||'')}</div></div>`;
+  // [수정] 들여쓰기 선택은 (고급편집 창에서 숨겨진) 개별 서식 도구 안이 아니라 입력란 오른쪽에 항상 보이게 둔다
+  const indSel = hasInd ? indentSelectHTML(`setEfIndent(${i},this)`, lv) : '';
+  return `<div class="rtf-wrap dp-group-rtf ef-rtf">${rtfToolbarHTML()}<div class="ind-line"><div class="rtf-editable dp-title-edit"${hasInd?` style="padding-left:calc(14px + ${lv*1.5}em)"`:''} contenteditable="true" data-placeholder="${escapeAttr(placeholder)}" oninput="updateExtraFee(${i},'${field}',this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(value||'')}</div>${indSel}</div></div>`;
 }
 // [추가] 위치 정보 노출 링크 — "자세히 보기 > 문의하기 > 📍 위치보기" 버튼의 이동 주소.
 // 숙박 위치·골프장 위치 두 묶음이 있고, 각 묶음마다 이름(선택)+주소를 여러 개 추가·삭제·위/아래 이동할 수 있다
@@ -16715,7 +16728,7 @@ function setEfIndent(i, selEl){
 }
 function addExtraFee(){
   const p=getAdvProduct(); if (!p) return;
-  p.extraFees.push({kind:'item',label:'',amount:''});
+  p.extraFees.push({kind:'item',label:'',amount:'',indent:1}); // 새 항목은 하위서식(들여쓰기 1단계)으로 시작
   saveAdvChange(); renderAdvBody();
 }
 function addExtraFeeGroup(){
@@ -17427,10 +17440,9 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
   // 서식 도구에 "들여쓰기"(1.5글자 단위, 최대 3단계) 선택을 더한다 — 값은 부제목 항목의 indent로 저장
   const ind = Math.max(0, Math.min(3, Number(m.indent)||0));
   const indSel = indentSelectHTML(`setDpTitleIndent(${peIdx},'${kind}',${i},this)`, ind);
-  const toolbar = rtfToolbarHTML().replace(/<\/div>\s*$/, indSel+'</div>');
   return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span>
-    <div class="rtf-wrap dp-group-rtf">${toolbar}
-      <div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em)" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>
+    <div class="rtf-wrap dp-group-rtf">${rtfToolbarHTML()}
+      <div class="ind-line"><div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em)" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>${indSel}</div>
     </div>
     <button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
 }

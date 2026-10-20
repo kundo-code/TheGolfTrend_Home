@@ -2261,7 +2261,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 /* 입력란 오른쪽에 항상 보이는 "들여쓰기" 선택(추가 요금 안내 항목·부제목) */
 .ind-line{display:flex;align-items:center;gap:6px}
 .ind-line .rtf-editable{flex:1;min-width:0}
-.ind-line select.rtf-ind-sel{flex:0 0 auto;width:auto;height:34px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.7rem;padding:0 4px;box-shadow:var(--nm-shadow-raised-sm);cursor:pointer}
+.ind-line select.rtf-ind-sel{display:none} /* 들여쓰기 단계는 상단 공용 서식 도구의 하위서식(+1단계)·들여쓰기 없음 버튼으로 조절 — 입력란 폭을 넓게 쓰기 위해 줄 안에는 두지 않는다(값 저장용으로만 유지) */
 .adv-editor-overlay .rtf-wrap:not(.rtf-global) > .rtf-toolbar{display:none!important}
 .adv-editor-overlay .rtf-editable.rtf-active-target{box-shadow:0 0 0 2px var(--nm-blue)}
 @media(max-width:640px){ .rtf-global .rtf-toolbar{flex-wrap:nowrap;overflow-x:auto;padding:6px 14px} .rtf-global .rtf-toolbar::-webkit-scrollbar{height:0} }
@@ -10497,10 +10497,12 @@ function rtfToggleSub(btnEl, mode){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   if (!editable){ rtfNoTargetHint(); return; }
-  // [추가] 추가 요금 안내 항목·부제목처럼 입력란 옆에 "들여쓰기" 선택이 있는 한 줄 입력란 — 하위서식 버튼은 그 줄의 들여쓰기를 없음 ↔ 1단계로 바꾼다
+  // [추가] 추가 요금 안내 항목·부제목처럼 들여쓰기 단계(0~3)를 가진 한 줄 입력란 — 하위서식 버튼은 그 줄의 들여쓰기를 한 단계씩 늘린다
   const indSel = editable.closest('.rtf-wrap') && editable.closest('.rtf-wrap').querySelector('.rtf-ind-sel');
   if (indSel){
-    indSel.value = (mode==='off' || indSel.value!=='0') ? '0' : '1';
+    // 하위서식 = 들여쓰기 +1단계(최대 3단계), 들여쓰기 없음 = 0단계
+    const cur = Math.max(0, Math.min(3, Number(indSel.value)||0));
+    indSel.value = String(mode==='off' ? 0 : Math.min(3, cur+1));
     indSel.dispatchEvent(new Event('change', {bubbles:true}));
     return;
   }

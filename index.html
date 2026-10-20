@@ -1748,7 +1748,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .dp-group-rtf{flex:1;min-width:0}
 .dp-group-rtf .rtf-toolbar{display:none}
 .dp-group-rtf:focus-within .rtf-toolbar{display:flex}
-.dp-group-rtf .rtf-lh-sel,.dp-group-rtf .rtf-sub-btn,.dp-group-rtf .rtf-btn[title="표 넣기"]{display:none}
+.dp-group-rtf .rtf-lh-sel,.dp-group-rtf .rtf-sub-btn,.dp-group-rtf .rtf-nosub-btn,.dp-group-rtf .rtf-btn[title="표 넣기"]{display:none}
 .rtf-editable.dp-title-edit{min-height:0!important;padding:9px 14px;background:#fff;font-size:.9rem;line-height:1.4}
 .rtf-editable.dp-title-edit:empty:before{white-space:normal;font-size:.8rem}
 /* 자세히 보기 요금표의 항목 사이 구분선 */
@@ -1932,8 +1932,8 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-sub{display:block;padding-left:1.5em}
 .rtf-editable .rtf-sub{box-shadow:inset 2px 0 0 rgba(47,111,237,.28)}
 .pd-check-list .row.row-sub{padding-left:calc(24px + 1.5em)}
-.rtf-btn.rtf-sub-btn{width:auto;padding:0 8px;font-size:.68rem;white-space:nowrap}
-.card-tag-editor .rtf-sub-btn{display:none}
+.rtf-btn.rtf-sub-btn,.rtf-btn.rtf-nosub-btn{width:auto;padding:0 8px;font-size:.68rem;white-space:nowrap}
+.card-tag-editor .rtf-sub-btn,.card-tag-editor .rtf-nosub-btn{display:none}
 .ta-sub-wrap{position:relative}
 .ta-sub-wrap textarea{tab-size:5;-moz-tab-size:5}
 .ta-sub-btn{float:right;margin:-2px 0 4px;padding:3px 9px;border:none;border-radius:8px;background:var(--nm-surface-light,#eef1f6);color:var(--nm-text,#0a1730);font-size:.66rem;font-weight:700;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm,0 1px 3px rgba(0,0,0,.12))}
@@ -2256,8 +2256,8 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-global.has-target .rtf-global-hint{display:none}
 .rtf-global-hint.flash{display:block!important;color:#D6293E;font-weight:700}
 /* 한 줄 입력란(카드 태그·대표 문구 등)에서는 줄간격·표·하위서식 버튼을 숨기지 않고 흐리게 — 눌러도 적용되지 않는다 */
-.rtf-global.rtf-single .rtf-btn[title="표 넣기"],.rtf-global.rtf-single .rtf-sub-btn,.rtf-global.rtf-single .rtf-lh-sel{opacity:.38}
-.rtf-global.rtf-single.rtf-ind .rtf-sub-btn{opacity:1}
+.rtf-global.rtf-single .rtf-btn[title="표 넣기"],.rtf-global.rtf-single .rtf-sub-btn,.rtf-global.rtf-single .rtf-nosub-btn,.rtf-global.rtf-single .rtf-lh-sel{opacity:.38}
+.rtf-global.rtf-single.rtf-ind .rtf-sub-btn,.rtf-global.rtf-single.rtf-ind .rtf-nosub-btn{opacity:1}
 /* 입력란 오른쪽에 항상 보이는 "들여쓰기" 선택(추가 요금 안내 항목·부제목) */
 .ind-line{display:flex;align-items:center;gap:6px}
 .ind-line .rtf-editable{flex:1;min-width:0}
@@ -9976,7 +9976,7 @@ function rtfToolbarHTML(opts){
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
       ${opts.link?`<button type="button" class="rtf-btn rtf-link-btn" title="링크 — 텍스트를 선택한 뒤 누르면 선택한 글자에 주소(URL)를 걸어 클릭 시 바로 이동" onmousedown="event.preventDefault()" onclick="rtfLinkOpen(this)">🔗링크</button>`:''}
-      ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button>`}
+      ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button><button type="button" class="rtf-btn rtf-nosub-btn" title="들여쓰기 없음 — 지금 줄(선택한 줄들)의 하위서식·들여쓰기를 해제" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this,'off')">들여쓰기 없음</button>`}
       <span class="rtf-color-group">
         <button type="button" class="rtf-btn rtf-color-apply" title="글자 색상 적용(밑줄 색) — 텍스트를 선택하고 누르면 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'foreColor',_rtfColor)"><span class="rtf-color-t">T</span><span class="rtf-color-bar"></span></button>
         <button type="button" class="rtf-btn rtf-color-more" title="글자 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="글자 색상" data-apply="rtfPickColor(el,__C__)">▾</button>
@@ -10493,14 +10493,14 @@ function rtfNormalizeLines(editable){
   }
   editable.querySelectorAll('[data-rtf-mark]').forEach(m=>m.remove());
 }
-function rtfToggleSub(btnEl){
+function rtfToggleSub(btnEl, mode){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   if (!editable){ rtfNoTargetHint(); return; }
   // [추가] 추가 요금 안내 항목·부제목처럼 입력란 옆에 "들여쓰기" 선택이 있는 한 줄 입력란 — 하위서식 버튼은 그 줄의 들여쓰기를 없음 ↔ 1단계로 바꾼다
   const indSel = editable.closest('.rtf-wrap') && editable.closest('.rtf-wrap').querySelector('.rtf-ind-sel');
   if (indSel){
-    indSel.value = indSel.value==='0' ? '1' : '0';
+    indSel.value = (mode==='off' || indSel.value!=='0') ? '0' : '1';
     indSel.dispatchEvent(new Event('change', {bubbles:true}));
     return;
   }
@@ -10518,7 +10518,7 @@ function rtfToggleSub(btnEl){
   if (!first) return;
   const blocks=[]; let cur=first;
   while (cur){ if (cur.nodeType===1 && cur.tagName==='DIV') blocks.push(cur); if (cur===last) break; cur=cur.nextSibling; }
-  const makeSub = !first.classList.contains('rtf-sub');
+  const makeSub = mode==='off' ? false : !first.classList.contains('rtf-sub');
   blocks.forEach(b=>{ b.classList.toggle('rtf-sub', makeSub); if (!b.className) b.removeAttribute('class'); });
   try{ const r=document.createRange(); r.setStart(keep.sn, keep.so); r.setEnd(keep.en, keep.eo); sel.removeAllRanges(); sel.addRange(r); }catch(e){}
   editable.dispatchEvent(new Event('input', {bubbles:true}));

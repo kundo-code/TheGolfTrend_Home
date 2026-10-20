@@ -720,7 +720,12 @@ section.block{padding:100px 24px;position:relative}
 .product-foot .price.price-inquiry{font-family:'Pretendard','Noto Sans KR',sans-serif;font-weight:800;letter-spacing:.01em;font-size:1.5rem}
 @media(max-width:780px){ .product-foot .price.price-inquiry{font-size:1.35rem} }
 .inquiry-row{margin-top:8px;grid-template-columns:auto 1fr}
-.inquiry-text{flex:1;min-width:0}
+.inquiry-row{grid-template-columns:auto}
+.inq-editor{margin-top:8px}
+.inq-editor .rtf-btn[title="표 넣기"],.inq-editor .rtf-lh-sel{display:none}
+.inq-row{padding:10px}
+.rtf-editable.inq-edit{min-height:0!important;padding:8px 12px;border-radius:8px;background:#fff;font-size:1rem;font-weight:700;line-height:1.35;white-space:normal}
+.rtf-editable.inq-edit:focus{box-shadow:0 0 0 2px var(--nm-blue)}
 .product-foot .details{color:var(--gold-deep);font-size:.85rem;font-weight:600;text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 3px rgba(10,23,48,.2)}
 .empty-state{text-align:center;padding:60px 20px;color:rgba(10,23,48,.5)}
 .empty-state .big{font-size:2.5rem;margin-bottom:12px}
@@ -10488,7 +10493,7 @@ document.addEventListener('keydown', e=>{
   if (e.key!=='Enter' || e.shiftKey || e.isComposing || e.keyCode===229) return;
   const t = e.target;
   // 서식 입력란(contenteditable)
-  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit') && !t.classList.contains('dp-title-edit') && !t.classList.contains('pe-headline-edit')){
+  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit') && !t.classList.contains('dp-title-edit') && !t.classList.contains('pe-headline-edit') && !t.classList.contains('inq-edit')){
     const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
     const n = rtfCaretBlock(t, sel);
     if (!n || n.nodeType!==1 || !n.classList.contains('rtf-sub')) return;
@@ -10556,7 +10561,7 @@ document.addEventListener('input', e=>{
     }
     return;
   }
-  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit') && !t.classList.contains('dp-title-edit') && !t.classList.contains('pe-headline-edit')){
+  if (t && t.classList && t.classList.contains('rtf-editable') && !t.classList.contains('ctag-edit') && !t.classList.contains('dp-title-edit') && !t.classList.contains('pe-headline-edit') && !t.classList.contains('inq-edit')){
     const sel = window.getSelection(); if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
     const n = rtfCaretBlock(t, sel);
     if (!n || n.nodeType!==1 || n.tagName!=='DIV' || !n.classList.contains('rtf-sub') || !rtfBlockEmpty(n)) return;
@@ -10618,7 +10623,7 @@ document.addEventListener('paste', e=>{
   if (!html) return; // 일반 텍스트 붙여넣기는 브라우저 기본 동작 그대로
   e.preventDefault();
   let clean = rtfCleanPastedHTML(html, t);
-  if (t.classList.contains('ctag-edit') || t.classList.contains('dp-title-edit') || t.classList.contains('pe-headline-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
+  if (t.classList.contains('ctag-edit') || t.classList.contains('dp-title-edit') || t.classList.contains('pe-headline-edit') || t.classList.contains('inq-edit')) clean = clean.replace(/<\/(div|p)>|<br\s*\/?>/gi,' ').replace(/<(div|p)[^>]*>/gi,''); // 카드 태그는 한 줄
   document.execCommand('insertHTML', false, clean);
 }, true);
 // 안내 박스 "공통값 사용" 토글 — 켜면 체크포인트1 - 주의사항(p.checkpoint1)을 그대로 쓰고, 끄면 이 상품 전용 내용을 직접 입력한다.
@@ -11146,7 +11151,14 @@ function getDisplayPrice(p){
 // [추가] "별도 문의" 옵션(p.priceInquiry) — 켜면 상품 카드·스팟라이트의 "금액 · 원 · ~부터" 대신 이 문구(기본 "별도 문의")를 노출한다
 function priceInquiryText(p){
   if (!p || !p.priceInquiry) return '';
-  return String(p.priceInquiryText||'').trim() || '별도 문의';
+  return richToPlain(String(p.priceInquiryText||'')) || '별도 문의';
+}
+// 같은 문구를 서식(크기·색·굵게 등)이 살아 있는 HTML로 — 입력이 비었으면 "별도 문의". 예전 일반 텍스트 값도 그대로 지원
+function priceInquiryHTML(p){
+  if (!p || !p.priceInquiry) return '';
+  const raw = String(p.priceInquiryText||'');
+  if (!richToPlain(raw)) return '별도 문의';
+  return raw.indexOf('<')<0 ? escapeAttr(raw.trim()) : sanitizeRichHTML(raw);
 }
 // [Phase] 상품 카드/스팟라이트(EDITOR'S PICK 히어로) 공통: "카드에 노출"을 켠 레이블 이미지를
 // 등록된 모서리(corner)별로 그룹핑해 각각의 스택으로 렌더링한다. 같은 모서리에 여러 개가 켜져
@@ -11336,7 +11348,7 @@ function productCardHTML(p, catId, idx){
     ${cp2HTML}
     ${hasCp?`<button type="button" class="product-expand" aria-expanded="false" onclick="toggleProductCard(event,this)"><span class="pe-open">펼쳐보기 ▾</span><span class="pe-close">접기 ▴</span></button>`:''}
     <div class="product-foot">
-      ${priceInquiryText(p) ? `<span class="price price-inquiry">${escapeAttr(priceInquiryText(p))}</span>` : `<span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>`}
+      ${priceInquiryText(p) ? `<span class="price price-inquiry">${priceInquiryHTML(p)}</span>` : `<span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>`}
       <span class="details">자세히 →</span>
     </div>
   </article>`;
@@ -11895,7 +11907,7 @@ function renderSpotlightSlot(slot, layer, entry){
   ].filter(Boolean);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   const displayPrice=getDisplayPrice(p);
-  document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? escapeAttr(priceInquiryText(p)) : `${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
+  document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
 }
 function renderSpotlight(){
@@ -16204,9 +16216,15 @@ function advBasicHTML(p){
           <div class="price-row inquiry-row">
             <label class="from-toggle" title="상품 카드·스팟라이트에 금액·원·~부터 대신 문구를 노출">
               <input type="checkbox" ${p.priceInquiry?'checked':''} onchange="updateAdvField('priceInquiry',this.checked)">
-              <span>금액 대신 문구로 표시</span>
+              <span>금액 대신 문구로 표시 <small style="font-weight:400">(아래 입력란 — 비우면 "별도 문의")</small></span>
             </label>
-            <input type="text" class="inquiry-text" maxlength="30" value="${escapeAttr(p.priceInquiryText||'')}" placeholder="별도 문의" oninput="updateAdvField('priceInquiryText',this.value)">
+          </div>
+          <!-- 문구는 카드 태그와 같은 서식 도구(크기·글꼴·B·I·U·색상)로 꾸밀 수 있다 -->
+          <div class="rtf-wrap card-tag-editor inq-editor">
+            ${rtfToolbarHTML({noSub:true})}
+            <div class="inq-row"><div class="rtf-editable inq-edit" contenteditable="true" data-placeholder="별도 문의"
+                 oninput="updateAdvField('priceInquiryText', this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()"
+                 onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(p.priceInquiryText||'')}</div></div>
           </div>
         </div>
         <label>카드 태그 ${hint(`(상품 카드의 요금 위쪽에 노출, 최대 ${CARD_TAG_MAX}개 · 입력한 순서대로 표시 · ⠿를 끌어 순서 이동 · 태그를 클릭한 뒤 위 서식 도구로 꾸미고, 🎨로 태그 박스 색상 변경)`)}</label>

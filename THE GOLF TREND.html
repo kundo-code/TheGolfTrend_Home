@@ -2247,7 +2247,18 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .adv-collapsible-body{padding:4px 14px 14px}
 /* [추가] 고급편집 "기본 · 요금표" 그룹 정리 — 노출 위치(상품 카드 / 자세히 보기 / 요금 항목)별로
    큰 그룹(.adv-group)으로 묶고 각 그룹·세부 섹션을 접을 수 있게 함. 상단 빠른 이동 바는 스크롤해도 고정 */
-.adv-quicknav{position:sticky;top:-22px;z-index:6;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-22px -26px 16px;padding:10px 26px;background:var(--nm-surface);border-bottom:1px solid rgba(10,23,48,.08);box-shadow:0 6px 12px -8px rgba(10,23,48,.18)}
+.adv-sticky-head{position:sticky;top:-22px;z-index:6;margin:-22px -26px 16px;background:var(--nm-surface);border-bottom:1px solid rgba(10,23,48,.08);box-shadow:0 6px 12px -8px rgba(10,23,48,.18)}
+.adv-quicknav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 26px}
+/* 공용 서식 도구 — 노출설정·상품카드·자세히보기·요금항목 메뉴바 바로 아래에 고정 */
+.rtf-wrap.rtf-global{border-radius:0;box-shadow:none;background:transparent;overflow:visible;border-top:1px solid rgba(10,23,48,.07)}
+.rtf-global .rtf-toolbar{padding:6px 26px;border-bottom:none;background:transparent}
+.rtf-global-hint{display:block;padding:0 26px 6px;font-size:.68rem;color:var(--nm-text-soft)}
+.rtf-global.has-target .rtf-global-hint{display:none}
+.rtf-global-hint.flash{color:#D6293E;font-weight:700}
+.rtf-global.rtf-single .rtf-btn[title="표 넣기"],.rtf-global.rtf-single .rtf-sub-btn,.rtf-global.rtf-single .rtf-lh-sel{display:none}
+.adv-editor-overlay .rtf-wrap:not(.rtf-global) > .rtf-toolbar{display:none!important}
+.adv-editor-overlay .rtf-editable.rtf-active-target{box-shadow:0 0 0 2px var(--nm-blue)}
+@media(max-width:640px){ .rtf-global .rtf-toolbar{flex-wrap:nowrap;overflow-x:auto;padding:6px 14px} .rtf-global .rtf-toolbar::-webkit-scrollbar{height:0} }
 .adv-quicknav button{border:none;background:var(--nm-white);color:var(--nm-text);font-family:inherit;font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:var(--nm-r-pill);cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);white-space:nowrap;transition:all .15s}
 .adv-quicknav button:hover{background:var(--nm-blue);color:#fff}
 .adv-quicknav button b{color:var(--nm-blue);font-weight:800}
@@ -10082,7 +10093,7 @@ window.addEventListener('resize', ()=>rtfCloseColorPops());
 document.addEventListener('selectionchange', ()=>{
   const ae = document.activeElement;
   if (!ae || !ae.classList || !ae.classList.contains('rtf-editable')) return;
-  const wrap = ae.closest('.rtf-wrap'); const selEl = wrap && wrap.querySelector('.rtf-size-sel');
+  const wrap = ae.closest('.rtf-wrap'); const selEl = (ae.closest('.adv-editor-overlay') && document.querySelector('.rtf-global .rtf-size-sel')) || (wrap && wrap.querySelector('.rtf-size-sel'));
   if (!selEl || !selEl.options.length) return;
   const sel = window.getSelection(); let n = sel && sel.anchorNode;
   if (n && n.nodeType===3) n = n.parentNode;
@@ -10115,8 +10126,26 @@ function rtfSaveSelection(){
     }
   }
 }
+// [추가] 공용 서식 도구 — 입력란을 클릭하지 않은 채 서식 버튼을 눌렀을 때 안내를 잠깐 강조한다
+function rtfNoTargetHint(){
+  const h = document.querySelector('.rtf-global-hint'); if (!h) return;
+  h.classList.add('flash'); setTimeout(()=>h.classList.remove('flash'), 900);
+}
+const RTF_SINGLE_SEL = '.ctag-edit,.pe-headline-edit,.inq-edit,.dp-title-edit'; // 한 줄 입력란 — 표·하위서식·줄간격은 해당 없음
+document.addEventListener('focusin', e=>{
+  const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
+  const bar = document.querySelector('.rtf-global');
+  if (!ed || !bar || !ed.closest('.adv-editor-overlay')) return;
+  document.querySelectorAll('.rtf-active-target').forEach(x=>{ if (x!==ed) x.classList.remove('rtf-active-target'); });
+  ed.classList.add('rtf-active-target');
+  _rtfActiveEditable = ed;
+  bar.classList.toggle('rtf-single', ed.matches(RTF_SINGLE_SEL));
+  bar.classList.add('has-target');
+});
 // [추가] 툴바 하나가 여러 편집 영역을 함께 쓰는 경우(카드 태그 10개) — 마지막으로 편집하던 영역에 적용
 function rtfTarget(wrap){
+  // [추가] 고급편집 창 상단의 공용 서식 도구(.rtf-global) — 편집 영역을 품고 있지 않으므로, 마지막으로 포커스한 입력란에 적용한다
+  if (wrap.classList.contains('rtf-global')) return (_rtfActiveEditable && _rtfActiveEditable.isConnected) ? _rtfActiveEditable : null;
   if (_rtfActiveEditable && wrap.contains(_rtfActiveEditable) && _rtfActiveEditable.isConnected) return _rtfActiveEditable;
   return wrap.querySelector('.rtf-editable');
 }
@@ -10137,12 +10166,13 @@ function rtfCmd(btnEl, cmd, val){
 function rtfCmdRun(btnEl, cmd, val){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
+  if (!editable){ rtfNoTargetHint(); return null; }
   editable.focus();
   rtfRestoreSelection(editable);
   if (cmd==='fontSize'){
     if (!val) return;
     document.execCommand('fontSize', false, '7');
-    wrap.querySelectorAll('font[size="7"]').forEach(f=>{
+    editable.querySelectorAll('font[size="7"]').forEach(f=>{
       const span = document.createElement('span');
       span.style.fontSize = val + 'pt'; // [수정] pt 단위
       span.innerHTML = f.innerHTML;
@@ -10151,7 +10181,7 @@ function rtfCmdRun(btnEl, cmd, val){
   } else if (cmd==='fontName'){
     if (!val) return;
     document.execCommand('fontName', false, val);
-    wrap.querySelectorAll('font[face]').forEach(f=>{
+    editable.querySelectorAll('font[face]').forEach(f=>{
       const span = document.createElement('span');
       span.style.fontFamily = f.getAttribute('face');
       span.innerHTML = f.innerHTML;
@@ -10161,7 +10191,7 @@ function rtfCmdRun(btnEl, cmd, val){
     // execCommand('foreColor')는 <font color="..."> 같은 예전 방식 태그를 만들어서,
     // <span style="color:..."> 로 바꿔 최신 방식으로 통일한다
     document.execCommand('foreColor', false, val);
-    wrap.querySelectorAll('font[color]').forEach(f=>{
+    editable.querySelectorAll('font[color]').forEach(f=>{
       const span = document.createElement('span');
       span.style.color = f.getAttribute('color');
       span.innerHTML = f.innerHTML;
@@ -10452,6 +10482,7 @@ function rtfNormalizeLines(editable){
 function rtfToggleSub(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
+  if (!editable){ rtfNoTargetHint(); return; }
   editable.focus();
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
@@ -10653,6 +10684,7 @@ function rtfLineHeight(selEl, val){
   if (!val) return;
   const wrap = selEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
+  if (!editable){ rtfNoTargetHint(); return; }
   editable.focus();
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
@@ -10678,6 +10710,7 @@ function rtfLineHeight(selEl, val){
 function rtfInsertTable(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
+  if (!editable){ rtfNoTargetHint(); return; }
   const rows = parseInt(prompt('행(줄) 개수를 입력하세요', '2'), 10);
   const cols = parseInt(prompt('열(칸) 개수를 입력하세요', '2'), 10);
   if (!rows || !cols || rows<1 || cols<1 || rows>20 || cols>10){
@@ -16048,7 +16081,7 @@ function advJump(key){
   const el = body && body.querySelector(`details[data-ck="${key}"]`);
   if (!el) return;
   if (!el.open) el.open = true;
-  const nav = body.querySelector('.adv-quicknav');
+  const nav = body.querySelector('.adv-sticky-head');
   const top = body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav ? nav.offsetHeight : 0) - 8;
   body.scrollTo({top, behavior:'smooth'});
 }
@@ -16085,6 +16118,7 @@ function advBasicHTML(p){
   const nEntries = p.priceEntries.length;
   return `
     <!-- [추가] 빠른 이동 — 스크롤 위치와 무관하게 상단에 고정, 그룹으로 바로 이동·펼치기/접기 -->
+    <div class="adv-sticky-head">
     <div class="adv-quicknav">
       <button type="button" onclick="advJump('g-expose')">⚙️ 노출 설정</button>
       <button type="button" onclick="advJump('g-card')">🃏 상품 카드</button>
@@ -16093,6 +16127,12 @@ function advBasicHTML(p){
       <span class="adv-qn-sp"></span>
       <button type="button" class="adv-qn-mini" onclick="advToggleAll(true)">모두 펼치기</button>
       <button type="button" class="adv-qn-mini" onclick="advToggleAll(false)">모두 접기</button>
+    </div>
+    <!-- [추가] 모든 서식 입력란이 함께 쓰는 공용 서식 도구 — 입력란을 클릭한 뒤 여기서 크기·글꼴·B·I·U·색상 등을 적용한다(각 입력란 위의 개별 도구는 숨김) -->
+    <div class="rtf-wrap rtf-global">
+      ${rtfToolbarHTML()}
+      <span class="rtf-global-hint">✏️ 서식을 적용할 입력란을 먼저 클릭하세요 · 선택한 글자(또는 커서 줄)에 적용됩니다</span>
+    </div>
     </div>
 
     <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->
@@ -16431,7 +16471,7 @@ function advJumpCp(field){
   const open = k=>{ const d=document.querySelector(`#advBody details[data-ck="${k}"]`); if (d) d.open=true; };
   if (field==='checkpoint2'){ open('g-detail'); open('d-inc'); } else open('g-card');
   const el=document.querySelector(`#advBody .cp-editor[data-field="${field}"]`); if (!el) return;
-  const body=document.getElementById('advBody'), nav=body.querySelector('.adv-quicknav');
+  const body=document.getElementById('advBody'), nav=body.querySelector('.adv-sticky-head');
   body.scrollTo({top: body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav?nav.offsetHeight:0) - 10, behavior:'smooth'});
   setTimeout(()=>{ const ed=el.querySelector('.rtf-editable'); if (ed) ed.focus({preventScroll:true}); }, 450);
 }

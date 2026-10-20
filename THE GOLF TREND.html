@@ -717,6 +717,10 @@ section.block{padding:100px 24px;position:relative}
 .product-foot .price{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.869rem;color:var(--pine-deep);font-weight:500}
 .product-foot .price .unit{font-size:.792rem;color:inherit;margin-left:4px}
 .product-foot .price .from{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.792rem;color:var(--gold-deep);font-weight:600;margin-left:4px;letter-spacing:.05em}
+.product-foot .price.price-inquiry{font-family:'Pretendard','Noto Sans KR',sans-serif;font-weight:800;letter-spacing:.01em;font-size:1.5rem}
+@media(max-width:780px){ .product-foot .price.price-inquiry{font-size:1.35rem} }
+.inquiry-row{margin-top:8px;grid-template-columns:auto 1fr}
+.inquiry-text{flex:1;min-width:0}
 .product-foot .details{color:var(--gold-deep);font-size:.85rem;font-weight:600;text-shadow:0 1px 0 rgba(255,255,255,.6),0 2px 3px rgba(10,23,48,.2)}
 .empty-state{text-align:center;padding:60px 20px;color:rgba(10,23,48,.5)}
 .empty-state .big{font-size:2.5rem;margin-bottom:12px}
@@ -11139,6 +11143,11 @@ function closeCategory(regionKey){
 function getDisplayPrice(p){
   return p.from;
 }
+// [추가] "별도 문의" 옵션(p.priceInquiry) — 켜면 상품 카드·스팟라이트의 "금액 · 원 · ~부터" 대신 이 문구(기본 "별도 문의")를 노출한다
+function priceInquiryText(p){
+  if (!p || !p.priceInquiry) return '';
+  return String(p.priceInquiryText||'').trim() || '별도 문의';
+}
 // [Phase] 상품 카드/스팟라이트(EDITOR'S PICK 히어로) 공통: "카드에 노출"을 켠 레이블 이미지를
 // 등록된 모서리(corner)별로 그룹핑해 각각의 스택으로 렌더링한다. 같은 모서리에 여러 개가 켜져
 // 있으면 서로 가리지 않도록 쌓아서 노출. hasOutside는 하나라도 "이미지 밖으로 배치"가 켜져
@@ -11327,7 +11336,7 @@ function productCardHTML(p, catId, idx){
     ${cp2HTML}
     ${hasCp?`<button type="button" class="product-expand" aria-expanded="false" onclick="toggleProductCard(event,this)"><span class="pe-open">펼쳐보기 ▾</span><span class="pe-close">접기 ▴</span></button>`:''}
     <div class="product-foot">
-      <span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>
+      ${priceInquiryText(p) ? `<span class="price price-inquiry">${escapeAttr(priceInquiryText(p))}</span>` : `<span class="price">${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>`}
       <span class="details">자세히 →</span>
     </div>
   </article>`;
@@ -11886,7 +11895,7 @@ function renderSpotlightSlot(slot, layer, entry){
   ].filter(Boolean);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   const displayPrice=getDisplayPrice(p);
-  document.getElementById('spotPrice'+sfx).innerHTML=`${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
+  document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? escapeAttr(priceInquiryText(p)) : `${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
 }
 function renderSpotlight(){
@@ -16191,6 +16200,14 @@ function advBasicHTML(p){
               <span>~부터</span>
             </label>
           </div>
+          <!-- [추가] 별도 문의 — 체크하면 상품 카드·스팟라이트에 금액 대신 아래 문구가 노출된다(금액 입력값은 그대로 보관) -->
+          <div class="price-row inquiry-row">
+            <label class="from-toggle" title="상품 카드·스팟라이트에 금액·원·~부터 대신 문구를 노출">
+              <input type="checkbox" ${p.priceInquiry?'checked':''} onchange="updateAdvField('priceInquiry',this.checked)">
+              <span>금액 대신 문구로 표시</span>
+            </label>
+            <input type="text" class="inquiry-text" maxlength="30" value="${escapeAttr(p.priceInquiryText||'')}" placeholder="별도 문의" oninput="updateAdvField('priceInquiryText',this.value)">
+          </div>
         </div>
         <label>카드 태그 ${hint(`(상품 카드의 요금 위쪽에 노출, 최대 ${CARD_TAG_MAX}개 · 입력한 순서대로 표시 · ⠿를 끌어 순서 이동 · 태그를 클릭한 뒤 위 서식 도구로 꾸미고, 🎨로 태그 박스 색상 변경)`)}</label>
         <!-- [추가] 카드 태그 서식 편집 — 서식 툴바 하나를 태그 10개가 함께 쓰고(마지막으로 클릭한 태그에 적용),
@@ -18145,7 +18162,7 @@ function renderAiResults(results){
       <div class="ai-result-body">
         <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${cardTagsOf(r.p)[0]?`<span class="ai-result-tag">${escapeAttr(cardTagsOf(r.p)[0])}</span>`:''}</div>
         <h4>${r.p.title}</h4>
-        <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${fmtPrice(r.p.from)}원~</div>
+        <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${priceInquiryText(r.p) || (fmtPrice(r.p.from)+'원~')}</div>
         <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>
         <div class="ai-result-actions">
           <button type="button" class="ai-detail-btn" onclick="openProductDetail('${r.catId}',${r.idx})">상세보기</button>

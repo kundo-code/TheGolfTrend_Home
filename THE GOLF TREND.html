@@ -1650,9 +1650,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
    (요금 항목의 --pe-accent와 같은 팔레트·방식 재사용) */
 .admin-product-card{background:var(--nm-surface);border:none;border-left:4px solid var(--pe-accent, var(--nm-blue-deep));border-radius:var(--nm-r-card);padding:0;margin-bottom:10px;box-shadow:var(--nm-shadow-raised-sm);transition:opacity .2s,transform .2s,box-shadow .2s}
 /* [수정] 상품 목록 순서 변경(드래그) — 요금 항목과 동일한 손잡이(⠿) + 드래그 상태 스타일 */
+.apc-inactive{opacity:.6}
+.apc-inactive .apc-title-preview{text-decoration:line-through;text-decoration-color:rgba(10,23,48,.35)}
+.apc-expired-badge{flex-shrink:0;font-size:.68rem;font-weight:700;color:#B45309;background:#FEF3C7;border:1px solid #F59E0B;border-radius:100px;padding:2px 8px;white-space:nowrap}
+.ptr-sort-item{transition:transform .16s ease}
+.ptr-sort-item.ptr-sort-active{transition:none;position:relative;z-index:5;opacity:.96;box-shadow:0 14px 30px rgba(10,23,48,.28),0 0 0 2px var(--nm-blue);cursor:grabbing}
+body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!important}
 .admin-product-card.dragging{opacity:.4;transform:scale(.98)}
 .admin-product-card.drag-over{box-shadow:0 0 0 2px var(--nm-blue),0 8px 20px rgba(10,23,48,.12)}
-.apc-drag-handle{font-size:1.1rem;color:var(--nm-text-soft);cursor:grab;user-select:none;line-height:1;flex-shrink:0}
+.apc-drag-handle{font-size:1.1rem;color:var(--nm-text-soft);cursor:grab;user-select:none;line-height:1;flex-shrink:0;touch-action:none;padding:4px 6px;margin:-4px -2px}
 .apc-drag-handle:active{cursor:grabbing}
 /* [수정] 상품 카드를 <details>로 전환 — summary(.apc-head)에 넘버링 옆 제목 미리보기 + 접기 화살표를 둔다 */
 .admin-product-card > summary.apc-head{list-style:none;padding:14px}
@@ -1679,7 +1685,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .apc-delete:hover{box-shadow:var(--nm-shadow-hover)}
 /* [추가] "이동" — 상품을 다른 국가/권역으로 옮기는 드롭다운. 버튼들과 나란히 놓이도록 다른 apc-btn-sm과
    동일한 크기·모양으로 맞추되, select 특유의 기본 화살표 UI가 남도록 appearance는 건드리지 않는다 */
-.apc-move-select{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);color:var(--nm-text)}
+.apc-move-select{background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);color:var(--nm-text);width:92px;max-width:92px;text-overflow:ellipsis} /* 가장 긴 옵션 글자 폭으로 넓어지지 않게 고정 — 오른쪽에 "상품 노출" 토글이 같은 줄에 들어가도록 */
 .apc-move-select:hover{box-shadow:var(--nm-shadow-hover)}
 /* [버그 수정] 관리자 패널 상품 리스트 각 항목 줄(.apc-head)이 손잡이·번호·제목·배지·화살표에 이어
    팝업노출 토글·고급편집·복제·삭제·이동 버튼까지 한 줄에 모두 욱여넣으려다 보니, 기본 패널 너비
@@ -3899,6 +3905,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   transition:transform .2s,background .2s,box-shadow .2s;flex-shrink:0;
 }
 .plb-detail-link.show{ display:inline-flex; }
+.plb-detail-link.busy{ opacity:.6;pointer-events:none }
 .plb-detail-link:hover{ background:var(--btn-highlight),#fff;transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine); }
 .plb-detail-link:active{ background:#fff;transform:translateY(1px);box-shadow:var(--btn-press); }
 
@@ -5102,6 +5109,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
      전체 화면 최상단에 뜨지 못하던 문제를 막기 위해 섹션 밖(body 최상위)으로 이동 -->
 <div class="pkg-lightbox" id="pkgLightbox" onclick="closePkgLightbox()">
   <div class="plb-top-actions">
+    <a class="plb-detail-link show" id="plbDownload" href="#" role="button" title="지금 보고 있는 요금표 이미지를 내 기기에 저장" onclick="event.preventDefault();event.stopPropagation();pkgLbDownload()">⬇ 이미지 저장</a>
     <a class="plb-detail-link" id="plbDetailLink" href="#" onclick="event.stopPropagation()">자세히 →</a>
     <button class="plb-close" onclick="closePkgLightbox()">×</button>
   </div>
@@ -6190,7 +6198,7 @@ function pdHasOverride(plan, p, visibleEntries, fields){
 function countActivePopups(){
   let n=0;
   const cats=CATEGORIES.domestic.concat(CATEGORIES.overseas);
-  for (const cat of cats) for (const p of getProducts(cat.id)) for (const pe of (p.priceEntries||[])) if (pe.popup && !pe.hidden) n++;
+  for (const cat of cats) for (const p of getProducts(cat.id)) if (isProductVisible(p)) for (const pe of (p.priceEntries||[])) if (pe.popup && !pe.hidden) n++;
   return n;
 }
 // 모든 활성 팝업 수집 (상단 3개까지)
@@ -6200,6 +6208,7 @@ function getActivePopups(){
   for (const cat of cats){
     const products = getProducts(cat.id);
     products.forEach((p,idx)=>{
+      if (!isProductVisible(p)) return; // 추천 시기가 지났거나 노출을 끈 상품은 팝업에서도 제외
       (p.priceEntries||[]).forEach((pe,peIdx)=>{
         if (pe.popup && !pe.hidden) res.push({cat, product:p, catIdx:idx, entry:pe, entryIdx:peIdx});
       });
@@ -7782,7 +7791,7 @@ function getSpotlightList(region){
   // 불필요한 객체 생성이 누적되어 GC 부하가 커지는 것을 방지
   cats.forEach(cat=>{
     const list = productOverrides[cat.id];
-    if (list) list.forEach((p,idx)=>{ if (p && p.editorsPick) picks.push({catId:cat.id, idx}); });
+    if (list) list.forEach((p,idx)=>{ if (p && p.editorsPick && isProductVisible(p)) picks.push({catId:cat.id, idx}); });
   });
   if (picks.length) return picks;
   return region==='overseas' ? DEFAULT_SPOTLIGHT_OVERSEAS : DEFAULT_SPOTLIGHT_DOMESTIC;
@@ -9780,6 +9789,20 @@ function toggleImageHidden(key){
   if (imageHiddenOverrides[key]) delete imageHiddenOverrides[key]; else imageHiddenOverrides[key]=true;
   saveImageHidden(); renderAll(); renderAdminImages();
 }
+// [추가] 추천 판매 시기(p.months, 1~12월) 자동 만료 — 선택한 달이 모두 이번 달보다 앞서 지났으면(가장 늦은 달 < 현재 달) 고객 화면 상품 카드
+// 목록에서 자동으로 빠진다. 추천 시기를 고르지 않은 상품은 만료되지 않는다(연초 1월이 되면 지난해 선택 달은 다시 "앞으로 올 달"이 되어 자동 복귀).
+// 관리자가 "상품 노출" 토글로 직접 켜고 끄면(p.visible = true/false) 그 선택이 자동 판단보다 우선한다
+function productMonthsExpired(p, now){
+  const ms = (Array.isArray(p && p.months) ? p.months : []).map(Number).filter(n=>n>=1 && n<=12);
+  if (!ms.length) return false;
+  return Math.max.apply(null, ms) < ((now||new Date()).getMonth()+1);
+}
+function isProductVisible(p){
+  if (!p) return false;
+  if (p.visible===true) return true;
+  if (p.visible===false) return false;
+  return !productMonthsExpired(p);
+}
 function getProducts(catId){
   if (productOverrides[catId]!==undefined) return productOverrides[catId].map(ensureExtended);
   return (DEFAULT_PRODUCTS[catId]||[]).map(p=>ensureExtended(Object.assign({},p)));
@@ -10827,7 +10850,7 @@ let pdSequence=null, pdSeqPos=0;
 // RENDER — CATEGORY GRID
 // [수정] 국내/해외를 탭으로 전환하지 않고 두 그리드를 항상 함께(해외 → 국내 순) 노출
 function catCardHTML(c, isOpen){
-  const count=getProducts(c.id).length;
+  const count=getProducts(c.id).filter(isProductVisible).length;
   const style=getCatBgStyle(c);
   const koreaClass=usingComposite(c)?'bg-korea':'';
   // [수정] "미국령-괌/사이판" 카드는 지역명이 길어 자동 줄바꿈 위치가 어색하므로, "괌/" 뒤에서
@@ -11345,7 +11368,7 @@ function refreshCategoryProducts(regionKey){
   // getProducts(selectedId) 원본 배열 안에서의 실제 위치(i)를 함께 들고 다닌다 — 카드 클릭 시
   // openProductDetail(catId, idx)가 이 idx로 원본 배열을 다시 조회하므로, 필터링된 배열 안에서의
   // 위치가 아니라 반드시 원본 위치를 그대로 넘겨줘야 엉뚱한 상품이 열리지 않는다
-  const filtered=allProducts.map((p,i)=>({p,i})).filter(({p})=>productMatchesFilter(p, regionKey));
+  const filtered=allProducts.map((p,i)=>({p,i})).filter(({p})=>isProductVisible(p) && productMatchesFilter(p, regionKey)); // 추천 시기가 지난(또는 노출을 끈) 상품은 목록에서 제외 — i는 원본 위치 그대로
   const cat=findCat(selectedId);
   const tagEl=document.getElementById(regionKey==='overseas'?'cvTaglineOverseas':'cvTaglineDomestic');
   const filterOn = !!catFilter[regionKey];
@@ -13014,16 +13037,16 @@ function pdRegionKeyFor(catId){
 }
 // [수정] 국내: 강원권→충청권→호남권→영남권→수도권→제주, 해외: 등록된 국가 순서대로 —
 // 각 권역의 카테고리 순서 × 그 안의 상품 순서를 하나의 순환 목록으로 이어붙인다
-function buildPdSequence(regionKey){
+function buildPdSequence(regionKey, keepCat, keepIdx){
   const seq=[];
   CATEGORIES[regionKey].forEach(cat=>{
-    getProducts(cat.id).forEach((p,idx)=>seq.push({catId:cat.id, idx}));
+    getProducts(cat.id).forEach((p,idx)=>{ if (isProductVisible(p) || (cat.id===keepCat && idx===keepIdx)) seq.push({catId:cat.id, idx}); }); // 지금 열려 있는 상품은 비노출이어도 순번에 포함
   });
   return seq;
 }
 function openProductDetail(catId, idx){
   const regionKey = pdRegionKeyFor(catId);
-  pdSequence = buildPdSequence(regionKey);
+  pdSequence = buildPdSequence(regionKey, catId, idx);
   pdSeqPos = pdSequence.findIndex(s=>s.catId===catId && s.idx===idx);
   if (pdSeqPos<0) pdSeqPos=0;
   pdRenderAt(catId, idx);
@@ -14644,7 +14667,7 @@ function getPkgList(type){
   cats.forEach(cat=>{
     const list = productOverrides[cat.id];
     if (list) list.forEach((p,idx)=>{
-      if (p && p.pkgPoster && p.pkgPoster.url){
+      if (p && p.pkgPoster && p.pkgPoster.url && isProductVisible(p)){
         fromProducts.push({url:p.pkgPoster.url, label:p.title||'', catId:cat.id, idx});
       }
     });
@@ -15007,6 +15030,28 @@ function plbRender(){
     }
   }
 }
+// [추가] 크게 보기 중인 요금표 이미지를 기기에 저장 — 먼저 파일로 받아(blob) 바로 저장시키고, 다른 도메인이라 막히면 새 탭에서 이미지를 열어 길게 눌러/우클릭으로 저장할 수 있게 한다
+async function pkgLbDownload(){
+  const item = getPkgList(lbType)[lbIdx];
+  if (!item || !item.url) return;
+  const base = String(item.label||'').replace(/[\\/:*?"<>|\n\r]+/g,' ').replace(/\s+/g,' ').trim() || '요금표';
+  const extOf = t => ({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif','image/svg+xml':'svg'})[String(t||'').toLowerCase()] || 'jpg';
+  const save = (href, ext)=>{ const a=document.createElement('a'); a.href=href; a.download=base+' 요금표.'+ext; document.body.appendChild(a); a.click(); a.remove(); };
+  const btn = document.getElementById('plbDownload');
+  if (btn) btn.classList.add('busy');
+  try{
+    const res = await fetch(item.url);
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    save(url, extOf(blob.type));
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }catch(err){
+    try{ window.open(item.url, '_blank', 'noopener'); }catch(_){}
+  } finally {
+    if (btn) btn.classList.remove('busy');
+  }
+}
 function pkgLbMove(dir){
   const list=getPkgList(lbType);
   lbIdx=(lbIdx+dir+list.length)%list.length;
@@ -15366,15 +15411,18 @@ function renderProductAdmin(catId){
   const prevObjs = (list.dataset.cat===activeProductCat && list._apcObjs) ? list._apcObjs : null;
   list.dataset.cat = activeProductCat;
   list._apcObjs = products.slice();
-  const dropAttrs = i=>`data-idx="${i}" ondragover="productDragOver(event)" ondragleave="productDragLeave(event)" ondrop="productDrop(event,${i})"`;
-  const handleAttrs = i=>`draggable="true" ondragstart="productDragStart(event,${i})" ondragend="productDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
+  // [수정] 순서 변경은 브라우저 기본 드래그(HTML5 DnD — 잡은 뒤 드래그 이미지가 만들어지기까지 지연이 있고 터치에서는 동작하지 않음) 대신
+  // 포인터 이벤트로 직접 처리 — 손잡이를 누르고 3px만 움직이면 바로 카드가 손/마우스를 따라오고 나머지 카드는 부드럽게 비켜난다
+  const dropAttrs = i=>`data-idx="${i}"`;
+  const handleAttrs = i=>`onpointerdown="pointerSortStart(event,'#productList > .admin-product-card',${i},productReorder)" onclick="event.preventDefault();event.stopPropagation()"`;
   list.innerHTML=products.map((p,i)=>`
-    <details class="admin-product-card" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
+    <details class="admin-product-card${isProductVisible(p)?'':' apc-inactive'}" style="--pe-accent:${PE_ACCENT_COLORS[i % PE_ACCENT_COLORS.length]}" ${dropAttrs(i)} ontoggle="if(this.open) adminPosRememberProduct('${activeProductCat}',${i})">
       <summary class="apc-head">
         <span class="apc-drag-handle" title="드래그하여 순서 변경" ${handleAttrs(i)}>⠿</span>
         <span class="idx">— 상품 ${String(i+1).padStart(2,'0')}</span>
         <span class="apc-title-preview">${p.title?escapeAttr(p.title):'(제목 없음)'}</span>
         <span class="apc-period-badge">${escapeAttr(productPeriodBadgeText(p, activeProductCat))}</span>
+        ${isProductVisible(p)?'':`<span class="apc-expired-badge">${p.visible===false?'비노출':'추천 시기 지남 · 자동 비노출'}</span>`}
         <span class="apc-chevron">▾</span>
         <!-- [수정] preventDefault()로 <summary> 펼침만 막고, 체크박스 클릭은 blockSummaryToggle()이 직접 대신 처리 -->
         <div class="apc-actions" onclick="blockSummaryToggle(event)">
@@ -15390,6 +15438,12 @@ function renderProductAdmin(catId){
           <button class="apc-btn-sm apc-dup" onclick="duplicateProduct(${i})">복제</button>
           <button class="apc-btn-sm apc-delete" onclick="deleteProduct(${i})">삭제</button>
           <select class="apc-btn-sm apc-move-select" title="다른 국가/권역으로 이동" onchange="if(this.value){moveProduct(${i},this.value);} this.value='';">${productMoveOptionsHTML(activeProductCat)}</select>
+          <!-- [추가] 상품 노출 토글 — 끄면 고객 화면 상품 카드 목록에서 빠지고(목록 항목은 그대로 유지), 추천 판매 시기가 지난 상품은 자동으로 꺼진 상태로 표시된다 -->
+          <label class="popup-toggle apc-vis-toggle" title="끄면 고객 화면 상품 카드 목록에서 숨깁니다(관리자 목록에는 그대로 남음). 추천 판매 시기가 모두 지난 상품은 자동으로 꺼집니다">
+            <input type="checkbox" ${isProductVisible(p)?'checked':''} onchange="toggleProductVisible(${i},this.checked)">
+            <span class="toggle-slider"></span>
+            <span class="pt-lbl">상품 노출</span>
+          </label>
         </div>
       </summary>
       <div class="apc-fields">
@@ -15482,29 +15536,93 @@ function deleteProduct(idx){
 // [수정] 상품 목록 순서 변경 — 요금 항목(항목1/2...)과 동일한 방식으로, 손잡이(⠿)에만
 // draggable을 지정해 드래그로 순서를 바꾼다. 변경한 순서는 카테고리 그리드(상품 카드 노출 순서)에도 그대로 반영된다
 let productDragIdx = null;
-function productDragStart(e, idx){
-  productDragIdx = idx;
-  e.dataTransfer.effectAllowed = 'move';
-  const row = e.currentTarget.closest('.admin-product-card');
-  if (row) row.classList.add('dragging');
+// [추가] "상품 노출" 토글 — 자동 판단(추천 시기 만료)과 같은 값이면 직접 지정을 지우고, 다르면 p.visible에 저장해 그 선택을 우선한다
+function toggleProductVisible(idx, checked){
+  if (productOverrides[activeProductCat]===undefined){
+    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+  }
+  const p = productOverrides[activeProductCat][idx]; if (!p) return;
+  const auto = !productMonthsExpired(p);
+  if (!!checked===auto) delete p.visible; else p.visible = !!checked;
+  saveProducts(); renderProductAdmin(); renderCategoryGrid();
 }
-function productDragOver(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
-function productDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
-function productDragEnd(e){
-  document.querySelectorAll('.admin-product-card').forEach(r=>{ r.classList.remove('dragging'); r.classList.remove('drag-over'); });
-  productDragIdx = null;
-}
-function productDrop(e, targetIdx){
-  e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
-  if (productDragIdx === null || productDragIdx === targetIdx) return;
+// 상품 순서 변경 — pointerSortStart()가 손을 뗄 때 from → to 로 호출한다
+function productReorder(from, to){
+  if (from===to) return;
   if (productOverrides[activeProductCat]===undefined){
     productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
   }
   const list = productOverrides[activeProductCat];
-  const item = list.splice(productDragIdx, 1)[0];
-  list.splice(targetIdx, 0, item);
+  const item = list.splice(from, 1)[0];
+  list.splice(to, 0, item);
   saveProducts(); renderProductAdmin(); renderCategoryGrid();
+}
+// [추가] 포인터 기반 목록 순서 변경(공용) — 손잡이를 누르고 3px 움직이면 즉시 시작.
+// 끌고 있는 카드는 포인터를 1:1로 따라오고, 사이에 있는 카드들은 한 칸씩 부드럽게 비켜난다. 목록 위/아래 가장자리에 가까워지면
+// 스크롤 영역(.admin-body)을 자동으로 스크롤한다. 마우스·터치·펜 모두 지원. onDrop(from,to)로 실제 순서 변경은 호출 측이 처리
+function pointerSortStart(e, selector, from, onDrop){
+  if (e.pointerType==='mouse' && e.button!==0) return;
+  const handle = e.currentTarget;
+  const cards = Array.from(document.querySelectorAll(selector));
+  const card = cards[from]; if (!card || cards.length<2) return;
+  const scroller = card.closest('.admin-body') || document.scrollingElement;
+  const startY = e.clientY, startScroll = scroller.scrollTop, pid = e.pointerId;
+  let started=false, curY=startY, raf=0, newIdx=from, rects=null, dh=0, lastY=startY;
+  const measure=()=>{
+    const base = scroller.scrollTop;
+    rects = cards.map(c=>{ const r=c.getBoundingClientRect(); return {top:r.top+base, h:r.height}; });
+    dh = rects[from].h + 10; // 카드 높이 + 카드 사이 간격(margin-bottom 10px)
+  };
+  const apply=()=>{
+    const dy = (curY-startY) + (scroller.scrollTop-startScroll);
+    card.style.transform = `translateY(${dy}px)`;
+    const center = rects[from].top + rects[from].h/2 + dy;
+    let ni = from;
+    cards.forEach((c,j)=>{ if (j===from) return; const cc=rects[j].top+rects[j].h/2; if (j>from && center>cc) ni=j; else if (j<from && center<cc && j<ni) ni=j; });
+    newIdx = ni;
+    cards.forEach((c,j)=>{
+      if (j===from) return;
+      let sh = 0;
+      if (from<newIdx && j>from && j<=newIdx) sh = -dh;
+      else if (from>newIdx && j<from && j>=newIdx) sh = dh;
+      c.style.transform = sh ? `translateY(${sh}px)` : '';
+    });
+  };
+  const tick=()=>{
+    raf=0; if (!started) return;
+    const r = scroller.getBoundingClientRect();
+    const edge = 70; let v=0;
+    if (curY < r.top+edge) v = -Math.ceil((r.top+edge-curY)/6);
+    else if (curY > r.bottom-edge) v = Math.ceil((curY-(r.bottom-edge))/6);
+    if (v){ scroller.scrollTop += v; apply(); raf=requestAnimationFrame(tick); }
+  };
+  const move=ev=>{
+    if (ev.pointerId!==pid) return;
+    curY = ev.clientY;
+    if (!started){
+      if (Math.abs(curY-startY) < 3) return;
+      started = true; measure();
+      document.body.classList.add('ptr-sorting');
+      cards.forEach(c=>c.classList.add('ptr-sort-item'));
+      card.classList.add('ptr-sort-active');
+      try{ handle.setPointerCapture(pid); }catch(_){}
+    }
+    ev.preventDefault();
+    apply();
+    if (!raf) raf=requestAnimationFrame(tick);
+  };
+  const end=ev=>{
+    if (ev && ev.pointerId!==pid) return;
+    handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', end); handle.removeEventListener('pointercancel', end);
+    if (raf) cancelAnimationFrame(raf);
+    document.body.classList.remove('ptr-sorting');
+    const was = started;
+    cards.forEach(c=>{ c.classList.remove('ptr-sort-item','ptr-sort-active'); c.style.transform=''; });
+    if (was && ev && ev.type==='pointerup' && newIdx!==from) onDrop(from, newIdx);
+  };
+  handle.addEventListener('pointermove', move);
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
 }
 // 기존 상품의 모든 필드(요금표·갤러리·동영상·요금 포스터 포함)를 그대로 복제해 바로 아래에 추가 —
 // 유사한 상품을 새로 등록할 때 처음부터 다시 입력하지 않고, 복제 후 일부만 고쳐 쓸 수 있도록 함
@@ -17917,6 +18035,7 @@ function computeAiRecommendations(criteria){
   regionIds.forEach(catId=>{
     const cat=findCat(catId);
     getProducts(catId).forEach((p,idx)=>{
+      if (!isProductVisible(p)) return; // AI 추천에서도 제외
       const price = (p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0;
       const nightsMatch = /([0-9]+)\s*박/.exec(p.nights||'');
       const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
@@ -18242,7 +18361,7 @@ function getEditorsPickPopupItems(){
   const cats = CATEGORIES.domestic.concat(CATEGORIES.overseas);
   for (const cat of cats){
     getProducts(cat.id).forEach((p,idx)=>{
-      if (p.editorsPick && p.editorsPickPopup) items.push({cat, product:p, idx});
+      if (p.editorsPick && p.editorsPickPopup && isProductVisible(p)) items.push({cat, product:p, idx});
     });
   }
   return items;

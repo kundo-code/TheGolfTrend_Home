@@ -1133,6 +1133,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-sch-meals{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
 .pd-sch-meals span{font-size:.68rem;padding:3px 9px;border-radius:100px;background:rgba(249,115,22,.14);color:#c2410c}
 /* [수정] Tee Off Time — 항공정보에서 이 일자의 "일정 내용" 바로 아래로 이동 */
+.pd-sch-opt .pd-sch-opt-head{margin-bottom:2px}
+.pd-sch-opt .rtf-table{margin:3px 0;white-space:normal;max-width:100%;table-layout:fixed}
+.pd-sch-opt .rtf-table td{font-size:inherit;padding:3px 6px;border-color:currentColor}
 .pd-sch-tee{margin-top:6px;font-size:.78rem;font-weight:600;color:var(--pine-deep)}
 .pd-contact{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .pd-contact a{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.1);border-radius:12px;color:var(--pine-deep);font-size:.88rem;font-weight:600;transition:all .2s}
@@ -1914,6 +1917,16 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-color-apply .rtf-color-t{position:static;color:var(--nm-text);text-shadow:none;font-size:.82rem;line-height:1}
 .rtf-color-bar{display:block;width:16px;height:4px;border-radius:2px;background:var(--rtf-cur-color,#D6293E);box-shadow:0 0 0 1px rgba(10,23,48,.15)}
 .rtf-btn.rtf-color-more{width:22px;font-size:.62rem;padding:0}
+.rtf-editable.sch-one,.rtf-editable.sch-act{border-radius:10px;box-shadow:inset 0 0 0 1px rgba(10,23,48,.1)}
+.rtf-editable.sch-one:focus,.rtf-editable.sch-act:focus{box-shadow:0 0 0 2px var(--nm-blue)}
+.rtf-editable.sch-act{font-size:.9rem;line-height:1.6}
+.sch-fmt-hint{font-weight:400;color:var(--nm-text-soft);font-size:.7rem}
+.rtf-btn.rtf-bg-apply{position:relative;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.rtf-bg-t{font-size:.78rem;line-height:1;font-weight:700;color:var(--nm-text)}
+.rtf-bg-bar{display:block;width:16px;height:4px;border-radius:2px;background:var(--rtf-cur-bg,#FFF3A3);box-shadow:0 0 0 1px rgba(10,23,48,.25)}
+.rtf-btn.rtf-bg-more{width:22px;font-size:.62rem;padding:0}
+.rtf-btn.rtf-bg-clear{width:auto;padding:0 6px;font-size:.66rem;white-space:nowrap}
+.rtf-toolbar .rtf-color-group{flex-wrap:nowrap;align-items:center}
 .rtf-color-pop{position:fixed;z-index:3000;display:grid;grid-template-columns:repeat(8,24px);gap:6px;padding:10px;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(10,23,48,.22),0 0 0 1px rgba(10,23,48,.08)}
 .rtf-color-pop[hidden]{display:none}
 .rtf-sw{width:24px;height:24px;border-radius:6px;border:none;cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(10,23,48,.18)}
@@ -1928,6 +1941,10 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 /* [수정] 포함/불포함사항 입력란의 가이드(placeholder) 예시 문구는 연한 회색으로 통일 */
 .rtf-editable.included-field:empty:before,.rtf-editable.notincluded-field:empty:before{color:#B7BFCB}
 .rtf-table{border-collapse:collapse;margin:4px 0;width:100%}
+/* [추가] 표 들여쓰기(1~3단계, 한 단계 = 1.5글자) — 표는 줄(div)이 아니라서 .rtf-sub 대신 표 전체의 왼쪽 여백으로 들여쓴다 */
+table.rtf-table.rtf-tind1{margin-left:1.5em!important;width:calc(100% - 1.5em)!important}
+table.rtf-table.rtf-tind2{margin-left:3em!important;width:calc(100% - 3em)!important}
+table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!important}
 /* [추가] 하위서식 — 윗줄 글자 시작 위치에서 1.5글자 들여쓰기(관리자 편집 칸에는 옅은 세로 안내선도 표시) */
 .rtf-sub{display:block;padding-left:1.5em}
 .rtf-editable .rtf-sub{box-shadow:inset 2px 0 0 rgba(47,111,237,.28)}
@@ -9882,7 +9899,7 @@ function sanitizeRichHTML(html, opts){
   const div = document.createElement('div');
   div.innerHTML = html;
   div.querySelectorAll('script,style,iframe,object,embed,link,meta,form,input,button').forEach(el=>el.remove());
-  const allowedStyle = ['color','font-size','font-weight','text-decoration','font-style','font-family','line-height'];
+  const allowedStyle = ['color','background-color','font-size','font-weight','text-decoration','font-style','font-family','line-height'];
   div.querySelectorAll('*').forEach(el=>{
     Array.from(el.attributes).forEach(attr=>{
       const name = attr.name.toLowerCase();
@@ -9976,8 +9993,11 @@ function rtfToolbarHTML(opts){
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
       ${opts.link?`<button type="button" class="rtf-btn rtf-link-btn" title="링크 — 텍스트를 선택한 뒤 누르면 선택한 글자에 주소(URL)를 걸어 클릭 시 바로 이동" onmousedown="event.preventDefault()" onclick="rtfLinkOpen(this)">🔗링크</button>`:''}
-      ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button><button type="button" class="rtf-btn rtf-nosub-btn" title="들여쓰기 없음 — 지금 줄(선택한 줄들)의 하위서식·들여쓰기를 해제" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this,'off')">들여쓰기 없음</button>`}
+      ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 표 안에 커서가 있으면 표 전체를 한 단계(1.5글자)씩 들여쓰기(최대 3단계). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button><button type="button" class="rtf-btn rtf-nosub-btn" title="들여쓰기 없음 — 지금 줄(선택한 줄들)·표의 하위서식·들여쓰기를 해제" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this,'off')">들여쓰기 없음</button>`}
       <span class="rtf-color-group">
+        <button type="button" class="rtf-btn rtf-bg-apply" title="바탕 칠하기 — 선택한 영역(글자)의 뒤 바탕에 형광펜처럼 색을 칠함. 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'hiliteColor',_rtfBg)"><span class="rtf-bg-t">가</span><span class="rtf-bg-bar"></span></button>
+        <button type="button" class="rtf-btn rtf-bg-more" title="바탕 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="바탕 색상(선택 영역 칠하기)" data-apply="rtfPickBg(el,__C__)">▾</button>
+        <button type="button" class="rtf-btn rtf-bg-clear" title="바탕 지우기 — 선택한 영역의 바탕색만 지움" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'hiliteColor','transparent')">바탕✕</button>
         <button type="button" class="rtf-btn rtf-color-apply" title="글자 색상 적용(밑줄 색) — 텍스트를 선택하고 누르면 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'foreColor',_rtfColor)"><span class="rtf-color-t">T</span><span class="rtf-color-bar"></span></button>
         <button type="button" class="rtf-btn rtf-color-more" title="글자 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="글자 색상" data-apply="rtfPickColor(el,__C__)">▾</button>
       </span>
@@ -9992,6 +10012,10 @@ const RTF_COLORS = ['#0A1730','#4B5563','#9CA3AF','#FFFFFF','#D6293E','#EA580C',
                     '#16A34A','#0D9488','#0EA5E9','#2563EB','#1E3A8A','#7C3AED','#DB2777','#8B5A2B'];
 let _rtfColor = '#D6293E';
 document.documentElement.style.setProperty('--rtf-cur-color', _rtfColor);
+// [추가] 선택 영역 바탕 칠하기(형광펜) — 마지막으로 쓴 바탕색을 기억해 같은 색을 반복 적용
+const RTF_BG_COLORS = ['#FFF3A3','#FDE68A','#FED7AA','#FECACA','#FBCFE8','#DDD6FE','#BFDBFE','#A7F3D0'];
+let _rtfBg = '#FFF3A3';
+document.documentElement.style.setProperty('--rtf-cur-bg', _rtfBg);
 // [추가] 공용 색상 팔레트 — 관리자 패널의 모든 색상 변경(글자 색상·태그/체크포인트/대표 문구 박스 색상·화면 테마·위젯 글자색)이
 // 같은 팔레트를 쓴다. 색을 눌러 고르기만 해서는 아무것도 바뀌지 않고(팔레트 안 미리보기만 바뀜), [확인완료]를 눌러야 그 색이 적용된다.
 // 열 때는 호출한 요소의 data-value(현재 색)·data-title(제목)·data-apply(적용 코드, __C__ 자리에 "#rrggbb" 문자열이 들어가고 el은 호출한 요소)를 읽는다
@@ -10031,13 +10055,13 @@ function openColorPalette(anchor){
   const reopen = _colorPal && _colorPal.anchor===anchor;
   colorPalClose();
   if (reopen) return; // 같은 버튼을 다시 누르면 닫기
-  let cur = String(anchor.classList.contains('rtf-color-more') ? _rtfColor : (anchor.dataset.value||'')).trim();
+  let cur = String(anchor.classList.contains('rtf-color-more') ? _rtfColor : anchor.classList.contains('rtf-bg-more') ? _rtfBg : (anchor.dataset.value||'')).trim();
   if (!/^#[0-9a-f]{6}$/i.test(cur)) cur = '#FFFFFF';
   const el = document.createElement('div');
   el.className = 'color-pal';
   el.innerHTML = `
     <div class="cpal-title">${escapeAttr(anchor.dataset.title||'색상 선택')}</div>
-    <div class="cpal-grid">${RTF_COLORS.concat(COLOR_PAL_LIGHT).map(c=>`<button type="button" class="cpal-sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div>
+    <div class="cpal-grid">${(anchor.classList.contains('rtf-bg-more') ? RTF_BG_COLORS.concat(COLOR_PAL_LIGHT, RTF_COLORS) : RTF_COLORS.concat(COLOR_PAL_LIGHT)).map(c=>`<button type="button" class="cpal-sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div>
     <label class="cpal-custom" title="팔레트에 없는 색 직접 고르기"><input type="color" value="${cur}">🎨 직접 선택</label>
     <div class="cpal-preview"><span class="cp-old" style="background:${cur};color:${colorPalDark(cur)?'#fff':'#0A1730'}">현재</span><span class="cpal-arrow">→</span><span class="cp-new">선택</span><span class="cp-hex"></span></div>
     <div class="cpal-actions"><button type="button" class="cpal-cancel">취소</button><button type="button" class="cpal-ok">확인완료</button></div>`;
@@ -10081,6 +10105,11 @@ function rtfToggleColorPop(btn){
   const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
   const top = (r.bottom + 6 + h > window.innerHeight && r.top - 6 - h > 0) ? r.top - 6 - h : r.bottom + 6;
   pop.style.left = left + 'px'; pop.style.top = top + 'px';
+}
+function rtfPickBg(el, c){
+  _rtfBg = c;
+  document.documentElement.style.setProperty('--rtf-cur-bg', c);
+  rtfCmd(el, 'hiliteColor', c);
 }
 function rtfPickColor(el, c){
   _rtfColor = c;
@@ -10211,6 +10240,23 @@ function rtfCmdRun(btnEl, cmd, val){
       span.innerHTML = f.innerHTML;
       f.replaceWith(span);
     });
+  } else if (cmd==='hiliteColor'){
+    // 선택 영역 바탕 칠하기 — CSS 방식(<span style="background-color:...">)으로 통일. 'transparent'는 바탕 지우기
+    document.execCommand('styleWithCSS', false, true);
+    if (!document.execCommand('hiliteColor', false, val)) document.execCommand('backColor', false, val);
+    document.execCommand('styleWithCSS', false, false);
+    editable.querySelectorAll('font[style*="background"]').forEach(f=>{
+      const span = document.createElement('span');
+      span.setAttribute('style', f.getAttribute('style'));
+      span.innerHTML = f.innerHTML;
+      f.replaceWith(span);
+    });
+    if (val==='transparent'){
+      editable.querySelectorAll('span[style*="background-color: transparent"],span[style*="background-color:transparent"]').forEach(sp=>{
+        sp.style.removeProperty('background-color');
+        if (!sp.getAttribute('style')) sp.replaceWith(...sp.childNodes);
+      });
+    }
   } else {
     document.execCommand(cmd, false, val);
   }
@@ -10511,6 +10557,20 @@ function rtfToggleSub(btnEl, mode){
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount) return;
+  // [추가] 표 들여쓰기 — 커서가 표 안에 있거나 선택 영역이 표를 포함하면, 줄(.rtf-sub) 대신 그 표 전체를 한 단계(1.5글자)씩 들여쓴다(최대 3단계, 들여쓰기 없음=해제)
+  const tblRange = sel.getRangeAt(0);
+  if (editable.contains(tblRange.commonAncestorContainer)){
+    const anc = tblRange.commonAncestorContainer.nodeType===1 ? tblRange.commonAncestorContainer : tblRange.commonAncestorContainer.parentNode;
+    const ownTbl = anc && anc.closest ? anc.closest('table') : null;
+    const tbls = (ownTbl && editable.contains(ownTbl)) ? [ownTbl] : (tblRange.collapsed ? [] : Array.from(editable.querySelectorAll('table')).filter(t=>tblRange.intersectsNode(t)));
+    tbls.forEach(t=>{
+      const curLv = [1,2,3].find(n=>t.classList.contains('rtf-tind'+n)) || 0;
+      const nextLv = mode==='off' ? 0 : Math.min(3, curLv+1);
+      t.classList.remove('rtf-tind1','rtf-tind2','rtf-tind3');
+      if (nextLv) t.classList.add('rtf-tind'+nextLv);
+    });
+    if (ownTbl && editable.contains(ownTbl)){ editable.dispatchEvent(new Event('input', {bubbles:true})); return; }
+  }
   if (editable.contains(sel.getRangeAt(0).commonAncestorContainer)) rtfNormalizeLines(editable);
   const range = sel.getRangeAt(0);
   if (!editable.contains(range.commonAncestorContainer) && range.commonAncestorContainer!==editable) return;
@@ -10660,7 +10720,7 @@ function rtfCleanPastedHTML(html, target){
         });
         if (kept.length) el.setAttribute('style', kept.join(';')); else el.removeAttribute('style');
       } else if (name==='class'){
-        const keep = attr.value.split(/\s+/).filter(c=>c==='rtf-sub' || c==='rtf-table');
+        const keep = attr.value.split(/\s+/).filter(c=>c==='rtf-sub' || c==='rtf-table' || /^rtf-tind[123]$/.test(c));
         if (keep.length) el.setAttribute('class', keep.join(' ')); else el.removeAttribute('class');
       } else if (name!=='colspan' && name!=='rowspan'){
         el.removeAttribute(attr.name); // bgcolor·id·on* 등
@@ -13580,25 +13640,36 @@ function labelRowsHTML(L){
 // 일정 요약 타임라인의 일자별 카드 목록 — 요금 항목별 일정과 상품 공통 일정에서 공용으로 사용.
 // [수정] Tee Off Time — 항공정보(레이블)에서 이 일정 카드의 "일정 내용" 하단으로 이동 (1~4일차만 지원)
 const TEE_DAY_KEYS_PD=['day1','day2','day3','day4'];
+// [추가] 일정 요약 타임라인의 각 값은 서식 입력란(HTML)으로 저장되지만, 예전에 일반 텍스트로 저장된 값도 있다 —
+// 태그·HTML 엔티티가 보이면 서식 값으로 보고 안전하게 정리해 그리고, 아니면 일반 텍스트로 이스케이프해 그린다
+function schRichHTML(v){
+  v = String(v==null?'':v);
+  return (/<[a-z\/]/i.test(v) || /&(amp|lt|gt|nbsp|quot);/.test(v)) ? sanitizeRichHTML(v) : escapeAttr(v);
+}
+// 일정 내용 — 예전 일반 텍스트(줄바꿈·탭 하위서식)는 plainSubLinesHTML, 서식 값은 정리해서 그린다
+function schActivityHTML(v){
+  v = String(v==null?'':v);
+  // 표 삽입 시 편집 안에서 뒤에 붙는 줄바꿈(<br>)은 상세 화면에서 큰 빈 줄이 되므로 뺀다
+  return /<[a-z]/i.test(v) ? sanitizeRichHTML(v).replace(/<\/table>\s*<br\s*\/?>/gi,'</table>') : plainSubLinesHTML(v);
+}
 function scheduleDaysHTML(days, tee){
   tee = tee||{};
   return days.map((d,di)=>`
   <div class="pd-sch-day">
     <div class="pd-sch-day-num">${di+1}</div>
     <div class="pd-sch-day-body">
-      <span class="pd-sch-day-label">${escapeAttr(d.dayLabel||`${di+1}일차`)}</span>
-      ${d.route?`<span class="pd-sch-day-route">${escapeAttr(d.route)}</span>`:''}
+      <span class="pd-sch-day-label">${d.dayLabel?schRichHTML(d.dayLabel):`${di+1}일차`}</span>
+      ${d.route?`<span class="pd-sch-day-route">${schRichHTML(d.route)}</span>`:''}
       ${d.options.filter(o=>o.flight||o.activity).map(o=>`
       <div class="pd-sch-opt">
-        ${o.tag?`<span class="tag">${escapeAttr(o.tag)}</span>`:''}
-        ${o.flight?`항공: ${escapeAttr(o.flight)}<br>`:''}
-        ${o.activity?plainSubLinesHTML(o.activity):''}
+        ${(o.tag||o.flight)?`<div class="pd-sch-opt-head">${o.tag?`<span class="tag">${schRichHTML(o.tag)}</span>`:''}${o.flight?`항공: ${schRichHTML(o.flight)}`:''}</div>`:''}
+        ${o.activity?`<div class="pd-sch-opt-act">${schActivityHTML(o.activity)}</div>`:''}
       </div>`).join('')}
-      ${tee[TEE_DAY_KEYS_PD[di]]?`<div class="pd-sch-tee">⛳ Tee Off Time: ${escapeAttr(tee[TEE_DAY_KEYS_PD[di]])}</div>`:''}
+      ${tee[TEE_DAY_KEYS_PD[di]]?`<div class="pd-sch-tee">⛳ Tee Off Time: ${schRichHTML(tee[TEE_DAY_KEYS_PD[di]])}</div>`:''}
       ${(d.meals.breakfast||d.meals.lunch||d.meals.dinner)?`<div class="pd-sch-meals">
-        ${d.meals.breakfast?`<span>조: ${escapeAttr(d.meals.breakfast)}</span>`:''}
-        ${d.meals.lunch?`<span>중: ${escapeAttr(d.meals.lunch)}</span>`:''}
-        ${d.meals.dinner?`<span>석: ${escapeAttr(d.meals.dinner)}</span>`:''}
+        ${d.meals.breakfast?`<span>조: ${schRichHTML(d.meals.breakfast)}</span>`:''}
+        ${d.meals.lunch?`<span>중: ${schRichHTML(d.meals.lunch)}</span>`:''}
+        ${d.meals.dinner?`<span>석: ${schRichHTML(d.meals.dinner)}</span>`:''}
       </div>`:''}
     </div>
   </div>`).join('');
@@ -17221,13 +17292,17 @@ function scheduleHTML(pe, peIdx){
 // [수정] Tee Off Time — 이전에는 "항공정보"(레이블)에 1~4일차 요약 입력란이 별도로 있었으나,
 // 일정 요약 타임라인의 해당 일자 "일정 내용" 바로 아래로 이동 (day1~day4 고정 슬롯이라 1~4일차에만 노출)
 const TEE_DAY_KEYS=['day1','day2','day3','day4'];
+// [추가] 일정 요약 타임라인의 한 줄 입력란 — 서식 입력란(contenteditable)이라 상단 공용 서식 도구로 크기·색·굵기·바탕 칠하기 등을 적용할 수 있다
+function schOneHTML(onin, value, placeholder){
+  return `<div class="rtf-editable dp-title-edit sch-one" contenteditable="true" data-placeholder="${escapeAttr(placeholder||'')}" oninput="${onin.replace('__V__',"this.innerHTML==='<br>'?'':this.innerHTML")}" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(value||'')}</div>`;
+}
 function scheduleDayHTML(peIdx, d, di, tee){
   const teeKey = TEE_DAY_KEYS[di];
   return `
   <details class="pe-block sch-day-block" data-sch-key="${peIdx}:${di}" style="--pe-accent:${PE_ACCENT_COLORS[di % PE_ACCENT_COLORS.length]}">
     <summary class="pe-head">
       <span class="pe-idx">일자 ${di+1}</span>
-      <span class="pe-title-preview">${d.dayLabel?escapeAttr(d.dayLabel):'(일차 표기 없음)'}</span>
+      <span class="pe-title-preview">${d.dayLabel&&richToPlain(d.dayLabel)?escapeAttr(richToPlain(d.dayLabel)):'(일차 표기 없음)'}</span>
       <span class="pe-chevron">▾</span>
       <div class="pe-head-right" onclick="blockSummaryToggle(event)">
         <button class="pee-del" onclick="removeScheduleDay(${peIdx},${di})">삭제</button>
@@ -17235,25 +17310,25 @@ function scheduleDayHTML(peIdx, d, di, tee){
     </summary>
     <div class="pe-body">
     <div class="grid-2">
-      <div><label>일차 표기</label><input type="text" value="${escapeAttr(d.dayLabel)}" placeholder="예: 1일차 (토요일)" oninput="updateScheduleDay(${peIdx},${di},'dayLabel',this.value)"></div>
-      <div><label>구간</label><input type="text" value="${escapeAttr(d.route)}" placeholder="예: 인천 → 임기" oninput="updateScheduleDay(${peIdx},${di},'route',this.value)"></div>
+      <div><label>일차 표기</label>${schOneHTML(`updateScheduleDay(${peIdx},${di},'dayLabel',__V__)`, d.dayLabel, '예: 1일차 (토요일)')}</div>
+      <div><label>구간</label>${schOneHTML(`updateScheduleDay(${peIdx},${di},'route',__V__)`, d.route, '예: 인천 → 임기')}</div>
     </div>
     ${d.options.map((o,oi)=>`
     <div class="grid-2" style="margin-top:6px">
-      <div><label>옵션 태그 (선택, 시즌 A/B 등 구분)</label><input type="text" value="${escapeAttr(o.tag)}" placeholder="A" oninput="updateScheduleOption(${peIdx},${di},${oi},'tag',this.value)"></div>
-      <div><label>항공/이동 정보</label><input type="text" value="${escapeAttr(o.flight)}" placeholder="예: TW9617 인천 07:30 출발 → 임기 08:50 도착" oninput="updateScheduleOption(${peIdx},${di},${oi},'flight',this.value)"></div>
-      <div class="full ta-sub-wrap"><label>일정 내용</label><button type="button" class="ta-sub-btn" title="하위서식 — 커서가 있는 줄을 1.5글자 들여쓴 하위 항목으로 (다시 누르면 해제)" onmousedown="event.preventDefault()" onclick="taToggleSub(this)">↳하위서식</button><textarea class="auto-grow" style="min-height:40px" placeholder="예: 현지 직원 미팅(미팅보드: 고객명) → 골프장 이동(15분) → 체크인 및 중식 후 라운드" oninput="updateScheduleOption(${peIdx},${di},${oi},'activity',this.value);autoGrowTextarea(this)">${escapeAttr(o.activity)}</textarea>
+      <div><label>옵션 태그 (선택, 시즌 A/B 등 구분)</label>${schOneHTML(`updateScheduleOption(${peIdx},${di},${oi},'tag',__V__)`, o.tag, 'A')}</div>
+      <div><label>항공/이동 정보</label>${schOneHTML(`updateScheduleOption(${peIdx},${di},${oi},'flight',__V__)`, o.flight, '예: TW9617 인천 07:30 출발 → 임기 08:50 도착')}</div>
+      <div class="full"><label>일정 내용 <span class="sch-fmt-hint">(서식·하위서식·표·바탕 칠하기 사용 가능 — 상세 페이지에서는 옵션 태그 아래에 노출)</span></label><div class="rtf-editable white-field sch-act" contenteditable="true" style="min-height:56px" data-placeholder="예: 현지 직원 미팅(미팅보드: 고객명) → 골프장 이동(15분) → 체크인 및 중식 후 라운드" oninput="updateScheduleOption(${peIdx},${di},${oi},'activity',this.innerHTML==='<br>'?'':this.innerHTML)" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${scheduleNoteRich(o.activity)}</div>
         ${d.options.length>1?`<button class="apc-btn-sm apc-delete" style="margin-top:4px" onclick="removeScheduleOption(${peIdx},${di},${oi})">이 옵션 삭제</button>`:''}
       </div>
     </div>`).join('')}
     <button class="apc-btn-sm" style="margin-top:6px" onclick="addScheduleOption(${peIdx},${di})">+ 옵션(A/B) 추가</button>
     ${teeKey?`<div class="grid-2" style="margin-top:8px">
-      <div class="full"><label>⛳ Tee Off Time (미사용 시 공란)</label><input type="text" value="${escapeAttr((tee&&tee[teeKey])||'')}" placeholder="${di===0?'08:00~11:00':(di===1?'07:30~10:30':'')}" oninput="updatePriceEntryTee(${peIdx},'${teeKey}',this.value)"></div>
+      <div class="full"><label>⛳ Tee Off Time (미사용 시 공란)</label>${schOneHTML(`updatePriceEntryTee(${peIdx},'${teeKey}',__V__)`, (tee&&tee[teeKey])||'', di===0?'08:00~11:00':(di===1?'07:30~10:30':''))}</div>
     </div>`:''}
     <div class="grid-2" style="margin-top:8px">
-      <div><label>조식</label><input type="text" value="${escapeAttr(d.meals.breakfast)}" placeholder="호텔식" oninput="updateScheduleMeal(${peIdx},${di},'breakfast',this.value)"></div>
-      <div><label>중식</label><input type="text" value="${escapeAttr(d.meals.lunch)}" placeholder="불포함" oninput="updateScheduleMeal(${peIdx},${di},'lunch',this.value)"></div>
-      <div><label>석식</label><input type="text" value="${escapeAttr(d.meals.dinner)}" placeholder="현지식" oninput="updateScheduleMeal(${peIdx},${di},'dinner',this.value)"></div>
+      <div><label>조식</label>${schOneHTML(`updateScheduleMeal(${peIdx},${di},'breakfast',__V__)`, d.meals.breakfast, '호텔식')}</div>
+      <div><label>중식</label>${schOneHTML(`updateScheduleMeal(${peIdx},${di},'lunch',__V__)`, d.meals.lunch, '불포함')}</div>
+      <div><label>석식</label>${schOneHTML(`updateScheduleMeal(${peIdx},${di},'dinner',__V__)`, d.meals.dinner, '현지식')}</div>
     </div>
     </div>
   </details>`;

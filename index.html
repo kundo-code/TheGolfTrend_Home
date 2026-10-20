@@ -2254,8 +2254,9 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-global .rtf-toolbar{padding:6px 26px;border-bottom:none;background:transparent}
 .rtf-global-hint{display:block;padding:0 26px 6px;font-size:.68rem;color:var(--nm-text-soft)}
 .rtf-global.has-target .rtf-global-hint{display:none}
-.rtf-global-hint.flash{color:#D6293E;font-weight:700}
-.rtf-global.rtf-single .rtf-btn[title="표 넣기"],.rtf-global.rtf-single .rtf-sub-btn,.rtf-global.rtf-single .rtf-lh-sel{display:none}
+.rtf-global-hint.flash{display:block!important;color:#D6293E;font-weight:700}
+/* 한 줄 입력란(카드 태그·대표 문구 등)에서는 줄간격·표·하위서식 버튼을 숨기지 않고 흐리게 — 눌러도 적용되지 않는다 */
+.rtf-global.rtf-single .rtf-btn[title="표 넣기"],.rtf-global.rtf-single .rtf-sub-btn,.rtf-global.rtf-single .rtf-lh-sel{opacity:.38}
 .adv-editor-overlay .rtf-wrap:not(.rtf-global) > .rtf-toolbar{display:none!important}
 .adv-editor-overlay .rtf-editable.rtf-active-target{box-shadow:0 0 0 2px var(--nm-blue)}
 @media(max-width:640px){ .rtf-global .rtf-toolbar{flex-wrap:nowrap;overflow-x:auto;padding:6px 14px} .rtf-global .rtf-toolbar::-webkit-scrollbar{height:0} }
@@ -10127,9 +10128,16 @@ function rtfSaveSelection(){
   }
 }
 // [추가] 공용 서식 도구 — 입력란을 클릭하지 않은 채 서식 버튼을 눌렀을 때 안내를 잠깐 강조한다
-function rtfNoTargetHint(){
+function rtfNoTargetHint(msg){
   const h = document.querySelector('.rtf-global-hint'); if (!h) return;
-  h.classList.add('flash'); setTimeout(()=>h.classList.remove('flash'), 900);
+  const orig = h.dataset.orig || (h.dataset.orig = h.textContent);
+  h.textContent = msg || orig;
+  h.classList.add('flash'); setTimeout(()=>{ h.classList.remove('flash'); h.textContent = orig; }, 1800);
+}
+// 한 줄 입력란에서는 줄 단위 서식(하위서식·표·줄간격)을 쓸 수 없다
+function rtfSingleBlocked(editable){
+  if (editable && editable.matches && editable.matches(RTF_SINGLE_SEL)){ rtfNoTargetHint('이 입력란은 한 줄 입력란이라 줄간격·표·하위서식은 적용되지 않습니다'); return true; }
+  return false;
 }
 const RTF_SINGLE_SEL = '.ctag-edit,.pe-headline-edit,.inq-edit,.dp-title-edit'; // 한 줄 입력란 — 표·하위서식·줄간격은 해당 없음
 document.addEventListener('focusin', e=>{
@@ -10483,6 +10491,7 @@ function rtfToggleSub(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   if (!editable){ rtfNoTargetHint(); return; }
+  if (rtfSingleBlocked(editable)) return;
   editable.focus();
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
@@ -10685,6 +10694,7 @@ function rtfLineHeight(selEl, val){
   const wrap = selEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   if (!editable){ rtfNoTargetHint(); return; }
+  if (rtfSingleBlocked(editable)) return;
   editable.focus();
   rtfRestoreSelection(editable);
   const sel = window.getSelection();
@@ -10711,6 +10721,7 @@ function rtfInsertTable(btnEl){
   const wrap = btnEl.closest('.rtf-wrap');
   const editable = rtfTarget(wrap);
   if (!editable){ rtfNoTargetHint(); return; }
+  if (rtfSingleBlocked(editable)) return;
   const rows = parseInt(prompt('행(줄) 개수를 입력하세요', '2'), 10);
   const cols = parseInt(prompt('열(칸) 개수를 입력하세요', '2'), 10);
   if (!rows || !cols || rows<1 || cols<1 || rows>20 || cols>10){

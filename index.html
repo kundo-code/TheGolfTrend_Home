@@ -632,6 +632,7 @@ section.block{padding:100px 24px;position:relative}
 .product-period-box.lodge-outside,.adv-body .bf-input.bf-gray.lodge-outside{background:#FFE1E1;border-color:rgba(220,38,38,.28)}
 .product-period-box.lodge-inside,.adv-body .bf-input.bf-gray.lodge-inside{background:#DCEBFF;border-color:rgba(37,99,235,.28)}
 .product-period-box.lodge-golftel,.adv-body .bf-input.bf-gray.lodge-golftel{background:#E3F4DC;border-color:rgba(22,163,74,.3)}
+.season-chip-row{margin-top:8px}
 .mchip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
 /* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
 .airfare-excluded{color:#D6293E !important}
@@ -9793,7 +9794,7 @@ function toggleImageHidden(key){
 // 목록에서 자동으로 빠진다. 추천 시기를 고르지 않은 상품은 만료되지 않는다(연초 1월이 되면 지난해 선택 달은 다시 "앞으로 올 달"이 되어 자동 복귀).
 // 관리자가 "상품 노출" 토글로 직접 켜고 끄면(p.visible = true/false) 그 선택이 자동 판단보다 우선한다
 function productMonthsExpired(p, now){
-  const ms = (Array.isArray(p && p.months) ? p.months : []).map(Number).filter(n=>n>=1 && n<=12);
+  const ms = productEffMonths(p);
   if (!ms.length) return false;
   return Math.max.apply(null, ms) < ((now||new Date()).getMonth()+1);
 }
@@ -10765,6 +10766,26 @@ const SEASON_DEFS = [
   {key:'winter', label:'겨울 (12~2월)', months:[12,1,2]},
 ];
 const MONTH_OPTS = Array.from({length:12},(_,i)=>i+1);
+// [추가] 추천 판매 시기의 "시즌" 버튼(p.seasonTags) — 월 선택(p.months)과 함께 복수 선택할 수 있고, 상품 카드 제목 우측의 "【 … 】" 표기에 그 이름이 그대로 나온다.
+// 기간별 소팅(시즌/월 필터)·자동 만료·관리자 목록 배지는 시즌에 속한 달도 함께 포함해(productEffMonths) 판단한다
+const SEASON_TAGS = [
+  {key:'spring', label:'봄(3~4월)', short:'봄', months:[3,4]},
+  {key:'summer', label:'여름(5~8월)', short:'여름', months:[5,6,7,8]},
+  {key:'fall', label:'가을(9~11월)', short:'가을', months:[9,10,11]},
+  {key:'winter', label:'겨울(12~2월)', short:'겨울', months:[12,1,2]},
+  {key:'hasummer', label:'하계시즌(7~8월)', short:'하계', months:[7,8]},
+  {key:'dongwinter', label:'동계시즌(12~2월)', short:'동계', months:[12,1,2]},
+];
+function productSeasonTags(p){
+  const ks = Array.isArray(p && p.seasonTags) ? p.seasonTags : [];
+  return SEASON_TAGS.filter(t=>ks.includes(t.key));
+}
+// 직접 고른 달(p.months) + 선택한 시즌에 속한 달 — 필터·만료 판정에 쓰는 "실제 판매 달" 목록(중복 제거)
+function productEffMonths(p){
+  const base = (Array.isArray(p && p.months) ? p.months : []).map(Number).filter(n=>n>=1&&n<=12);
+  productSeasonTags(p).forEach(t=>t.months.forEach(m=>base.push(m)));
+  return [...new Set(base)];
+}
 // [수정] 상품 카드 "기간" 박스 월별 색상 — 관리자가 지정한 월별 팔레트(파스텔), 글자색 #121A33
 const MONTH_BOX_COLORS = {1:'#E1C3F3',2:'#FFC8E8',3:'#FFE8FB',4:'#FFE9A3',5:'#D6F3E0',6:'#C3E1FF',7:'#A2F4F6',8:'#BFFFD3',9:'#F5D79B',10:'#ECB3B3',11:'#D9AEA8',12:'#B9C5EC'};
 const MONTH_BOX_FONT = '#121A33';
@@ -10782,6 +10803,11 @@ function monthChipLabel(m){ return `<span class="mchip-dot" style="background:${
 // [추가] "추천 판매 시기" 입력값을 제목 뒤에 붙이는 짧은 표기 — 10월 → "10월", 9~11월 → "9~11월", 3·5월 → "3·5월"
 // (연속된 달은 "~"로 묶고, 12개월 모두면 "연중", 미선택이면 빈 값)
 function productMonthsLabel(p){
+  const seasonPart = productSeasonTags(p).map(t=>t.label).join(' · '); // 시즌 버튼으로 고른 이름 — 예: "봄(3~4월)"
+  const monthPart = productMonthsOnlyLabel(p);
+  return [seasonPart, monthPart].filter(Boolean).join(' · ');
+}
+function productMonthsOnlyLabel(p){
   const m = [...new Set((p && Array.isArray(p.months) ? p.months : []).map(Number).filter(n=>n>=1&&n<=12))].sort((a,b)=>a-b);
   if (!m.length) return '';
   if (m.length===12) return '연중';
@@ -10810,12 +10836,14 @@ const SEASON_SHORT = {spring:'봄', summer:'여름', fall:'가을', winter:'겨�
 // 그대로, 국가별(해외)은 그 월이 속한 시즌(들)을 표시한다(전면 소팅 기준과 동일하게)
 function productPeriodBadgeText(p, catId){
   const months = Array.isArray(p.months) ? p.months : [];
-  if (!months.length) return '전체 시기';
-  if (isDomesticCat(catId)){
-    return months.slice().sort((a,b)=>a-b).map(m=>m+'월').join(',');
+  const tagNames = productSeasonTags(p).map(t=>t.short);
+  if (!months.length && !tagNames.length) return '전체 시기';
+  let rest = '';
+  if (months.length){
+    if (isDomesticCat(catId)) rest = months.slice().sort((a,b)=>a-b).map(m=>m+'월').join(',');
+    else rest = [...new Set(SEASON_DEFS.filter(s=>months.some(m=>s.months.includes(m))).map(s=>SEASON_SHORT[s.key]))].join(',');
   }
-  const seasons = SEASON_DEFS.filter(s=>months.some(m=>s.months.includes(m))).map(s=>SEASON_SHORT[s.key]);
-  return [...new Set(seasons)].join(',');
+  return tagNames.concat(rest ? [rest] : []).join(',');
 }
 
 // STATE
@@ -10969,7 +10997,7 @@ function setPeriodFilter(regionKey, value){
 function productMatchesFilter(p, regionKey){
   const filter = catFilter[regionKey];
   if (!filter) return true;
-  const months = Array.isArray(p.months) ? p.months : [];
+  const months = productEffMonths(p);
   if (!months.length) return true;
   if (regionKey==='overseas'){
     const seasonMonths = (SEASON_DEFS.find(s=>s.key===filter)||{}).months || [];
@@ -15313,6 +15341,18 @@ function toggleProductMonthsBasic(idx, value, btnEl){
   saveProducts();
   if (btnEl) btnEl.classList.toggle('active');
 }
+function toggleProductSeasonBasic(idx, key, btnEl){
+  if (productOverrides[activeProductCat]===undefined){
+    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+  }
+  const p = productOverrides[activeProductCat][idx];
+  const arr = Array.isArray(p.seasonTags) ? p.seasonTags : (p.seasonTags=[]);
+  const i = arr.indexOf(key);
+  if (i>=0) arr.splice(i,1); else arr.push(key);
+  if (!arr.length) delete p.seasonTags;
+  saveProducts();
+  if (btnEl) btnEl.classList.toggle('active');
+}
 // PRODUCTS ADMIN
 function renderProductCatSelect(){
   const sel=document.getElementById('productCatSelect');
@@ -15457,7 +15497,8 @@ function renderProductAdmin(catId){
         <div><div class="mw-label-row"><label>비행시간 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),`toggleMetaWide(${i},'flightTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateProduct(${i},'flightTime',this.value)"></div>
         <div><div class="mw-label-row"><label>⛳ 호텔⇔골프장 <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),`toggleMetaWide(${i},'hotelToGolf',this.checked)`)}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateProduct(${i},'hotelToGolfTime',this.value)"></div>
         <div><div class="mw-label-row"><label>${transferFieldLabel} <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),`toggleMetaWide(${i},'transferTime',this.checked)`)}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateProduct(${i},'transferTime',this.value)"></div>
-        <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}</div>
+        <div class="full"><label>추천 판매 시기 <span style="color:rgba(247,245,240,.5);font-weight:400">(복수 선택 가능 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)</span></label>${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsBasic(${i},${val},this)`)}
+          <div class="season-chip-row">${chipMultiHTML(SEASON_TAGS.map(t=>[t.key,t.label]), p.seasonTags, val=>`toggleProductSeasonBasic(${i},'${val}',this)`)}</div></div>
         <div class="full"><label>카드 태그1 (선택) <span style="color:rgba(247,245,240,.5);font-weight:400">· 카드태그 2~10은 고급 편집에서 입력</span></label>${/<[a-z]/i.test(p.cardTag1||'')
           ? `<input type="text" value="${escapeAttr(richToPlain(p.cardTag1))}" readonly title="서식이 적용된 태그는 고급 편집에서 수정할 수 있습니다" style="opacity:.75;cursor:not-allowed">`
           : `<input type="text" value="${escapeAttr(p.cardTag1||'')}" placeholder="예: BEST, 인기" oninput="updateProduct(${i},'cardTag1',this.value)">`}</div>
@@ -16007,7 +16048,7 @@ function advBasicHTML(p){
   const hint = t => `<span style="color:var(--nm-text-soft);font-weight:400;font-size:.7rem;text-transform:none;letter-spacing:0">${t}</span>`;
   const f = v => advFilled(v) ? 1 : 0;
   // ── 상태 배지 계산 ──
-  const exposeN = f(p.editorsPick) + f((p.months||[]).length ? 'y' : '');
+  const exposeN = f(p.editorsPick) + f(productEffMonths(p).length ? 'y' : '');
   const cardKeys = [p.titleMedia&&p.titleMedia.url, p.title, p.nights, p.from, p.checkpoint1, cardTagsOf(p).length?'y':'', p.checkpoint2||p.commonPrecautions];
   const cardN = cardKeys.filter(advFilled).length;
   const basicN = [p.minPeople, p.rounds, (p.airfareIncluded&&p.airfareIncluded!=='none')?'y':'', p.stay, p.meals].filter(advFilled).length;
@@ -16052,6 +16093,8 @@ function advBasicHTML(p){
         </div>
         <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
         ${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsMulti(${val})`)}
+        <div class="season-chip-row">${chipMultiHTML(SEASON_TAGS.map(t=>[t.key,t.label]), p.seasonTags, val=>`toggleProductSeasonTag('${val}')`)}</div>
+        <div class="file-hint" style="margin-top:4px">시즌 버튼을 고르면 상품 카드 제목 우측 "【 … 】" 자리에 시즌 이름이 그대로 나오고, 그 시즌에 속한 달도 기간별 소팅·자동 비노출 판단에 함께 쓰입니다</div>
       </div>
     </details>
 
@@ -17203,6 +17246,14 @@ function toggleEmphasisMulti(i, value){
   saveAdvChange(); renderAdvBody();
 }
 // [Phase] 상품 레벨 "추천 판매 시기"(1~12월 복수 선택) 토글 — 국가별(시즌)/권역별(월) 기간별 소팅에 사용
+function toggleProductSeasonTag(key){
+  const p=getAdvProduct(); if (!p) return;
+  const arr = Array.isArray(p.seasonTags) ? p.seasonTags : (p.seasonTags=[]);
+  const i = arr.indexOf(key);
+  if (i>=0) arr.splice(i,1); else arr.push(key);
+  if (!arr.length) delete p.seasonTags;
+  saveAdvChange(); renderAdvBody();
+}
 function toggleProductMonthsMulti(value){
   const p=getAdvProduct(); if (!p) return;
   const arr = Array.isArray(p.months) ? p.months : (p.months=[]);

@@ -388,6 +388,45 @@ section.block{padding:100px 24px;position:relative}
 .cv-head .left p{color:rgba(10,23,48,.6);margin-top:6px;font-size:.95rem}
 .cv-close{color:var(--gold-deep);font-size:.88rem;font-weight:600;cursor:pointer;padding:8px 16px;border-radius:100px;background:rgba(10,23,48,.05);border:1px solid rgba(10,23,48,.10);transition:all .2s}
 .cv-close:hover{background:rgba(10,23,48,.10)}
+.cv-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* [추가] 2027 국가별 캘린더 모달 */
+.hcal-overlay{position:fixed;inset:0;z-index:2600;background:rgba(10,23,48,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px 16px;animation:hcalFade .2s ease both}
+@keyframes hcalFade{from{opacity:0}to{opacity:1}}
+.hcal-modal{width:100%;max-width:980px;max-height:92vh;display:flex;flex-direction:column;background:#fffdf8;border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(10,23,48,.4)}
+.hcal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid rgba(10,23,48,.08);flex-shrink:0}
+.hcal-head h3{font-size:1.25rem;font-weight:600;color:var(--pine-deep);margin:0}
+.hcal-head h3 em{font-style:normal;color:var(--gold-deep)}
+.hcal-x{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(222,170,60,.6);background:#fff7e6;color:#7d4f0f;font-size:1rem;cursor:pointer;line-height:1;flex-shrink:0}
+.hcal-x:hover{background:linear-gradient(135deg,#f2c257,#c98f1f);color:#fff}
+.hcal-body{overflow:auto;padding:18px 24px 24px}
+.hcal-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;margin-bottom:12px;color:rgba(10,23,48,.65)}
+.hcal-legend span:before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.hl-hol:before{background:#D6293E}.hl-sun:before{background:#e9a0a8}.hl-sat:before{background:#7ea7e6}
+.hcal-months{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.hc-month{background:#fff;border:1px solid rgba(10,23,48,.08);border-radius:14px;padding:10px 12px 12px}
+.hc-mt{font-weight:700;color:var(--pine-deep);margin-bottom:6px;font-size:.95rem}
+.hc-wk,.hc-grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.hc-wk span{font-size:.66rem;color:rgba(10,23,48,.5);padding:2px 0}
+.hc-wk .sun{color:#d6293e}.hc-wk .sat{color:#2f6fed}
+.hc-d{font-size:.8rem;line-height:1;padding:6px 0;margin:1px;border-radius:50%;color:rgba(10,23,48,.82)}
+.hc-d.sun{color:#e0707e}.hc-d.sat{color:#5a8fe6}
+.hc-d.hol{color:#fff;background:#D6293E;font-weight:700}
+.hc-d.empty{visibility:hidden}
+.hcal-list-t{margin:20px 0 8px;font-weight:700;color:var(--pine-deep);font-size:.95rem}
+.hcal-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 24px}
+.hcal-list li{display:flex;gap:10px;padding:5px 0;font-size:.85rem;border-bottom:1px dashed rgba(10,23,48,.1)}
+.hc-ld{flex:0 0 86px;color:#D6293E;font-weight:700;font-variant-numeric:tabular-nums}
+.hc-ln{color:rgba(10,23,48,.8)}
+.hcal-note{margin:16px 0 0;font-size:.74rem;color:rgba(10,23,48,.55);line-height:1.5}
+@media(max-width:640px){
+  .hcal-overlay{padding:12px 8px}
+  .hcal-head{padding:14px 16px}.hcal-head h3{font-size:1.05rem}
+  .hcal-body{padding:14px 12px 20px}
+  .hcal-months{grid-template-columns:repeat(2,1fr);gap:8px}
+  .hc-month{padding:8px 6px 8px}
+  .hc-d{font-size:.7rem;padding:5px 0;margin:0}
+  .hcal-list{grid-template-columns:1fr}
+}
 /* [수정] 펼쳐진 상품 목록 안에서 같은 지역의 다른 국가/지역으로 바로 이동할 수 있는 네비게이션 바 */
 /* [Phase] 제목("📍 권역별/국가별 보기")을 버튼과 같은 줄에 나란히 두는 대신, 제목을 구분선과 함께
    독립된 줄로 올리고 그 아래에 버튼 줄(.cv-nav-track)을 둔다 — 월별/시즌별 필터(.period-filter-row)
@@ -4190,7 +4229,9 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   .cv-head .left{display:contents}
   .cv-head .left h3{grid-column:1;grid-row:1;min-width:0}
   .cv-head .left p{grid-column:1/-1;grid-row:2}
-  .cv-close{grid-column:2;grid-row:1;flex-shrink:0}
+  .cv-close{flex-shrink:0}
+  .cv-head-actions{grid-column:2;grid-row:1;flex-wrap:nowrap}
+  .cv-head-actions .hcal-btn{font-size:.78rem;padding:6px 10px;white-space:nowrap}
   /* [수정] 국가별/권역별 보기(다른 국가로 바로 이동하는 칩) 항목을 모바일에서는 제거하고,
      제목 바로 아래에 시즌별/월별 보기(.period-filter-row)가 오도록 한다 */
   .cv-nav{display:none}
@@ -8004,7 +8045,7 @@ function collectSiteState(){
     pkgPosters, blogOverride, logoOverride, taglineOverride, logoTransform,
     seasonStickerOverrides, seasonTheme: localStorage.getItem(SEASON_THEME_KEY) || null,
     headlineOverride, aboutBannerOverride, heroBgList, entryExitList,
-    reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides,
+    reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides, calHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
     collectorEndpoint: collectorEndpointOverride,
   };
@@ -8013,6 +8054,7 @@ function applySiteState(state){
   if (!state) return;
   if (state.imageOverrides) imageOverrides = state.imageOverrides;
   if (state.imageHiddenOverrides) imageHiddenOverrides = state.imageHiddenOverrides;
+  if (state.calHiddenOverrides) calHiddenOverrides = state.calHiddenOverrides;
   if (state.customLinkItems) customLinkItems = Object.assign({band:[],blog:[],sns:[]}, state.customLinkItems);
   if (state.linkHiddenOverrides) linkHiddenOverrides = state.linkHiddenOverrides;
   if (state.productOverrides) productOverrides = state.productOverrides;
@@ -8041,6 +8083,7 @@ function applySiteState(state){
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(IMG_HIDDEN_KEY, JSON.stringify(imageHiddenOverrides));
+    localStorage.setItem(CAL_HIDDEN_KEY, JSON.stringify(calHiddenOverrides));
     localStorage.setItem(PROD_KEY, JSON.stringify(productOverrides));
     localStorage.setItem(LINK_KEY, JSON.stringify(linkOverrides));
     localStorage.setItem(LINK_ACTIVE_KEY, JSON.stringify(linkActiveOverrides));
@@ -9798,19 +9841,23 @@ const IMG_KEY='kundo_images_v1', PROD_KEY='kundo_products_v1', LINK_KEY='kundo_l
 // [Phase] 국내 권역·해외 국가 대표 이미지를 삭제(destructive)하지 않고도 화면에서만 잠시 감출 수
 // 있게 하는 상태 — true인 카테고리는 업로드한 이미지가 있어도 무시하고 기본(내장) 이미지로 표시된다
 const IMG_HIDDEN_KEY='kundo_images_hidden_v1';
+const CAL_HIDDEN_KEY='kundo_cal_hidden_v1'; // 국가/권역별 "2027 캘린더" 버튼 숨김
 // [추가] 브랜드 링크 그룹(밴드/블로그/SNS)에 관리자가 직접 추가한 링크 — 그룹별 배열로 저장.
 // 내장(고정) 링크는 지우지 않고 LINK_HIDDEN_KEY로 "삭제됨" 상태만 표시(언제든 복원 가능)
 const CUSTOM_LINKS_KEY='kundo_custom_links_v1', LINK_HIDDEN_KEY='kundo_link_hidden_v1';
+let calHiddenOverrides={};
 let imageOverrides={}, productOverrides={}, linkOverrides={}, linkActiveOverrides={}, imageHiddenOverrides={}, customLinkItems={band:[],blog:[],sns:[]}, linkHiddenOverrides={};
 try{imageOverrides=JSON.parse(localStorage.getItem(IMG_KEY)||'{}')}catch(e){}
 try{productOverrides=JSON.parse(localStorage.getItem(PROD_KEY)||'{}')}catch(e){}
 try{linkOverrides=JSON.parse(localStorage.getItem(LINK_KEY)||'{}')}catch(e){}
 try{linkActiveOverrides=JSON.parse(localStorage.getItem(LINK_ACTIVE_KEY)||'{}')}catch(e){}
 try{imageHiddenOverrides=JSON.parse(localStorage.getItem(IMG_HIDDEN_KEY)||'{}')}catch(e){}
+try{calHiddenOverrides=JSON.parse(localStorage.getItem(CAL_HIDDEN_KEY)||'{}')}catch(e){}
 try{customLinkItems=Object.assign({band:[],blog:[],sns:[]}, JSON.parse(localStorage.getItem(CUSTOM_LINKS_KEY)||'{}'))}catch(e){}
 try{linkHiddenOverrides=JSON.parse(localStorage.getItem(LINK_HIDDEN_KEY)||'{}')}catch(e){}
 
 function saveImages(){try{localStorage.setItem(IMG_KEY,JSON.stringify(imageOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
+function saveCalHidden(){try{localStorage.setItem(CAL_HIDDEN_KEY,JSON.stringify(calHiddenOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveImageHidden(){try{localStorage.setItem(IMG_HIDDEN_KEY,JSON.stringify(imageHiddenOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveProducts(){try{localStorage.setItem(PROD_KEY,JSON.stringify(productOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveLinks(){try{localStorage.setItem(LINK_KEY,JSON.stringify(linkOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
@@ -11192,6 +11239,73 @@ function productMatchesFilter(p, regionKey){
   }
   return months.includes(filter);
 }
+// ===== [추가] 2027 국가별 캘린더(공휴일) — 여행지 > 국가/권역 패널의 "📅 2027 캘린더" 버튼 =====
+// 해외는 국가별, 국내는 모든 권역이 "korea" 한 벌을 공유한다. 공휴일·기념일은 [월, 일, 이름] — 자료 출처: 연간 공휴일 달력(PDF) 참고,
+// 현지 사정(임시공휴일·대체공휴일 등)으로 바뀔 수 있어 화면에도 "예약 전 확인" 안내를 함께 표시한다
+const HCAL_YEAR = 2027;
+const HCAL_DATA = {
+  japan:{title:'일본', hol:[[1,1,'신정'],[1,2,'1월 2일(연시 휴일)'],[1,3,'1월 3일(연시 휴일)'],[1,11,'성인의 날'],[2,11,'건국기념일'],[2,23,'천황 탄생일'],[3,21,'춘분의 날'],[3,22,'춘분의 날 대체휴일'],[4,29,'쇼와의 날'],[5,3,'헌법기념일'],[5,4,'녹색의 날'],[5,5,'어린이날'],[7,19,'바다의 날'],[8,11,'산의 날'],[9,20,'경로의 날'],[9,23,'추분의 날'],[10,11,'스포츠의 날'],[11,3,'문화의 날'],[11,15,'시치고산(七五三)'],[11,23,'근로감사의 날'],[12,25,'크리스마스'],[12,31,'섣달그믐']]},
+  china:{title:'중국', hol:[[1,1,'신정'],[2,5,'춘절(설날) 연휴'],[2,6,'춘절(설날)'],[2,7,'춘절(설날) 연휴'],[3,8,'국제 여성의 날'],[4,5,'청명절'],[5,1,'노동절'],[5,4,'청년절'],[6,1,'어린이날'],[6,9,'단오절'],[8,1,'건군절'],[9,15,'중추절'],[10,1,'국경절'],[10,2,'국경절 연휴'],[10,3,'국경절 연휴']]},
+  vietnam:{title:'베트남', hol:[[1,1,'신정'],[1,30,'조왕신 제사일'],[2,3,'공산당 창당 기념일'],[2,5,'뗏(설날) 연휴'],[2,6,'뗏(설날)'],[2,10,'응옥호이-동다 전투 승전기념일'],[2,20,'정월 대보름(등불 축제)'],[3,8,'국제 여성의 날'],[4,16,'흥왕 기념일'],[4,21,'베트남 책의 날'],[4,30,'남부 해방·통일기념일'],[5,1,'노동절'],[5,7,'디엔비엔푸 승전기념일'],[5,19,'호찌민 주석 탄신일'],[5,20,'부처님 오신 날'],[6,1,'국제 어린이날'],[6,9,'단오(해충 잡는 날)'],[6,28,'베트남 가정의 날'],[7,27,'상이군경·전몰자 추모일'],[8,16,'우란분절(백중)'],[8,19,'8월 혁명 기념일'],[9,2,'국경일(건국기념일)'],[9,15,'중추절'],[10,10,'하노이 해방기념일'],[10,20,'베트남 여성의 날'],[11,20,'베트남 스승의 날'],[12,22,'인민군 창설 기념일']]},
+  thailand:{title:'태국', hol:[[1,1,'신정'],[4,6,'짜끄리 왕조 기념일'],[4,13,'송끄란 축제(태국 설날)'],[4,14,'송끄란 축제(태국 설날)'],[4,15,'송끄란 축제(태국 설날)'],[5,4,'국왕 대관 기념일'],[6,3,'수티다 왕비 탄신일'],[7,28,'국왕 탄신일'],[8,12,'왕대비 탄신일(어머니의 날)'],[10,13,'푸미폰 국왕 서거 추모일'],[10,23,'쭐랄롱꼰 대왕 기념일'],[12,5,'푸미폰 국왕 탄신일(아버지의 날)'],[12,10,'헌법기념일'],[12,31,'섣달그믐']]},
+  philippines:{title:'필리핀', hol:[[1,1,'신정'],[1,23,'제1공화국 기념일'],[2,2,'헌법 기념일'],[2,6,'중국 설날'],[2,20,'정월 대보름(등불 축제)'],[2,25,'에드사 혁명 기념일'],[3,9,'이드 알피트르(라마단 종료)'],[3,25,'성목요일'],[3,26,'성금요일'],[3,27,'성토요일'],[3,28,'부활절'],[4,9,'용맹의 날'],[4,27,'라푸라푸의 날'],[5,1,'노동절'],[5,16,'이드 알아드하(희생절)'],[6,6,'이슬람 새해'],[6,12,'독립기념일'],[6,19,'호세 리살 탄신일'],[7,27,'이글레시아 니 크리스토 기념일'],[8,14,'무함마드 탄신일'],[8,21,'니노이 아키노의 날'],[8,30,'국가 영웅의 날'],[9,15,'중추절'],[11,1,'만성절'],[11,2,'위령의 날'],[11,30,'보니파시오의 날'],[12,8,'성모 무염시태 대축일'],[12,24,'크리스마스 이브'],[12,25,'크리스마스'],[12,30,'리살의 날'],[12,31,'섣달그믐']]},
+  malaysia:{title:'말레이시아', hol:[[1,1,'신정'],[2,6,'중국 설날'],[2,7,'중국 설날'],[2,8,'중국 설날 대체휴일'],[2,24,'누줄 꾸란의 날'],[3,9,'하리 라야 푸아사(이드 알피트르)'],[3,10,'하리 라야 푸아사(이드 알피트르)'],[5,1,'노동절'],[5,16,'하리 라야 하지(이드 알아드하)'],[6,6,'이슬람 새해'],[6,7,'국왕 탄신일'],[8,14,'무함마드 탄신일'],[8,31,'독립기념일'],[9,16,'말레이시아의 날'],[10,28,'디파발리(힌두 빛의 축제)'],[12,25,'크리스마스']]},
+  indonesia:{title:'인도네시아', hol:[[1,1,'신정'],[1,5,'이스라 미라지(승천절)'],[2,6,'중국 설날'],[3,8,'녀피(발리 힌두 새해·침묵의 날)'],[3,9,'르바란(이드 알피트르)'],[3,10,'르바란(이드 알피트르)'],[3,26,'성금요일'],[5,1,'노동절'],[5,6,'예수 승천일'],[5,16,'이드 알아드하(희생절)'],[5,20,'와이삭의 날(부처님 오신 날)'],[6,1,'빤짜실라의 날'],[6,6,'이슬람 새해'],[8,14,'무함마드 탄신일'],[8,17,'독립기념일'],[12,25,'크리스마스(이스라 미라지)']]},
+  guam:{title:'괌', hol:[[1,1,'신정'],[1,18,'마틴 루터 킹 주니어 데이'],[2,14,'밸런타인데이'],[3,1,'괌 역사·차모로 문화유산의 날'],[3,26,'성금요일'],[3,28,'부활절'],[4,15,'납세의 날'],[4,21,'행정 전문직의 날'],[5,9,'어머니의 날'],[5,31,'메모리얼 데이(현충일)'],[6,18,'준틴스 대체휴일'],[6,19,'준틴스(노예해방 기념일)'],[6,20,'아버지의 날'],[7,4,'미국 독립기념일'],[7,5,'독립기념일 대체휴일'],[7,21,'괌 해방기념일'],[9,6,'노동절'],[10,11,'콜럼버스 데이'],[10,31,'핼러윈'],[11,2,'위령의 날'],[11,11,'재향군인의 날'],[11,25,'추수감사절'],[11,26,'추수감사절 다음 날'],[12,8,'카마린 성모의 날'],[12,24,'크리스마스 이브(대체휴일)'],[12,25,'크리스마스'],[12,31,'섣달그믐(신정 대체휴일)']]},
+  korea:{title:'대한민국', hol:[[1,1,'신정'],[2,7,'설날'],[3,1,'3·1절'],[5,5,'어린이날'],[5,13,'부처님 오신 날'],[6,6,'현충일'],[7,17,'제헌절'],[8,15,'광복절'],[9,15,'추석'],[10,3,'개천절'],[10,9,'한글날'],[12,25,'성탄절']]},
+};
+// 국내 권역은 모두 대한민국 캘린더 한 벌을 쓴다
+function hcalKey(catId){ return CATEGORIES.domestic.some(c=>c.id===catId) ? 'korea' : catId; }
+// 이 국가/권역에 캘린더가 있고 관리자가 숨기지 않았는지
+function hasHolidayCal(catId){ return !!HCAL_DATA[hcalKey(catId)] && !calHiddenOverrides[catId]; }
+function hcalWeekday(m,d){ return ['일','월','화','수','목','금','토'][new Date(HCAL_YEAR,m-1,d).getDay()]; }
+function hcalMonthHTML(m, holMap){
+  const first = new Date(HCAL_YEAR, m-1, 1).getDay(), days = new Date(HCAL_YEAR, m, 0).getDate();
+  let cells = '';
+  for (let i=0;i<first;i++) cells += '<span class="hc-d empty"></span>';
+  for (let d=1; d<=days; d++){
+    const dow = (first + d - 1) % 7, h = holMap[m+'-'+d];
+    const cls = 'hc-d' + (h ? ' hol' : (dow===0 ? ' sun' : (dow===6 ? ' sat' : '')));
+    cells += `<span class="${cls}"${h?` title="${escapeAttr(h)}"`:''}>${d}</span>`;
+  }
+  return `<div class="hc-month"><div class="hc-mt">${m}월</div>
+    <div class="hc-wk"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
+    <div class="hc-grid">${cells}</div></div>`;
+}
+function closeHolidayCal(){
+  const el = document.getElementById('hcalOverlay'); if (el) el.remove();
+  document.removeEventListener('keydown', hcalKeyHandler, true);
+}
+function hcalKeyHandler(e){ if (e.key==='Escape'){ e.stopPropagation(); closeHolidayCal(); } }
+function openHolidayCal(catId){
+  const data = HCAL_DATA[hcalKey(catId)]; if (!data) return;
+  closeHolidayCal();
+  const holMap = {}; data.hol.forEach(([m,d,n])=>{ holMap[m+'-'+d] = holMap[m+'-'+d] ? holMap[m+'-'+d]+' · '+n : n; });
+  const months = Array.from({length:12}, (_,i)=>hcalMonthHTML(i+1, holMap)).join('');
+  const list = data.hol.map(([m,d,n])=>`<li><span class="hc-ld">${m}/${d}(${hcalWeekday(m,d)})</span><span class="hc-ln">${escapeAttr(n)}</span></li>`).join('');
+  const el = document.createElement('div');
+  el.id = 'hcalOverlay'; el.className = 'hcal-overlay';
+  el.setAttribute('role','dialog'); el.setAttribute('aria-label', `${HCAL_YEAR} ${data.title} 캘린더`);
+  el.innerHTML = `<div class="hcal-modal">
+    <div class="hcal-head"><h3>📅 ${HCAL_YEAR}년 <em>${escapeAttr(data.title)}</em> 캘린더</h3><button type="button" class="hcal-x" onclick="closeHolidayCal()" aria-label="닫기">✕</button></div>
+    <div class="hcal-body">
+      <div class="hcal-legend"><span class="hl-hol">공휴일·기념일</span><span class="hl-sun">일요일</span><span class="hl-sat">토요일</span></div>
+      <div class="hcal-months">${months}</div>
+      <div class="hcal-list-t">${HCAL_YEAR}년 ${escapeAttr(data.title)} 공휴일·기념일</div>
+      <ul class="hcal-list">${list}</ul>
+      <p class="hcal-note">공휴일·기념일은 현지 사정에 따라 변경될 수 있습니다(임시·대체공휴일 등). 일정 확정 전 담당 플래너에게 확인해 주세요.</p>
+    </div></div>`;
+  el.addEventListener('mousedown', e=>{ el.dataset.md = (e.target===el) ? '1' : ''; });
+  el.addEventListener('click', e=>{ if (e.target===el && el.dataset.md==='1') closeHolidayCal(); });
+  document.body.appendChild(el);
+  document.addEventListener('keydown', hcalKeyHandler, true);
+}
+// 관리자: 국가/권역별 캘린더 버튼 노출 켜기/끄기
+function toggleCalHidden(catId){
+  if (calHiddenOverrides[catId]) delete calHiddenOverrides[catId]; else calHiddenOverrides[catId] = true;
+  saveCalHidden(); renderAll(); renderAdminImages();
+}
+
 // [수정] 카드 그룹(해외/국내) 하단에 삽입되는 상품 목록 패널 — 지역별로 하나만 존재하며, 선택된 국가/지역이
 // 바뀌면 내용만 갱신된다. 패널 안의 네비게이션 바로 같은 지역의 다른 국가/지역으로도 바로 이동 가능
 function categoryPanelHTML(regionKey){
@@ -11208,7 +11322,10 @@ function categoryPanelHTML(regionKey){
         <h3><em>${cat.ko}</em><span style="color:rgba(10,23,48,.5);font-size:.75em;letter-spacing:.15em;margin-left:8px">${cat.en}</span></h3>
         <p id="${tagId}"></p>
       </div>
-      <a class="cv-close" onclick="closeCategory('${regionKey}')">닫기 ✕</a>
+      <div class="cv-head-actions">
+        ${hasHolidayCal(selectedId||'')?`<button type="button" class="cv-close hcal-btn" onclick="openHolidayCal('${selectedId}')">📅 ${HCAL_YEAR} 캘린더</button>`:''}
+        <a class="cv-close" onclick="closeCategory('${regionKey}')">닫기 ✕</a>
+      </div>
     </div>
     <div class="cv-nav">${regionNavHTML(regionKey, selectedId)}</div>
     <div class="period-filter-row" id="${regionKey==='overseas'?'periodFilterOverseas':'periodFilterDomestic'}">${periodFilterHTML(regionKey)}</div>
@@ -15517,6 +15634,7 @@ function renderAdminImages(){
       <div class="admin-item-actions">
         <label class="file-btn">교체<input type="file" accept="image/*" onchange="handleImageUpload('${c.id}',this)"></label>
         <button class="file-btn" onclick="toggleImageHidden('${c.id}')">${imageHiddenOverrides[c.id]?'👁️ 다시 노출':'🙈 화면에서 숨기기'}</button>
+        ${HCAL_DATA[hcalKey(c.id)]?`<button class="file-btn" onclick="toggleCalHidden('${c.id}')" title="국가/권역 패널의 ${HCAL_YEAR} 캘린더 버튼">${calHiddenOverrides[c.id]?'📅 캘린더 켜기':'📅 캘린더 끄기'}</button>`:''}
         ${imageOverrides[c.id]?`<button class="file-btn danger" onclick="resetImageOverride('${c.id}')">삭제</button>`:''}
       </div>
     </div>`;

@@ -640,6 +640,8 @@ section.block{padding:100px 24px;position:relative}
 .product-period-box.lodge-outside,.adv-body .bf-input.bf-gray.lodge-outside{background:#FFE1E1;border-color:rgba(220,38,38,.28)}
 .product-period-box.lodge-inside,.adv-body .bf-input.bf-gray.lodge-inside{background:#DCEBFF;border-color:rgba(37,99,235,.28)}
 .product-period-box.lodge-golftel,.adv-body .bf-input.bf-gray.lodge-golftel{background:#E3F4DC;border-color:rgba(22,163,74,.3)}
+/* [추가] 항공 발권 대행 서비스 박스 — 연한 녹색 */
+.product-period-box.ticket-box,.adv-body .bf-input.bf-gray.ticket-service{background:#DDF3E4;border-color:rgba(22,163,74,.32)}
 .season-chip-row{margin-top:8px}
 .mchip-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
 /* [수정] "항공 포함 여부"는 포함일 때 파란색, 불포함일 때 빨간색으로 강조 — 카드/배지/상세페이지 전체 공통 */
@@ -6057,6 +6059,7 @@ function ensureExtended(p){
   if (p.prepOverlay===undefined) p.prepOverlay = false;
   // [추가] 숙소 위치 — 'outside'(골프장 外 숙박) / 'inside'(골프장 內 숙박) / 'none'(없음, 카드에 표시 안 함)
   if (p.lodgeLocation===undefined) p.lodgeLocation = 'none';
+  if (p.ticketService===undefined) p.ticketService = 'none'; // 항공 발권 대행 서비스
   if (p.prepOverlayText===undefined) p.prepOverlayText = '';
   // [추가] "요금 항목 추가" 전에도 미리 입력해둘 수 있는 공통(요금 항목과 무관) 버전 — 상품
   // 상세 페이지의 "공통 안내" 바로 위에 노출된다. 요금 항목별 값과는 별도로 보관한다
@@ -11010,6 +11013,9 @@ function isDuplicateProductTitle(title){
   return n>1;
 }
 const LODGE_OPTS = [['outside','골프장 外 숙박'],['inside','골프장 內 숙박'],['golftel','골프텔 or 외부숙소'],['none','없음']];
+// [추가] 항공 발권 대행 서비스 — 'service'면 카드의 숙소 위치 오른쪽에 "🎟️ 항공 발권 서비스" 연한 녹색 박스로 노출
+const TICKET_OPTS = [['none','없음(표시안함)'],['service','항공 발권 서비스']];
+function ticketText(p){ return p && p.ticketService==='service' ? '항공 발권 서비스' : ''; }
 function lodgeText(p){ const o=LODGE_OPTS.find(x=>x[0]===p.lodgeLocation); return (o && o[0]!=='none') ? o[1] : ''; }
 const SEASON_SHORT = {spring:'봄', summer:'여름', fall:'가을', winter:'겨울'};
 // [Phase] 관리자 상품 목록의 제목 우측에 노출할 "추천 판매 시기" 요약 — 권역별(국내)은 등록된 월을
@@ -11496,6 +11502,7 @@ function productCardHTML(p, catId, idx){
     p.nightsCount ? `<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>` : '',
     cardStayText ? `<span class="product-period-box">🏨 ${escapeAttr(cardStayText)}</span>` : '',
     lodgeText(p) ? `<span class="product-period-box lodge-box lodge-${p.lodgeLocation}">📍 ${escapeAttr(lodgeText(p))}</span>` : '',
+    ticketText(p) ? `<span class="product-period-box ticket-box">🎟️ ${escapeAttr(ticketText(p))}</span>` : '',
   ].join('');
   const metaItems = [
     ...metaGroup1,
@@ -16404,7 +16411,7 @@ function advBasicHTML(p){
             </div>
             <div><label>🗓 기간 ${hint('(제목 아래 오른쪽 · 박스 색 = 추천 판매 시기 월 색상)')}</label><input type="text" class="bf-input bf-gray" style="${periodBoxStyle(p)}" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
             <div><label>🌙 박수 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-            <div><label>🏨 체류일 ${hint('(박수 오른쪽 · 자세히 보기 "항공/이동 정보"의 체류일과 같은 값)')}</label>
+            <div><label>🏨 체류일 ${hint('("항공/이동 정보"의 체류일과 같은 값)')}</label>
               <select class="bf-input bf-gray" onchange="updatePriceEntryLabel(-1,'stayDuration',this.value);renderAdvBody()">
                 ${STAY_OPTS.map(o=>`<option value="${o[0]}" ${(p.labels.stayDuration||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
               </select>
@@ -16412,6 +16419,11 @@ function advBasicHTML(p){
             <div><label>📍 숙소 위치 ${hint('(체류일 오른쪽 · 없음이면 표시 안 함)')}</label>
               <select class="bf-input bf-gray lodge-${p.lodgeLocation||'none'}" onchange="updateAdvField('lodgeLocation',this.value);this.className='bf-input bf-gray lodge-'+this.value">
                 ${LODGE_OPTS.map(o=>`<option value="${o[0]}" ${(p.lodgeLocation||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>🎟️ 항공 발권 대행 서비스 ${hint('(숙소 위치 오른쪽 · 없음이면 표시 안 함)')}</label>
+              <select class="bf-input bf-gray ticket-${p.ticketService||'none'}" onchange="updateAdvField('ticketService',this.value);this.className='bf-input bf-gray ticket-'+this.value">
+                ${TICKET_OPTS.map(o=>`<option value="${o[0]}" ${(p.ticketService||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
               </select>
             </div>
           </div>

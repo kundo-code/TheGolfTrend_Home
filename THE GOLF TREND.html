@@ -441,7 +441,7 @@ section.block{padding:100px 24px;position:relative}
    동작하고, PC 드래그는 initCarouselDrag()가 보조한다 */
 .pc-carousel{position:relative;margin-top:14px}
 .pc-track{
-  --pc-hover-scale:1.08; /* [수정] JS(pcRecalcPadding)가 이 값을 읽어 카드 실제 높이 기준으로 필요한
+  --pc-hover-scale:1.05; /* [수정] JS(pcRecalcPadding)가 이 값을 읽어 카드 실제 높이 기준으로 필요한
     하단 여유 공간을 계산 — 카드 내용(체크포인트1/2·태그 등)에 따라 높이가 달라져도 항상 정확한
     만큼만 확보되도록, 고정 픽셀값 대신 실측 기반으로 자동 계산한다 */
   display:flex;gap:20px;
@@ -472,12 +472,12 @@ section.block{padding:100px 24px;position:relative}
    전환 중인 중간값을 읽어버리는 문제가 있었다 — 캐러셀 카드는 transform·그림자·투명도·색상만
    전환되도록 좁혀 폭 변화는 즉시 반영되게 한다 */
 .pc-track>.product{flex:0 0 calc((100% - 20px*2)/3);scroll-snap-align:start;min-width:0;transform-origin:top;transition:transform .3s,box-shadow .3s,opacity .3s,border-color .3s,background .3s}
-/* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(108%)로
+/* [수정] 캐러셀 안의 카드만(정적 그리드는 제외) 마우스를 올리면 카드 프레임째 105~110% 사이(현재 105%)로
    자연스럽게 커지고, z-index로 옆 카드 위에 가리지 않게 떠오른다. transform-origin:top이라 카드
    윗변은 그 자리에 고정된 채 아래·양옆으로만 커져 상단 내비게이션 바를 절대 침범하지 않는다 */
-/* [추가] 상품이 3개 이하라 캐러셀이 아닌 그리드(.product-grid)로 보이는 경우(해외 국가 등)도 캐러셀과 똑같이 호버 시 108%로 확대 */
+/* [추가] 상품이 3개 이하라 캐러셀이 아닌 그리드(.product-grid)로 보이는 경우(해외 국가 등)도 캐러셀과 똑같이 호버 시 105%로 확대 */
 @media(hover:hover) and (min-width:781px){
-  .product-grid{--pc-hover-scale:1.08}
+  .product-grid{--pc-hover-scale:1.05}
   .product-grid>.product{transform-origin:top}
   .product-grid>.product:hover{transform:scale(var(--pc-hover-scale));z-index:5;box-shadow:0 24px 52px rgba(10,23,48,.3),0 8px 18px rgba(10,23,48,.16)}
 }
@@ -11917,7 +11917,7 @@ function pcRecalcPadding(regionKey){
   watchCardHeights(track, ()=>pcRecalcPadding(regionKey));
   let maxH = 0;
   cards.forEach(c=>{ const h=c.getBoundingClientRect().height; if (h>maxH) maxH=h; });
-  const scale = parseFloat(getComputedStyle(track).getPropertyValue('--pc-hover-scale')) || 1.08;
+  const scale = parseFloat(getComputedStyle(track).getPropertyValue('--pc-hover-scale')) || 1.05;
   const growth = maxH * (scale - 1);
   track.style.paddingBottom = Math.ceil(growth + PC_HOVER_SHADOW_SPREAD + 16) + 'px'; // +16px 추가 안전 여유
 }
@@ -11938,7 +11938,7 @@ function gridRecalcPadding(grid){
   watchCardHeights(grid, ()=>gridRecalcPadding(grid));
   let maxH = 0;
   cards.forEach(c=>{ const h=c.offsetHeight; if (h>maxH) maxH=h; });
-  const scale = parseFloat(getComputedStyle(grid).getPropertyValue('--pc-hover-scale')) || 1.08;
+  const scale = parseFloat(getComputedStyle(grid).getPropertyValue('--pc-hover-scale')) || 1.05;
   grid.style.paddingBottom = Math.ceil(maxH*(scale-1) + PC_HOVER_SHADOW_SPREAD + 8) + 'px';
 }
 // [수정] 데스크톱(3장 노출)에서 트랙 중앙에 가장 가까운(=가운데) 카드만 선명하게 두고 나머지는

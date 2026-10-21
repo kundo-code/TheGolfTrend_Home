@@ -396,6 +396,9 @@ section.block{padding:100px 24px;position:relative}
 .hcal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid rgba(10,23,48,.08);flex-shrink:0}
 .hcal-head h3{font-size:1.25rem;font-weight:600;color:var(--pine-deep);margin:0}
 .hcal-head h3 em{font-style:normal;color:var(--gold-deep)}
+.hcal-head-r{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hcal-save{white-space:nowrap;font-family:inherit}
+.hcal-save.busy{opacity:.6;pointer-events:none}
 .hcal-x{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(222,170,60,.6);background:#fff7e6;color:#7d4f0f;font-size:1rem;cursor:pointer;line-height:1;flex-shrink:0}
 .hcal-x:hover{background:linear-gradient(135deg,#f2c257,#c98f1f);color:#fff}
 .hcal-body{overflow:auto;padding:18px 24px 24px}
@@ -420,7 +423,11 @@ section.block{padding:100px 24px;position:relative}
 .hcal-note{margin:16px 0 0;font-size:.74rem;color:rgba(10,23,48,.55);line-height:1.5}
 @media(max-width:640px){
   .hcal-overlay{padding:12px 8px}
-  .hcal-head{padding:14px 16px}.hcal-head h3{font-size:1.05rem}
+  .hcal-head{padding:14px 12px 14px 16px;gap:8px}.hcal-head h3{font-size:.95rem;white-space:nowrap;min-width:0}
+  .hc-emo,.hs-ro{display:none}
+  .hcal-head-r{gap:6px}
+  .hcal-save{font-size:.72rem;padding:6px 9px}
+  .hcal-x{width:30px;height:30px}
   .hcal-body{padding:14px 12px 20px}
   .hcal-months{grid-template-columns:repeat(2,1fr);gap:8px}
   .hc-month{padding:8px 6px 8px}
@@ -11272,6 +11279,77 @@ function hcalMonthHTML(m, holMap){
     <div class="hc-wk"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
     <div class="hc-grid">${cells}</div></div>`;
 }
+// [추가] "이미지로 저장(PNG)" — 화면 캡처가 아니라 캔버스에 직접 그려, 기기·화면 크기와 상관없이 항상 같은 모양(12개월 + 공휴일 목록 + 안내)의 한 장 이미지로 저장한다
+async function downloadHolidayCal(key){
+  const data = HCAL_DATA[key]; if (!data) return;
+  const btn = document.getElementById('hcalSaveBtn'); if (btn) btn.classList.add('busy');
+  try{
+    try{ await document.fonts.ready; }catch(_){}
+    const FONT = "'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif";
+    const W = 1400, PAD = 48, GAP = 18, COLS = 4, SCALE = 2;
+    const holMap = {}; data.hol.forEach(([m,d,n])=>{ holMap[m+'-'+d] = holMap[m+'-'+d] ? holMap[m+'-'+d]+' · '+n : n; });
+    const mw = (W - PAD*2 - GAP*(COLS-1)) / COLS, cell = (mw - 24) / 7, rowH = 30, mh = 70 + rowH*6;
+    const listCols = 3, listRows = Math.ceil(data.hol.length / listCols), liH = 30;
+    const monthsTop = 150, listTop = monthsTop + (mh + GAP)*3 + 18;
+    const H = listTop + 46 + listRows*liH + 90;
+    const cv = document.createElement('canvas'); cv.width = W*SCALE; cv.height = H*SCALE;
+    const c = cv.getContext('2d'); c.scale(SCALE, SCALE);
+    const rr = (x,y,w,h,r)=>{ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); };
+    const RED='#D6293E', SUN='#e0707e', SAT='#5a8fe6', INK='#0A1730', GOLD='#b8801c';
+    c.fillStyle = '#fffdf8'; c.fillRect(0,0,W,H);
+    c.fillStyle = '#d9a441'; c.fillRect(0,0,W,8);
+    c.textBaseline = 'middle';
+    c.fillStyle = INK; c.font = `700 40px ${FONT}`; c.textAlign = 'left';
+    const t1 = `${HCAL_YEAR}년 `; c.fillText(t1, PAD, 74);
+    let x = PAD + c.measureText(t1).width; c.fillStyle = GOLD; c.fillText(data.title, x, 74);
+    x += c.measureText(data.title).width; c.fillStyle = INK; c.fillText(' 캘린더', x, 74);
+    c.fillStyle = 'rgba(10,23,48,.55)'; c.font = `500 18px ${FONT}`; c.textAlign = 'right';
+    c.fillText('공휴일·기념일은 빨간 원으로 표시됩니다', W-PAD, 74);
+    c.strokeStyle = 'rgba(10,23,48,.12)'; c.lineWidth = 1; c.beginPath(); c.moveTo(PAD,112); c.lineTo(W-PAD,112); c.stroke();
+    for (let m=1; m<=12; m++){
+      const col = (m-1)%COLS, row = Math.floor((m-1)/COLS);
+      const mx = PAD + col*(mw+GAP), my = monthsTop + row*(mh+GAP);
+      rr(mx,my,mw,mh,14); c.fillStyle = '#fff'; c.fill(); c.strokeStyle = 'rgba(10,23,48,.10)'; c.stroke();
+      c.textAlign = 'left'; c.fillStyle = INK; c.font = `700 20px ${FONT}`; c.fillText(m+'월', mx+14, my+26);
+      c.textAlign = 'center'; c.font = `500 13px ${FONT}`;
+      ['일','월','화','수','목','금','토'].forEach((w,i)=>{ c.fillStyle = i===0?RED:(i===6?'#2f6fed':'rgba(10,23,48,.5)'); c.fillText(w, mx+12+cell*(i+.5), my+52); });
+      const first = new Date(HCAL_YEAR,m-1,1).getDay(), days = new Date(HCAL_YEAR,m,0).getDate();
+      c.font = `500 15px ${FONT}`;
+      for (let d=1; d<=days; d++){
+        const idx = first+d-1, dow = idx%7, r = Math.floor(idx/7);
+        const cx = mx+12+cell*(dow+.5), cy = my+80+rowH*r;
+        if (holMap[m+'-'+d]){ c.fillStyle = RED; c.beginPath(); c.arc(cx,cy,13,0,Math.PI*2); c.fill(); c.fillStyle = '#fff'; c.font = `700 15px ${FONT}`; c.fillText(String(d), cx, cy+1); c.font = `500 15px ${FONT}`; }
+        else { c.fillStyle = dow===0?SUN:(dow===6?SAT:'rgba(10,23,48,.85)'); c.fillText(String(d), cx, cy+1); }
+      }
+    }
+    c.textAlign = 'left'; c.fillStyle = INK; c.font = `700 22px ${FONT}`;
+    c.fillText(`${HCAL_YEAR}년 ${data.title} 공휴일·기념일`, PAD, listTop+10);
+    const lw = (W - PAD*2) / listCols;
+    data.hol.forEach(([m,d,n],i)=>{
+      const col = Math.floor(i/listRows), row = i%listRows;
+      const lx = PAD + col*lw, ly = listTop + 46 + row*liH;
+      c.fillStyle = RED; c.font = `700 16px ${FONT}`; c.fillText(`${m}/${d}(${hcalWeekday(m,d)})`, lx, ly);
+      c.fillStyle = 'rgba(10,23,48,.85)'; c.font = `500 16px ${FONT}`;
+      const maxW = lw - 110 - 16; let txt = n;
+      while (c.measureText(txt).width > maxW && txt.length>1) txt = txt.slice(0,-1);
+      if (txt !== n) txt = txt.slice(0,-1)+'…';
+      c.fillText(txt, lx+98, ly);
+      c.strokeStyle = 'rgba(10,23,48,.08)'; c.setLineDash([3,3]); c.beginPath(); c.moveTo(lx, ly+14); c.lineTo(lx+lw-16, ly+14); c.stroke(); c.setLineDash([]);
+    });
+    c.textAlign = 'left'; c.fillStyle = 'rgba(10,23,48,.55)'; c.font = `500 14px ${FONT}`;
+    c.fillText('※ 공휴일·기념일은 현지 사정에 따라 변경될 수 있습니다(임시·대체공휴일 등). 일정 확정 전 담당 플래너에게 확인해 주세요.', PAD, H-52);
+    c.textAlign = 'right'; c.fillStyle = GOLD; c.font = `700 18px ${FONT}`; c.fillText('THE GOLF TREND', W-PAD, H-30);
+    const blob = await new Promise((ok,fail)=>cv.toBlob(b=>b?ok(b):fail(new Error('이미지 생성 실패')),'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${HCAL_YEAR}_${data.title}_캘린더.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }catch(err){
+    console.error(err); alert('이미지를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    if (btn) btn.classList.remove('busy');
+  }
+}
 function closeHolidayCal(){
   const el = document.getElementById('hcalOverlay'); if (el) el.remove();
   document.removeEventListener('keydown', hcalKeyHandler, true);
@@ -11287,7 +11365,7 @@ function openHolidayCal(catId){
   el.id = 'hcalOverlay'; el.className = 'hcal-overlay';
   el.setAttribute('role','dialog'); el.setAttribute('aria-label', `${HCAL_YEAR} ${data.title} 캘린더`);
   el.innerHTML = `<div class="hcal-modal">
-    <div class="hcal-head"><h3>📅 ${HCAL_YEAR}년 <em>${escapeAttr(data.title)}</em> 캘린더</h3><button type="button" class="hcal-x" onclick="closeHolidayCal()" aria-label="닫기">✕</button></div>
+    <div class="hcal-head"><h3><span class="hc-emo">📅 </span>${HCAL_YEAR}년 <em>${escapeAttr(data.title)}</em> 캘린더</h3><div class="hcal-head-r"><button type="button" class="cv-close hcal-save" id="hcalSaveBtn" onclick="downloadHolidayCal('${hcalKey(catId)}')">🖼 이미지<span class="hs-ro">로</span> 저장</button><button type="button" class="hcal-x" onclick="closeHolidayCal()" aria-label="닫기">✕</button></div></div>
     <div class="hcal-body">
       <div class="hcal-legend"><span class="hl-hol">공휴일·기념일</span><span class="hl-sun">일요일</span><span class="hl-sat">토요일</span></div>
       <div class="hcal-months">${months}</div>

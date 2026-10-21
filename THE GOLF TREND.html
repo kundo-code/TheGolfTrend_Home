@@ -1106,7 +1106,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-dp-sub.dp-ind-3{padding-left:4.5em}
 .pd-day-price-table + .pd-dp-sub,.pd-holiday-price-row + .pd-dp-sub{margin-top:18px}
 .pd-guide-slot{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
-.pd-guide-overview{white-space:pre-line;font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
+.pd-guide-overview{white-space:normal;font-size:.86rem;line-height:1.6;color:rgba(10,23,48,.78);font-weight:500}
 .pd-guide-note{padding:12px 14px!important;background:rgba(221,179,103,.1);border:1px solid rgba(221,179,103,.3);border-radius:10px;font-size:.8rem;gap:5px!important}
 .pd-guide-note .row{font-size:.8rem;color:rgba(10,23,48,.78)}
 .pd-guide-note .row .ic:empty{display:none}
@@ -13859,11 +13859,11 @@ function renderProductDetail(p,cat,idx){
   }
   // [수정] 일정 요약 타임라인에서 분리한 "상단 개요 문구"·"안내 박스" — 요금표 바로 위 별도 박스로 노출
   {
-    const ovTxt = String(p.scheduleOverview||'').trim();
+    const ovTxt = richToPlain(p.scheduleOverview||'') ? String(p.scheduleOverview).trim() : '';
     const noteRows = bulletRowsRich(scheduleNoteRich(p.scheduleNoteCommon!==false ? p.checkpoint1 : p.scheduleNote), '');
     if (ovTxt || noteRows){
       html += `<div class="pd-slot pd-guide-slot">
-        ${ovTxt?`<div class="pd-guide-overview">${escapeAttr(ovTxt)}</div>`:''}
+        ${ovTxt?`<div class="pd-guide-overview">${schActivityHTML(ovTxt)}</div>`:''}
         ${noteRows?`<div class="pd-guide-note pd-check-list plain">${noteRows}</div>`:''}
       </div>`;
     }
@@ -16477,7 +16477,7 @@ function advBasicHTML(p){
           <div class="pe-labels-body">
             <span class="mw-hint">자세히 보기 "요금표" 바로 위에 별도 박스로 노출됩니다</span>
             <label>상단 개요 문구</label>
-            <textarea class="notebox-ta" style="min-height:110px" placeholder="예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기" oninput="updateAdvField('scheduleOverview',this.value)">${escapeAttr(p.scheduleOverview||'')}</textarea>
+            ${richTextFieldHTML(scheduleNoteRich(p.scheduleOverview), "updateAdvField('scheduleOverview',__HTML__)", {cls:'white-field', raw:true, placeholder:'예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기', minHeight:'110px'})}
             <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
             <label class="sn-common-toggle" title="켜면 체크포인트1 - 주의사항에 입력한 내용을 그대로 씁니다. 끄면 이 상품의 안내 박스에만 다른 내용을 넣을 수 있습니다">
               <input type="checkbox" ${p.scheduleNoteCommon!==false?'checked':''} onchange="toggleScheduleNoteCommon(this.checked)">

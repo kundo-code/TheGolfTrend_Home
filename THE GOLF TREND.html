@@ -13661,9 +13661,23 @@ function togglePeMore(cardEl){
 }
 // [수정] 동영상 갤러리 재생 버튼 클릭 시 재생이 안 되던 문제 수정 — 마우스 오버에만 의존하던 방식에서
 // 클릭(탭)으로 재생/일시정지를 토글하는 방식으로 변경해 데스크톱·모바일 모두에서 동작하도록 함
+// [수정] 마우스를 쓰는 화면(데스크탑)에서는 영상 위에 커서를 올리면 재생되고, 벗어나면 멈춘다. 영상을 클릭하면 "고정"되어
+// 커서가 벗어나도 계속 재생되고, 다시 클릭하면 고정이 풀리며 멈춘다. 터치 화면은 기존처럼 탭으로 재생/일시정지
+const pdCanHover = () => window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+function pdVideoHover(el, on){
+  if (!pdCanHover() || el.dataset.pinned==='1') return;
+  const v = el.querySelector('video'); if (!v) return;
+  if (on){ v.play().catch(()=>{}); el.classList.add('playing'); }
+  else { v.pause(); el.classList.remove('playing'); }
+}
 function pdToggleVideoPlay(el){
   const v = el.querySelector('video');
   if (!v) return;
+  if (pdCanHover()){
+    if (el.dataset.pinned==='1'){ el.dataset.pinned=''; v.pause(); el.classList.remove('playing'); }
+    else { el.dataset.pinned='1'; v.play().catch(()=>{}); el.classList.add('playing'); }
+    return;
+  }
   if (v.paused){ v.play().catch(()=>{}); el.classList.add('playing'); }
   else { v.pause(); el.classList.remove('playing'); }
 }
@@ -13793,14 +13807,14 @@ function renderProductDetail(p,cat,idx){
   }
   html += `</div></div>`;
 
-  // [수정] 동영상 갤러리 — 이미지 갤러리보다 위에 노출. 클릭(탭)으로 재생/일시정지 토글 —
+  // [수정] 동영상 갤러리 — 이미지 갤러리보다 위에 노출. 마우스를 올리면 재생(데스크탑), 클릭(탭)으로 재생/일시정지 토글 —
   // 기존에는 마우스 오버로만 재생되어 모바일에서는 재생 버튼을 눌러도 아무 반응이 없었다
   const pdVideos = p.videoGallery||[];
   if (pdVideos.length){
     html += `<div class="pd-slot pd-video-gallery">
       <div class="pd-section-title">🎬 동영상 갤러리</div>
       <div class="pd-video-grid">
-        ${pdVideos.map((v,i)=>`<div class="pd-video-item" onclick="pdToggleVideoPlay(this)">
+        ${pdVideos.map((v,i)=>`<div class="pd-video-item" onclick="pdToggleVideoPlay(this)" onmouseenter="pdVideoHover(this,true)" onmouseleave="pdVideoHover(this,false)">
           <video src="${escapeAttr(v.url)}" muted loop playsinline preload="metadata" aria-label="${escapeAttr(productImgAlt(cat,p))} - 영상 ${i+1}"></video>
           <span class="play-ic">▶</span>
         </div>`).join('')}

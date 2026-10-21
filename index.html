@@ -4312,6 +4312,17 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   color:#7d4f0f;text-shadow:none;
   box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
 }
+/* 패키지 포스터 이전/다음(‹ ›) 버튼 — 기본은 크림 알약, 눌렀을 때(마우스를 올리거나 누르거나 키보드 포커스)는 금색 면 */
+.pkg-nav-btn{
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;text-shadow:none;
+  box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
+}
+.pkg-nav-btn:hover,.pkg-nav-btn:active,.pkg-nav-btn:focus-visible{
+  background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
+}
 .plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.dest-all-btn:hover,.kakao-btn:hover,.pkg-nav-btn:hover,.pd-gallery-nav:hover,.plb-prev:hover,.plb-next:hover,.plb-close:hover,.ep-popup-nav:hover,.popup-close:hover,.pd-side-nav:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{filter:brightness(1.05) saturate(1.05)}
 .plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.dest-all-btn:hover,.kakao-btn:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{transform:translateY(-1px)}
 .pkg-nav-btn:active,.pd-gallery-nav:active,.plb-prev:active,.plb-next:active,.plb-close:active,.ep-popup-nav:active,.popup-close:active,.pd-side-nav:active,.pa-x:active,.pc-chooser-x:active,.notice-popup-close:active,.legal-modal-close:active,.widget-detail-close:active,.plb-detail-link:active,.pa-more:active,.pa-tab.active:active,.cv-nav-item.active:active,.pa-tab:active,.cv-nav-item:active,.sec-more:active,.kakao-btn:active{filter:brightness(.95)}

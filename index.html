@@ -305,13 +305,11 @@ section.block{padding:100px 24px;position:relative}
 .dest-region-tag{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:uppercase;background:rgba(10,23,48,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:7px 18px;border-radius:100px;border:1px solid rgba(221,179,103,.4)}
 .dest-region-count{color:var(--gold);font-weight:600;text-transform:none;letter-spacing:normal}
 /* [추가] 해외/국내 제목 줄 오른쪽 끝의 "전체보기" 버튼 — 국가/권역 선택 없이 등록된 모든 상품 카드를 한 번에 본다 */
-.dest-region-head .dest-all-btn{margin-left:auto;flex-shrink:0;padding:7px 18px;border-radius:100px;border:1px solid rgba(221,179,103,.55);background:rgba(10,23,48,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--gold);font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:background .2s,color .2s,transform .15s}
-.dest-region-head .dest-all-btn:hover{background:rgba(10,23,48,.92);transform:translateY(-1px)}
-.dest-region-head .dest-all-btn.active{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-deep) 100%);color:#fff;border-color:transparent}
+.dest-region-head .dest-all-btn{margin-left:auto;flex-shrink:0;padding:6px 16px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:transform .15s,gap .2s} /* 금색 알약 디자인(.sec-more "전체 보기 (N) →"와 동일)은 아래 골드 버튼 디자인 블록에서 적용 */
 /* 데스크탑에서만 해외·국내 제목 글자를 한 단계씩 키운다 */
 @media(min-width:781px){
   .dest-region-tag{font-size:.92rem;padding:8px 22px}
-  .dest-region-head .dest-all-btn{font-size:.92rem;padding:8px 22px}
+  .dest-region-head .dest-all-btn{font-size:.95rem;padding:7px 20px}
 }
 .dest-region-divider{display:flex;align-items:center;gap:14px;margin:40px 0;color:var(--gold)}
 .dest-region-divider::before,.dest-region-divider::after{content:'';flex:1;height:1px;background:rgba(120,120,140,.25)}
@@ -4282,13 +4280,13 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 
 /* [추가] 골드 버튼 디자인 — 2차 적용(나머지 공개 화면 버튼): 갤러리·패키지 이전/다음, 라이트박스, 팝업 닫기 등 원형 버튼,
    탭·필터·"전체 보기" 같은 알약 버튼, 카카오 채널(브랜드 노란색 면 + 금색 테두리) */
-.plb-detail-link,.plb-detail-link:hover,.plb-detail-link:active,.plb-detail-link:focus-visible,.pa-more,.pa-more:hover,.pa-more:active,.pa-more:focus-visible,.pa-tab.active,.pa-tab.active:hover,.pa-tab.active:active,.pa-tab.active:focus-visible,.cv-nav-item.active,.cv-nav-item.active:hover,.cv-nav-item.active:active,.cv-nav-item.active:focus-visible{
+.plb-detail-link,.plb-detail-link:hover,.plb-detail-link:active,.plb-detail-link:focus-visible,.pa-more,.pa-more:hover,.pa-more:active,.pa-more:focus-visible,.pa-tab.active,.pa-tab.active:hover,.pa-tab.active:active,.pa-tab.active:focus-visible,.cv-nav-item.active,.cv-nav-item.active:hover,.cv-nav-item.active:active,.cv-nav-item.active:focus-visible,.dest-all-btn.active,.dest-all-btn.active:hover,.dest-all-btn.active:active,.dest-all-btn.active:focus-visible{
   border:2px solid transparent;border-radius:100px;
   background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
   color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
   box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
 }
-.pa-tab,.pa-tab:hover,.pa-tab:active,.pa-tab:focus-visible,.cv-nav-item,.cv-nav-item:hover,.cv-nav-item:active,.cv-nav-item:focus-visible,.sec-more,.sec-more:hover,.sec-more:active,.sec-more:focus-visible{
+.pa-tab,.pa-tab:hover,.pa-tab:active,.pa-tab:focus-visible,.cv-nav-item,.cv-nav-item:hover,.cv-nav-item:active,.cv-nav-item:focus-visible,.sec-more,.sec-more:hover,.sec-more:active,.sec-more:focus-visible,.dest-all-btn,.dest-all-btn:hover,.dest-all-btn:active,.dest-all-btn:focus-visible{
   border:2px solid transparent;border-radius:100px;
   background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
   color:#7d4f0f;text-shadow:none;
@@ -4314,8 +4312,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   color:#7d4f0f;text-shadow:none;
   box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
 }
-.plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.kakao-btn:hover,.pkg-nav-btn:hover,.pd-gallery-nav:hover,.plb-prev:hover,.plb-next:hover,.plb-close:hover,.ep-popup-nav:hover,.popup-close:hover,.pd-side-nav:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{filter:brightness(1.05) saturate(1.05)}
-.plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.kakao-btn:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{transform:translateY(-1px)}
+.plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.dest-all-btn:hover,.kakao-btn:hover,.pkg-nav-btn:hover,.pd-gallery-nav:hover,.plb-prev:hover,.plb-next:hover,.plb-close:hover,.ep-popup-nav:hover,.popup-close:hover,.pd-side-nav:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{filter:brightness(1.05) saturate(1.05)}
+.plb-detail-link:hover,.pa-more:hover,.pa-tab.active:hover,.cv-nav-item.active:hover,.pa-tab:hover,.cv-nav-item:hover,.sec-more:hover,.dest-all-btn:hover,.kakao-btn:hover,.pa-x:hover,.pc-chooser-x:hover,.notice-popup-close:hover,.legal-modal-close:hover,.widget-detail-close:hover{transform:translateY(-1px)}
 .pkg-nav-btn:active,.pd-gallery-nav:active,.plb-prev:active,.plb-next:active,.plb-close:active,.ep-popup-nav:active,.popup-close:active,.pd-side-nav:active,.pa-x:active,.pc-chooser-x:active,.notice-popup-close:active,.legal-modal-close:active,.widget-detail-close:active,.plb-detail-link:active,.pa-more:active,.pa-tab.active:active,.cv-nav-item.active:active,.pa-tab:active,.cv-nav-item:active,.sec-more:active,.kakao-btn:active{filter:brightness(.95)}
 .sec-more{padding:6px 16px;font-size:.85rem;border-width:1.5px;display:inline-flex}
 .sec-more:hover{gap:10px}

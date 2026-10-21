@@ -1947,12 +1947,16 @@ table.rtf-table.rtf-tind2{margin-left:3em!important;width:calc(100% - 3em)!impor
 table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!important}
 /* [추가] 하위서식 — 윗줄 글자 시작 위치에서 1.5글자 들여쓰기(관리자 편집 칸에는 옅은 세로 안내선도 표시) */
 .rtf-sub{display:block;padding-left:1.5em}
+.rtf-sub.rtf-sub2{padding-left:3em} /* 하위서식 2단계 */
 .rtf-editable .rtf-sub{box-shadow:inset 2px 0 0 rgba(47,111,237,.28)}
 .pd-check-list .row.row-sub{padding-left:calc(24px + 1.5em)}
+.pd-check-list .row.row-sub.row-sub2{padding-left:calc(24px + 3em)}
 /* 주의사항(체크포인트1) 하위서식 — 글자 시작 위치를 추가 요금 안내의 들여쓰기 1단계(왼쪽 끝에서 1.5글자)와 같게 맞춘다 */
 .pd-check-list.pd-cp1-box .row.row-sub{padding-left:1.5em}
+.pd-check-list.pd-cp1-box .row.row-sub.row-sub2{padding-left:3em}
 /* 상단 안내 박스(.pd-guide-note) 하위서식 — 윗줄 글자(이모지 뒤 본문) 시작 위치 근처인 1.5글자 들여쓰기 */
 .pd-guide-note.pd-check-list .row.row-sub{padding-left:1.5em}
+.pd-guide-note.pd-check-list .row.row-sub.row-sub2{padding-left:3em}
 .rtf-btn.rtf-sub-btn,.rtf-btn.rtf-nosub-btn{width:auto;padding:0 8px;font-size:.68rem;white-space:nowrap}
 .card-tag-editor .rtf-sub-btn,.card-tag-editor .rtf-nosub-btn{display:none}
 .ta-sub-wrap{position:relative}
@@ -9942,17 +9946,18 @@ function bulletRowsRich(html, icon){
   // [추가] "하위서식"으로 표시된 줄(<div class="rtf-sub">)은 앞에 \u0001 표시를 붙여 두었다가,
   // 체크(✓)·점(•)·엑스(✕) 아이콘 없이 윗줄 글자 시작 위치에서 1.5글자 들여쓴 줄(row-sub)로 그린다
   const normalized = withPlaceholders
+    .replace(/<div[^>]*class="[^"]*\brtf-sub2\b[^"]*"[^>]*>/gi,'\n\u0002')
     .replace(/<div[^>]*class="[^"]*\brtf-sub\b[^"]*"[^>]*>/gi,'\n\u0001')
     // [버그 수정] 일반 <div> 줄 앞에도 줄바꿈 — "첫 줄<div>둘째 줄</div>"이 "첫 줄둘째 줄"로 붙어 보이던 문제(빈 줄은 아래에서 걸러짐)
     .replace(/<div[^>]*>/gi,'\n').replace(/<\/div>/gi,'\n')
     .replace(/<p>/gi,'').replace(/<\/p>/gi,'\n')
     .replace(/<br\s*\/?>/gi,'\n');
   return normalized.split('\n').map(s=>s.trim())
-    .filter(s=>s.replace(/\u0001/g,'').replace(/<[^>]*>/g,'').trim() || /\u0000TBL/.test(s))
+    .filter(s=>s.replace(/[\u0001\u0002]/g,'').replace(/<[^>]*>/g,'').trim() || /\u0000TBL/.test(s))
     .map(line=>{
       const tblMatch = line.match(/^\u0000TBL(\d+)\u0000$/);
       if (tblMatch) return `<div class="row row-table">${tables[+tblMatch[1]]}</div>`;
-      if (line.charAt(0)==='\u0001') return `<div class="row row-sub"><span>${line.replace(/\u0001/g,'')}</span></div>`;
+      if (line.charAt(0)==='\u0001' || line.charAt(0)==='\u0002') return `<div class="row row-sub${line.charAt(0)==='\u0002'?' row-sub2':''}"><span>${line.replace(/[\u0001\u0002]/g,'')}</span></div>`;
       return `<div class="row"><span class="ic">${icon}</span><span>${line}</span></div>`;
     }).join('');
 }
@@ -9997,7 +10002,7 @@ function rtfToolbarHTML(opts){
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
       ${opts.link?`<button type="button" class="rtf-btn rtf-link-btn" title="링크 — 텍스트를 선택한 뒤 누르면 선택한 글자에 주소(URL)를 걸어 클릭 시 바로 이동" onmousedown="event.preventDefault()" onclick="rtfLinkOpen(this)">🔗링크</button>`:''}
-      ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (다시 누르면 해제). 표 안에 커서가 있으면 표 전체를 한 단계(1.5글자)씩 들여쓰기(최대 3단계). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button><button type="button" class="rtf-btn rtf-nosub-btn" title="들여쓰기 없음 — 지금 줄(선택한 줄들)·표의 하위서식·들여쓰기를 해제" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this,'off')">들여쓰기 없음</button>`}
+      ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (한 번 더 누르면 2단계, 또 누르면 해제). 표 안에 커서가 있으면 표 전체를 한 단계(1.5글자)씩 들여쓰기(최대 3단계). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button><button type="button" class="rtf-btn rtf-nosub-btn" title="들여쓰기 없음 — 지금 줄(선택한 줄들)·표의 하위서식·들여쓰기를 해제" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this,'off')">들여쓰기 없음</button>`}
       <span class="rtf-color-group">
         <button type="button" class="rtf-btn rtf-bg-apply" title="바탕 칠하기 — 선택한 영역(글자)의 뒤 바탕에 형광펜처럼 색을 칠함. 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'hiliteColor',_rtfBg)"><span class="rtf-bg-t">가</span><span class="rtf-bg-bar"></span></button>
         <button type="button" class="rtf-btn rtf-bg-more" title="바탕 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="바탕 색상(선택 영역 칠하기)" data-apply="rtfPickBg(el,__C__)">▾</button>
@@ -10584,8 +10589,14 @@ function rtfToggleSub(btnEl, mode){
   if (!first) return;
   const blocks=[]; let cur=first;
   while (cur){ if (cur.nodeType===1 && cur.tagName==='DIV') blocks.push(cur); if (cur===last) break; cur=cur.nextSibling; }
-  const makeSub = mode==='off' ? false : !first.classList.contains('rtf-sub');
-  blocks.forEach(b=>{ b.classList.toggle('rtf-sub', makeSub); if (!b.className) b.removeAttribute('class'); });
+  // [수정] 하위서식 2단계 — 누를 때마다 일반 → 1단계 → 2단계 → 해제 순으로 바뀌고(첫 줄 기준으로 선택한 모든 줄에 같은 단계 적용), 들여쓰기 없음은 바로 해제
+  const curSubLv = !first.classList.contains('rtf-sub') ? 0 : (first.classList.contains('rtf-sub2') ? 2 : 1);
+  const nextSubLv = mode==='off' ? 0 : (curSubLv+1)%3;
+  blocks.forEach(b=>{
+    b.classList.toggle('rtf-sub', nextSubLv>0);
+    b.classList.toggle('rtf-sub2', nextSubLv===2);
+    if (!b.className) b.removeAttribute('class');
+  });
   try{ const r=document.createRange(); r.setStart(keep.sn, keep.so); r.setEnd(keep.en, keep.eo); sel.removeAllRanges(); sel.addRange(r); }catch(e){}
   editable.dispatchEvent(new Event('input', {bubbles:true}));
 }
@@ -10618,7 +10629,9 @@ document.addEventListener('keydown', e=>{
     if (!n || n.nodeType!==1 || !n.classList.contains('rtf-sub')) return;
     if (!rtfBlockEmpty(n)) return;
     e.preventDefault();
-    n.classList.remove('rtf-sub'); if (!n.className) n.removeAttribute('class');
+    // 빈 하위 줄에서 Enter — 2단계는 1단계로, 1단계는 상위(일반) 줄로 한 단계씩 돌아간다
+    if (n.classList.contains('rtf-sub2')) n.classList.remove('rtf-sub2'); else n.classList.remove('rtf-sub');
+    if (!n.className) n.removeAttribute('class');
     if (!n.firstChild) n.appendChild(document.createElement('br'));
     const r = document.createRange(); r.setStart(n, 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
     t.dispatchEvent(new Event('input', {bubbles:true}));
@@ -10687,7 +10700,8 @@ document.addEventListener('input', e=>{
     const prev = n.previousSibling;
     if (!prev || prev.nodeType!==1 || !prev.classList.contains('rtf-sub') || !rtfBlockEmpty(prev)) return;
     prev.remove();
-    n.classList.remove('rtf-sub'); if (!n.className) n.removeAttribute('class');
+    if (n.classList.contains('rtf-sub2')) n.classList.remove('rtf-sub2'); else n.classList.remove('rtf-sub');
+    if (!n.className) n.removeAttribute('class');
     if (!n.firstChild) n.appendChild(document.createElement('br'));
     const r = document.createRange(); r.setStart(n, 0); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
   }
@@ -10724,7 +10738,7 @@ function rtfCleanPastedHTML(html, target){
         });
         if (kept.length) el.setAttribute('style', kept.join(';')); else el.removeAttribute('style');
       } else if (name==='class'){
-        const keep = attr.value.split(/\s+/).filter(c=>c==='rtf-sub' || c==='rtf-table' || /^rtf-tind[123]$/.test(c));
+        const keep = attr.value.split(/\s+/).filter(c=>c==='rtf-sub' || c==='rtf-sub2' || c==='rtf-table' || /^rtf-tind[123]$/.test(c));
         if (keep.length) el.setAttribute('class', keep.join(' ')); else el.removeAttribute('class');
       } else if (name!=='colspan' && name!=='rowspan'){
         el.removeAttribute(attr.name); // bgcolor·id·on* 등

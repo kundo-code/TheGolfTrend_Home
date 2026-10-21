@@ -4316,6 +4316,17 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
   box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
 }
+/* 상품 상세 좌/우(이전·다음 상품) 버튼 — 기본은 크림 알약, 눌렀을 때(마우스를 올리거나 누르거나 키보드 포커스)는 금색 면 */
+.pd-side-nav{
+  background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;
+  color:#7d4f0f;text-shadow:none;
+  box-shadow:inset 0 0 0 1px rgba(222,170,60,.55),var(--gb-shadow);
+}
+.pd-side-nav:hover,.pd-side-nav:active,.pd-side-nav:focus-visible{
+  background:var(--gb-gloss) padding-box,var(--gb-gold-face) padding-box,var(--gb-rim) border-box;
+  color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,226,140,.75),var(--gb-shadow);
+}
 /* 패키지 포스터 이전/다음(‹ ›) 버튼 — 기본은 크림 알약, 눌렀을 때(마우스를 올리거나 누르거나 키보드 포커스)는 금색 면 */
 .pkg-nav-btn{
   background:var(--gb-gloss) padding-box,var(--gb-cream-face) padding-box,var(--gb-rim) border-box;

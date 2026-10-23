@@ -1037,6 +1037,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-day-price-cell .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:var(--pine-deep);white-space:nowrap}
 .pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
 .pd-day-price-cell .dt{margin-top:4px;font-size:.78rem;font-weight:600;line-height:1.35;color:rgba(10,23,48,.55);word-break:keep-all}
+.pd-day-price-cell .dt-grp > div{padding:2px 0}
+.pd-day-price-cell .dt-line > div + div{border-top:1px dashed rgba(10,23,48,.22);margin-top:2px;padding-top:4px}
 .pd-day-price-cell.sat .dt{color:#1877F2}
 .pd-day-price-cell.sun .dt{color:#DC2626}
 .pd-day-price-cell.fri .dt{color:#FF5AF0}
@@ -2251,6 +2253,16 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .dd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
 .dd-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 6px 4px 10px;border-radius:999px;background:rgba(47,111,237,.1);color:var(--nm-blue-deep,#1d4ed8);font-size:.8rem;font-weight:600}
 .dd-chip button{border:0;background:transparent;color:inherit;cursor:pointer;font-size:.95rem;line-height:1;padding:0 4px}
+.dd-chips .dd-grp{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+.dd-chips .dd-line + .dd-line{border-top:1px dashed rgba(10,23,48,.25);padding-top:6px;margin-top:2px}
+.dd-fmt{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:8px}
+.dd-fmt-t{font-size:.78rem;font-weight:600;color:rgba(10,23,48,.6)}
+.dd-fmt select{max-width:190px}
+.dd-strip{display:inline-flex;align-items:center;gap:0;padding:3px 6px;border-radius:999px;background:rgba(10,23,48,.05)}
+.dd-wd{font-size:.8rem;font-weight:600;padding:2px 5px;color:rgba(10,23,48,.4)}
+.dd-wd.has{color:var(--nm-blue-deep,#1d4ed8)}
+.dd-link{border:0;background:transparent;cursor:pointer;font-size:.8rem;padding:0 3px;color:rgba(10,23,48,.35);line-height:1}
+.dd-link.on{color:#fff;background:var(--nm-blue,#2F6FED);border-radius:4px;padding:1px 4px}
 .dd-empty{font-size:.78rem;color:rgba(10,23,48,.45)}
 .dd-add{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .dd-add input{max-width:200px}
@@ -5919,7 +5931,7 @@ function newPriceEntry(){
     // [수정] 포함사항/불포함사항/참고사항은 상품 공통이 아니라 요금 항목별로 개별 입력
     included:'', notIncluded:'', precautions:'',
     // [수정] 판매가 이외에 출발 요일별/공휴일별 별도 요금을 함께 안내할 수 있도록 추가
-    dayPrices:[], holidayPrices:[], dayDates:[],
+    dayPrices:[], holidayPrices:[], dayDates:newDayDates(),
     labels: newLabels(),
     popup:false,
     schedule: newSchedule() // [Phase 3 상품등록 개선 v2] 일정 요약 타임라인
@@ -6158,7 +6170,7 @@ function ensureExtended(p){
     // [수정] 출발 요일별 · 공휴일별 요금 — 판매가와 별도로 요일/날짜별 금액을 안내
     if (!Array.isArray(pe.dayPrices)) pe.dayPrices = [];
     pe.dayPrices.forEach(d=>{ if (d.day===undefined) d.day=''; if (d.price===undefined) d.price=0; });
-    if (!Array.isArray(pe.dayDates)) pe.dayDates = []; // 특정일 지정 — 'YYYY-MM-DD' 목록
+    pe.dayDates = normDayDates(pe.dayDates); // 특정일 지정 — 날짜 목록 + 요일별 구분 설정
     if (!Array.isArray(pe.holidayPrices)) pe.holidayPrices = [];
     // [수정] 공휴일 지정 요금에 "기간 지정" 옵션 추가 — type이 'range'이면 date(시작일)~endDate(종료일)로 안내
     pe.holidayPrices.forEach(h=>{ if (h.date===undefined) h.date=''; if (h.price===undefined) h.price=0; if (h.type===undefined) h.type='single'; if (h.endDate===undefined) h.endDate=''; });
@@ -6217,7 +6229,7 @@ function ensureExtended(p){
   if (p.checkpoint2 && !p.commonPrecautions) p.commonPrecautions = p.checkpoint2;
   if (!Array.isArray(p.commonDayPrices)) p.commonDayPrices = [];
   p.commonDayPrices.forEach(d=>{ if (d.day===undefined) d.day=''; if (d.price===undefined) d.price=0; });
-  if (!Array.isArray(p.commonDayDates)) p.commonDayDates = [];
+  p.commonDayDates = normDayDates(p.commonDayDates);
   if (!Array.isArray(p.commonHolidayPrices)) p.commonHolidayPrices = [];
   p.commonHolidayPrices.forEach(h=>{ if (h.date===undefined) h.date=''; if (h.price===undefined) h.price=0; if (h.type===undefined) h.type='single'; if (h.endDate===undefined) h.endDate=''; });
   return p;
@@ -6248,7 +6260,14 @@ function _peDayKey(list){
   return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
 }
 // 특정일 지정 — 날짜 목록(정렬) 자체가 비교 키
-function _peDatesKey(list){ return (list||[]).filter(Boolean).slice().sort().join('|'); }
+// 값 형태: {dates:['YYYY-MM-DD',..], sep:'none'|'br'|'line'(요일 묶음 사이 줄 나눔/구분선), merge:'화수'(바로 다음 요일과 한 묶음으로 합칠 요일들)}
+function newDayDates(){ return {dates:[], sep:'none', merge:''}; }
+function normDayDates(v){
+  if (Array.isArray(v)) return {dates:v.filter(Boolean).slice().sort(), sep:'none', merge:''};
+  const o = (v && typeof v==='object') ? v : {};
+  return {dates:(Array.isArray(o.dates)?o.dates:[]).filter(Boolean).slice().sort(), sep:(o.sep==='br'||o.sep==='line')?o.sep:'none', merge:String(o.merge||'')};
+}
+function _peDatesKey(v){ const o=normDayDates(v); return o.dates.length ? o.dates.join('|')+'#'+o.sep+'#'+o.merge : ''; }
 function _peHolKey(list){
   const l=list||[]; if (!l.some(h=>h.date && h.price)) return '';
   return l.map(h=>{ const m=_dpMarkKey(h); return m!==null ? m : ((h.date && h.price) ? [h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':') : ''); }).filter(Boolean).join('|');
@@ -6353,20 +6372,35 @@ function dayValHasWeekday(dayVal, wd){
   return false;
 }
 function dateYMD(s){ const a=String(s||'').split('-').map(Number); return (a[0]&&a[1]&&a[2]) ? {y:a[0], m:a[1], d:a[2]} : null; }
-// 지정일 중 이 요일 값에 해당하는 날짜만 "16일, 23일, 30일"로 — 여러 달에 걸치면 "10월 16일, 23일 · 11월 6일"
-function specificDatesText(dayVal, dates){
-  const hit = (dates||[]).map(dateYMD).filter(x=>x && dayValHasWeekday(dayVal, new Date(x.y,x.m-1,x.d).getDay()))
-    .sort((a,b)=>(a.y-b.y)||(a.m-b.m)||(a.d-b.d));
-  if (!hit.length) return '';
+// 날짜 목록 → "16일, 23일, 30일" — 여러 달에 걸치면 "10월 16일, 23일 · 11월 6일"
+function datesJoinText(hit){
   const groups = [];
   hit.forEach(x=>{ const k=x.y+'-'+x.m; let g=groups[groups.length-1]; if (!g || g.k!==k){ g={k, m:x.m, ds:[]}; groups.push(g); } if (g.ds.indexOf(x.d)<0) g.ds.push(x.d); });
   return groups.map(g=>(groups.length>1 ? g.m+'월 ' : '') + g.ds.map(d=>d+'일').join(', ')).join(' · ');
 }
-function dayPriceSectionsHTML(list, cls, dates){
+const DD_ORDER = ['월','화','수','목','금','토','일'];
+// 요일 → 묶음 번호 — 기본은 요일마다 하나의 묶음, merge에 든 요일은 바로 다음 요일과 같은 묶음(예: merge "화수" → 화·수·목)
+function ddGroupOf(merge){
+  const m={}; let g=0;
+  DD_ORDER.forEach(w=>{ m[w]=g; if (merge.indexOf(w)<0) g++; });
+  return m;
+}
+// 지정일 중 이 요일 값에 해당하는 날짜를 묶음(요일별 줄 나눔/구분선 설정)에 따라 HTML로
+function specificDatesHTML(dayVal, dd){
+  dd = normDayDates(dd);
+  const hit = dd.dates.map(dateYMD).filter(x=>x && dayValHasWeekday(dayVal, new Date(x.y,x.m-1,x.d).getDay()))
+    .sort((a,b)=>(a.y-b.y)||(a.m-b.m)||(a.d-b.d));
+  if (!hit.length) return '';
+  if (dd.sep==='none') return `<div class="dt">${escapeAttr(datesJoinText(hit))}</div>`;
+  const gm = ddGroupOf(dd.merge), byG = {};
+  hit.forEach(x=>{ const g=gm[WEEKDAY_KO[new Date(x.y,x.m-1,x.d).getDay()]]; (byG[g]=byG[g]||[]).push(x); });
+  const rows = Object.keys(byG).map(Number).sort((a,b)=>a-b).map(g=>datesJoinText(byG[g]));
+  return `<div class="dt dt-grp${dd.sep==='line'?' dt-line':''}">${rows.map(t=>`<div>${escapeAttr(t)}</div>`).join('')}</div>`;
+}
+function dayPriceSectionsHTML(list, cls, dd){
   return dpRenderSections(list, d=>{
     const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)은 요일 글자만 각자 색
-    const dt = specificDatesText(d.day, dates);
-    return `<div class="pd-day-price-cell ${dcls}"><div class="d">${depDayTokenHTML(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${dt?`<div class="dt">${escapeAttr(dt)}</div>`:''}</div>`;
+    return `<div class="pd-day-price-cell ${dcls}"><div class="d">${depDayTokenHTML(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${specificDatesHTML(d.day, dd)}</div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
 function holidaySectionsHTML(list, cls){
@@ -14256,7 +14290,7 @@ function renderProductDetail(p,cat,idx){
   // [수정] "📅 출발 요일별 요금" — 포함 · 불포함 · 참고사항 바로 위로 이동(제목 변경). 공통값(또는 모든 요금 항목이 같은 값)을 한 번만
   // 보여준다. 구분선을 기준으로 간격을 두고, 부제목이 있으면 묶음마다 제목을 단다
   {
-    const commonDayHTML = dayPriceSectionsHTML(plan.dayPrices.value||[], '', plan.dayDates.value||[]);
+    const commonDayHTML = dayPriceSectionsHTML(plan.dayPrices.value||[], '', plan.dayDates.value);
     const commonHolHTML = holidaySectionsHTML(plan.holidayPrices.value||[], '');
     if (commonDayHTML || commonHolHTML){
       html += `<div class="pd-slot"><div class="pd-section-title">📅 출발 요일별 요금</div>
@@ -14364,7 +14398,7 @@ function renderProductDetail(p,cat,idx){
             }).join('');
             const meta = metaItems ? `<div class="pd-pe-meta${metaNoLines?' pd-pe-meta-nolines':''} ${cls}">${metaItems}</div>` : '';
             // [수정] 판매가와 별도인 출발 요일별 요금 — 토요일은 파란색, 일요일은 빨간색으로 강조
-            const dayTable = dayPriceSectionsHTML(pick('dayPrices', full)||[], cls, pick('dayDates', full)||[]);
+            const dayTable = dayPriceSectionsHTML(pick('dayPrices', full)||[], cls, pick('dayDates', full));
             // [수정] 공휴일 지정 요금(단일 날짜 · 기간 지정) — 요일별 요금표 바로 아래에 한 줄로
             const holRow = holidaySectionsHTML(pick('holidayPrices', full)||[], cls);
             // [수정] "출발 요일"은 포함사항 미리보기 박스 바로 위에 작은 레이블로 노출
@@ -17337,7 +17371,7 @@ function peInhPreview(f, v){
     case 'stayDuration': return (v && v!=='none') ? v : '';
     case 'airPattern': case 'departureAirport': case 'departureDay': return (v||[]).filter(Boolean).join(', ');
     case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${d.day} ${fmtPrice(d.price)}원`).join(' / ');
-    case 'dayDates': return (v||[]).filter(Boolean).slice().sort().map(fmtHolidayDate).join(', ');
+    case 'dayDates': return normDayDates(v).dates.map(fmtHolidayDate).join(', ');
     case 'holidayPrices': return (v||[]).filter(h=>h.date && h.price)
       .map(h=>`${(h.type==='range' && h.endDate) ? fmtHolidayDate(h.date)+'~'+fmtHolidayDate(h.endDate) : fmtHolidayDate(h.date)} ${fmtPrice(h.price)}원`).join(' / ');
     case 'included': case 'notIncluded': case 'precautions': {
@@ -17371,7 +17405,8 @@ function peClearField(pe, f){
     case 'airfare': case 'stayDuration': pe.labels[f]='none'; break;
     case 'airPattern': case 'departureAirport': case 'departureDay': pe.labels[f]=[]; break;
     case 'arrAirport': case 'flightNo': pe.labels[f]=''; break;
-    case 'dayPrices': case 'dayDates': case 'holidayPrices': pe[f]=[]; break;
+    case 'dayPrices': case 'holidayPrices': pe[f]=[]; break;
+    case 'dayDates': pe[f]=newDayDates(); break;
     case 'schedule': pe.schedule=newSchedule(); pe.labels.teeOffTimes=PE_EMPTY_TEE(); break;
     default: pe[f]='';
   }
@@ -18045,30 +18080,65 @@ function removeDpItem(peIdx, kind, i){
 // [추가] 특정일 지정 — 출발 요일별 요금 아래에 "16일, 23일, 30일"처럼 안내할 날짜들(여러 개 선택 가능).
 // 요금 항목별(pe.dayDates) · 공통(p.commonDayDates) 모두 같은 방식이며, 날짜는 해당 요일의 요금 칸 아래에만 노출된다
 function dayDatesOf(p, peIdx){
-  if (peIdx<0){ if (!Array.isArray(p.commonDayDates)) p.commonDayDates=[]; return p.commonDayDates; }
-  const pe=p.priceEntries[peIdx]; if (!Array.isArray(pe.dayDates)) pe.dayDates=[]; return pe.dayDates;
+  if (peIdx<0){ p.commonDayDates = normDayDates(p.commonDayDates); return p.commonDayDates; }
+  const pe=p.priceEntries[peIdx]; pe.dayDates = normDayDates(pe.dayDates); return pe.dayDates;
 }
 function dayDatesEditorHTML(p, peIdx){
-  const list = dayDatesOf(p, peIdx).slice().sort();
+  const dd = dayDatesOf(p, peIdx), list = dd.dates;
   const id = 'dd-in-'+(peIdx<0?'c':peIdx);
+  const chip = dt=>`<span class="dd-chip">${escapeAttr(fmtHolidayDate(dt))}<button type="button" title="삭제" onclick="removeDayDate(${peIdx},'${dt}')">×</button></span>`;
+  let chips;
+  if (!list.length) chips = '<span class="dd-empty">지정한 날짜가 없습니다</span>';
+  else if (dd.sep==='none') chips = list.map(chip).join('');
+  else { // 요일 묶음별로 한 줄씩 — 구분선을 고르면 묶음 사이에 선을 긋는다
+    const gm = ddGroupOf(dd.merge), byG = {};
+    list.forEach(dt=>{ const x=dateYMD(dt); if (!x) return; const g=gm[WEEKDAY_KO[new Date(x.y,x.m-1,x.d).getDay()]]; (byG[g]=byG[g]||[]).push(dt); });
+    chips = Object.keys(byG).map(Number).sort((a,b)=>a-b).map(g=>`<div class="dd-grp${dd.sep==='line'?' dd-line':''}">${byG[g].map(chip).join('')}</div>`).join('');
+  }
+  const has = {}; list.forEach(dt=>{ const x=dateYMD(dt); if (x) has[WEEKDAY_KO[new Date(x.y,x.m-1,x.d).getDay()]]=1; });
+  const strip = DD_ORDER.map((w,i)=>{
+    const merged = dd.merge.indexOf(w)>=0;
+    return `<span class="dd-wd${has[w]?' has':''}">${w}</span>` + (i<6 ? `<button type="button" class="dd-link${merged?' on':''}" title="${merged?'같은 묶음 — 눌러서 나누기':'나뉨 — 눌러서 '+w+'·'+DD_ORDER[i+1]+' 한 묶음으로'}" onclick="toggleDayDatesMerge(${peIdx},'${w}')">${merged?'＋':'｜'}</button>` : '');
+  }).join('');
   return `<label style="margin-top:16px">📌 특정일 지정 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(날짜를 여러 개 지정 · 해당 요일의 출발 요금 아래에 "16일, 23일, 30일"로 안내)</span></label>
     ${peIdx>=0 ? peInhHintHTML(p, p.priceEntries[peIdx], peIdx, 'dayDates', true) : ''}
-    <div class="dd-chips">${list.map(dt=>`<span class="dd-chip">${escapeAttr(fmtHolidayDate(dt))}<button type="button" title="삭제" onclick="removeDayDate(${peIdx},'${dt}')">×</button></span>`).join('') || '<span class="dd-empty">지정한 날짜가 없습니다</span>'}</div>
-    <div class="dd-add"><input type="date" id="${id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addDayDate(${peIdx});}"><button class="apc-btn-sm" type="button" onclick="addDayDate(${peIdx})">+ 날짜 추가</button></div>`;
+    <div class="dd-chips">${chips}</div>
+    <div class="dd-add"><input type="date" id="${id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addDayDate(${peIdx});}"><button class="apc-btn-sm" type="button" onclick="addDayDate(${peIdx})">+ 날짜 추가</button></div>
+    <div class="dd-fmt">
+      <span class="dd-fmt-t">요일별 구분</span>
+      <select onchange="setDayDatesSep(${peIdx},this.value)">
+        <option value="none" ${dd.sep==='none'?'selected':''}>구분 없음 (한 줄로)</option>
+        <option value="br" ${dd.sep==='br'?'selected':''}>요일별 줄 나눔</option>
+        <option value="line" ${dd.sep==='line'?'selected':''}>요일별 구분선</option>
+      </select>
+      ${dd.sep!=='none' ? `<div class="dd-strip" title="요일 사이의 ｜를 눌러 ＋로 바꾸면 그 두 요일의 날짜를 한 묶음으로 보여줍니다 (예: 화＋수＋목)">${strip}</div>` : ''}
+    </div>`;
 }
 function addDayDate(peIdx){
   const p=getAdvProduct(); if (!p) return;
   const inp=document.getElementById('dd-in-'+(peIdx<0?'c':peIdx)); const v=inp && inp.value;
   if (!v || !dateYMD(v)) return;
-  const l=dayDatesOf(p, peIdx);
+  const l=dayDatesOf(p, peIdx).dates;
   if (l.indexOf(v)<0) l.push(v);
   l.sort();
   saveAdvChange(); renderAdvBody();
 }
 function removeDayDate(peIdx, dt){
   const p=getAdvProduct(); if (!p) return;
-  const l=dayDatesOf(p, peIdx), i=l.indexOf(dt);
+  const l=dayDatesOf(p, peIdx).dates, i=l.indexOf(dt);
   if (i>=0) l.splice(i,1);
+  saveAdvChange(); renderAdvBody();
+}
+function setDayDatesSep(peIdx, v){
+  const p=getAdvProduct(); if (!p) return;
+  dayDatesOf(p, peIdx).sep = (v==='br'||v==='line') ? v : 'none';
+  saveAdvChange(); renderAdvBody();
+}
+// 요일 w를 바로 다음 요일과 한 묶음으로 합치거나(＋) 다시 나눈다(｜)
+function toggleDayDatesMerge(peIdx, w){
+  const p=getAdvProduct(); if (!p) return;
+  const dd=dayDatesOf(p, peIdx);
+  dd.merge = dd.merge.indexOf(w)>=0 ? dd.merge.replace(w,'') : dd.merge+w;
   saveAdvChange(); renderAdvBody();
 }
 // [수정] 출발 요일별 요금 — 판매가와 별도로 특정 요일(또는 요일 구간)에 대한 금액을 추가 안내

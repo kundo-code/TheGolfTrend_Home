@@ -5987,6 +5987,8 @@ const DEFAULT_CARD_LABEL_MAX = 7; // 기본 레이블 파일 번호의 최댓값
 //  · 등급(grade): Level 5(럭셔리) > 4(프리미엄) > 3(품격) > 2(스탠다드) > 1(실속+). 한 상품은 등급 레이블을 하나만 가진다(하나를 켜면 다른 등급은 꺼짐)
 //  · 상태(flag): 신상품(새로 등록한 상품) / 특가(기간한정·긴급 판매 목적 상품) — 등급과 별개로 함께 켤 수 있다
 // 상품이 어떤 레이블을 "적용"했는지는 그 레이블의 "카드에 노출" 켜짐 여부로 판단한다. 상품별 요약은 productLabelProfile(p)로 얻는다
+// 등급 레이블이 하나도 적용되지 않은 상품은 기본적으로 스탠다드(Level 2) 등급으로 본다(gradeIsDefault=true)
+const DEFAULT_PRODUCT_GRADE = {level:2, key:'standard', name:'스탠다드'};
 const CARD_LABEL_META = {
   'assets/card-labels/label-7.png': {key:'luxury',   type:'grade', level:5, name:'럭셔리'},
   'assets/card-labels/label-5.png': {key:'premium',  type:'grade', level:4, name:'프리미엄'},
@@ -6001,9 +6003,9 @@ function cardLabelMetaText(l){
   const m = cardLabelMeta(l); if (!m) return '';
   return m.type==='grade' ? `Level ${m.level} · ${m.name}` : `${m.name} · ${m.desc}`;
 }
-// 상품의 레이블 요약 — {grade:1~5(없으면 0), gradeKey, gradeName, isNew, isSpecial, keys:[적용된 의미 레이블 키]}
+// 상품의 레이블 요약 — {grade:1~5, gradeKey, gradeName, gradeIsDefault(등급 레이블 없이 기본 스탠다드로 본 경우 true), isNew, isSpecial, keys:[직접 적용된 의미 레이블 키]}
 function productLabelProfile(p){
-  const out = {grade:0, gradeKey:'', gradeName:'', isNew:false, isSpecial:false, keys:[]};
+  const out = {grade:0, gradeKey:'', gradeName:'', gradeIsDefault:false, isNew:false, isSpecial:false, keys:[]};
   ((p && p.cardLabels) || []).forEach(l=>{
     const m = cardLabelMeta(l); if (!m || !l.active) return;
     out.keys.push(m.key);
@@ -6011,6 +6013,7 @@ function productLabelProfile(p){
     if (m.key==='new') out.isNew = true;
     if (m.key==='special') out.isSpecial = true;
   });
+  if (!out.grade){ out.grade = DEFAULT_PRODUCT_GRADE.level; out.gradeKey = DEFAULT_PRODUCT_GRADE.key; out.gradeName = DEFAULT_PRODUCT_GRADE.name; out.gradeIsDefault = true; }
   return out;
 }
 function ensureExtended(p){
@@ -11805,7 +11808,7 @@ function productCardHTML(p, catId, idx){
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || metaGroup2.length || cardTags.length);
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
-  const lblAttrs = (lblProfile.grade?` data-label-grade="${lblProfile.grade}"`:'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'');
+  const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'');
   return `<article class="product${hasCp?' has-cp':''}"${lblAttrs} onclick="productCardClick(event,'${catId}',${idx},this)">
     <div class="product-visual${cardLabelOverlay.hasOutside?' pv-label-overflow':''}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       <div class="pv-clip">
@@ -16670,6 +16673,7 @@ function advBasicHTML(p){
         <details class="adv-collapsible" ${advDetailsAttrs('card-labels', false)}>
           <summary>레이블 이미지 ${advBadge(`${(p.cardLabels||[]).length}개 등록`, (p.cardLabels||[]).length?'ok':'empty')}</summary>
           <div class="adv-collapsible-body">
+            <span class="file-hint" style="display:block;margin-bottom:4px">등급 레이블(Level 1~5)을 켜지 않은 상품은 기본으로 <b>스탠다드(Level 2)</b> 등급으로 봅니다.</span>
             <span class="file-hint" style="display:block;margin-bottom:8px">권장 사이즈 200×200px 이상(1:1 정사각형 비율) · 배경이 비치는 투명 PNG 권장 · 2MB 이하 · "카드에 노출"을 켠 레이블만 상품 카드 이미지에 노출되며, 항목별로 노출 위치(모서리)와 이미지 밖으로 배치할지 개별 설정할 수 있습니다</span>
             ${cardLabelsHTML(p)}
             <label class="media-btn" style="margin-top:10px">+ 레이블 이미지 추가하기<input type="file" accept="image/*" onchange="addCardLabel(this)"></label>

@@ -19,14 +19,19 @@
 | 레이블 | key | 의미 | 파일 |
 |---|---|---|---|
 | 신상품 | `new` | 새로 등록한 상품 | `label-6.png` |
+| 강력추천 | `recommend` | 운영자가 강력 추천하는 상품 | `label-8.png` |
 | 특가 | `special` | 기간한정 또는 긴급하게 판매를 목적으로 하는 상품 | `label-1.png` |
+| 가격인상 | `priceUp` | 가격이 오른(오를) 상품 — 가격인하와 동시에 적용 불가 | `label-9.png` |
+| 가격인하 | `priceDown` | 가격이 내린 상품 — 가격인상과 동시에 적용 불가 | `label-10.png` |
+
+레이블 표시 순서: 신상품 → 강력추천 → 특가 → 가격인상 → 가격인하 → 럭셔리 → 프리미엄 → 품격 → 스탠다드 → 실속+
 
 ## 코드에서 쓰는 방법 (`index.html`)
 - `CARD_LABEL_META` — 레이블 파일 → `{key, type('grade'|'flag'), level, name, desc}`
 - `productLabelProfile(p)` — 상품의 적용 레이블 요약:
-  `{grade: 1~5, gradeKey, gradeName, gradeIsDefault, isNew, isSpecial, keys: [...]}` (`grade`는 항상 1~5 — 등급 레이블이 없으면 2/스탠다드, `gradeIsDefault=true`. `keys`는 직접 적용된 레이블만 담는다)
+  `{grade: 1~5, gradeKey, gradeName, gradeIsDefault, isNew, isRecommended, isSpecial, isPriceUp, isPriceDown, keys: [...]}` (`grade`는 항상 1~5 — 등급 레이블이 없으면 2/스탠다드, `gradeIsDefault=true`. `keys`는 직접 적용된 레이블만 담는다)
 - `computeAiRecommendations()`의 후보(result)마다 `labelProfile`을 담아 둠(아직 점수에는 반영하지 않음).
-- 상품 카드 `<article class="product">`에 `data-label-grade`(항상 1~5), `data-label-grade-default`(기본 스탠다드일 때만), `data-label-new`, `data-label-special` 속성이 붙는다(통계·분석용).
+- 상품 카드 `<article class="product">`에 `data-label-grade`(항상 1~5), `data-label-grade-default`(기본 스탠다드일 때만), `data-label-new`, `data-label-recommend`, `data-label-special`, `data-label-price`(`up`/`down`) 속성이 붙는다(통계·분석용).
 
 ## 고도화 아이디어
 - 예산/스타일 조건에 따라 등급 가중치 (예: "숙박 시설 중시" → Level 4~5 가산, "실속형" → Level 1~2 가산)

@@ -2027,8 +2027,22 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .media-slot{padding:16px;background:var(--nm-surface);border:2px dashed rgba(221,179,103,.25);border-radius:var(--nm-r-md);text-align:center;margin-top:6px}
 /* [수정] 등록된 레이블 이미지가 여러 개일 때 한눈에 훑어보기 쉽도록 2개씩 나란히(그리드) 배치 —
    모바일에서는 @media(max-width:780px)에서 1열로 반응형 전환(아래 위치) */
-.card-label-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.card-label-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
 .card-label-grid .media-slot{margin-top:0}
+/* [수정] 레이블 이미지는 한 줄에 3개씩 작게 — 미리보기 이미지·토글·버튼·위치 칩을 모두 줄여 공간을 최소한으로 차지하게 한다 */
+.adv-editor-overlay .card-label-grid .media-slot{padding:8px 6px;border-width:1px;border-radius:12px}
+.adv-editor-overlay .card-label-grid .media-preview{max-height:58px;width:auto;margin:0 auto 6px;object-fit:contain}
+.adv-editor-overlay .card-label-grid .media-controls{gap:4px;flex-wrap:wrap}
+.adv-editor-overlay .card-label-grid .popup-toggle.popup-toggle{gap:4px;padding:2px 7px}
+.adv-editor-overlay .card-label-grid .popup-toggle .toggle-slider{width:24px;height:14px}
+.adv-editor-overlay .card-label-grid .popup-toggle .toggle-slider::before{width:10px;height:10px;left:2px;top:2px}
+.adv-editor-overlay .card-label-grid .popup-toggle input:checked ~ .toggle-slider::before{transform:translateX(10px)}
+.adv-editor-overlay .card-label-grid .popup-toggle .pt-lbl{font-size:10px}
+.adv-editor-overlay .card-label-grid .media-btn.media-btn{min-height:0;padding:3px 8px;font-size:10px}
+.adv-editor-overlay .card-label-grid .media-slot > div{margin-top:5px!important}
+.adv-editor-overlay .card-label-grid .file-hint{display:none!important}
+.adv-editor-overlay .card-label-grid .adv-chip-group{gap:3px}
+.adv-editor-overlay .card-label-grid .adv-chip{padding:2px 5px;font-size:9.5px;line-height:1.35}
 /* [수정] 전역 img{display:block} 리셋 때문에 .media-slot의 text-align:center가 이미지에는 적용되지
    않아 가운데 정렬이 안 되던 문제 — margin:auto로 블록 박스를 직접 가운데 정렬한다 */
 .media-preview{display:block;max-width:100%;max-height:180px;border-radius:8px;margin:0 auto 10px;object-fit:cover}
@@ -2598,7 +2612,8 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
   .adv-editor-overlay input[type=tel],.adv-editor-overlay input[type=number],.adv-editor-overlay input[type=url],
   .adv-editor-overlay input[type=date],.adv-editor-overlay input[type=search],.adv-editor-overlay select,.adv-editor-overlay textarea
   {font-size:16px!important}
-  .apc-fields,.adv-body .grid-2,.card-label-grid{grid-template-columns:1fr}
+  .apc-fields,.adv-body .grid-2{grid-template-columns:1fr}
+  .card-label-grid{grid-template-columns:repeat(2,1fr)}
   .pd-container{margin:16px auto;padding:0 12px 20px}
   .adv-editor{margin:16px 12px}
   .core-values{grid-template-columns:1fr}
@@ -5964,6 +5979,8 @@ function ensureSchedule(S){
   });
   return S;
 }
+// 기본 제공 레이블 이미지 — 우상단 모서리용 리본(assets/card-labels)
+const DEFAULT_CARD_LABELS = [1,2,3,4,5].map(n=>`assets/card-labels/label-${n}.png`);
 function ensureExtended(p){
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
@@ -6022,6 +6039,12 @@ function ensureExtended(p){
     p.cardLabels = (p.cardLabel && p.cardLabel.url) ? [{url:p.cardLabel.url, active:true}] : [];
   }
   delete p.cardLabel;
+  // [추가] 기본 레이블 이미지(특가·실속+·스탠다드·품격·프리미엄 리본) — 모든 상품에 한 번 기본 등록한다. 노출 위치는 우상단, "카드에 노출"은 꺼진 상태라
+  // 필요한 것만 켜서 쓴다. cardLabelsDefaulted 표시로 한 번만 추가하므로, 관리자가 지운 기본 레이블이 다시 살아나지 않는다
+  if (!p.cardLabelsDefaulted){
+    DEFAULT_CARD_LABELS.forEach(url=>{ if (!p.cardLabels.some(l=>l.url===url)) p.cardLabels.push({url, active:false, corner:'tr', outside:false}); });
+    p.cardLabelsDefaulted = true;
+  }
   // [수정] 레이블별 노출 위치(코너)와 "이미지 밖으로 배치" 여부 — 기존 데이터는 기본값(좌측 하단,
   // 이미지 안쪽)으로 백필해 이전과 동일하게 보이도록 함
   p.cardLabels.forEach(l=>{
@@ -10299,12 +10322,26 @@ function rtfRestoreSelection(editable){
     sel.addRange(_rtfSavedRange);
   }
 }
+// [수정] 색상·크기·글꼴 같은 서식을 적용하면 execCommand가 만든 <font>를 <span style>로 바꿔치기(DOM 교체)하면서 글자 선택 영역이
+// 풀려 버렸다 — 적용 직전의 선택 범위를 글자 위치(offset)로 기억해 두었다가, 적용이 끝난 뒤 같은 글자를 다시 선택해 주고
+// 다음 서식(색 → 바탕색 → 크기 …)을 같은 선택 영역에 이어서 적용할 수 있게 저장해 둔 범위도 갱신한다
+let _rtfKeepSel = null;
 function rtfCmd(btnEl, cmd, val){
   // 실행 중 execCommand가 만드는 중간 상태(<font> 태그 등)는 실행 취소 기록에 남기지 않고, 끝난 결과 한 번만 기록한다
   let ed = null;
+  _rtfKeepSel = null;
   _rtfRestoring = true;
   try{ ed = rtfCmdRun(btnEl, cmd, val); } finally { _rtfRestoring = false; }
-  if (ed) ed.dispatchEvent(new Event('input', {bubbles:true}));
+  if (ed){
+    if (_rtfKeepSel){
+      ed.focus();
+      rtfRestoreCaret(ed, _rtfKeepSel);
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount && ed.contains(sel.anchorNode)){ _rtfSavedRange = sel.getRangeAt(0).cloneRange(); _rtfActiveEditable = ed; }
+    }
+    ed.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+  _rtfKeepSel = null;
 }
 function rtfCmdRun(btnEl, cmd, val){
   const wrap = btnEl.closest('.rtf-wrap');
@@ -10312,6 +10349,7 @@ function rtfCmdRun(btnEl, cmd, val){
   if (!editable){ rtfNoTargetHint(); return null; }
   editable.focus();
   rtfRestoreSelection(editable);
+  _rtfKeepSel = rtfCaretState(editable); // 서식 적용 뒤 같은 글자를 다시 선택하기 위해 지금 선택 범위를 기억
   if (cmd==='fontSize'){
     if (!val) return;
     document.execCommand('fontSize', false, '7');

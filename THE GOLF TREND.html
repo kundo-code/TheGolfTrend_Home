@@ -2040,6 +2040,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .adv-editor-overlay .card-label-grid .popup-toggle .pt-lbl{font-size:10px}
 .adv-editor-overlay .card-label-grid .media-btn.media-btn{min-height:0;padding:3px 8px;font-size:10px}
 .adv-editor-overlay .card-label-grid .media-slot > div{margin-top:5px!important}
+.card-label-grid .cl-meta{font-size:10px;font-weight:700;color:var(--gold-deep);margin:0 0 4px;line-height:1.3}
 .adv-editor-overlay .card-label-grid .file-hint{display:none!important}
 .adv-editor-overlay .card-label-grid .adv-chip-group{gap:3px}
 .adv-editor-overlay .card-label-grid .adv-chip{padding:2px 5px;font-size:9.5px;line-height:1.35}
@@ -5982,6 +5983,36 @@ function ensureSchedule(S){
 // 기본 제공 레이블 이미지 — 우상단 모서리용 리본(파일 1 특가·2 실속+·3 스탠다드·4 품격·5 프리미엄·6 신상품·7 럭셔리, assets/card-labels)
 const DEFAULT_CARD_LABELS = [6,1,7,5,4,3,2].map(n=>`assets/card-labels/label-${n}.png`); // 표시 순서: 신상품·특가·럭셔리·프리미엄·품격·스탠다드·실속+ (파일 번호는 추가된 순서)
 const DEFAULT_CARD_LABEL_MAX = 7; // 기본 레이블 파일 번호의 최댓값(label-1 ~ label-7)
+// [추가] 상품 레이블의 "의미" — 단순 장식 이미지가 아니라 상품 등급·상태를 나타내는 데이터로, 추후 AI 추천 컨텐츠 고도화에 쓴다.
+//  · 등급(grade): Level 5(럭셔리) > 4(프리미엄) > 3(품격) > 2(스탠다드) > 1(실속+). 한 상품은 등급 레이블을 하나만 가진다(하나를 켜면 다른 등급은 꺼짐)
+//  · 상태(flag): 신상품(새로 등록한 상품) / 특가(기간한정·긴급 판매 목적 상품) — 등급과 별개로 함께 켤 수 있다
+// 상품이 어떤 레이블을 "적용"했는지는 그 레이블의 "카드에 노출" 켜짐 여부로 판단한다. 상품별 요약은 productLabelProfile(p)로 얻는다
+const CARD_LABEL_META = {
+  'assets/card-labels/label-7.png': {key:'luxury',   type:'grade', level:5, name:'럭셔리'},
+  'assets/card-labels/label-5.png': {key:'premium',  type:'grade', level:4, name:'프리미엄'},
+  'assets/card-labels/label-4.png': {key:'quality',  type:'grade', level:3, name:'품격'},
+  'assets/card-labels/label-3.png': {key:'standard', type:'grade', level:2, name:'스탠다드'},
+  'assets/card-labels/label-2.png': {key:'value',    type:'grade', level:1, name:'실속+'},
+  'assets/card-labels/label-6.png': {key:'new',      type:'flag', name:'신상품', desc:'새로 등록한 상품'},
+  'assets/card-labels/label-1.png': {key:'special',  type:'flag', name:'특가',   desc:'기간한정·긴급 판매 목적 상품'},
+};
+function cardLabelMeta(l){ return (l && CARD_LABEL_META[l.url]) || null; }
+function cardLabelMetaText(l){
+  const m = cardLabelMeta(l); if (!m) return '';
+  return m.type==='grade' ? `Level ${m.level} · ${m.name}` : `${m.name} · ${m.desc}`;
+}
+// 상품의 레이블 요약 — {grade:1~5(없으면 0), gradeKey, gradeName, isNew, isSpecial, keys:[적용된 의미 레이블 키]}
+function productLabelProfile(p){
+  const out = {grade:0, gradeKey:'', gradeName:'', isNew:false, isSpecial:false, keys:[]};
+  ((p && p.cardLabels) || []).forEach(l=>{
+    const m = cardLabelMeta(l); if (!m || !l.active) return;
+    out.keys.push(m.key);
+    if (m.type==='grade' && m.level>out.grade){ out.grade=m.level; out.gradeKey=m.key; out.gradeName=m.name; }
+    if (m.key==='new') out.isNew = true;
+    if (m.key==='special') out.isSpecial = true;
+  });
+  return out;
+}
 function ensureExtended(p){
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
@@ -11773,7 +11804,9 @@ function productCardHTML(p, catId, idx){
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || metaGroup2.length || cardTags.length);
-  return `<article class="product${hasCp?' has-cp':''}" onclick="productCardClick(event,'${catId}',${idx},this)">
+  const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
+  const lblAttrs = (lblProfile.grade?` data-label-grade="${lblProfile.grade}"`:'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'');
+  return `<article class="product${hasCp?' has-cp':''}"${lblAttrs} onclick="productCardClick(event,'${catId}',${idx},this)">
     <div class="product-visual${cardLabelOverlay.hasOutside?' pv-label-overflow':''}" role="img" aria-label="${escapeAttr(productImgAlt(cat,p))}">
       <div class="pv-clip">
         <div class="pv-bg lazy-bg" data-bg-src="${escapeAttr(visualUrl)}"></div>
@@ -18100,8 +18133,10 @@ function removeTitleMedia(){
 // 프레임 밖으로 튀어나오게 배치할지도 항목별로 개별 설정할 수 있다
 const CARD_LABEL_CORNERS = [['tl','좌상단'],['tr','우상단'],['bl','좌하단'],['br','우하단']];
 function cardLabelItemHTML(label, i){
+  const metaTxt = cardLabelMetaText(label);
   return `<div class="media-slot">
     <img src="${escapeAttr(label.url)}" class="media-preview">
+    ${metaTxt?`<div class="cl-meta">${escapeAttr(metaTxt)}</div>`:''}
     <div class="media-controls">
       <label class="popup-toggle" title="켜면 이 레이블이 상품 카드 이미지에 노출됩니다">
         <input type="checkbox" ${label.active?'checked':''} onchange="toggleCardLabelActive(${i},this.checked)">
@@ -18149,6 +18184,9 @@ function removeCardLabel(i){
 function toggleCardLabelActive(i, checked){
   const p=getAdvProduct(); if (!p) return;
   if (p.cardLabels[i]) p.cardLabels[i].active=checked;
+  // 등급 레이블(Level 1~5)은 한 상품에 하나만 — 하나를 켜면 나머지 등급 레이블은 끈다
+  const m = cardLabelMeta(p.cardLabels[i]);
+  if (checked && m && m.type==='grade') p.cardLabels.forEach((l,k)=>{ const mk=cardLabelMeta(l); if (k!==i && mk && mk.type==='grade') l.active=false; });
   saveAdvChange();renderAdvBody();
 }
 function setCardLabelCorner(i, corner){
@@ -18641,7 +18679,8 @@ function computeAiRecommendations(criteria){
         if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }
       });
       if (criteria.region!=='any'){ score+=5; reasons.push(criteria.region==='domestic'?'국내 권역 선호 반영':'해외 권역 선호 반영'); }
-      results.push({catId, idx, p, cat, score, reasons});
+      // labelProfile: 등급(Level 1~5)·신상품·특가 — 아직 점수에는 반영하지 않고, 추후 AI 추천 고도화에서 활용할 수 있게 후보마다 함께 담아 둔다
+      results.push({catId, idx, p, cat, score, reasons, labelProfile: productLabelProfile(p)});
     });
   });
   results.sort((a,b)=>b.score-a.score);

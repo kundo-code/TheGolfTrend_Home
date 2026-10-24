@@ -5732,6 +5732,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     <button data-tab="links" onclick="switchTab('links')">브랜드 링크</button>
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
+    <button data-tab="crm" onclick="switchTab('crm')">상담·예약</button>
     <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button class="admin-pwchange-toggle" id="adminPwChangeToggle" onclick="togglePwChangeForm()" style="display:none">비밀번호 변경</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
@@ -5839,6 +5840,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
       </div>
       <div id="leadsList"></div>
     </div>
+    <!-- [추가] 상담·예약 — 기능 코드는 assets/admin-crm.js에 따로 두고 이 탭을 열 때만 불러온다(홈페이지 방문자 속도에 영향 없음) -->
+    <div id="tabCrm" style="display:none"><div id="crmRoot"></div></div>
     <div id="tabLegal" style="display:none">
       <div id="adminLegal"></div>
     </div>
@@ -6100,7 +6103,19 @@ function productLabelProfile(p){
   if (!out.grade){ out.grade = DEFAULT_PRODUCT_GRADE.level; out.gradeKey = DEFAULT_PRODUCT_GRADE.key; out.gradeName = DEFAULT_PRODUCT_GRADE.name; out.gradeIsDefault = true; }
   return out;
 }
+// [추가] 상품 고유번호(uid) — 상담·예약·행동 기록을 상품에 연결하는 숨은 번호. 기존 값은 그대로 두고 없을 때만 새로 붙인다
+// (관리자 로그인 상태에서 tgtPersistProductUids()가 사이트 설정에 한 번 저장해 모든 기기가 같은 번호를 쓰게 한다)
+var _tgtUidDirty = false;
+function tgtNewProductUid(){ return 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+// 기본(샘플) 상품을 처음 수정할 때 목록을 복사하면서도 위치 기반 번호(def_권역_순서)를 그대로 이어 받는다
+function tgtMaterializeDefaults(catId){ return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[catId]||[])).map((p,i)=>ensureExtended(Object.assign({uid:'def_'+catId+'_'+i},p))); }
+function tgtPersistProductUids(){
+  if (!adminSession) return;
+  Object.keys(productOverrides||{}).forEach(c=>{ try{ getProducts(c); }catch(e){} });
+  if (_tgtUidDirty){ _tgtUidDirty = false; saveProducts(); }
+}
 function ensureExtended(p){
+  if (!p.uid){ p.uid = tgtNewProductUid(); _tgtUidDirty = true; }
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
   // [추가] 이미지 갤러리 부제 + 추가 갤러리 세트(최대 5개: [{subtitle, items:[{url}]}])
@@ -10173,7 +10188,7 @@ function isProductVisible(p){
 }
 function getProducts(catId){
   if (productOverrides[catId]!==undefined) return productOverrides[catId].map(ensureExtended);
-  return (DEFAULT_PRODUCTS[catId]||[]).map(p=>ensureExtended(Object.assign({},p)));
+  return (DEFAULT_PRODUCTS[catId]||[]).map((p,i)=>ensureExtended(Object.assign({uid:'def_'+catId+'_'+i},p))); // 저장 전 기본 상품은 위치 기반 고정 번호
 }
 function getLinkUrl(key){
   if (linkOverrides[key]!==undefined) return linkOverrides[key];
@@ -15137,7 +15152,7 @@ async function toggleAdmin(){
   if (isOpen){
     await refreshAdminSession();
     renderAdminAuthGate();
-    if (adminSession) adminEnterTabs();
+    if (adminSession){ adminEnterTabs(); siteStatePulled.then(ok=>{ if (ok) tgtPersistProductUids(); }); }
   }
 }
 function renderAdminAuthGate(){
@@ -15173,6 +15188,7 @@ async function handleAdminLoginClick(e){
   passEl.value='';
   renderAdminAuthGate();
   adminEnterTabs();
+  siteStatePulled.then(ok=>{ if (ok) tgtPersistProductUids(); }); // 공유 상태를 받은 뒤에만 저장(오래된 데이터로 덮어쓰지 않도록)
 }
 async function handleForgotPasswordClick(e){
   if (e) e.preventDefault();
@@ -16074,10 +16090,24 @@ function switchTab(tab){
   activeAdminTab=tab;
   adminPosSave({tab});
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads','tabNotices'].forEach(id=>{
+  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads','tabNotices','tabCrm'].forEach(id=>{
     document.getElementById(id).style.display=(id==='tab'+tab[0].toUpperCase()+tab.slice(1))?'block':'none';
   });
   refreshCurrentAdminTab();
+}
+const TGT_CRM_VERSION = '2026102401';
+let _tgtCrmLoading = null;
+function tgtLoadCrm(){
+  const root = document.getElementById('crmRoot'); if (!root) return;
+  if (window.TGT_CRM){ window.TGT_CRM.render(root); return; }
+  root.innerHTML = '<div class="leads-empty">상담·예약 기능을 불러오는 중...</div>';
+  if (!_tgtCrmLoading) _tgtCrmLoading = new Promise((resolve, reject)=>{
+    const sc = document.createElement('script');
+    sc.src = 'assets/admin-crm.js?v=' + TGT_CRM_VERSION; sc.onload = resolve; sc.onerror = reject;
+    document.head.appendChild(sc);
+  });
+  _tgtCrmLoading.then(()=>{ if (window.TGT_CRM && activeAdminTab==='crm') window.TGT_CRM.render(root); })
+    .catch(()=>{ _tgtCrmLoading = null; root.innerHTML = '<div class="leads-empty">상담·예약 기능 파일을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 열어주세요.</div>'; });
 }
 function refreshCurrentAdminTab(){
   if (activeAdminTab==='images'){ renderAdminImages(); renderAdminIdentity(); renderAdminTheme(); renderAdminSeasonTheme(); }
@@ -16085,6 +16115,7 @@ function refreshCurrentAdminTab(){
   else if (activeAdminTab==='links') renderAdminLinks();
   else if (activeAdminTab==='legal') renderAdminLegal();
   else if (activeAdminTab==='leads') fetchLeads();
+  else if (activeAdminTab==='crm') tgtLoadCrm();
   else if (activeAdminTab==='notices') renderAdminNotices();
   if (activeAdminTab==='images') { renderAdminAbout(); }
 }
@@ -16189,7 +16220,7 @@ function mwToggleHTML(checked, onchangeJs, disabled){
 }
 function toggleMetaWide(idx, key, checked){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const p = productOverrides[activeProductCat][idx];
   if (!p.metaWide) p.metaWide = {};
@@ -16201,7 +16232,7 @@ function toggleMetaWide(idx, key, checked){
 // 그리면 <details> 접힘 상태가 초기화되므로, 데이터만 갱신하고 클릭된 칩 버튼의 active 클래스만 직접 토글한다
 function toggleProductMonthsBasic(idx, value, btnEl){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const p = productOverrides[activeProductCat][idx];
   const arr = Array.isArray(p.months) ? p.months : (p.months=[]);
@@ -16212,7 +16243,7 @@ function toggleProductMonthsBasic(idx, value, btnEl){
 }
 function toggleProductSeasonBasic(idx, key, btnEl){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const p = productOverrides[activeProductCat][idx];
   const arr = Array.isArray(p.seasonTags) ? p.seasonTags : (p.seasonTags=[]);
@@ -16281,13 +16312,13 @@ function productMoveOptionsHTML(excludeCatId){
 function moveProduct(idx, targetCatId){
   if (!targetCatId || targetCatId===activeProductCat) return;
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const targetCat=findCat(targetCatId);
   if (!targetCat || !confirm(`이 상품을 "${targetCat.koFull||targetCat.ko}"(으)로 이동하시겠습니까?`)) return;
   const [item] = productOverrides[activeProductCat].splice(idx,1);
   if (productOverrides[targetCatId]===undefined){
-    productOverrides[targetCatId]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[targetCatId]||[])).map(ensureExtended);
+    productOverrides[targetCatId]=tgtMaterializeDefaults(targetCatId);
   }
   productOverrides[targetCatId].push(item);
   saveProducts();renderProductAdmin();renderCategoryGrid();
@@ -16398,7 +16429,7 @@ function adminFocusLastProduct(list, autoOpen){
 
 function updateProduct(idx,field,value){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   if (field==='from') value=parseInt(value)||0;
   productOverrides[activeProductCat][idx][field]=value;
@@ -16417,7 +16448,7 @@ function updateProduct(idx,field,value){
 // pe.popup)까지 모두 함께 꺼서, 리스트의 이 토글 하나로 해당 상품의 모든 팝업 노출을 확실히 끌 수 있게 한다
 function toggleProductPopup(idx, checked){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const p = productOverrides[activeProductCat][idx];
   if (checked){
@@ -16438,7 +16469,7 @@ function updateProductCountLabel(){
 function deleteProduct(idx){
   if (!confirm('이 상품을 삭제하시겠습니까?')) return;
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   productOverrides[activeProductCat].splice(idx,1);
   saveProducts();renderProductAdmin();renderCategoryGrid();
@@ -16449,7 +16480,7 @@ let productDragIdx = null;
 // [추가] "상품 노출" 토글 — 자동 판단(추천 시기 만료)과 같은 값이면 직접 지정을 지우고, 다르면 p.visible에 저장해 그 선택을 우선한다
 function toggleProductVisible(idx, checked){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const p = productOverrides[activeProductCat][idx]; if (!p) return;
   const auto = !productMonthsExpired(p);
@@ -16460,7 +16491,7 @@ function toggleProductVisible(idx, checked){
 function productReorder(from, to){
   if (from===to) return;
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const list = productOverrides[activeProductCat];
   const item = list.splice(from, 1)[0];
@@ -16538,10 +16569,11 @@ function pointerSortStart(e, selector, from, onDrop){
 // 유사한 상품을 새로 등록할 때 처음부터 다시 입력하지 않고, 복제 후 일부만 고쳐 쓸 수 있도록 함
 function duplicateProduct(idx){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   const clone = JSON.parse(JSON.stringify(productOverrides[activeProductCat][idx]));
   clone.title = (clone.title||'') + ' (복제)';
+  delete clone.uid; // 복제본은 새 상품 — 고유번호를 새로 받는다
   clone.editorsPick = false; // 복제본이 원본과 함께 EDITOR'S PICK에 중복 노출되지 않도록 기본값으로 되돌림
   clone.editorsPickPopup = false;
   productOverrides[activeProductCat].splice(idx+1, 0, clone);
@@ -16549,7 +16581,7 @@ function duplicateProduct(idx){
 }
 function addProduct(){
   if (productOverrides[activeProductCat]===undefined){
-    productOverrides[activeProductCat]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[activeProductCat]||[])).map(ensureExtended);
+    productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
   }
   productOverrides[activeProductCat].push(Object.assign({title:'새 상품',from:990000,nights:'2박 3일',rounds:'2R'},newExtendedFields()));
   saveProducts();renderProductAdmin();renderCategoryGrid();
@@ -16747,7 +16779,7 @@ function getAdvProduct(){
   if (!currentAdv) return null;
   const {catId, idx}=currentAdv;
   if (productOverrides[catId]===undefined){
-    productOverrides[catId]=JSON.parse(JSON.stringify(DEFAULT_PRODUCTS[catId]||[])).map(ensureExtended);
+    productOverrides[catId]=tgtMaterializeDefaults(catId);
   }
   const p=ensureExtended(productOverrides[catId][idx]);
   productOverrides[catId][idx]=p;
@@ -19390,7 +19422,7 @@ function waitForSupabaseLib(maxMs){
 // 경우를 대비해 최대 대기 시간은 별도로 둠)
 const siteStatePulled = waitForSupabaseLib(3000)
   .then(()=>pullSiteState())
-  .then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); } return ok; })
+  .then(ok=>{ if(ok){ renderAll(); refreshCurrentAdminTab(); if (adminSession) tgtPersistProductUids(); } return ok; })
   .catch(()=>false);
 // [Phase] 등록된 채널(블로그·유튜브)의 RSS를 백그라운드에서 가져와 "여행 이야기"에 자동 반영.
 // 다른 기기에서 등록한 채널 목록이 pullSiteState로 막 동기화된 뒤에 시도해야 하므로 그 뒤에 이어서 실행.

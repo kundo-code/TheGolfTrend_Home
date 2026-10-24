@@ -219,6 +219,32 @@
       .crm-item-acts select,.crm-item-acts input[type=date]{padding:5px 8px;border:none;border-radius:8px;background:var(--nm-white,#fff);box-shadow:var(--nm-shadow-inset);font-size:.72rem}
       .crm-link-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:.8rem;line-height:1.5}
       .crm-link-pair > div{background:var(--nm-surface-light,#eef1f6);border-radius:10px;padding:8px 10px}
+      .st-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+      .st-tile{background:var(--nm-white,#fff);border-radius:12px;padding:10px 12px;box-shadow:var(--nm-shadow-raised-sm)}
+      .st-l{font-size:.7rem;font-weight:800;color:#52514e}
+      .st-v{font-size:1.25rem;font-weight:800;color:#0b0b0b;margin-top:2px}
+      .st-s{font-size:.68rem;color:#52514e;margin-top:2px;line-height:1.4}
+      .st-bars{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+      .st-bar{display:grid;grid-template-columns:minmax(90px,38%) 1fr auto;gap:8px;align-items:center;font-size:.76rem}
+      .st-bl{color:#0b0b0b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .st-bt{height:12px;background:rgba(10,23,48,.05);border-radius:4px;overflow:hidden}
+      .st-bf{height:100%;background:#2a78d6;border-radius:0 4px 4px 0}
+      .st-bv{font-weight:800;color:#0b0b0b;white-space:nowrap}
+      .st-bv span{font-weight:500;color:#52514e;margin-left:4px}
+      .st-sm-l{font-size:.74rem;font-weight:800;color:#52514e;margin:12px 0 4px}
+      .st-cols{display:flex;gap:2px;align-items:flex-end;overflow-x:auto;padding-bottom:2px}
+      .st-col{flex:1 0 26px;display:flex;flex-direction:column;align-items:center;gap:2px}
+      .st-cv{font-size:.62rem;font-weight:700;color:#0b0b0b;height:12px}
+      .st-cb{width:100%;height:56px;display:flex;align-items:flex-end;background:rgba(10,23,48,.03);border-radius:4px}
+      .st-cb > div{width:100%;background:#2a78d6;border-radius:4px 4px 0 0}
+      .st-cm{font-size:.6rem;color:#52514e}
+      .st-tbl-wrap{overflow-x:auto;margin-top:8px}
+      .st-tbl{border-collapse:collapse;width:100%;font-size:.74rem}
+      .st-tbl th{background:rgba(10,23,48,.05);font-weight:800;text-align:left;padding:6px 8px;white-space:nowrap;color:#0b0b0b}
+      .st-tbl td{padding:6px 8px;border-top:1px solid rgba(10,23,48,.08);vertical-align:top;color:#0b0b0b}
+      .st-heat td{text-align:center;min-width:30px;padding:5px 4px}
+      .st-heat td.st-rh{text-align:left;white-space:nowrap;font-weight:700}
+      .st-short{color:#8A4B00;font-weight:700}
       @media(max-width:640px){ .crm-link-pair{grid-template-columns:1fr} }
       @media(max-width:640px){ .crm-grid2{grid-template-columns:1fr} .crm-memo-row{flex-direction:column} .crm-memo-btns{flex-direction:row} }
     `;
@@ -1303,6 +1329,249 @@
     await loadLinks(true); renderBody();
   }
 
+  // ══ 4단계 — 통계 대시보드 ═════════════════════════════════════════
+  const MIN_N = 5;   // 표본이 이보다 적으면 "자료 부족"
+  const ACTIVE = s => s==='예약확정' || s==='출발완료';
+  const KST_MONTH = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul', year:'numeric', month:'2-digit'});
+  function monthKeyTs(ts){ if (!ts) return null; const d = new Date(ts); return isNaN(d) ? null : KST_MONTH.format(d).slice(0,7); }
+  const monthKeyDate = d => d ? String(d).slice(0,7) : null;
+  function monthLabel(k){ const [y,m] = k.split('-'); return `${y.slice(2)}.${m}`; }
+  function addMonths(k, n){ let [y,m] = k.split('-').map(Number); m += n; while (m>12){ m-=12; y++; } while (m<1){ m+=12; y--; } return `${y}-${pad2(m)}`; }
+  function monthRange(a, b){ const out = []; let k = a; let guard = 0; while (k<=b && guard++<60){ out.push(k); k = addMonths(k,1); } return out; }
+  const dayDiff = (a, b) => (new Date(b) - new Date(a)) / 86400000;
+  const depTs = d => d ? `${d}T00:00:00+09:00` : null;
+  function quantile(sorted, q){ if (!sorted.length) return null; const pos = (sorted.length-1)*q, lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi]-sorted[lo])*(pos-lo); }
+  function summarize(vals){
+    const v = vals.filter(x=>x!=null && isFinite(x)).sort((a,b)=>a-b);
+    if (v.length < MIN_N) return {n:v.length, short:true};
+    return {n:v.length, mean:v.reduce((s,x)=>s+x,0)/v.length, median:quantile(v,.5), p25:quantile(v,.25), p75:quantile(v,.75), p90:quantile(v,.9)};
+  }
+  function partyBucket(n){ if (n==null) return '미확인'; if (n<=2) return '1~2인'; if (n<=4) return '3~4인'; if (n<=8) return '5~8인'; return '9인 이상(단체)'; }
+  const BUCKETS = ['1~2인','3~4인','5~8인','9인 이상(단체)','미확인'];
+
+  state.stats = {loaded:false, filter:{period:'12', region:''}, seasonBasis:'departure', seasonGroup:'country'};
+  async function loadStats(force){
+    if (state.stats.loaded && !force) return;
+    await checkReady(); if (!isUsable()) return;
+    const client = sb();
+    const [c, b, l] = await Promise.all([
+      client.from(TABLES.consultations).select('*').eq('is_deleted', false).limit(10000),
+      client.from(TABLES.bookings).select('*').limit(10000),
+      client.from(LEADS_TABLE_NAME).select('id,created_at,destination,party_size,source,recommended_product,status').limit(10000),   // 개인정보(이름·연락처)는 통계에 불러오지 않음
+    ]);
+    if (c.error || b.error){ state.stats.error = errText(c.error || b.error); return; }
+    state.stats.cons = c.data||[]; state.stats.bookings = b.data||[]; state.stats.leads = l.error ? [] : (l.data||[]);
+    state.stats.loaded = true; state.stats.error = '';
+  }
+
+  // 문의 묶음(최초 상담 + 후속 상담) 단위로 정리
+  function buildThreads(cons, bookings){
+    const byRoot = {};
+    cons.forEach(c=>{ const k = c.parent_id || c.id; (byRoot[k] = byRoot[k] || []).push(c); });
+    const bkByCons = {};
+    bookings.forEach(b=>{ if (b.consultation_id) (bkByCons[b.consultation_id] = bkByCons[b.consultation_id] || []).push(b); });
+    const bkById = {}; bookings.forEach(b=>bkById[b.id]=b);
+    return Object.entries(byRoot).map(([rootId, list])=>{
+      list.sort((a,b)=>new Date(a.consulted_at)-new Date(b.consulted_at));
+      const root = list.find(x=>String(x.id)===String(rootId)) || list[0], last = list[list.length-1];
+      const pick = k => { for (let i=list.length-1;i>=0;i--) if (list[i][k]!=null && list[i][k]!=='') return list[i][k]; return null; };
+      const bks = []; list.forEach(x=>{ (bkByCons[x.id]||[]).forEach(b=>bks.includes(b)||bks.push(b)); if (x.booking_id && bkById[x.booking_id] && !bks.includes(bkById[x.booking_id])) bks.push(bkById[x.booking_id]); });
+      const active = bks.filter(b=>ACTIVE(b.booking_status));
+      const prefs = [...new Set([].concat(...list.map(x=>x.preferences||[])))].filter(p=>p!=='특별한 취향 없음');
+      return {
+        id:Number(rootId), list, first_inquiry_at: root.first_inquiry_at || root.consulted_at, lastResult:last.result,
+        product_uid: pick('product_uid'), product_title: pick('product_title'), product_cat: pick('product_cat'), travel_region: pick('travel_region'), country: pick('country'), destination: pick('destination'),
+        party: pick('requested_party_size'), group_type: pick('group_type'), unbooked_reason: pick('unbooked_reason'), barrier: pick('party_booking_barrier'),
+        preferred_month: pick('preferred_departure_month'), preferred_date: pick('preferred_departure_date'), lead_id: root.lead_id || pick('lead_id'),
+        prefs, bookings:bks, activeBookings:active, converted: active.length>0 || last.result==='예약확정',
+        cancelled: bks.length>0 && bks.every(b=>b.booking_status==='예약취소'),
+      };
+    });
+  }
+  function statsData(){
+    const S = state.stats, f = S.filter;
+    const now = todayKst(); const nowKey = `${now.y}-${pad2(now.m)}`;
+    const startKey = f.period==='all' ? null : (f.period==='ytd' ? `${now.y}-01` : addMonths(nowKey, -(Number(f.period)-1)));
+    const inRegion = x => !f.region || x.travel_region===f.region;
+    const inPeriodTs = ts => !startKey || (monthKeyTs(ts)||'') >= startKey;
+    const threadsAll = buildThreads(S.cons, S.bookings);
+    const threads = threadsAll.filter(t=>inRegion(t) && inPeriodTs(t.first_inquiry_at));
+    const bookings = S.bookings.filter(b=>inRegion(b) && inPeriodTs(b.confirmed_at || b.created_at));
+    const leadIdsRecorded = new Set(S.cons.map(c=>c.lead_id).filter(Boolean));
+    const leads = S.leads.filter(l=>inPeriodTs(l.created_at));
+    return {threads, bookings, threadsAll, leads, leadIdsRecorded, startKey, nowKey};
+  }
+
+  // ── 표시 도구(단일 색상 막대·숫자 카드·표) ──
+  const fmtN = n => n==null ? '—' : Number(n).toLocaleString('ko-KR');
+  const pct = (a, b) => b>=MIN_N ? `${Math.round(a/b*100)}%` : (b ? `자료 부족(${a}/${b})` : '—');
+  const days = v => v==null ? '—' : `${Math.round(v)}일`;
+  const tile = (label, value, sub) => `<div class="st-tile"><div class="st-l">${label}</div><div class="st-v">${value}</div>${sub?`<div class="st-s">${sub}</div>`:''}</div>`;
+  function barList(rows, unit){
+    if (!rows.length) return '<div class="crm-empty">자료가 없습니다.</div>';
+    const max = Math.max(...rows.map(r=>r.value), 1);
+    return `<div class="st-bars">${rows.map(r=>`<div class="st-bar" title="${esc(r.label)}: ${fmtN(r.value)}${unit||''}${r.sub?' · '+esc(r.sub):''}"><div class="st-bl">${esc(r.label)}</div>
+      <div class="st-bt"><div class="st-bf" style="width:${Math.max(2, r.value/max*100)}%"></div></div><div class="st-bv">${fmtN(r.value)}${unit||''}${r.sub?`<span>${esc(r.sub)}</span>`:''}</div></div>`).join('')}</div>`;
+  }
+  function monthBars(months, vals, unit, sub){
+    const max = Math.max(...vals, 1);
+    return `<div class="st-cols">${months.map((m,i)=>`<div class="st-col" title="${monthLabel(m)}: ${fmtN(vals[i])}${unit||''}${sub && sub[i]?' · '+sub[i]:''}">
+      <div class="st-cv">${vals[i]?fmtN(vals[i]):''}</div><div class="st-cb"><div style="height:${vals[i]?Math.max(3, vals[i]/max*100):0}%"></div></div><div class="st-cm">${monthLabel(m)}</div></div>`).join('')}</div>`;
+  }
+  const table = (head, rows) => `<div class="st-tbl-wrap"><table class="st-tbl"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  function heatTable(rowKeys, colKeys, getVal, rowLabel){
+    const max = Math.max(1, ...rowKeys.map(r=>Math.max(0, ...colKeys.map(c=>getVal(r,c)||0))));
+    return `<div class="st-tbl-wrap"><table class="st-tbl st-heat"><thead><tr><th>${rowLabel}</th>${colKeys.map(c=>`<th>${monthLabel(c)}</th>`).join('')}</tr></thead><tbody>${rowKeys.map(r=>`<tr><td class="st-rh">${esc(r)}</td>${colKeys.map(c=>{ const v = getVal(r,c)||0; return `<td style="background:${v?`rgba(42,120,214,${(0.12+0.6*v/max).toFixed(2)})`:'transparent'};${v/max>0.6?'color:#fff;':''}" title="${esc(r)} · ${monthLabel(c)}: ${v}">${v||''}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  const countBy = (arr, keyFn) => { const m = {}; arr.forEach(x=>{ const k = keyFn(x); if (k==null || k==='') return; [].concat(k).forEach(kk=>{ m[kk] = (m[kk]||0)+1; }); }); return m; };
+  const topRows = (m, n) => Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0, n||12).map(([label,value])=>({label, value}));
+  const productKey = x => x.product_title || (x.destination ? `${x.destination} (상품 미정)` : '미지정');
+  const countryKey = x => x.travel_region==='domestic' ? (x.destination || '국내') : (x.country || x.destination || '미지정');
+
+  function statsHTML(){
+    if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
+    const S = state.stats;
+    if (!S.loaded) return `<div class="crm-card"><div class="crm-empty">${S.error?'불러오기 실패: '+esc(S.error):'통계를 계산하는 중...'}</div></div>`;
+    const D = statsData(), T = D.threads, B = D.bookings, f = S.filter;
+    const activeB = B.filter(b=>ACTIVE(b.booking_status));
+    const cancelledB = B.filter(b=>b.booking_status==='예약취소');
+    const waitingB = B.filter(b=>b.booking_status==='예약대기');
+    const people = activeB.reduce((s,b)=>s+(b.confirmed_party_size||0),0);
+    const converted = T.filter(t=>t.converted).length;
+    const holds = T.filter(t=>t.lastResult==='보류').length, fails = T.filter(t=>t.lastResult==='미예약').length, tCancelled = T.filter(t=>t.lastResult==='예약취소' || t.cancelled).length;
+    const unrecordedLeads = D.leads.filter(l=>!D.leadIdsRecorded.has(l.id)).length;
+    const unlinkedB = B.filter(b=>!b.consultation_id).length;
+    const records = T.reduce((s,t)=>s+t.list.length,0);
+
+    // 상품별 성과
+    const prodMap = {};
+    T.forEach(t=>{ const k = productKey(t); const p = prodMap[k] = prodMap[k] || {threads:0, conv:0, reasons:{}, people:0, bookings:0}; p.threads++; if (t.converted) p.conv++; if ((t.lastResult==='보류'||t.lastResult==='미예약') && t.unbooked_reason) p.reasons[t.unbooked_reason] = (p.reasons[t.unbooked_reason]||0)+1; });
+    activeB.forEach(b=>{ const k = productKey(b); const p = prodMap[k] = prodMap[k] || {threads:0, conv:0, reasons:{}, people:0, bookings:0}; p.bookings++; p.people += b.confirmed_party_size||0; });
+    const prodRows = Object.entries(prodMap).sort((a,b)=>(b[1].threads+b[1].bookings)-(a[1].threads+a[1].bookings)).slice(0,20)
+      .map(([k,p])=>[esc(k), fmtN(p.threads), fmtN(p.bookings), p.threads ? pct(p.conv, p.threads) : '—', fmtN(p.people)+'명', Object.entries(p.reasons).sort((a,b)=>b[1]-a[1]).map(([r,n])=>`${esc(r)} ${n}`).join(', ') || '—']);
+
+    // 월 범위(문의·확정·출발)
+    const monthsSeen = [].concat(T.map(t=>monthKeyTs(t.first_inquiry_at)), B.map(b=>monthKeyTs(b.confirmed_at)), B.map(b=>monthKeyDate(b.departure_date))).filter(Boolean).sort();
+    const mStart = D.startKey || (monthsSeen[0] || D.nowKey);
+    const mEnd = [monthsSeen[monthsSeen.length-1] || D.nowKey, D.nowKey].sort().pop();
+    let months = monthRange(mStart, mEnd); if (months.length>24) months = months.slice(-24);
+    const inqByM = countBy(T, t=>monthKeyTs(t.first_inquiry_at));
+    const confByM = countBy(B.filter(b=>b.confirmed_at && b.booking_status!=='예약대기'), b=>monthKeyTs(b.confirmed_at));
+    const depByM = countBy(activeB, b=>monthKeyDate(b.departure_date));
+    const depPeopleByM = {}; activeB.forEach(b=>{ const k = monthKeyDate(b.departure_date); if (k) depPeopleByM[k] = (depPeopleByM[k]||0)+(b.confirmed_party_size||0); });
+
+    // 리드타임(일)
+    const lt = (filterFn) => {
+      const tt = T.filter(filterFn), bb = activeB.filter(filterFn);
+      const inqToConf = [], inqToDep = [];
+      tt.forEach(t=>t.activeBookings.forEach(b=>{ if (b.confirmed_at){ const d = dayDiff(t.first_inquiry_at, b.confirmed_at); if (d>=0) inqToConf.push(d); } if (b.departure_date){ const d = dayDiff(t.first_inquiry_at, depTs(b.departure_date)); if (d>=0) inqToDep.push(d); } }));
+      const confToDep = bb.filter(b=>b.confirmed_at && b.departure_date).map(b=>dayDiff(b.confirmed_at, depTs(b.departure_date))).filter(d=>d>=0);
+      return {inqToConf:summarize(inqToConf), confToDep:summarize(confToDep), inqToDep:summarize(inqToDep)};
+    };
+    const ltAll = lt(()=>true), ltDom = lt(x=>x.travel_region==='domestic'), ltOv = lt(x=>x.travel_region==='overseas');
+    const ltCell = s => s.short ? `<span class="st-short">자료 부족 (${s.n}건)</span>` : `평균 ${days(s.mean)} · 중앙값 <b>${days(s.median)}</b><br><span class="crm-note">P25–P75 ${days(s.p25)}~${days(s.p75)} · P90 ${days(s.p90)} · ${s.n}건</span>`;
+
+    // 희망 출발 월 vs 실제 출발 월
+    const diffs = [];
+    T.forEach(t=>{ const pm = t.preferred_month || (t.preferred_date ? t.preferred_date.slice(0,7)+'-01' : null); if (!pm) return; t.activeBookings.forEach(b=>{ if (!b.departure_date) return; const [y1,m1] = pm.split('-').map(Number), [y2,m2] = b.departure_date.split('-').map(Number); diffs.push((y2*12+m2)-(y1*12+m1)); }); });
+    const diffDist = {'같은 달':0,'1개월 빠름':0,'1개월 늦음':0,'2개월 이상 빠름':0,'2개월 이상 늦음':0};
+    diffs.forEach(d=>{ if (d===0) diffDist['같은 달']++; else if (d===-1) diffDist['1개월 빠름']++; else if (d===1) diffDist['1개월 늦음']++; else if (d<0) diffDist['2개월 이상 빠름']++; else diffDist['2개월 이상 늦음']++; });
+
+    // 취소·출발일 변경
+    const dateChanged = B.filter(b=>b.booking_status!=='예약취소' && b.original_departure_date && b.departure_date && b.original_departure_date!==b.departure_date);
+    const shiftDays = dateChanged.map(b=>dayDiff(depTs(b.original_departure_date), depTs(b.departure_date)));
+    const cancelReasons = topRows(countBy(cancelledB, b=>b.cancellation_reason || '사유 미기록'), 6);
+    const decided = B.filter(b=>b.booking_status!=='예약대기').length;
+
+    // 시즌 분포
+    const basis = S.seasonBasis, grp = S.seasonGroup;
+    const seasonItems = basis==='inquiry' ? T.map(t=>({k: grp==='product'?productKey(t):countryKey(t), m: monthKeyTs(t.first_inquiry_at)}))
+      : basis==='booking' ? B.filter(b=>b.confirmed_at && b.booking_status!=='예약대기').map(b=>({k: grp==='product'?productKey(b):countryKey(b), m: monthKeyTs(b.confirmed_at)}))
+      : activeB.map(b=>({k: grp==='product'?productKey(b):countryKey(b), m: monthKeyDate(b.departure_date)}));
+    const seasonRows = topRows(countBy(seasonItems, x=>x.m ? x.k : null), 15).map(r=>r.label);
+    const seasonVal = (r, c) => seasonItems.filter(x=>x.k===r && x.m===c).length;
+
+    // 인원 구간
+    const bucketT = countBy(T, t=>partyBucket(t.party)), bucketConv = countBy(T.filter(t=>t.converted), t=>partyBucket(t.party));
+    const bucketB = countBy(activeB, b=>partyBucket(b.confirmed_party_size));
+    const inqBucketMonth = (bk, m) => T.filter(t=>partyBucket(t.party)===bk && monthKeyTs(t.first_inquiry_at)===m).length;
+    const bkBucketMonth = (bk, m) => activeB.filter(b=>partyBucket(b.confirmed_party_size)===bk && monthKeyTs(b.confirmed_at)===m).length;
+    const surchargeLost = T.filter(t=>!t.converted && (t.unbooked_reason==='소인원 추가요금' || t.barrier==='소인원 추가요금')).length;
+    const minShort = T.filter(t=>!t.converted && (t.unbooked_reason==='인원 미달' || t.barrier==='최소 출발 인원 미달')).length;
+    const groupT = T.filter(t=>(t.party||0)>=9 || t.group_type==='동호회' || t.group_type==='기업');
+    const groupPeople = activeB.filter(b=>(b.confirmed_party_size||0)>=9).reduce((s,b)=>s+b.confirmed_party_size,0);
+    const countryBucketRows = topRows(countBy(T, t=>countryKey(t)), 12).map(r=>r.label);
+
+    const filterBar = `<div class="crm-filter">
+      <select onchange="TGT_CRM.statFilter('period', this.value)">${[['3','최근 3개월'],['6','최근 6개월'],['12','최근 12개월'],['ytd','올해'],['all','전체']].map(([v,l])=>`<option value="${v}" ${f.period===v?'selected':''}>${l}</option>`).join('')}</select>
+      <select onchange="TGT_CRM.statFilter('region', this.value)">${[['','국내+해외'],['overseas','해외'],['domestic','국내']].map(([v,l])=>`<option value="${v}" ${f.region===v?'selected':''}>${l}</option>`).join('')}</select>
+      <button type="button" class="crm-btn" onclick="TGT_CRM.reloadStats()">🔄 새로 계산</button>
+      <span class="crm-note">기간 기준: 상담=최초 문의일, 예약=확정일 · 한국 시간 · 표본 ${MIN_N}건 미만은 "자료 부족"</span></div>`;
+
+    return `<div class="crm-card">${filterBar}
+      <div class="st-tiles">
+        ${tile('상담 문의', fmtN(T.length)+'건', `상담 기록 ${fmtN(records)}건(후속 포함)`)}
+        ${tile('예약 확정', fmtN(activeB.length)+'건', `예약 인원 ${fmtN(people)}명`)}
+        ${tile('상담 → 예약 전환율', pct(converted, T.length), `${converted} / ${T.length} 문의`)}
+        ${tile('예약 취소', fmtN(cancelledB.length)+'건', decided ? `확정·취소 중 ${pct(cancelledB.length, decided)}` : '')}
+        ${tile('상담 기록률', D.leads.length ? pct(D.leads.length-unrecordedLeads, D.leads.length) : '—', `홈페이지 문의 ${D.leads.length}건 중 기록 ${D.leads.length-unrecordedLeads}건`)}
+        ${tile('예약의 상담 연결', B.length ? pct(B.length-unlinkedB, B.length) : '—', `상담 없이 들어온 예약 ${unlinkedB}건`)}
+      </div>
+      <h5 style="margin-top:14px">결과 구분</h5>
+      ${barList([{label:'기록되지 않은 상담(홈페이지 문의 미기록)', value:unrecordedLeads},{label:'예약 보류(상담 결과 보류)', value:holds},{label:'예약 대기(예약 명단)', value:waitingB.length},{label:'예약 실패(미예약)', value:fails},{label:'예약 취소', value:tCancelled + cancelledB.filter(b=>!b.consultation_id).length}], '건')}
+    </div>
+
+    <div class="crm-card"><h5>📦 상품별 상담·예약</h5>
+      ${prodRows.length ? table(['상품','상담 문의','예약 확정','전환율','예약 인원','미예약·보류 사유'], prodRows) : '<div class="crm-empty">자료가 없습니다.</div>'}</div>
+
+    <div class="crm-card"><h5>💚 고객 선호 스타일 <span class="crm-note" style="font-weight:500">(문의 기준)</span></h5>${barList(topRows(countBy(T, t=>t.prefs), 12), '건')}</div>
+
+    <div class="crm-card"><h5>📅 문의 월 · 예약 확정 월 · 출발 월 비교</h5>
+      <p class="crm-note">같은 상품도 문의·예약·출발 시점이 다릅니다. 세 줄을 같은 달 기준으로 나란히 비교하세요.</p>
+      <div class="st-sm-l">최초 문의 (건)</div>${monthBars(months, months.map(m=>inqByM[m]||0), '건')}
+      <div class="st-sm-l">예약 확정 (건)</div>${monthBars(months, months.map(m=>confByM[m]||0), '건')}
+      <div class="st-sm-l">출발 (건 · 막대에 마우스를 올리면 인원)</div>${monthBars(months, months.map(m=>depByM[m]||0), '건', months.map(m=>depPeopleByM[m]?`${depPeopleByM[m]}명`:''))}
+      ${table(['월','최초 문의','예약 확정','출발 건수','출발 인원'], months.filter(m=>inqByM[m]||confByM[m]||depByM[m]).map(m=>[monthLabel(m), fmtN(inqByM[m]||0), fmtN(confByM[m]||0), fmtN(depByM[m]||0), fmtN(depPeopleByM[m]||0)+'명']))}
+    </div>
+
+    <div class="crm-card"><h5>⏱ 리드타임 — 문의·예약·출발 사이 기간</h5>
+      ${table(['구분','문의 → 예약 확정','예약 확정 → 출발','문의 → 출발'], [['전체', ltCell(ltAll.inqToConf), ltCell(ltAll.confToDep), ltCell(ltAll.inqToDep)], ['국내', ltCell(ltDom.inqToConf), ltCell(ltDom.confToDep), ltCell(ltDom.inqToDep)], ['해외', ltCell(ltOv.inqToConf), ltCell(ltOv.confToDep), ltCell(ltOv.inqToDep)]])}
+      <p class="crm-note">문의 → 예약은 상담과 연결된 예약만 계산합니다(연결 승인 필요). P25–P75는 가운데 50% 고객의 범위입니다.</p></div>
+
+    <div class="crm-card"><h5>🎯 희망 출발 월 vs 실제 출발 월</h5>
+      ${diffs.length>=MIN_N ? barList(Object.entries(diffDist).map(([label,value])=>({label, value})), '건') + `<p class="crm-note">평균 차이 ${(diffs.reduce((s,x)=>s+x,0)/diffs.length).toFixed(1)}개월 (양수=희망보다 늦게 출발) · ${diffs.length}건</p>` : `<div class="crm-empty">자료 부족 (${diffs.length}건) — 상담에 희망 출발 월을 기록하고 예약과 연결하면 쌓입니다.</div>`}</div>
+
+    <div class="crm-card"><h5>↩️ 예약 취소 · 출발일 변경</h5>
+      <div class="st-tiles">
+        ${tile('예약 취소', fmtN(cancelledB.length)+'건', decided ? `취소율 ${pct(cancelledB.length, decided)}` : '')}
+        ${tile('출발일 변경', fmtN(dateChanged.length)+'건', dateChanged.length ? `평균 ${Math.round(shiftDays.reduce((s,x)=>s+x,0)/dateChanged.length)}일 이동` : '')}
+      </div>
+      ${cancelReasons.length ? `<div class="st-sm-l">취소 사유</div>${barList(cancelReasons, '건')}` : ''}</div>
+
+    <div class="crm-card"><h5>🗓 시즌 분포</h5>
+      <div class="crm-filter">
+        <select onchange="TGT_CRM.statSeason('seasonBasis', this.value)">${[['departure','출발 월 기준'],['booking','예약 확정 월 기준'],['inquiry','최초 문의 월 기준']].map(([v,l])=>`<option value="${v}" ${basis===v?'selected':''}>${l}</option>`).join('')}</select>
+        <select onchange="TGT_CRM.statSeason('seasonGroup', this.value)">${[['country','국가·지역별'],['product','상품별']].map(([v,l])=>`<option value="${v}" ${grp===v?'selected':''}>${l}</option>`).join('')}</select>
+      </div>
+      ${seasonRows.length ? heatTable(seasonRows, months, seasonVal, grp==='product'?'상품':'국가·지역') : '<div class="crm-empty">자료가 없습니다.</div>'}</div>
+
+    <div class="crm-card"><h5>👥 인원 구간</h5>
+      <div class="st-tiles">
+        ${tile('소인원 추가요금으로 미예약', fmtN(surchargeLost)+'건', '확인된 사유만')}
+        ${tile('최소 출발 인원 미달', fmtN(minShort)+'건', '확인된 사유만')}
+        ${tile('단체 문의', fmtN(groupT.length)+'건', `단체(9인+) 확정 ${fmtN(groupPeople)}명`)}
+      </div>
+      ${table(['인원 구간','문의','예약 확정','전환율'], BUCKETS.map(bk=>[bk, fmtN(bucketT[bk]||0), fmtN(bucketB[bk]||0), (bucketT[bk]||0) ? pct(bucketConv[bk]||0, bucketT[bk]) : '—']))}
+      <div class="st-sm-l">월별 인원 구간별 문의 (최초 문의 월)</div>${heatTable(BUCKETS, months, inqBucketMonth, '인원')}
+      <div class="st-sm-l">월별 인원 구간별 예약 (예약 확정 월)</div>${heatTable(BUCKETS, months, bkBucketMonth, '인원')}
+      <div class="st-sm-l">국가·지역별 인원 수요 (문의)</div>
+      ${countryBucketRows.length ? table(['국가·지역'].concat(BUCKETS), countryBucketRows.map(k=>[esc(k)].concat(BUCKETS.map(bk=>fmtN(T.filter(t=>countryKey(t)===k && partyBucket(t.party)===bk).length))))) : '<div class="crm-empty">자료가 없습니다.</div>'}
+      <p class="crm-note">문의 건수와 인원, 예약 건수와 인원은 따로 집계합니다. 인원 미기록 문의는 "미확인"으로 둡니다.</p></div>`;
+  }
+  function statFilter(k, v){ state.stats.filter[k] = v; renderBody(); }
+  function statSeason(k, v){ state.stats[k] = v; renderBody(); }
+  async function reloadStats(){ state.stats.loaded = false; renderBody(); await loadStats(true); renderBody(); }
+
   // ── 화면 ─────────────────────────────────────────────────────
   function render(root){
     injectStyle();
@@ -1321,6 +1590,7 @@
       if (state.sub==='list' && !state.listLoaded) loadList().then(renderBody);
       else if (state.sub==='bookings' && !state.bookingsLoaded) loadBookings().then(renderBody);
       else if (state.sub==='links' && !state.linksLoaded) loadLinks().then(renderBody);
+      else if (state.sub==='stats' && !state.stats.loaded) loadStats().then(renderBody);
       else renderBody();
     });
   }
@@ -1330,6 +1600,7 @@
     if (sub==='list') loadList().then(renderBody);
     if (sub==='bookings') loadBookings().then(renderBody);
     if (sub==='links') loadLinks(true).then(renderBody);
+    if (sub==='stats') loadStats(true).then(renderBody);
   }
   function renderBody(){
     const body = document.getElementById('crmBody'); if (!body) return;
@@ -1337,6 +1608,7 @@
     else if (state.sub==='list') body.innerHTML = listHTML();
     else if (state.sub==='bookings') body.innerHTML = bookingsHTML();
     else if (state.sub==='links') body.innerHTML = linksHTML();
+    else if (state.sub==='stats') body.innerHTML = statsHTML();
     else if (state.sub==='check') body.innerHTML = checkHTML(state.ready);
     else body.innerHTML = `<div class="crm-card"><div class="crm-empty">이 화면은 다음 단계에서 순서대로 제공됩니다.</div></div>`;
   }
@@ -1379,7 +1651,8 @@
     pick, set:setField, addPref, memoInput, applyMemo, mic, resetForm, save,
     filter, edit, followUp, history, remove, reloadList, fromLead,
     impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
+    statFilter, statSeason, reloadStats,
     newBooking, newBookingFromConsult, bfSet, saveBooking, bookingCancelForm, changeBooking, bookingHistory, bFilter, findLinks, decideLink,
-    _internal:{ allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
+    _internal:{ buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
   };
 })();

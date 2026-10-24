@@ -2396,6 +2396,8 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .adv-sticky-head{position:sticky;top:-22px;z-index:6;margin:-22px -26px 16px;background:var(--nm-surface);border-bottom:1px solid rgba(10,23,48,.08);box-shadow:0 6px 12px -8px rgba(10,23,48,.18)}
 .adv-titlebar{display:flex;align-items:baseline;gap:10px;padding:8px 26px;background:var(--nm-surface-light);border-top:1px solid rgba(10,23,48,.07);min-width:0}
 .adv-titlebar h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-text);font-size:1.05rem;font-weight:500;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adv-titlebar .adv-tb-months{flex-shrink:0;font-style:normal;white-space:nowrap;color:var(--gold-deep);font-weight:700;font-size:.9rem}
+.adv-titlebar .adv-tb-months:empty{display:none}
 .adv-titlebar span{flex-shrink:0;font-size:.74rem;color:var(--nm-text-soft)}
 @media(max-width:640px){.adv-titlebar{padding:7px 14px}}
 .adv-quicknav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 26px}
@@ -16569,7 +16571,7 @@ function autoGrowTextarea(el){
 // 상품 제목 바 — 공용 서식 도구 바로 아래에 두고, 빠른 이동·서식 도구와 함께 스크롤해도 위에 고정된다
 function advTitleBarHTML(p){
   const cat=findCat(currentAdv.catId);
-  return `<div class="adv-titlebar"><h3>${escapeAttr(p.title || '새 상품')}</h3><span>${escapeAttr((cat?cat.ko:'')+' · 상품 '+(currentAdv.idx+1))}</span></div>`;
+  return `<div class="adv-titlebar"><h3>${escapeAttr(p.title || '새 상품')}</h3><em class="adv-tb-months">${escapeAttr(productMonthsTag(p))}</em><span>${escapeAttr((cat?cat.ko:'')+' · 상품 '+(currentAdv.idx+1))}</span></div>`;
 }
 function renderAdvBody(){
   const p=getAdvProduct(); if (!p) return;
@@ -16609,6 +16611,7 @@ function updateAdvField(field, value, type){
   if (field==='checkpoint2') p.commonPrecautions = value;
   else if (field==='commonPrecautions') p.checkpoint2 = value;
   saveAdvChange();
+  if (field==='title') document.querySelectorAll('#advBody .adv-titlebar h3').forEach(h=>h.textContent=p.title||'새 상품');
 }
 // [수정] EDITOR'S PICK 해제 시, 함께 노출되던 "팝업 노출" 설정도 자동으로 해제 —
 // 팝업 토글이 잠기는(비활성화되는) 것과 실시간으로 맞물려 보이도록 다시 그려준다

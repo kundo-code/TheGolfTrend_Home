@@ -6099,9 +6099,8 @@ function ensureExtended(p){
   if (!Array.isArray(p.extraGalleries)) p.extraGalleries=[];
   if (!p.videoGallery) p.videoGallery=[]; // [Phase 3 상품등록 개선]
   // [추가] 상세 "문의하기 > 📍 위치보기" 링크 — 숙박 위치·골프장 위치(각각 여러 개, 국내는 카카오맵·해외는 구글맵)
-  if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[]};
-  if (!Array.isArray(p.locLinks.stay)) p.locLinks.stay=[];
-  if (!Array.isArray(p.locLinks.golf)) p.locLinks.golf=[];
+  if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[],food:[],sight:[]};
+  ['stay','golf','food','sight'].forEach(k=>{ if (!Array.isArray(p.locLinks[k])) p.locLinks[k]=[]; });
   if (p.pkgPoster===undefined) p.pkgPoster=null; // [Phase 3 상품등록 개선]
   if (p.editorsPick===undefined) p.editorsPick=false; // [Phase 3 상품등록 개선]
   if (p.editorsPickPopup===undefined) p.editorsPickPopup=false; // [수정] EDITOR'S PICK 상품을 홈 진입 팝업으로도 노출할지 여부
@@ -12776,7 +12775,7 @@ function openLocChooser(){
   const groups = LOC_KINDS.map(([kind,title])=>{
     const list = items.filter(x=>x.kind===kind); if (!list.length) return '';
     return `<div class="pc-loc-group">${title}</div>` + list.map(x=>`<a class="pc-opt pc-opt-map ${x.brand}" href="${escapeAttr(x.url)}" target="_blank" rel="noopener" onclick="closePostChooser()">
-      <span class="pc-opt-ic pc-opt-emoji">${kind==='stay'?'🏨':'⛳'}</span>
+      <span class="pc-opt-ic pc-opt-emoji">${LOC_EMOJI[kind]||'📍'}</span>
       <span class="pc-opt-tx"><b>${escapeAttr(x.label||title.replace(/^\S+\s/,''))}</b><em>${x.brand==='naver' && /map/i.test(x.url) ? '네이버지도' : brandName[x.brand]}에서 보기</em></span><span class="pc-opt-arr">→</span></a>`).join('');
   }).join('');
   const el = document.createElement('div');
@@ -17235,10 +17234,12 @@ function efEditorHTML(i, field, value, placeholder, indent){
   return `<div class="rtf-wrap dp-group-rtf ef-rtf">${rtfToolbarHTML()}<div class="ind-line"><div class="rtf-editable dp-title-edit"${hasInd?` style="padding-left:calc(14px + ${lv*1.5}em)"`:''} contenteditable="true" data-placeholder="${escapeAttr(placeholder)}" oninput="updateExtraFee(${i},'${field}',this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(value||'')}</div>${indSel}</div></div>`;
 }
 // [추가] 위치 정보 노출 링크 — "자세히 보기 > 문의하기 > 📍 위치보기" 버튼의 이동 주소.
-// 숙박 위치·골프장 위치 두 묶음이 있고, 각 묶음마다 이름(선택)+주소를 여러 개 추가·삭제·위/아래 이동할 수 있다
-const LOC_KINDS = [['golf','⛳ 골프장 위치'], ['stay','🏨 숙박 위치']]; // 골프장 위치가 먼저(관리자 입력·선택창 모두 이 순서)
+// 숙박 위치·골프장 위치·미식 장소·관광/쇼핑 장소 네 묶음이 있고, 각 묶음마다 이름(선택)+주소를 여러 개 추가·삭제·위/아래 이동할 수 있다
+const LOC_KINDS = [['golf','⛳ 골프장 위치'], ['stay','🏨 숙박 위치'], ['food','🍽️ 미식 장소'], ['sight','🛍️ 관광/쇼핑 장소']]; // 골프장 위치가 먼저(관리자 입력·선택창 모두 이 순서)
+const LOC_EMOJI = {golf:'⛳', stay:'🏨', food:'🍽️', sight:'🛍️'};
+const LOC_NAME_EX = {golf:'한맥CC 클럽하우스', stay:'골프텔 본관', food:'현지 맛집 · 레스토랑', sight:'야시장 · 쇼핑몰 · 관광지'};
 function locListOf(p, kind){
-  if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[]};
+  if (!p.locLinks || typeof p.locLinks!=='object') p.locLinks={stay:[],golf:[],food:[],sight:[]};
   if (!Array.isArray(p.locLinks[kind])) p.locLinks[kind]=[];
   return p.locLinks[kind];
 }
@@ -17253,7 +17254,7 @@ function locLinksEditorHTML(p, isDomestic){
       return `<div class="loc-group">
         <div class="loc-group-title">${title} <span class="loc-count">${list.filter(x=>String(x.url||'').trim()).length}건</span></div>
         ${list.length ? list.map((it,i)=>`<div class="loc-row">
-          <input type="text" class="loc-name" value="${escapeAttr(it.label||'')}" placeholder="이름 (예: ${kind==='stay'?'골프텔 본관':'한맥CC 클럽하우스'})" oninput="updateLocLink('${kind}',${i},'label',this.value)">
+          <input type="text" class="loc-name" value="${escapeAttr(it.label||'')}" placeholder="이름 (예: ${LOC_NAME_EX[kind]||''})" oninput="updateLocLink('${kind}',${i},'label',this.value)">
           <input type="text" class="loc-url" value="${escapeAttr(it.url||'')}" placeholder="${ph}" oninput="updateLocLink('${kind}',${i},'url',this.value)">
           <div class="loc-btns">
             <button type="button" class="apc-btn-sm" title="위로 이동" onclick="moveLocLink('${kind}',${i},-1)" ${i===0?'disabled':''}>▲</button>

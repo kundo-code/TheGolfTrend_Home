@@ -1008,7 +1008,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .emph.normal{background:rgba(10,23,48,.06);color:rgba(10,23,48,.65)}
 .pd-price-entry .emph.value{background:rgba(221,179,103,.16);color:var(--gold-deep);border:1px solid rgba(221,179,103,.35)}
 .pd-price-entry .emph.special{background:rgba(255,107,74,.12);color:#D9502E;border:1px solid rgba(255,107,74,.35)}
-.pd-price-entry .pe-headline{display:block;box-sizing:border-box;width:100%;margin-top:3px;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);font-weight:600;font-size:calc(.98rem + 1pt);line-height:1.35;overflow-wrap:anywhere;box-shadow:0 3px 9px rgba(10,23,48,.2),0 1px 2px rgba(10,23,48,.12),inset 0 -2px 0 rgba(10,23,48,.07)} /* 대표 문구 — 연한 색상 박스(박스 가로폭 전체)에 그림자 음영으로 가독성↑, 글자 +1pt, 살짝 아래로 */
+.pd-price-entry .pe-headline{display:block;box-sizing:border-box;width:100%;margin-top:3px;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);font-weight:600;font-size:calc(.98rem + 1pt);line-height:1.35;overflow-wrap:anywhere;box-shadow:0 2px 6px rgba(10,23,48,.1),0 1px 2px rgba(10,23,48,.06),inset 0 -1px 0 rgba(10,23,48,.035)} /* 대표 문구 — 연한 색상 박스(박스 가로폭 전체)에 그림자 음영으로 가독성↑, 글자 +1pt, 살짝 아래로 */
+.pd-price-entry .pe-headline.no-shade{box-shadow:none}
 .pd-price-entry .prices{display:flex;align-items:baseline;gap:10px;margin-top:2px}
 .pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.184rem;font-weight:500;color:var(--pine-deep)}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.9rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
@@ -1184,6 +1185,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-dp-sub{font-size:.8rem;font-weight:700;color:rgb(74,85,99);margin:0 0 8px;letter-spacing:.02em}
 .pd-dp-sub:has(+ .pd-dp-sub){margin-bottom:3px}
 .pd-dp-sub.pd-dp-box{display:block;box-sizing:border-box;width:100%;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);line-height:1.35;overflow-wrap:anywhere}
+.pd-dp-sub.pd-dp-box.pd-dp-shade{box-shadow:0 2px 6px rgba(10,23,48,.1),0 1px 2px rgba(10,23,48,.06),inset 0 -1px 0 rgba(10,23,48,.035)}
 .pd-dp-sub.pd-dp-box.dp-ind-1{padding-left:calc(12px + 1.5em)}
 .pd-dp-sub.pd-dp-box.dp-ind-2{padding-left:calc(12px + 3em)}
 .pd-dp-sub.pd-dp-box.dp-ind-3{padding-left:calc(12px + 4.5em)}
@@ -2153,7 +2155,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
    부모 카드의 둥근 모서리 곡선에 걸려 잘려 보이는 문제가 있었다. .popup-visual에 직접 둥근 위쪽
    모서리를 부여해 부모의 클리핑에 기대지 않고도 이미지가 항상 둥글게 보이도록 한다 */
 .popup-visual{aspect-ratio:4/3;overflow:hidden;position:relative;border-bottom:1px solid rgba(255,255,255,.08);border-radius:22px 22px 0 0}
-.popup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.55) 100%);z-index:1;border-radius:inherit}
+/* [수정] 예전에는 사진 위에 위(15%)→아래(55%)로 짙어지는 검은 그라데이션을 덮어 팝업 이미지가 어둡게 보였다 — 원본 밝기 그대로 보이도록 제거 */
 /* [Phase] 사진(.pv-bg)만 항상 가두는 전용 클리핑 레이어 — 카드 상품과 동일하게, 레이블이 "이미지
    밖으로 배치"로 설정되어 .popup-visual 자체의 overflow가 풀려도(.pv-label-overflow) 사진은 이
    레이어가 따로 잡아줘서 호버 확대(줌) 시에도 프레임 밖으로 삐져나오지 않는다 */
@@ -6294,7 +6296,7 @@ function _peTextKey(v){
 }
 // 출발 요일별 요금·공휴일 요금 목록에는 일반 행 사이에 구분선({kind:'divider'})·부제목({kind:'group',title})
 // 표식이 들어갈 수 있다. 금액이 하나도 없으면 표식만 있어도 "값 없음"이고, 있으면 표식 위치도 비교 키에 포함한다
-function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+(x.box?'B'+(x.bg||''):'')+String(x.title||'').trim() : null); }
+function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+(x.box?'B'+(x.bg||'')+(x.shadow?'S':''):'')+String(x.title||'').trim() : null); }
 function _peDayKey(list){
   const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
   return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
@@ -6377,7 +6379,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn, lead){
   L.forEach(it=>{
     if (it && it.kind==='divider'){ seg=null; gaps.push(!!it.showLine); return; }
     if (!seg){ seg={gaps, els:[], raw:0}; gaps=[]; segs.push(seg); }
-    if (it && it.kind==='group') seg.els.push({t:String(it.title||''), ind:Math.max(0, Math.min(3, Number(it.indent)||0)), box:!!it.box, bg:it.bg||''});
+    if (it && it.kind==='group') seg.els.push({t:String(it.title||''), ind:Math.max(0, Math.min(3, Number(it.indent)||0)), box:!!it.box, bg:it.bg||'', shadow:!!it.shadow});
     else { seg.raw++; if (valid(it)) seg.els.push({c:cellFn(it)}); }
   });
   let out='', pend=[], first=true;
@@ -6398,7 +6400,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn, lead){
     let run=[];
     const flush=()=>{ if (run.length){ out+=wrapFn(run); run=[]; } };
     els.forEach(e=>{
-      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)){ const bs=e.box?cardTagBoxStyle(e.bg):''; out+=`<div class="pd-dp-sub${e.box?' pd-dp-box':''}${e.ind?' dp-ind-'+e.ind:''}"${bs?` style="${bs}"`:''}>${dpTitleHTML(e.t)}</div>`; } }
+      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)){ const bs=e.box?cardTagBoxStyle(e.bg):''; out+=`<div class="pd-dp-sub${e.box?' pd-dp-box':''}${e.box&&e.shadow?' pd-dp-shade':''}${e.ind?' dp-ind-'+e.ind:''}"${bs?` style="${bs}"`:''}>${dpTitleHTML(e.t)}</div>`; } }
       else run.push(e.c);
     });
     flush();
@@ -11818,7 +11820,7 @@ function peHeadlineHTML(pe){
   const raw = pe && pe.headline; if (!raw || !richToPlain(raw)) return '';
   const inner = String(raw).indexOf('<')<0 ? escapeAttr(String(raw).trim()) : sanitizeRichHTML(String(raw));
   const st = cardTagBoxStyle(pe.headlineBg);
-  return `<div class="pe-headline"${st?` style="${st}"`:''}>${inner}</div>`;
+  return `<div class="pe-headline${pe.headlineShadow===false?' no-shade':''}"${st?` style="${st}"`:''}>${inner}</div>`;
 }
 function cardTagBoxStyle(bg){
   if (!bg || !/^#[0-9a-f]{6}$/i.test(bg)) return '';
@@ -17177,6 +17179,12 @@ function moveCardTag(from, to){
   });
   saveAdvChange(); renderAdvBody();
 }
+function setHeadlineShadow(i, on){
+  const p=getAdvProduct(); if (!p) return;
+  const pe=p.priceEntries[i]; if (!pe) return;
+  if (on) delete pe.headlineShadow; else pe.headlineShadow=false;
+  saveAdvChange(); renderAdvBody();
+}
 function setHeadlineBg(i, color){
   const p=getAdvProduct(); if (!p) return;
   const pe=p.priceEntries[i]; if (!pe) return;
@@ -17624,6 +17632,7 @@ function priceEntryHTML(pe, i, popupCount, p){
                  onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(pe.headline||'')}</div>
             <label class="ctag-bg" role="button" tabindex="0" title="박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="대표 문구 박스 색상" data-value="${pe.headlineBg||'#f6ecd4'}" data-apply="setHeadlineBg(${i},__C__)"><span>🎨</span></label>
             ${pe.headlineBg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setHeadlineBg(${i},'')">기본</button>`:''}
+            <label class="popup-toggle" title="끄면 상세 요금표 항목 위 대표 문구 박스의 음영(그림자)이 사라집니다"><input type="checkbox" ${pe.headlineShadow===false?'':'checked'} onchange="setHeadlineShadow(${i},this.checked)"><span class="toggle-slider"></span><span class="pt-lbl">음영</span></label>
           </div>
         </div>
       </div>
@@ -18057,7 +18066,7 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
   const boxSt = m.box ? cardTagBoxStyle(m.bg) : '';
   const boxCtl = `<div class="dp-box-ctl"><label class="popup-toggle" title="켜면 자세히 보기에서 이 부제목이 색상 박스 안에 표시됩니다">
       <input type="checkbox" ${m.box?'checked':''} onchange="setDpGroupBox(${peIdx},'${kind}',${i},this.checked)"><span class="toggle-slider"></span><span class="pt-lbl">박스</span></label>
-      ${m.box ? `<label class="ctag-bg" role="button" tabindex="0" title="박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="부제목 박스 색상" data-value="${m.bg||'#f6ecd4'}" data-apply="setDpGroupBg(${peIdx},'${kind}',${i},__C__)"><span>🎨</span></label>${m.bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setDpGroupBg(${peIdx},'${kind}',${i},'')">기본</button>`:''}` : ''}</div>`;
+      ${m.box ? `<label class="popup-toggle" title="켜면 박스에 음영(그림자)을 줍니다"><input type="checkbox" ${m.shadow?'checked':''} onchange="setDpGroupShadow(${peIdx},'${kind}',${i},this.checked)"><span class="toggle-slider"></span><span class="pt-lbl">음영</span></label><label class="ctag-bg" role="button" tabindex="0" title="박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="부제목 박스 색상" data-value="${m.bg||'#f6ecd4'}" data-apply="setDpGroupBg(${peIdx},'${kind}',${i},__C__)"><span>🎨</span></label>${m.bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setDpGroupBg(${peIdx},'${kind}',${i},'')">기본</button>`:''}` : ''}</div>`;
   return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span>
     <div class="rtf-wrap dp-group-rtf">${rtfToolbarHTML()}
       <div class="ind-line"><div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em);${boxSt||(m.box?'background:rgba(221,179,103,.2);':'')}" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>${indSel}</div>
@@ -18127,6 +18136,12 @@ function setDpGroupBox(peIdx, kind, i, on){
   const p=getAdvProduct(); if (!p) return;
   const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
   if (on) m.box=true; else delete m.box;
+  saveAdvChange(); renderAdvBody();
+}
+function setDpGroupShadow(peIdx, kind, i, on){
+  const p=getAdvProduct(); if (!p) return;
+  const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
+  if (on) m.shadow=true; else delete m.shadow;
   saveAdvChange(); renderAdvBody();
 }
 function setDpGroupBg(peIdx, kind, i, color){

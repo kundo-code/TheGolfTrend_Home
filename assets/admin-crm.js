@@ -1355,13 +1355,15 @@
     if (state.stats.loaded && !force) return;
     await checkReady(); if (!isUsable()) return;
     const client = sb();
-    const [c, b, l] = await Promise.all([
+    const since = new Date(Date.now() - 400*86400000).toISOString();
+    const [c, b, l, ev] = await Promise.all([
       client.from(TABLES.consultations).select('*').eq('is_deleted', false).limit(10000),
       client.from(TABLES.bookings).select('*').limit(10000),
       client.from(LEADS_TABLE_NAME).select('id,created_at,destination,party_size,source,recommended_product,status').limit(10000),   // 개인정보(이름·연락처)는 통계에 불러오지 않음
+      client.from(TABLES.events).select('created_at,session_id,event_type,product_uid,product_title,travel_region,rank').gte('created_at', since).limit(50000),
     ]);
     if (c.error || b.error){ state.stats.error = errText(c.error || b.error); return; }
-    state.stats.cons = c.data||[]; state.stats.bookings = b.data||[]; state.stats.leads = l.error ? [] : (l.data||[]);
+    state.stats.cons = c.data||[]; state.stats.bookings = b.data||[]; state.stats.leads = l.error ? [] : (l.data||[]); state.stats.events = ev.error ? [] : (ev.data||[]);
     state.stats.loaded = true; state.stats.error = '';
   }
 
@@ -1567,7 +1569,31 @@
       <div class="st-sm-l">월별 인원 구간별 예약 (예약 확정 월)</div>${heatTable(BUCKETS, months, bkBucketMonth, '인원')}
       <div class="st-sm-l">국가·지역별 인원 수요 (문의)</div>
       ${countryBucketRows.length ? table(['국가·지역'].concat(BUCKETS), countryBucketRows.map(k=>[esc(k)].concat(BUCKETS.map(bk=>fmtN(T.filter(t=>countryKey(t)===k && partyBucket(t.party)===bk).length))))) : '<div class="crm-empty">자료가 없습니다.</div>'}
-      <p class="crm-note">문의 건수와 인원, 예약 건수와 인원은 따로 집계합니다. 인원 미기록 문의는 "미확인"으로 둡니다.</p></div>`;
+      <p class="crm-note">문의 건수와 인원, 예약 건수와 인원은 따로 집계합니다. 인원 미기록 문의는 "미확인"으로 둡니다.</p></div>
+    ${eventsHTML(D)}`;
+  }
+  // 홈페이지 방문자 반응(익명) — 관심 지표일 뿐 상담·예약 실적에는 넣지 않는다
+  function eventsHTML(D){
+    const f = state.stats.filter;
+    const ev = (state.stats.events||[]).filter(e=>(!D.startKey || (monthKeyTs(e.created_at)||'') >= D.startKey) && (!f.region || !e.travel_region || e.travel_region===f.region));
+    const sessions = type => new Set(ev.filter(e=>e.event_type===type).map(e=>e.session_id)).size;
+    const cnt = type => ev.filter(e=>e.event_type===type).length;
+    const byP = {};
+    ev.filter(e=>e.product_title && /^recommend_/.test(e.event_type)).forEach(e=>{ const r = byP[e.product_title] = byP[e.product_title] || {view:0, click:0, inq:0, ranks:[]}; if (e.event_type==='recommend_view'){ r.view++; if (e.rank) r.ranks.push(e.rank); } else if (e.event_type==='recommend_click') r.click++; else r.inq++; });
+    const rows = Object.entries(byP).sort((a,b)=>b[1].view-a[1].view).slice(0, 15);
+    const views = ev.filter(e=>e.event_type==='product_view');
+    const topViews = topRows(countBy(views, e=>e.product_title), 10);
+    return `<div class="crm-card"><h5>🖱️ 홈페이지 AI 추천·상품 반응 <span class="crm-note" style="font-weight:500">— 익명 방문 기록(개인정보 없음) · 관심 지표이며 상담·예약 실적에는 포함하지 않음</span></h5>
+      ${ev.length ? `<div class="st-tiles">
+        ${tile('AI 추천 받은 방문', fmtN(sessions('recommend_view'))+'회', `추천 노출 ${fmtN(cnt('recommend_view'))}건`)}
+        ${tile('추천 상품 상세 보기', fmtN(cnt('recommend_click'))+'건', `상담 신청으로 이동 ${fmtN(cnt('recommend_inquiry'))}건`)}
+        ${tile('상담 신청 제출', fmtN(cnt('inquiry_submit'))+'건', `상품 상세 보기 ${fmtN(views.length)}건`)}
+        ${tile('전화·카카오 클릭', fmtN(cnt('call_click'))+' / '+fmtN(cnt('kakao_click')), `채널(블로그·유튜브·밴드) ${fmtN(cnt('channel_click'))}건`)}
+      </div>
+      <div class="st-sm-l">AI 추천 상품별 반응</div>
+      ${rows.length ? table(['상품','추천 노출','평균 순위','상세 보기','상세 보기율','상담 신청 이동'], rows.map(([k,r])=>[esc(k), fmtN(r.view), r.ranks.length ? (r.ranks.reduce((a,b)=>a+b,0)/r.ranks.length).toFixed(1) : '—', fmtN(r.click), pct(r.click, r.view), fmtN(r.inq)])) : '<div class="crm-empty">AI 추천 기록이 없습니다.</div>'}
+      ${topViews.length ? `<div class="st-sm-l">많이 본 상품 상세 (건)</div>${barList(topViews, '건')}` : ''}`
+      : '<div class="crm-empty">아직 기록이 없습니다. SQL 실행 후 방문자가 AI 추천·상품 상세·전화/카카오 버튼을 사용하면 쌓입니다(관리자 로그인 중 사용은 기록하지 않음).</div>'}</div>`;
   }
   function statFilter(k, v){ state.stats.filter[k] = v; renderBody(); }
   function statSeason(k, v){ state.stats[k] = v; renderBody(); }
@@ -1936,7 +1962,38 @@
       </ul>
       <p class="crm-note" style="margin-top:10px">상담·예약 데이터는 공개 사이트 설정(상품 정보)과 분리된 별도 테이블에 저장되며, tgt_admins에 등록된 관리자 계정만 읽고 쓸 수 있습니다.</p>
       <button type="button" class="leads-refresh-btn" style="margin-top:8px" onclick="TGT_CRM.recheck()">🔄 다시 점검</button>
-    </div>`;
+    </div>
+    <div class="crm-card"><h5>💾 백업 내보내기</h5>
+      <p class="crm-note">상담·예약·이력·가져오기 기록·연결 승인·운영 조건·출발 그룹·행동 기록 테이블 전체를 JSON 파일 하나로 내려받습니다. 고객 이름·연락처가 들어 있으니 안전한 곳에 보관하세요. 내보내기는 접근 기록에 남습니다.</p>
+      <button type="button" class="crm-btn primary" ${isUsable()?'':'disabled'} onclick="TGT_CRM.exportBackup(this)">JSON 백업 내려받기</button>
+      <span class="crm-note" id="crmBackupMsg" style="margin-left:8px"></span></div>`;
+  }
+  async function exportBackup(btn){
+    if (!isUsable()) return;
+    const msg = document.getElementById('crmBackupMsg');
+    if (btn) btn.disabled = true;
+    try{
+      const client = sb(), out = {exported_at:new Date().toISOString(), source:'THE GOLF TREND 상담·예약', tables:{}};
+      const names = ['consultations','revisions','bookings','bookingHistory','imports','links','rules','groups','events','accessLogs'];
+      for (const k of names){
+        const rows = []; const page = 1000;
+        for (let from=0; from<200000; from+=page){
+          if (msg) msg.textContent = `${TABLES[k]} 받는 중... ${rows.length}건`;
+          const { data, error } = await client.from(TABLES[k]).select('*').order('id', {ascending:true}).range(from, from+page-1);
+          if (error) throw new Error(TABLES[k]+': '+errText(error));
+          rows.push(...(data||[]));
+          if (!data || data.length < page) break;
+        }
+        out.tables[TABLES[k]] = rows;
+      }
+      await logAccess('export_backup', 'tgt_*', {counts:Object.fromEntries(Object.entries(out.tables).map(([k,v])=>[k, v.length]))});
+      const t = todayKst();
+      const blob = new Blob([JSON.stringify(out, null, 1)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `thegolftrend-crm-backup-${t.y}${pad2(t.m)}${pad2(t.d)}.json`;
+      document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      if (msg) msg.textContent = '✅ ' + Object.entries(out.tables).map(([k,v])=>`${k.replace('tgt_','')} ${v.length}`).join(' · ');
+    }catch(e){ if (msg) msg.textContent = '⚠️ 백업 실패: ' + errText(e); }
+    if (btn) btn.disabled = false;
   }
   async function recheck(){ await checkReady(true); render(); }
 
@@ -1947,7 +2004,7 @@
     impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
     statFilter, statSeason, reloadStats,
     newRule, editRule, rfSet, saveRule, deleteRule, verifyRule, cancelRule:()=>{ state.ops.ruleForm = null; renderBody(); }, opsView:v=>{ state.ops.view = v; renderBody(); },
-    createGroup, groupToggle, groupSet, groupDetach,
+    createGroup, groupToggle, groupSet, groupDetach, exportBackup,
     newBooking, newBookingFromConsult, bfSet, saveBooking, bookingCancelForm, changeBooking, bookingHistory, bFilter, findLinks, decideLink,
     _internal:{ twoPaxStatus, buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
   };

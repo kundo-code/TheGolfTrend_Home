@@ -8414,6 +8414,42 @@ async function insertLead(fd){
   try{ await client.from(LEADS_TABLE).insert(payload); }
   catch(e){ console.error('lead insert failed', e); }
 }
+// 방문자 행동 기록(익명) — AI 추천 노출·클릭·상담 신청, 상품 상세 보기, 전화·카카오·채널 클릭을 tgt_site_events에 남긴다.
+// 이름·연락처 등 개인정보는 담지 않는다. 테이블이 아직 없거나 저장에 실패해도 사이트 동작에는 영향이 없고, 관리자 로그인 중에는 기록하지 않는다
+let _tgtEvtOff = false;
+function tgtSessionId(){
+  try{
+    let s = sessionStorage.getItem('tgt_sid');
+    if (!s){ s = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); sessionStorage.setItem('tgt_sid', s); }
+    return s.slice(0,64);
+  }catch(e){ return 'no-session'; }
+}
+function tgtEvtProduct(catId, idx){
+  const p = (getProducts(catId)||[])[idx];
+  if (!p) return {};
+  return {product_uid:p.uid||null, product_title:String(p.title||'').slice(0,200)||null, product_cat:catId, travel_region:(CATEGORIES.domestic||[]).some(c=>c.id===catId)?'domestic':'overseas'};
+}
+function tgtTrack(type, rows){
+  if (_tgtEvtOff || adminSession) return;
+  try{
+    const client = getSupabaseClient(); if (!client) return;
+    const sid = tgtSessionId(), page = (location.pathname+location.hash).slice(0,200);
+    const payload = [].concat(rows||{}).map(r=>Object.assign({session_id:sid, event_type:type, page}, r));
+    client.from('tgt_site_events').insert(payload).then(res=>{
+      if (res && res.error && /does not exist|42P01|PGRST205|Could not find/i.test(String(res.error.message||'')+' '+String(res.error.code||''))) _tgtEvtOff = true;
+    }, ()=>{});
+  }catch(e){}
+}
+// 링크로 된 전화·카카오톡·블로그/유튜브/밴드 클릭(상세페이지 문의 버튼, 여행 이야기 카드 등)
+document.addEventListener('click', e=>{
+  const a = e.target && e.target.closest && e.target.closest('a[href]'); if (!a) return;
+  if (a.closest('#adminPanel')) return;
+  const h = a.getAttribute('href')||'';
+  if (/^tel:/i.test(h)) tgtTrack('call_click');
+  else if (/kakao\.com/i.test(h)) tgtTrack('kakao_click');
+  else if (/blog\.naver\.com|youtube\.com|youtu\.be|band\.us/i.test(h)) tgtTrack('channel_click', {criteria:{host:(h.match(/^https?:\/\/([^\/?#]+)/i)||[])[1]||null}});
+}, true);
+let _tgtAiCriteria = null;
 let _leadsCache=[];
 const LEAD_STATUS_OPTIONS=['신규','연락중','성사','보류','취소'];
 async function fetchLeads(){
@@ -13945,6 +13981,7 @@ function openProductDetail(catId, idx){
   pdSeqPos = pdSequence.findIndex(s=>s.catId===catId && s.idx===idx);
   if (pdSeqPos<0) pdSeqPos=0;
   pdRenderAt(catId, idx);
+  tgtTrack('product_view', tgtEvtProduct(catId, idx));
   document.getElementById('pdOverlay').classList.add('show');
   document.documentElement.classList.add('pd-open');
   document.body.style.overflow='hidden';
@@ -16104,7 +16141,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102405';
+const TGT_CRM_VERSION='2026102406';
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;
@@ -19264,7 +19301,7 @@ function renderAiResults(results){
   const wrap=document.getElementById('aiResults');
   if (!wrap) return;
   if (!results.length){ wrap.innerHTML='<div class="ai-empty">조건에 맞는 상품을 찾지 못했습니다. 조건을 조정해보세요.</div>'; return; }
-  wrap.innerHTML = `<div class="ai-results-head">✨ AI가 고른 추천 여행 ${results.length}건</div>` + results.map(r=>{
+  wrap.innerHTML = `<div class="ai-results-head">✨ AI가 고른 추천 여행 ${results.length}건</div>` + results.map((r,i)=>{
     const img = getImage(r.catId);
     return `<div class="ai-result-card">
       <div class="ai-result-img" style="background-image:url('${img}')"></div>
@@ -19274,8 +19311,8 @@ function renderAiResults(results){
         <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${priceInquiryText(r.p) || (fmtPrice(r.p.from)+'원~')}</div>
         <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>
         <div class="ai-result-actions">
-          <button type="button" class="ai-detail-btn" onclick="openProductDetail('${r.catId}',${r.idx})">상세보기</button>
-          <button type="button" class="ai-inquire-btn" onclick="selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
+          <button type="button" class="ai-detail-btn" onclick="tgtTrack('recommend_click', Object.assign(tgtEvtProduct('${r.catId}',${r.idx}), {rank:${i+1}, criteria:_tgtAiCriteria}));openProductDetail('${r.catId}',${r.idx})">상세보기</button>
+          <button type="button" class="ai-inquire-btn" onclick="tgtTrack('recommend_inquiry', Object.assign(tgtEvtProduct('${r.catId}',${r.idx}), {rank:${i+1}, criteria:_tgtAiCriteria}));selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
         </div>
       </div>
     </div>`;
@@ -19286,7 +19323,10 @@ function runAiRecommend(){
   const budget = document.querySelector('#aiQuiz .ai-chip-group[data-field="budget"] .ai-chip.active')?.dataset.value || 'any';
   const duration = document.querySelector('#aiQuiz .ai-chip-group[data-field="duration"] .ai-chip.active')?.dataset.value || 'any';
   const styles = Array.from(document.querySelectorAll('#aiStyleChips .ai-chip.active')).map(b=>b.dataset.value);
-  renderAiResults(computeAiRecommendations({region, budget, duration, styles}));
+  const results = computeAiRecommendations({region, budget, duration, styles});
+  renderAiResults(results);
+  _tgtAiCriteria = {region, budget, duration, styles:styles.slice(0,14)};
+  if (results.length) tgtTrack('recommend_view', results.map((r,i)=>Object.assign(tgtEvtProduct(r.catId, r.idx), {rank:i+1, criteria:_tgtAiCriteria})));
 }
 function selectAiProduct(catId, idx){
   const p = getProducts(catId)[idx];
@@ -19324,11 +19364,13 @@ function selectAiProduct(catId, idx){
 // 전화 연결 확인 팝업
 function callHotline(){
   if (confirm('010-9405-6842로 전화 연결하시겠습니까?')){
+    tgtTrack('call_click');
     window.location.href = 'tel:010-9405-6842';
   }
 }
 // 카카오톡 채널 1:1 채팅 (새 탭) - 이메일/메일 클라이언트 설정 여부와 무관하게 바로 상담 가능
 function openKakaoChat(){
+  tgtTrack('kakao_click');
   window.open(SITE_CONTACT.kakaoChat || 'http://pf.kakao.com/_SSxgFG/chat', '_blank', 'noopener');
 }
 // 상담 신청 - 이메일 전송 (mailto:) 및 성공 화면
@@ -19359,6 +19401,7 @@ ${fd.get('details')||'-'}
   // mailto: 이동이 (Outlook on the web 등) 브라우저 탭 자체를 이동시켜버리는 환경에서는
   // 저장 요청이 끝나기 전에 페이지가 넘어가 리드가 유실될 수 있어, 완료되거나 일정 시간(2.5초)이
   // 지날 때까지 잠깐 기다린 뒤에 메일 클라이언트로 이동한다.
+  tgtTrack('inquiry_submit', {product_title:String(fd.get('recommendedProduct')||'').slice(0,200)||null, criteria:{source:fd.get('source')||'direct', destination:fd.get('destination')||null}});   // 개인정보 없이 신청 사실만
   await Promise.race([
     insertLead(fd),
     new Promise(resolve=>setTimeout(resolve, 2500))

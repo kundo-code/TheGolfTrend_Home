@@ -1162,6 +1162,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-check-list.included .row .ic{color:#16a34a}
 .pd-check-list.excluded .row .ic{color:#dc2626}
 .pd-check-list.plain .row .ic{color:var(--gold-deep);font-weight:900}
+.pd-check-list.pd-policy .row.row-sub{padding-left:1.5em} /* 예약·결제·취소 규정은 • 아이콘이 없어 하위 줄을 제목 기준 1.5글자만 들여쓴다 */
+.pd-check-list.pd-policy .row.row-sub.row-sub2{padding-left:3em}
 .pd-check-list .row.row-head{margin-top:12px;font-weight:700;color:var(--pine-deep)}
 .pd-check-list .row.row-head:first-child{margin-top:0}
 /* [Phase 3 상품등록 개선 v3] 추가 요금 안내 — 항목·금액 표 형식, 항목 사이 구분선 */
@@ -6129,9 +6131,12 @@ function ensureExtended(p){
   }
   // [추가] "예약 · 결제 · 취소 규정"이 비어 있고 한 번도 채운 적이 없는 상품(기존·신규 모두)은 기본 규정 문구로 시작한다.
   // 이미 직접 입력한 내용은 그대로 두고, 한 번 채운 뒤(bookingPolicySeeded)에는 관리자가 모두 지워도 다시 채우지 않는다
-  if (!p.bookingPolicySeeded){
-    if (!String(p.bookingPolicy||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim()) p.bookingPolicy = defaultBookingPolicyHTML();
-    p.bookingPolicySeeded = true;
+  // 2차(서식 포함) 기본 문구로 갱신 — 한 번도 채운 적 없는 빈 상품, 그리고 1차 기본 문구를 손대지 않고 그대로 둔 상품만 교체한다(직접 고친 내용은 유지)
+  if (p.bookingPolicySeeded!==2){
+    const cur = String(p.bookingPolicy||'');
+    const blank = !cur.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
+    if ((blank && !p.bookingPolicySeeded) || (p.bookingPolicySeeded===true && cur===legacyBookingPolicyV1HTML())) p.bookingPolicy = defaultBookingPolicyHTML();
+    p.bookingPolicySeeded = 2;
   }
   // [Phase 3 상품등록 개선 v4] 추가 요금 안내 항목을 그룹으로 묶어 표시 가능 — kind:'group'(제목만) / 'item'(항목·금액)
   p.extraFees.forEach(f=>{
@@ -14757,7 +14762,7 @@ function renderProductDetail(p,cat,idx){
   // 실제 표시할 내용이 있는지로 판단한다
   const bookingPolicyRows = bulletRowsRich(p.bookingPolicy||'','•',{marks:true});
   if (bookingPolicyRows){
-    html += `<div class="pd-slot"><div class="pd-section-title">⏰ 예약 · 결제 · 취소 규정</div><div class="pd-check-list plain">${bookingPolicyRows}</div></div>`;
+    html += `<div class="pd-slot"><div class="pd-section-title">⏰ 예약 · 결제 · 취소 규정</div><div class="pd-check-list plain pd-policy">${bookingPolicyRows}</div></div>`;
   }
 
   // Calendar note (informational)
@@ -17399,7 +17404,7 @@ function advFilled(v){
 
 // [추가] 추가 요금 안내 기본값
 // 예약 · 결제 · 취소 규정 기본 문구 — 📌 제목 줄 / ➣ 안내 줄 / ※ 참고 줄은 자세히 보기에서 각각 제목·화살표 아이콘·※ 아이콘으로 표시된다
-function defaultBookingPolicyHTML(){
+function legacyBookingPolicyV1HTML(){ // 1차 기본 문구(서식 없는 버전) — 손대지 않은 상품을 새 서식으로 교체할 때 비교용
   const L = t=>`<div>${t}</div>`, SUB = t=>`<div class="rtf-sub">${t}</div>`;
   const cancelTbl = '<table class="rtf-table"><tbody>' + [['16일 이상','전액 환불'],['8일 ~ 15일','10%'],['4일 ~ 7일','30%'],['2일 ~ 3일','40%'],['당일 (No Show 포함)','100% (환불 X)']]
     .map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>';
@@ -17427,6 +17432,46 @@ function defaultBookingPolicyHTML(){
     L('➣ 예약 확정 후 인원·출발일·객실 변경 시 추가요금 또는 취소료가 발생할 수 있습니다.'),
     L('➣ 인원 감소에 따른 객실료·골프 비용 등의 변동 사항은 재확인 후 안내드립니다.'),
     L('➣ 변경 가능 여부와 추가비용을 사전에 안내하고, 고객 동의 후 변경을 진행합니다.')
+  ].join('');
+}
+// 예약 · 결제 · 취소 규정 기본 문구 — 관리자가 정리한 서식(굵게·파랑/빨강 강조·하위서식 들여쓰기·취소료 표) 그대로.
+// 📌 제목 줄은 자세히 보기에서 제목으로, ➣/※ 안내 줄은 하위서식(들여쓴 줄)으로 표시된다
+function defaultBookingPolicyHTML(){
+  const BLUE = t=>`<span style="color:#2563EB">${t}</span>`, RED = t=>`<span style="color:#D6293E">${t}</span>`;
+  const L = t=>`<div>${t}</div>`, SUB = t=>`<div class="rtf-sub">${t}</div>`, B = t=>`<b>${t}</b>`;
+  const rows = [
+    [B(BLUE('30일 이상')), BLUE('전액 환불')],
+    ['20일 ~ 29일','10%'], ['10일 ~ 19일','20%'], ['7일 ~9일','30%'], ['4일 ~ 6일','50%'],
+    [RED('1일 ~ 3일 (당일 No Show 포함)'), RED('100% (환불 X)')]
+  ];
+  const tbl = '<table class="rtf-table rtf-tind1"><tbody>' + rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>';
+  return [
+    L(B('📌 예약 진행 안내')),
+    SUB('➣ 항공권, 골프장 티타임, 숙박예약을 안정적으로 확보하기 위해 ' + B('예약금 입금 후 예약이 진행') + '됩니다.'),
+    SUB('➣ 현재 환율로 환산된 금액이므로 환율 변동이 큰 경우 조정될 수 있습니다.'),
+    SUB('➣ ' + B(BLUE('예약금 : 1인 500,000원')) + ' (총 여행경비에 포함)'),
+    '<div class="rtf-sub"><br></div>',
+    SUB(B(BLUE('제주은행 | 700-100-433860'))),
+    SUB(B('예금주 : (주)더골프트렌드')),
+    SUB('※ 예약 확정 후 별도로 안내드립니다.'),
+    L(B('📌 결제 안내')),
+    SUB('➣ ' + B(BLUE('출발 15일 전')) + ' ' + B('최종 여행 진행 여부를 확인한 후') + ', 예약 대표자에게 잔금 결제를 안내드립니다.'),
+    L(B('📌 취소료 규정 (예약 확정 기준)') + ' - ' + RED('항공취소요금 별도')),
+    SUB('➣ 예약 취소 시 출발일까지 남은 기간에 따라 취소료가 발생할 수 있습니다.'),
+    SUB('➣ 취소료는 ' + B(RED('총 여행경비를 기준')) + '으로 적용됩니다.'),
+    tbl,
+    SUB('※ 본 상품은 골프장 및 숙박시설의 사전 예약 조건에 따라 별도의 특별약관이 적용될 수 있습니다.'),
+    SUB('※ 예약 전 취소·환불 기준을 안내하고 고객님의 동의를 받은 후 진행합니다.'),
+    L(B('📌 예약 불가 및 환불 안내')),
+    SUB('➣ 예약금 입금 후 골프장 또는 숙박 예약이 불가능한 경우, ' + B('대체 일정이나 시설을 우선 안내') + '드립니다.'),
+    SUB('➣ 대체 조건에 동의하지 않으시면 ' + B('납부하신 예약금은 전액 환불') + '해 드립니다.'),
+    L(B('📌 취소 접수 안내')),
+    SUB('➣ 예약 취소는 전화 또는 문자·카카오톡으로 접수하실 수 있습니다.'),
+    SUB('➣ ' + B('취소 접수일은 요청 내용이 당사에 도달한 날짜') + '를 기준으로 하며, 영업시간 외 접수 건은 다음 영업일에 처리합니다.'),
+    L(B('📌 인원 및 일정 변경 안내')),
+    SUB('➣ 예약 확정 후 ' + B('인원·출발일·객실 변경 시 추가요금 또는 취소료') + '가 발생할 수 있습니다.'),
+    SUB('➣ 인원 감소에 따른 객실료·골프 비용 등의 변동 사항은 재확인 후 안내드립니다.'),
+    SUB('➣ 변경 가능 여부와 추가비용을 사전에 안내하고, ' + B('고객 동의 후 변경을 진행') + '합니다.')
   ].join('');
 }
 // 공통 안내 기본 문구 — 자세히 보기에서는 줄마다 • 표시가 자동으로 붙으므로 줄 앞에 별도 기호를 넣지 않는다

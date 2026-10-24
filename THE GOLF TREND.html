@@ -4260,6 +4260,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .lead-phone{font-weight:500;color:var(--nm-text-soft);font-size:.82rem;margin-left:6px}
 .lead-status-select{padding:6px 12px;border-radius:100px;border:none;background:var(--nm-white);color:var(--nm-blue-deep);font-size:.78rem;font-weight:700;box-shadow:var(--nm-shadow-inset)}
 .lead-row-meta{margin-top:6px;font-size:.8rem;color:var(--nm-text-soft)}
+.lead-row-acts{margin-top:8px;display:flex;justify-content:flex-end}
 .lead-ai-tag{margin-top:6px;font-size:.78rem;color:var(--nm-blue-deep);font-weight:600}
 .lead-styles{margin-top:4px;font-size:.78rem;color:var(--nm-text-soft)}
 .lead-details{margin-top:6px;font-size:.82rem;color:var(--nm-text);white-space:pre-wrap}
@@ -8450,8 +8451,16 @@ function renderLeadsList(){
       ${l.source==='ai_recommend'?`<div class="lead-ai-tag">✨ AI 추천 상품: ${escapeAttr(l.recommended_product||'-')}</div>`:''}
       ${l.styles?`<div class="lead-styles">${escapeAttr(l.styles)}</div>`:''}
       ${l.details?`<div class="lead-details">${escapeAttr(l.details)}</div>`:''}
+      <div class="lead-row-acts"><button type="button" class="leads-refresh-btn" onclick="tgtLeadToConsult(${l.id})" title="통화 결과를 상담 기록으로 남기면 이 리드의 상태도 함께 바뀝니다">📝 상담 기록으로</button></div>
     </div>`;
   }).join('');
+}
+// [추가] AI 리드 → 상담·예약 탭의 빠른 기록으로(문의 내용·최초 문의일을 채운 채로) 이동
+function tgtLeadToConsult(id){
+  switchTab('crm');
+  let tries = 0;
+  const go = ()=>{ if (window.TGT_CRM) window.TGT_CRM.fromLead(id); else if (++tries < 60) setTimeout(go, 150); };
+  go();
 }
 async function updateLeadStatus(id, status){
   const client=getSupabaseClient();
@@ -16095,7 +16104,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION = '2026102401';
+const TGT_CRM_VERSION = '2026102402';
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;

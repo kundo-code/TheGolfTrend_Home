@@ -1945,8 +1945,9 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 /* ADVANCED PRODUCT EDITOR */
 .adv-editor-overlay{position:fixed;inset:0;z-index:220;background:rgba(10,23,48,.55);backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
 .adv-editor-overlay.show{display:block;opacity:1}
-.adv-editor{max-width:720px;margin:40px auto;background:var(--nm-surface);border:none;border-radius:var(--nm-r-lg);box-shadow:0 24px 70px rgba(10,23,48,.35);overflow:hidden;color:var(--nm-text)}
-.adv-head{padding:20px 26px;background:var(--nm-surface-light);border-bottom:1px solid var(--nm-border);display:flex;justify-content:space-between;align-items:center}
+.adv-editor{display:flex;flex-direction:column;max-height:calc(100vh - 80px);max-width:720px;margin:40px auto;background:var(--nm-surface);border:none;border-radius:var(--nm-r-lg);box-shadow:0 24px 70px rgba(10,23,48,.35);overflow:hidden;color:var(--nm-text)}
+.adv-head,.adv-tabs,.adv-foot{flex-shrink:0}
+.adv-head{padding:12px 26px;background:var(--nm-surface-light);border-bottom:1px solid var(--nm-border);display:flex;justify-content:space-between;align-items:center}
 .adv-head h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-text);font-size:1.15rem;font-weight:500}
 .adv-head p{font-size:.78rem;color:var(--nm-text-soft);margin-top:2px}
 /* FIX: 32px → 44px로 키워 터치 표준(최소 44x44px) 충족 */
@@ -1957,7 +1958,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .adv-tabs button:hover{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-blue)}
 .adv-tabs button.active{color:#fff;background:var(--nm-gold-grad);box-shadow:var(--nm-shadow-gold-press)}
 .adv-tabs button.active:hover{box-shadow:var(--nm-shadow-gold-press)}
-.adv-body{padding:22px 26px;max-height:60vh;overflow-y:auto;background:var(--nm-surface)}
+.adv-body{padding:22px 26px;flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--nm-surface)}
 .adv-body .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
 .adv-body .full{grid-column:1/-1}
 /* [관리자 패널 가독성 개선] 항목(라벨) 제목 폰트 확대 + 항목간 상단 여백 확대 */
@@ -2391,6 +2392,10 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 /* [추가] 고급편집 "기본 · 요금표" 그룹 정리 — 노출 위치(상품 카드 / 자세히 보기 / 요금 항목)별로
    큰 그룹(.adv-group)으로 묶고 각 그룹·세부 섹션을 접을 수 있게 함. 상단 빠른 이동 바는 스크롤해도 고정 */
 .adv-sticky-head{position:sticky;top:-22px;z-index:6;margin:-22px -26px 16px;background:var(--nm-surface);border-bottom:1px solid rgba(10,23,48,.08);box-shadow:0 6px 12px -8px rgba(10,23,48,.18)}
+.adv-titlebar{display:flex;align-items:baseline;gap:10px;padding:8px 26px;background:var(--nm-surface-light);border-top:1px solid rgba(10,23,48,.07);min-width:0}
+.adv-titlebar h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-text);font-size:1.05rem;font-weight:500;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adv-titlebar span{flex-shrink:0;font-size:.74rem;color:var(--nm-text-soft)}
+@media(max-width:640px){.adv-titlebar{padding:7px 14px}}
 .adv-quicknav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 26px}
 /* 공용 서식 도구 — 노출설정·상품카드·자세히보기·요금항목 메뉴바 바로 아래에 고정 */
 .rtf-wrap.rtf-global{border-radius:0;box-shadow:none;background:transparent;overflow:visible;border-top:1px solid rgba(10,23,48,.07)}
@@ -2663,7 +2668,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
   .apc-fields,.adv-body .grid-2{grid-template-columns:1fr}
   .card-label-grid{grid-template-columns:repeat(2,1fr)}
   .pd-container{margin:16px auto;padding:0 12px 20px}
-  .adv-editor{margin:16px 12px}
+  .adv-editor{margin:16px 12px;max-height:calc(100vh - 32px)}
   .core-values{grid-template-columns:1fr}
   .hero-slogan{margin:-8px 0 20px}
   /* [Phase] "통합이용약관" 등 약관 버튼들이 모바일에서 한 줄에 3개씩 배치되도록 grid로 전환하고,
@@ -5870,7 +5875,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 <div class="adv-editor-overlay" id="advOverlay" onmousedown="overlayMouseDown(event)" onclick="overlayClickClose(event, closeAdvEditor)">
   <div class="adv-editor" id="advEditor">
     <div class="adv-head">
-      <div><h3 id="advTitle">상품 고급 편집</h3><p id="advSubtitle"></p></div>
+      <div><h3 id="advTitle">상품 고급 편집</h3></div>
       <button class="adv-close" onclick="closeAdvEditor()" aria-label="닫기">×</button>
     </div>
     <div class="adv-tabs">
@@ -16520,8 +16525,6 @@ function openAdvEditor(catId, idx){
   const cat=findCat(catId);
   const products=getProducts(catId);
   const p=products[idx];
-  document.getElementById('advTitle').textContent=`${p.title || '새 상품'}`;
-  document.getElementById('advSubtitle').textContent=`${cat.ko} · 상품 ${idx+1}`;
   document.querySelectorAll('.adv-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.atab==='basic'));
   renderAdvBody();
   document.getElementById('advOverlay').classList.add('show');
@@ -16561,6 +16564,11 @@ function autoGrowTextarea(el){
   el.style.height='auto';
   el.style.height=el.scrollHeight+'px';
 }
+// 상품 제목 바 — 공용 서식 도구 바로 아래에 두고, 빠른 이동·서식 도구와 함께 스크롤해도 위에 고정된다
+function advTitleBarHTML(p){
+  const cat=findCat(currentAdv.catId);
+  return `<div class="adv-titlebar"><h3>${escapeAttr(p.title || '새 상품')}</h3><span>${escapeAttr((cat?cat.ko:'')+' · 상품 '+(currentAdv.idx+1))}</span></div>`;
+}
 function renderAdvBody(){
   const p=getAdvProduct(); if (!p) return;
   const body=document.getElementById('advBody');
@@ -16580,8 +16588,8 @@ function renderAdvBody(){
   // 저장했다가 렌더링 후 그대로 복원한다
   const scrollTop = body.scrollTop;
   if (activeAdvTab==='basic') body.innerHTML=advBasicHTML(p);
-  else if (activeAdvTab==='media') body.innerHTML=advMediaHTML(p);
-  else if (activeAdvTab==='contact') body.innerHTML=advContactHTML(p);
+  else if (activeAdvTab==='media') body.innerHTML=`<div class="adv-sticky-head">${advTitleBarHTML(p)}</div>`+advMediaHTML(p);
+  else if (activeAdvTab==='contact') body.innerHTML=`<div class="adv-sticky-head">${advTitleBarHTML(p)}</div>`+advContactHTML(p);
   body.querySelectorAll('textarea.auto-grow').forEach(autoGrowTextarea); // 기존에 입력돼 있던 내용에 맞춰 초기 높이도 조정
   openSchKeys.forEach(key=>{ const el=body.querySelector(`.sch-day-block[data-sch-key="${key}"]`); if (el) el.open=true; });
   openCollapsibleKeys.forEach(key=>{ const el=body.querySelector(`.adv-collapsible[data-ck="${key}"]`); if (el) el.open=true; });
@@ -16745,6 +16753,7 @@ function advBasicHTML(p){
       ${rtfToolbarHTML()}
       <span class="rtf-global-hint">✏️ 서식을 적용할 입력란을 먼저 클릭하세요 · 선택한 글자(또는 커서 줄)에 적용됩니다</span>
     </div>
+    ${advTitleBarHTML(p)}
     </div>
 
     <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->

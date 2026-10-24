@@ -1042,7 +1042,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 요일별 요금이 1~2칸일 때는 글자를 125%로 키우고(금액 숫자·원·요일·지정일 모두), 지정일은 2칸이면 요금 위쪽(점선 아래)에,
    1칸이면 오른쪽 영역에 배치한다. 3칸 이상은 지금처럼 칸 폭에 맞추고 금액 숫자만 한 단계 키운다 */
 .pd-day-price-cell .dt.dt-empty{display:none}
-.pd-day-price-table.dp-n1 .pd-day-price-cell .d,.pd-day-price-table.dp-n2 .pd-day-price-cell .d{font-size:1.075rem}
+.pd-day-price-table.dp-n1 .pd-day-price-cell .d,.pd-day-price-table.dp-n2 .pd-day-price-cell .d{font-size:calc(1.075rem - 1pt)}
 .pd-day-price-table.dp-n1 .pd-day-price-cell .v,.pd-day-price-table.dp-n2 .pd-day-price-cell .v{font-size:1.71rem}
 .pd-day-price-table.dp-n1 .pd-day-price-cell .v .unit,.pd-day-price-table.dp-n2 .pd-day-price-cell .v .unit{font-size:.775rem}
 .pd-day-price-table.dp-n1 .pd-day-price-cell .dt,.pd-day-price-table.dp-n2 .pd-day-price-cell .dt{font-size:.975rem}
@@ -4655,7 +4655,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   /* 1~2칸은 4열 격자의 한 칸만 쓰지 않고 전체 폭을 나눠 쓰며 글자는 125% */
   .pd-day-price-table.dp-n1{grid-template-columns:minmax(0,1fr)}
   .pd-day-price-table.dp-n2{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .pd-day-price-table.dp-n1 .pd-day-price-cell .d,.pd-day-price-table.dp-n2 .pd-day-price-cell .d{font-size:calc(.925rem + 1.25pt)}
+  .pd-day-price-table.dp-n1 .pd-day-price-cell .d,.pd-day-price-table.dp-n2 .pd-day-price-cell .d{font-size:calc(.925rem + .25pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .v,.pd-day-price-table.dp-n2 .pd-day-price-cell .v{font-size:calc(1.375rem + 1.25pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .v .unit,.pd-day-price-table.dp-n2 .pd-day-price-cell .v .unit{font-size:calc(.675rem + 1.25pt)}
   .pd-day-price-table.dp-n2:has(.dt:not(.dt-empty)) .pd-day-price-cell .dt{margin:0 -2px 8px;padding:0 2px 8px}

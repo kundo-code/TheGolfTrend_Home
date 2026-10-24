@@ -245,6 +245,7 @@
       .st-heat td{text-align:center;min-width:30px;padding:5px 4px}
       .st-heat td.st-rh{text-align:left;white-space:nowrap;font-weight:700}
       .st-short{color:#8A4B00;font-weight:700}
+      .it-list{margin:0;padding-left:18px;font-size:.8rem;line-height:1.7}
       @media(max-width:640px){ .crm-link-pair{grid-template-columns:1fr} }
       @media(max-width:640px){ .crm-grid2{grid-template-columns:1fr} .crm-memo-row{flex-direction:column} .crm-memo-btns{flex-direction:row} }
     `;
@@ -1572,6 +1573,293 @@
   function statSeason(k, v){ state.stats[k] = v; renderBody(); }
   async function reloadStats(){ state.stats.loaded = false; renderBody(); await loadStats(true); renderBody(); }
 
+  // ══ 5단계 — 상품 운영 조건 · 출발 그룹 · 기획/운영 진단 ═════════════════════
+  // 확보 필요 시점 기본 기준(일) — 출발일로부터 며칠 전까지 확보해야 하는지. 운영하며 바뀌면 이 값만 고치면 된다
+  const SECURE_LEAD = { overseas:{teetime:60, rooms:60, vehicle:30, transfer:30}, domestic:{teetime:30, rooms:30, vehicle:14, transfer:14} };
+  const SECURE_LABEL = {teetime:'티타임', rooms:'객실', vehicle:'차량', transfer:'송영'};
+  const VERIFY_STALE_DAYS = 180;
+  state.ops = {loaded:false, rules:[], groups:[], bookings:[], ruleForm:null, view:'rules'};
+  async function loadOps(force){
+    if (state.ops.loaded && !force) return;
+    await checkReady(); if (!isUsable()) return;
+    const client = sb();
+    const [r, g, b] = await Promise.all([
+      client.from(TABLES.rules).select('*').order('product_title', {ascending:true}).limit(3000),
+      client.from(TABLES.groups).select('*').order('departure_date', {ascending:true}).limit(3000),
+      client.from(TABLES.bookings).select('id,booking_no,booking_status,product_uid,product_title,product_cat,travel_region,destination,departure_date,confirmed_party_size,departure_group_id').limit(10000),
+    ]);
+    if (r.error || g.error || b.error){ state.ops.error = errText(r.error || g.error || b.error); return; }
+    Object.assign(state.ops, {rules:r.data||[], groups:g.data||[], bookings:b.data||[], loaded:true, error:''});
+  }
+  const todayStr = () => { const t = todayKst(); return `${t.y}-${pad2(t.m)}-${pad2(t.d)}`; };
+  // 오늘 적용되는(유효기간 안의) 운영 조건
+  function activeRules(uid, onDate){
+    const d = onDate || todayStr();
+    return state.ops.rules.filter(r=>r.product_uid===uid && (!r.operating_rule_start_date || r.operating_rule_start_date<=d) && (!r.operating_rule_end_date || r.operating_rule_end_date>=d));
+  }
+  // 2인 출발 가능 여부 — 확인된 운영 조건이 없으면 "미확인"(가능으로 표시하지 않음)
+  function twoPaxStatus(uid){
+    const rs = activeRules(uid).filter(r=>r.minimum_departure_size!=null || r.private_departure_min_size!=null || r.join_group_allowed!=null);
+    if (!rs.length) return {s:'unknown', t:'미확인'};
+    if (rs.some(r=>(r.minimum_departure_size!=null && r.minimum_departure_size<=2) || (r.private_departure_min_size!=null && r.private_departure_min_size<=2))) return {s:'ok', t:'2인 출발 가능'};
+    // 다른 팀 합류는 그 출발 그룹이 성사돼야 가능하므로 "2인 출발 가능"과 구분해 표시
+    if (rs.some(r=>r.join_group_allowed===true)) return {s:'join', t:'2인은 합류 시 출발'};
+    return {s:'no', t:'2인 출발 불가'};
+  }
+  function ruleBlank(uid){ return {id:null, product:uid?'uid:'+uid:'', party_size_from:'', party_size_to:'', minimum_departure_size:'', private_departure_min_size:'', join_group_allowed:'', small_group_surcharge:'', vehicle_cost:'', transfer_cost:'', handling_cost:'', maximum_group_capacity:'', currency:'KRW', operating_rule_start_date:'', operating_rule_end_date:'', source:'', last_verified_at:'', memo:''}; }
+  function editRule(id){
+    const r = state.ops.rules.find(x=>x.id===id); if (!r) return;
+    state.ops.ruleForm = Object.assign(ruleBlank(), Object.fromEntries(Object.entries(r).map(([k,v])=>[k, v==null?'':v])), {product:'uid:'+r.product_uid, join_group_allowed: r.join_group_allowed==null?'':String(r.join_group_allowed), last_verified_at: r.last_verified_at ? r.last_verified_at.slice(0,10) : ''});
+    renderBody();
+  }
+  function newRule(uid){ state.ops.ruleForm = ruleBlank(uid); renderBody(); }
+  function rfSet(k, v){ state.ops.ruleForm[k] = v; }
+  async function saveRule(){
+    const f = state.ops.ruleForm; if (!f) return;
+    if (!String(f.product).startsWith('uid:')){ alert('운영 조건은 등록된 상품을 골라야 합니다.'); return; }
+    if (!String(f.source||'').trim()){ alert('조건의 출처(랜드사·계약서 등)를 입력해 주세요. 출처가 있어야 검증할 수 있습니다.'); return; }
+    if (f.operating_rule_start_date && f.operating_rule_end_date && f.operating_rule_end_date < f.operating_rule_start_date){ alert('적용 종료일이 시작일보다 빠릅니다.'); return; }
+    const x = productByUid(f.product.slice(4));
+    const num = v => v==='' || v==null ? null : (isFinite(Number(v)) ? Number(v) : null);
+    const row = {product_uid:x ? x.uid : f.product.slice(4), product_title:x ? x.title : null,
+      party_size_from:num(f.party_size_from), party_size_to:num(f.party_size_to), minimum_departure_size:num(f.minimum_departure_size), private_departure_min_size:num(f.private_departure_min_size),
+      join_group_allowed: f.join_group_allowed==='' ? null : f.join_group_allowed==='true', small_group_surcharge:num(f.small_group_surcharge), vehicle_cost:num(f.vehicle_cost), transfer_cost:num(f.transfer_cost),
+      handling_cost:num(f.handling_cost), maximum_group_capacity:num(f.maximum_group_capacity), currency:f.currency||'KRW', operating_rule_start_date:f.operating_rule_start_date||null, operating_rule_end_date:f.operating_rule_end_date||null,
+      source:String(f.source).trim(), last_verified_at: f.last_verified_at ? `${f.last_verified_at}T00:00:00+09:00` : null, memo:(f.memo||'').trim()||null};
+    const client = sb();
+    const q = f.id ? client.from(TABLES.rules).update(row).eq('id', f.id).select().single() : client.from(TABLES.rules).insert(row).select().single();
+    const { data, error } = await q;
+    if (error){ alert('저장 실패: '+errText(error)); return; }
+    const i = state.ops.rules.findIndex(r=>r.id===data.id); if (i>=0) state.ops.rules[i] = data; else state.ops.rules.push(data);
+    state.ops.ruleForm = null; renderBody();
+  }
+  async function deleteRule(id){
+    if (!confirm('이 운영 조건을 삭제할까요?')) return;
+    const { error } = await sb().from(TABLES.rules).delete().eq('id', id);
+    if (error){ alert('삭제 실패: '+errText(error)); return; }
+    state.ops.rules = state.ops.rules.filter(r=>r.id!==id); renderBody();
+  }
+  async function verifyRule(id){
+    const { data, error } = await sb().from(TABLES.rules).update({last_verified_at:new Date().toISOString()}).eq('id', id).select().single();
+    if (error){ alert(errText(error)); return; }
+    const i = state.ops.rules.findIndex(r=>r.id===id); if (i>=0) state.ops.rules[i] = data; renderBody();
+  }
+  function ruleFormHTML(){
+    const f = state.ops.ruleForm;
+    const inp = (k, label, type, ph) => `<div class="crm-field"><label>${label}</label><input type="${type||'number'}" value="${esc(f[k])}" ${ph?`placeholder="${esc(ph)}"`:''} oninput="TGT_CRM.rfSet('${k}', this.value)" onchange="TGT_CRM.rfSet('${k}', this.value)"></div>`;
+    return `<div class="crm-card"><h5>${f.id?'✏️ 운영 조건 수정':'+ 운영 조건 등록'} <span class="crm-note" style="font-weight:500">— 원가 정보는 관리자만 볼 수 있습니다</span></h5>
+      <div class="crm-field"><label>상품<span class="req">*</span></label><select onchange="TGT_CRM.rfSet('product', this.value)">${productOptionsHTML(f.product)}</select></div>
+      <div class="crm-grid2">
+        ${inp('party_size_from','적용 인원 구간(이상)','number','예: 2')}${inp('party_size_to','적용 인원 구간(이하)','number','예: 3')}
+        ${inp('minimum_departure_size','최소 출발 인원')}${inp('private_departure_min_size','단독 출발 최소 인원')}
+        <div class="crm-field"><label>다른 팀 합류 가능</label><select onchange="TGT_CRM.rfSet('join_group_allowed', this.value)"><option value="" ${f.join_group_allowed===''?'selected':''}>미확인</option><option value="true" ${f.join_group_allowed==='true'?'selected':''}>가능</option><option value="false" ${f.join_group_allowed==='false'?'selected':''}>불가</option></select></div>
+        ${inp('small_group_surcharge','소인원 추가 요금(1인)')}
+        ${inp('vehicle_cost','차량 비용')}${inp('transfer_cost','송영 비용')}
+        ${inp('handling_cost','핸들링 비용')}${inp('maximum_group_capacity','최대 수용 인원')}
+        ${inp('operating_rule_start_date','적용 시작일','date')}${inp('operating_rule_end_date','적용 종료일','date')}
+        ${inp('source','조건 출처 *','text','예: ○○랜드사 2027 상반기 계약서')}${inp('last_verified_at','최종 확인일','date')}
+      </div>
+      <div class="crm-field"><label>메모</label><input type="text" value="${esc(f.memo)}" oninput="TGT_CRM.rfSet('memo', this.value)"></div>
+      <div class="crm-actions"><button type="button" class="crm-btn" onclick="TGT_CRM.cancelRule()">취소</button><button type="button" class="crm-btn primary" onclick="TGT_CRM.saveRule()">저장</button></div></div>`;
+  }
+  function rulesHTML(){
+    const prods = allProducts();
+    const byUid = {}; state.ops.rules.forEach(r=>(byUid[r.product_uid] = byUid[r.product_uid] || []).push(r));
+    const stale = r => !r.last_verified_at || dayDiff(r.last_verified_at, new Date()) > VERIFY_STALE_DAYS;
+    const expired = r => r.operating_rule_end_date && r.operating_rule_end_date < todayStr();
+    const money = v => v==null ? '' : Number(v).toLocaleString('ko-KR');
+    const ruleLine = r => `<div class="crm-hist h">${[
+        (r.party_size_from!=null||r.party_size_to!=null) ? `인원 ${r.party_size_from??''}~${r.party_size_to??''}명` : '',
+        r.minimum_departure_size!=null ? `최소 출발 ${r.minimum_departure_size}명` : '', r.private_departure_min_size!=null ? `단독 최소 ${r.private_departure_min_size}명` : '',
+        r.join_group_allowed===true ? '합류 가능' : (r.join_group_allowed===false ? '합류 불가' : ''), r.small_group_surcharge!=null ? `소인원 추가 ${money(r.small_group_surcharge)}` : '',
+        r.vehicle_cost!=null ? `차량 ${money(r.vehicle_cost)}` : '', r.transfer_cost!=null ? `송영 ${money(r.transfer_cost)}` : '', r.handling_cost!=null ? `핸들링 ${money(r.handling_cost)}` : '',
+        r.maximum_group_capacity!=null ? `최대 ${r.maximum_group_capacity}명` : '',
+        `${r.operating_rule_start_date?fmtDate(r.operating_rule_start_date):'~'} ~ ${r.operating_rule_end_date?fmtDate(r.operating_rule_end_date):''}`,
+        `출처: ${r.source||'—'}`].filter(Boolean).map(esc).join(' · ')}
+        ${expired(r)?' <span class="crm-tag no">기간 만료</span>':''}${stale(r)?' <span class="crm-tag hold">확인 필요</span>':''}
+        <span class="crm-item-acts" style="display:inline-flex;margin:0 0 0 6px"><button type="button" class="crm-btn" onclick="TGT_CRM.verifyRule(${r.id})">오늘 확인함</button><button type="button" class="crm-btn" onclick="TGT_CRM.editRule(${r.id})">수정</button><button type="button" class="crm-btn danger" onclick="TGT_CRM.deleteRule(${r.id})">삭제</button></span></div>`;
+    const rows = prods.map(x=>{
+      const tp = twoPaxStatus(x.uid);
+      return `<div class="crm-item"><div class="crm-item-top"><b>${esc(x.title)}</b><span class="crm-note">${esc(x.catKo)}</span><span class="crm-tag ${({ok:'ok', join:'go', no:'no'})[tp.s]||'info'}">${tp.t}</span>
+        <button type="button" class="crm-btn" style="margin-left:auto" onclick="TGT_CRM.newRule('${esc(x.uid)}')">+ 조건</button></div>
+        ${(byUid[x.uid]||[]).map(ruleLine).join('') || '<div class="crm-note" style="margin-top:4px">등록된 운영 조건 없음 — 2인 출발 가능 여부는 "미확인"으로 표시됩니다.</div>'}</div>`;
+    });
+    return `<div class="crm-card"><h5>📐 상품 운영 조건 <span class="crm-note" style="font-weight:500">— 적용 기간·인원 구간별, 출처·최종 확인일 필수 관리(확인 ${VERIFY_STALE_DAYS}일 경과 시 "확인 필요")</span></h5>
+      <div class="crm-list">${rows.join('') || '<div class="crm-empty">등록된 상품이 없습니다.</div>'}</div></div>`;
+  }
+
+  // 출발 그룹 — 같은 상품·출발일 예약을 묶어 차량·송영·객실·티타임 확보를 관리
+  function groupSuggestions(){
+    const free = state.ops.bookings.filter(b=>ACTIVE(b.booking_status) && !b.departure_group_id && b.departure_date && b.departure_date >= todayStr());
+    const m = {};
+    free.forEach(b=>{ const k = (b.product_uid||b.product_title||b.destination||'?')+'|'+b.departure_date; (m[k] = m[k] || []).push(b); });
+    return Object.values(m).map(list=>({product_uid:list[0].product_uid, product_title:list[0].product_title||list[0].destination, destination:list[0].destination, travel_region:list[0].travel_region, departure_date:list[0].departure_date, bookings:list, people:list.reduce((s,b)=>s+(b.confirmed_party_size||0),0)}))
+      .sort((a,b)=>a.departure_date.localeCompare(b.departure_date));
+  }
+  async function createGroup(idx){
+    const s = groupSuggestions()[idx]; if (!s) return;
+    const client = sb();
+    const { data:g, error } = await client.from(TABLES.groups).insert({product_uid:s.product_uid, product_title:s.product_title, destination:s.destination, departure_date:s.departure_date, status:'준비중'}).select().single();
+    if (error){ alert('출발 그룹 생성 실패: '+errText(error)); return; }
+    await client.from(TABLES.bookings).update({departure_group_id:g.id}).in('id', s.bookings.map(b=>b.id));
+    await loadOps(true); renderBody();
+  }
+  async function groupToggle(id, field, on){
+    const { data, error } = await sb().from(TABLES.groups).update({[field]:!!on}).eq('id', id).select().single();
+    if (error){ alert(errText(error)); return; }
+    const i = state.ops.groups.findIndex(g=>g.id===id); if (i>=0) state.ops.groups[i] = data; renderBody();
+  }
+  async function groupSet(id, field, value){
+    const { data, error } = await sb().from(TABLES.groups).update({[field]:value||null}).eq('id', id).select().single();
+    if (error){ alert(errText(error)); return; }
+    const i = state.ops.groups.findIndex(g=>g.id===id); if (i>=0) state.ops.groups[i] = data; renderBody();
+  }
+  async function groupDetach(bookingId){
+    await sb().from(TABLES.bookings).update({departure_group_id:null}).eq('id', bookingId);
+    await loadOps(true); renderBody();
+  }
+  function groupsHTML(){
+    const sug = groupSuggestions();
+    const today = todayStr();
+    const cards = state.ops.groups.filter(g=>g.status!=='취소').map(g=>{
+      const bks = state.ops.bookings.filter(b=>b.departure_group_id===g.id);
+      const act = bks.filter(b=>ACTIVE(b.booking_status));
+      const ppl = act.reduce((s,b)=>s+(b.confirmed_party_size||0),0);
+      const region = (act[0] && act[0].travel_region) || (g.destination && catInfo(matchCatFromDest(g.destination)||'') ? catInfo(matchCatFromDest(g.destination)).region : 'overseas');
+      const dLeft = g.departure_date ? Math.ceil(dayDiff(depTs(today), depTs(g.departure_date))) : null;
+      const cap = g.product_uid ? activeRules(g.product_uid, g.departure_date).map(r=>r.maximum_group_capacity).filter(v=>v!=null) : [];
+      const warns = Object.keys(SECURE_LABEL).filter(k=>!g[k+'_secured'] && dLeft!=null && dLeft <= (SECURE_LEAD[region]||SECURE_LEAD.overseas)[k]).map(k=>SECURE_LABEL[k]);
+      return `<div class="crm-item"><div class="crm-item-top"><b>${esc(g.product_title||g.destination||'출발 그룹')}</b><span class="crm-note">출발 ${esc(fmtDate(g.departure_date)||'-')}${dLeft!=null?` · D-${dLeft}`:''}</span>
+          <select onchange="TGT_CRM.groupSet(${g.id}, 'status', this.value)">${['준비중','확정','출발완료','취소'].map(s=>`<option ${g.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="crm-item-meta">예약 ${act.length}건 · 확정 인원 ${ppl}명${cap.length?` · 최대 수용 ${Math.min(...cap)}명${ppl>Math.min(...cap)?' <b style="color:#B91C1C">초과</b>':''}`:''}</div>
+        <div class="crm-chips" style="margin-top:6px">${Object.entries(SECURE_LABEL).map(([k,l])=>`<label class="crm-chip ${g[k+'_secured']?'on':''}" style="cursor:pointer"><input type="checkbox" style="display:none" ${g[k+'_secured']?'checked':''} onchange="TGT_CRM.groupToggle(${g.id}, '${k}_secured', this.checked)">${g[k+'_secured']?'✓ ':''}${l} 확보</label>`).join('')}</div>
+        ${warns.length && g.status!=='출발완료' ? `<div class="crm-banner warn" style="margin-top:6px">⏰ 확보 필요 시점 지남: ${warns.join(', ')}</div>` : ''}
+        <div class="crm-hist">${bks.map(b=>`<div class="h">${esc(b.booking_no)} · ${esc(b.booking_status)} · ${b.confirmed_party_size??'-'}명 <button type="button" class="crm-btn" style="padding:2px 7px;font-size:.66rem" onclick="TGT_CRM.groupDetach(${b.id})">빼기</button></div>`).join('') || '연결된 예약 없음'}</div>
+        <input type="text" placeholder="운영 메모(차량 종류·객실 블록 등)" value="${esc(g.memo||'')}" onchange="TGT_CRM.groupSet(${g.id}, 'memo', this.value)" style="width:100%;margin-top:6px;padding:6px 9px;border:none;border-radius:8px;background:var(--nm-white,#fff);box-shadow:var(--nm-shadow-inset);font-size:.76rem;box-sizing:border-box">
+      </div>`;
+    });
+    return `<div class="crm-card"><h5>🚐 출발 그룹 <span class="crm-note" style="font-weight:500">— 예약은 따로 관리하고, 차량·송영·객실·티타임은 출발 그룹 기준으로 확보</span></h5>
+      <p class="crm-note">확보 필요 시점 기본 기준: 해외 티타임·객실 출발 ${SECURE_LEAD.overseas.teetime}일 전, 차량·송영 ${SECURE_LEAD.overseas.vehicle}일 전 / 국내 ${SECURE_LEAD.domestic.teetime}일 · ${SECURE_LEAD.domestic.vehicle}일 전</p>
+      ${sug.length ? `<div class="st-sm-l">묶을 수 있는 예약(같은 상품·같은 출발일)</div><div class="crm-list">${sug.map((s,i)=>`<div class="crm-item"><b>${esc(s.product_title||'-')}</b> <span class="crm-note">출발 ${esc(fmtDate(s.departure_date))} · 예약 ${s.bookings.length}건 · ${s.people}명</span>
+        <button type="button" class="crm-btn primary" style="margin-left:8px" onclick="TGT_CRM.createGroup(${i})">출발 그룹 만들기</button></div>`).join('')}</div>` : ''}
+      <div class="st-sm-l">출발 그룹</div><div class="crm-list">${cards.join('') || '<div class="crm-empty">출발 그룹이 없습니다.</div>'}</div></div>`;
+  }
+  function opsHTML(){
+    if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
+    if (!state.ops.loaded) return `<div class="crm-card"><div class="crm-empty">${state.ops.error?'불러오기 실패: '+esc(state.ops.error):'불러오는 중...'}</div></div>`;
+    if (state.ops.ruleForm) return ruleFormHTML();
+    return `<div class="crm-subnav" style="margin-bottom:-4px">${[['rules','📐 상품 운영 조건'],['groups','🚐 출발 그룹']].map(([k,l])=>`<button type="button" class="${state.ops.view===k?'active':''}" onclick="TGT_CRM.opsView('${k}')">${l}</button>`).join('')}</div>`
+      + (state.ops.view==='groups' ? groupsHTML() : rulesHTML());
+  }
+
+  // ── 기획·운영 진단(규칙 기반) — 근거 숫자와 함께 보여주고, 자료가 부족하면 "판단 보류" ──
+  const INTEL_MIN = 3;   // 한 묶음을 패턴으로 볼 최소 문의 수
+  function intelHTML(){
+    if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
+    if (!state.stats.loaded || !state.ops.loaded) return `<div class="crm-card"><div class="crm-empty">${state.stats.error||state.ops.error ? '불러오기 실패: '+esc(state.stats.error||state.ops.error) : '진단 중...'}</div></div>`;
+    const threads = buildThreads(state.stats.cons, state.stats.bookings);
+    const prods = allProducts().filter(x=>typeof isProductVisible!=='function' || isProductVisible(x.p));
+    const now = todayKst(), nowKey = `${now.y}-${pad2(now.m)}`;
+    const recentStart = addMonths(nowKey, -2), prevStart = addMonths(nowKey, -5), prevEnd = addMonths(nowKey, -3);
+    const mk = t => monthKeyTs(t.first_inquiry_at) || '';
+    const card = (title, st, items, action) => `<div class="crm-card"><h5>${title} <span class="crm-tag ${st==='found'?'hold':(st==='hold'?'info':'ok')}">${st==='found'?'발견':(st==='hold'?'판단 보류':'해당 없음')}</span></h5>
+      ${items.length?`<ul class="it-list">${items.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${action?`<p class="crm-note">💡 ${action}</p>`:''}</div>`;
+    const out = [];
+    const total = threads.length;
+    if (total < 10) out.push(`<div class="crm-banner warn">상담 문의가 ${total}건으로 아직 적습니다. 진단은 참고용이며, 대부분 "판단 보류"로 표시됩니다(문의 10건 이상부터 의미 있는 패턴을 찾습니다).</div>`);
+
+    // 1) 적합한 등록 상품이 없는 수요
+    const noFit = threads.filter(t=>!t.product_uid || t.unbooked_reason==='원하는 상품 없음');
+    const noFitBy = {}; noFit.forEach(t=>{ const k = countryKey(t); (noFitBy[k] = noFitBy[k] || []).push(t); });
+    const noFitItems = Object.entries(noFitBy).filter(([,l])=>l.length>=INTEL_MIN).sort((a,b)=>b[1].length-a[1].length).map(([k,l])=>{
+      const prefs = topRows(countBy(l, t=>t.prefs), 3).map(r=>`${esc(r.label)} ${r.value}`).join(', ');
+      const regProds = prods.filter(x=>countryKey({travel_region:x.region, country:x.catKo, destination:x.catKo})===k).length;
+      return `<b>${esc(k)}</b> — 상품 미정·"원하는 상품 없음" 문의 ${l.length}건 (등록 상품 ${regProds}개)${prefs?` · 원하는 취향: ${prefs}`:''}`;
+    });
+    out.push(card('🧭 적합한 등록 상품이 없는 고객 수요', noFitItems.length?'found':(noFit.length?'hold':'none'), noFitItems.length?noFitItems:(noFit.length?[`관련 문의 ${noFit.length}건 — 국가별 ${INTEL_MIN}건 이상 쌓이면 판단합니다.`]:[]), noFitItems.length?'해당 국가·취향 조합으로 신규 상품 구성을 검토하세요.':''));
+
+    // 2) 상담은 많은데 예약이 적은 상품
+    const convAll = total ? threads.filter(t=>t.converted).length/total : 0;
+    const byProd = {}; threads.forEach(t=>{ if (t.product_title) (byProd[t.product_title] = byProd[t.product_title] || []).push(t); });
+    const lowConv = Object.entries(byProd).filter(([,l])=>l.length>=MIN_N).map(([k,l])=>({k, n:l.length, c:l.filter(t=>t.converted).length, reasons:topRows(countBy(l.filter(t=>!t.converted), t=>t.unbooked_reason), 2)}))
+      .filter(x=>x.c/x.n < convAll*0.5).sort((a,b)=>b.n-a.n);
+    const pendingProds = Object.values(byProd).filter(l=>l.length<MIN_N).length;
+    out.push(card('📉 상담은 많지만 예약이 적은 상품', lowConv.length?'found':(Object.keys(byProd).length && !Object.values(byProd).some(l=>l.length>=MIN_N)?'hold':'none'),
+      lowConv.map(x=>`<b>${esc(x.k)}</b> — 상담 ${x.n}건 중 예약 ${x.c}건(${Math.round(x.c/x.n*100)}%, 전체 평균 ${Math.round(convAll*100)}%)${x.reasons.length?` · 주요 사유: ${x.reasons.map(r=>`${esc(r.label)} ${r.value}`).join(', ')}`:''}`)
+        .concat(pendingProds && !lowConv.length ? [`상담 ${MIN_N}건 미만 상품 ${pendingProds}개는 판단 보류`] : []),
+      lowConv.length?'가격·일정·인원 조건 중 반복되는 사유부터 조정하세요.':''));
+
+    // 3) 출발일·예산 불일치 반복 고객군
+    const mismatch = {};
+    threads.filter(t=>!t.converted && (t.unbooked_reason==='일정 불일치' || t.unbooked_reason==='가격')).forEach(t=>{ const k = `${countryKey(t)} · ${partyBucket(t.party)} · ${t.unbooked_reason}`; mismatch[k] = (mismatch[k]||0)+1; });
+    const priceOf = x => Number((x.p.priceEntries && x.p.priceEntries[0] && x.p.priceEntries[0].salePrice) || x.p.from || 0);
+    const budgetGap = {};
+    threads.filter(t=>t.list.some(c=>c.budget_per_person)).forEach(t=>{
+      const budget = Math.max(...t.list.map(c=>c.budget_per_person||0));
+      const cand = prods.filter(x=>t.product_cat ? x.catId===t.product_cat : true).map(priceOf).filter(v=>v>0);
+      if (cand.length && budget < Math.min(...cand)) { const k = countryKey(t); budgetGap[k] = (budgetGap[k]||0)+1; }
+    });
+    const mmItems = Object.entries(mismatch).filter(([,n])=>n>=INTEL_MIN).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<b>${esc(k)}</b> — 미예약·보류 ${n}건`)
+      .concat(Object.entries(budgetGap).filter(([,n])=>n>=INTEL_MIN).map(([k,n])=>`<b>${esc(k)}</b> — 고객 예산이 등록 상품 최저가보다 낮은 문의 ${n}건`));
+    out.push(card('🧩 출발일·예산 불일치가 반복되는 고객군', mmItems.length?'found':(Object.keys(mismatch).length||Object.keys(budgetGap).length?'hold':'none'), mmItems, mmItems.length?'해당 고객군을 위한 다른 출발 요일·가격대 구성(실속형·평일 출발 등)을 검토하세요.':''));
+
+    // 4) 국가·스타일 관심 증가(최근 3개월 vs 그 전 3개월)
+    const recent = threads.filter(t=>mk(t)>=recentStart), prev = threads.filter(t=>mk(t)>=prevStart && mk(t)<=prevEnd);
+    const growth = (keyFn, label) => {
+      const r = countBy(recent, keyFn), p = countBy(prev, keyFn);
+      return Object.keys(r).filter(k=>r[k]>=MIN_N && (p[k]||0)>=INTEL_MIN && r[k] >= (p[k]||0)*1.5).map(k=>`<b>${esc(k)}</b> (${label}) — 최근 3개월 ${r[k]}건 / 그 전 3개월 ${p[k]||0}건 (+${Math.round((r[k]/(p[k]||1)-1)*100)}%)`);
+    };
+    const growthItems = growth(countryKey, '국가·지역').concat(growth(t=>t.prefs, '취향'));
+    out.push(card('📈 특정 국가·여행 스타일 관심 증가', growthItems.length?'found':(prev.length<INTEL_MIN*2?'hold':'none'),
+      growthItems.length ? growthItems : (prev.length<INTEL_MIN*2 ? [`비교 기간(그 전 3개월) 문의 ${prev.length}건 — 비교할 자료가 부족합니다.`] : []),
+      growthItems.length?'관심이 늘어난 국가·스타일의 상품을 홈페이지에 먼저 노출하고, 다음 시즌 상품 기획에 반영하세요.':''));
+
+    // 5) 운영 진단 — 인원·출발 그룹
+    const opsItems = [];
+    // 2인 문의가 많지만 2인 출발이 안 되는 지역(운영 조건 등록된 상품 기준)
+    const twoBy = {}; threads.filter(t=>t.party!=null && t.party<=2).forEach(t=>{ const k = countryKey(t); twoBy[k] = (twoBy[k]||0)+1; });
+    Object.entries(twoBy).filter(([,n])=>n>=INTEL_MIN).forEach(([k,n])=>{
+      const ps = prods.filter(x=>countryKey({travel_region:x.region, country:x.catKo, destination:x.catKo})===k);
+      const st = countBy(ps, x=>twoPaxStatus(x.uid).s);
+      if (!ps.length) opsItems.push(`<b>${esc(k)}</b> — 2인 문의 ${n}건, 등록 상품 없음`);
+      else if (!st.ok){
+        const parts = [st.join?`합류 시 출발 ${st.join}개`:'', st.no?`2인 출발 불가 ${st.no}개`:'', st.unknown?`운영 조건 미확인 ${st.unknown}개`:''].filter(Boolean).join(' · ');
+        opsItems.push(`<b>${esc(k)}</b> — 2인 문의 ${n}건, 2인 출발이 확인된 상품 없음 (등록 상품 ${ps.length}개: ${parts})${st.unknown?' — 미확인 상품의 운영 조건을 등록하면 판단할 수 있습니다':''}`);
+      }
+    });
+    // 소인원 추가요금 때문에 전환이 낮은 상품
+    Object.entries(byProd).forEach(([k,l])=>{
+      const lost = l.filter(t=>!t.converted && (t.unbooked_reason==='소인원 추가요금' || t.barrier==='소인원 추가요금')).length;
+      if (lost>=2) opsItems.push(`<b>${esc(k)}</b> — 소인원 추가요금으로 미예약 ${lost}건 (이 상품 상담 ${l.length}건)`);
+    });
+    // 단체 문의 집중 시즌(희망 출발 월 기준)
+    const grpByM = countBy(threads.filter(t=>(t.party||0)>=9 || t.group_type==='동호회' || t.group_type==='기업'), t=>t.preferred_month ? t.preferred_month.slice(0,7) : (t.preferred_date ? t.preferred_date.slice(0,7) : null));
+    Object.entries(grpByM).filter(([,n])=>n>=INTEL_MIN).sort().forEach(([m,n])=>opsItems.push(`<b>${monthLabel(m)} 출발</b> — 단체 문의 ${n}건 집중`));
+    // 확보가 필요한 출발(앞으로 6개월, 출발 그룹 기준)
+    const horizon = addMonths(nowKey, 6);
+    const upcoming = state.ops.groups.filter(g=>g.status!=='취소' && g.status!=='출발완료' && g.departure_date && g.departure_date>=todayStr() && g.departure_date.slice(0,7)<=horizon);
+    upcoming.forEach(g=>{
+      const ppl = state.ops.bookings.filter(b=>b.departure_group_id===g.id && ACTIVE(b.booking_status)).reduce((s,b)=>s+(b.confirmed_party_size||0),0);
+      const miss = Object.keys(SECURE_LABEL).filter(k=>!g[k+'_secured']).map(k=>SECURE_LABEL[k]);
+      if (miss.length) opsItems.push(`<b>${esc(fmtDate(g.departure_date))} ${esc(g.product_title||g.destination||'')}</b> — 확정 ${ppl}명, 미확보: ${miss.join(', ')}`);
+    });
+    const ungrouped = groupSuggestions().filter(s=>s.departure_date.slice(0,7)<=horizon);
+    if (ungrouped.length) opsItems.push(`출발 그룹으로 묶지 않은 앞으로 6개월 출발 예약 ${ungrouped.reduce((s,x)=>s+x.bookings.length,0)}건(${ungrouped.reduce((s,x)=>s+x.people,0)}명) — "운영 조건·출발 그룹"에서 묶어 확보를 관리하세요.`);
+    // 인원 조건 때문에 충족 못한 수요
+    const partyUnmet = countBy(threads.filter(t=>!t.converted && t.barrier), t=>`${countryKey(t)} · ${partyBucket(t.party)} · ${t.barrier}`);
+    Object.entries(partyUnmet).filter(([,n])=>n>=2).forEach(([k,n])=>opsItems.push(`<b>${esc(k)}</b> — 인원 조건으로 충족 못한 문의 ${n}건`));
+    out.push(card('🚐 인원·운영 진단', opsItems.length?'found':(total<10?'hold':'none'), opsItems, opsItems.length?'소인원 합류 상품, 단체 전용 일정, 차량·객실 사전 블록 등을 검토하세요.':''));
+
+    // 6) 신규 상품 개발 후보(위 근거를 묶어 제안 — 예약 증가를 보장하지 않음)
+    const cands = [];
+    noFitItems.length && Object.entries(noFitBy).filter(([,l])=>l.length>=INTEL_MIN).forEach(([k,l])=>{ const pr = topRows(countBy(l, t=>t.prefs), 2).map(r=>r.label); const pb = topRows(countBy(l, t=>partyBucket(t.party)), 1)[0];
+      cands.push(`<b>${esc(k)}</b> ${pr.length?esc(pr.join('·'))+' 중심 ':''}${pb?esc(pb.label)+' ':''}상품 — 근거: 맞는 상품이 없던 문의 ${l.length}건`); });
+    Object.entries(twoBy).filter(([,n])=>n>=INTEL_MIN).forEach(([k,n])=>{ const ps = prods.filter(x=>countryKey({travel_region:x.region, country:x.catKo, destination:x.catKo})===k); if (ps.length && ps.every(x=>twoPaxStatus(x.uid).s==='no')) cands.push(`<b>${esc(k)}</b> 2인 출발(합류형) 상품 — 근거: 2인 문의 ${n}건, 현재 상품 모두 2인 출발 불가`); });
+    Object.entries(grpByM).filter(([,n])=>n>=INTEL_MIN).forEach(([m,n])=>cands.push(`<b>${monthLabel(m)}</b> 단체(동호회·기업) 전용 일정 — 근거: 해당 월 출발 희망 단체 문의 ${n}건`));
+    out.push(card('🆕 신규 상품 개발 후보', cands.length?'found':'hold', cands.length?cands:['근거가 충분히 쌓인 후보가 아직 없습니다.'], cands.length?'제안은 기록된 상담·예약 근거에서 나온 후보이며 예약 증가를 보장하지 않습니다. 시장·원가 확인 후 결정하세요.':''));
+    return out.join('');
+  }
+
   // ── 화면 ─────────────────────────────────────────────────────
   function render(root){
     injectStyle();
@@ -1591,6 +1879,8 @@
       else if (state.sub==='bookings' && !state.bookingsLoaded) loadBookings().then(renderBody);
       else if (state.sub==='links' && !state.linksLoaded) loadLinks().then(renderBody);
       else if (state.sub==='stats' && !state.stats.loaded) loadStats().then(renderBody);
+      else if (state.sub==='ops' && !state.ops.loaded) loadOps().then(renderBody);
+      else if (state.sub==='intel' && !(state.stats.loaded && state.ops.loaded)) Promise.all([loadStats(), loadOps()]).then(renderBody);
       else renderBody();
     });
   }
@@ -1601,6 +1891,8 @@
     if (sub==='bookings') loadBookings().then(renderBody);
     if (sub==='links') loadLinks(true).then(renderBody);
     if (sub==='stats') loadStats(true).then(renderBody);
+    if (sub==='ops') loadOps(true).then(renderBody);
+    if (sub==='intel') Promise.all([loadStats(true), loadOps(true)]).then(renderBody);
   }
   function renderBody(){
     const body = document.getElementById('crmBody'); if (!body) return;
@@ -1609,6 +1901,8 @@
     else if (state.sub==='bookings') body.innerHTML = bookingsHTML();
     else if (state.sub==='links') body.innerHTML = linksHTML();
     else if (state.sub==='stats') body.innerHTML = statsHTML();
+    else if (state.sub==='ops') body.innerHTML = opsHTML();
+    else if (state.sub==='intel') body.innerHTML = intelHTML();
     else if (state.sub==='check') body.innerHTML = checkHTML(state.ready);
     else body.innerHTML = `<div class="crm-card"><div class="crm-empty">이 화면은 다음 단계에서 순서대로 제공됩니다.</div></div>`;
   }
@@ -1652,7 +1946,9 @@
     filter, edit, followUp, history, remove, reloadList, fromLead,
     impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
     statFilter, statSeason, reloadStats,
+    newRule, editRule, rfSet, saveRule, deleteRule, verifyRule, cancelRule:()=>{ state.ops.ruleForm = null; renderBody(); }, opsView:v=>{ state.ops.view = v; renderBody(); },
+    createGroup, groupToggle, groupSet, groupDetach,
     newBooking, newBookingFromConsult, bfSet, saveBooking, bookingCancelForm, changeBooking, bookingHistory, bFilter, findLinks, decideLink,
-    _internal:{ buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
+    _internal:{ twoPaxStatus, buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
   };
 })();

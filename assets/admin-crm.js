@@ -35,8 +35,8 @@
   ];
 
   // ── 선택 목록(상담 결과·사유·경로 등) ─────────────────────────────
-  const RESULTS = ['예약확정','예약진행중','보류','미예약','단순문의'];
-  const RESULT_CLS = {'예약확정':'ok','예약진행중':'go','보류':'hold','미예약':'no','단순문의':'info'};
+  const RESULTS = ['예약확정','예약진행중','보류','미예약','단순문의','예약취소'];
+  const RESULT_CLS = {'예약확정':'ok','예약진행중':'go','보류':'hold','미예약':'no','단순문의':'info','예약취소':'no'};
   const REASONS = ['가격','일정 불일치','인원 미달','소인원 추가요금','원하는 상품 없음','타사 예약','연락 두절','기타'];
   const CHANNELS = ['전화','카카오톡','문자','홈페이지','방문','기타'];
   const GROUP_TYPES = ['일반','가족·부부','친목','동호회','기업','기타'];
@@ -209,6 +209,17 @@
       .crm-filter input,.crm-filter select{padding:7px 10px;border:none;border-radius:10px;background:var(--nm-white,#fff);box-shadow:var(--nm-shadow-inset);font-size:.8rem}
       .crm-filter input{flex:1;min-width:140px}
       .crm-mode{font-size:.76rem;font-weight:800;color:#1d4ed8;margin-bottom:6px}
+      .crm-map-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:.78rem}
+      .crm-map-row span{flex:0 0 96px;font-weight:700}
+      .crm-map-row select{flex:1;min-width:0;padding:6px 8px;border:none;border-radius:8px;background:var(--nm-white,#fff);box-shadow:var(--nm-shadow-inset);font-size:.78rem}
+      .crm-map-row .req{color:#C0262D}
+      .crm-preview{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:420px;overflow:auto}
+      .crm-prow{font-size:.76rem;padding:6px 8px;border-radius:8px;background:var(--nm-white,#fff);line-height:1.6}
+      .crm-perr{color:#B91C1C;font-weight:700}
+      .crm-item-acts select,.crm-item-acts input[type=date]{padding:5px 8px;border:none;border-radius:8px;background:var(--nm-white,#fff);box-shadow:var(--nm-shadow-inset);font-size:.72rem}
+      .crm-link-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:.8rem;line-height:1.5}
+      .crm-link-pair > div{background:var(--nm-surface-light,#eef1f6);border-radius:10px;padding:8px 10px}
+      @media(max-width:640px){ .crm-link-pair{grid-template-columns:1fr} }
       @media(max-width:640px){ .crm-grid2{grid-template-columns:1fr} .crm-memo-row{flex-direction:column} .crm-memo-btns{flex-direction:row} }
     `;
     document.head.appendChild(st);
@@ -538,7 +549,7 @@
     return miss;
   }
   // 상담 결과 → AI 리드 상태 자동 갱신
-  const LEAD_STATUS_BY_RESULT = {'예약확정':'성사','예약진행중':'연락중','보류':'보류','미예약':'취소','단순문의':'연락중'};
+  const LEAD_STATUS_BY_RESULT = {'예약확정':'성사','예약진행중':'연락중','보류':'보류','미예약':'취소','단순문의':'연락중','예약취소':'취소'};
   async function syncLeadStatus(leadId, result){
     if (!leadId || !LEAD_STATUS_BY_RESULT[result]) return;
     try{
@@ -659,6 +670,7 @@
       <div class="crm-item-acts">
         <button type="button" class="crm-btn" onclick="TGT_CRM.edit(${c.id})">✏️ 수정</button>
         <button type="button" class="crm-btn" onclick="TGT_CRM.followUp(${c.id})">↪ 후속 상담</button>
+        ${c.booking_id ? `<span class="crm-tag ok">🧾 예약 연결됨</span>` : `<button type="button" class="crm-btn" onclick="TGT_CRM.newBookingFromConsult(${c.id})">🧾 예약으로 등록</button>`}
         <button type="button" class="crm-btn" onclick="TGT_CRM.history(${c.id})">🕘 변경 이력${hist && hist.rows ? ` (${hist.rows.length})` : ''}</button>
         <button type="button" class="crm-btn danger" onclick="TGT_CRM.remove(${c.id})">삭제</button>
       </div>
@@ -745,6 +757,552 @@
     go('quick');
   }
 
+  // ══ 3단계 — 예약 데이터 연결 ═══════════════════════════════════════
+  const BOOKING_STATUSES = ['예약대기','예약확정','예약취소','출발완료'];
+  const BOOKING_CLS = {'예약대기':'go','예약확정':'ok','예약취소':'no','출발완료':'info'};
+  // 예약 상태 → 연결된 상담 결과
+  const RESULT_BY_BOOKING = {'예약대기':'예약진행중','예약확정':'예약확정','출발완료':'예약확정','예약취소':'예약취소'};
+  // 가져오기 대상 항목과 열 이름 자동 인식 단어
+  const IMPORT_FIELDS = [
+    ['booking_no','예약번호',true,['예약번호','예약 번호','예약no','예약코드','booking','bookingno','reservation','예약id','주문번호']],
+    ['booking_status','예약 상태',false,['상태','예약상태','진행상태','status']],
+    ['product','상품명',false,['상품','상품명','여행상품','패키지','product','코스명']],
+    ['destination','여행지/국가',false,['여행지','국가','지역','목적지','destination','country']],
+    ['departure_date','출발일',false,['출발일','출발일자','출발','departure','여행시작일','출국일']],
+    ['confirmed_party_size','인원',false,['인원','인원수','총인원','pax','party','명수']],
+    ['customer_name','고객명',false,['고객명','예약자','대표자','이름','성명','name','고객']],
+    ['customer_phone','연락처',false,['연락처','전화','휴대폰','핸드폰','phone','mobile','전화번호']],
+    ['confirmed_at','예약(확정)일',false,['예약일','확정일','예약확정일','예약일자','접수일','booked']],
+    ['cancelled_at','취소일',false,['취소일','취소일자','cancelled']],
+    ['cancellation_reason','취소 사유',false,['취소사유','취소 사유','사유']],
+    ['source_channel','예약 경로',false,['경로','예약경로','유입','채널','channel','source']],
+    ['memo','비고',false,['비고','메모','note','memo','특이사항']],
+  ];
+  const normHeader = h => String(h||'').toLowerCase().replace(/[\s_\-().·]/g,'');
+  function guessMapping(headers){
+    const map = {}; const used = new Set();
+    IMPORT_FIELDS.forEach(([key,,,syn])=>{
+      const idx = headers.findIndex((h,i)=>!used.has(i) && syn.some(s=>normHeader(h)===normHeader(s)));
+      const idx2 = idx>=0 ? idx : headers.findIndex((h,i)=>!used.has(i) && syn.some(s=>normHeader(h).includes(normHeader(s))));
+      if (idx2>=0){ map[key] = idx2; used.add(idx2); }
+    });
+    return map;
+  }
+  const MAP_KEY = 'tgt_crm_import_map_v1';
+  function savedMapping(headers){ try{ const all = JSON.parse(localStorage.getItem(MAP_KEY)||'{}'); return all[headers.map(normHeader).join('|')] || null; }catch(e){ return null; } }
+  function rememberMapping(headers, map){ try{ const all = JSON.parse(localStorage.getItem(MAP_KEY)||'{}'); all[headers.map(normHeader).join('|')] = map; localStorage.setItem(MAP_KEY, JSON.stringify(all)); }catch(e){} }
+
+  // 날짜·인원·상태 정규화(추정하지 않고, 읽을 수 없으면 오류로 돌려준다)
+  function toDateStr(v){
+    if (v==null || v==='') return null;
+    if (v instanceof Date && !isNaN(v)) return `${v.getFullYear()}-${pad2(v.getMonth()+1)}-${pad2(v.getDate())}`;
+    if (typeof v==='number' && v>20000 && v<80000){ const d = new Date(Math.round((v-25569)*86400000)); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth()+1)}-${pad2(d.getUTCDate())}`; } // 엑셀 날짜 일련번호
+    const s = String(v).trim();
+    let m = /^(\d{4})\s*[-./년]\s*(\d{1,2})\s*[-./월]\s*(\d{1,2})/.exec(s);
+    if (!m && (m = /^(\d{2})[-./](\d{1,2})[-./](\d{1,2})$/.exec(s))) m = [m[0], '20'+m[1], m[2], m[3]];
+    if (!m && (m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s))) m = [m[0], m[3], m[1], m[2]];
+    if (!m) return undefined;
+    const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    if (mo<1 || mo>12 || d<1 || d>31) return undefined;
+    return `${y}-${pad2(mo)}-${pad2(d)}`;
+  }
+  const kstMidnight = d => d ? `${d}T00:00:00+09:00` : null;   // 날짜만 있는 예약일·취소일은 한국 시간 0시로 저장
+  function toParty(v){ if (v==null || v==='') return null; const m = /(\d{1,3})/.exec(String(v)); return m ? Number(m[1]) : undefined; }
+  function toStatus(v){
+    const s = String(v==null?'':v).replace(/\s/g,'').toLowerCase();
+    if (!s) return '예약확정';
+    if (/취소|환불|cancel/.test(s)) return '예약취소';
+    if (/출발완료|여행완료|종료|완료된여행|departed|done/.test(s)) return '출발완료';
+    if (/대기|가예약|보류|요청|pending|hold|입금대기/.test(s)) return '예약대기';
+    if (/확정|완료|결제|confirm|ok|예약/.test(s)) return '예약확정';
+    return undefined;
+  }
+  const phoneDigits = p => String(p||'').replace(/\D/g,'').replace(/^82/,'0');
+  function matchProductByTitle(title){
+    const t = String(title||'').trim(); if (!t) return null;
+    const prods = allProducts();
+    const exact = prods.find(x=>x.title===t); if (exact) return exact;
+    const norm = s => s.replace(/\s+/g,'');
+    const nt = norm(t);
+    return prods.find(x=>x.title && (norm(x.title).includes(nt) || nt.includes(norm(x.title)))) || null;
+  }
+
+  // 파일 읽기 — CSV(UTF-8 / 한글 엑셀 CSV의 EUC-KR 자동 판별), XLSX·XLS(SheetJS, 처음 필요할 때만 불러옴)
+  let _xlsxLoading = null;
+  function loadXlsx(){
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (!_xlsxLoading) _xlsxLoading = new Promise((res, rej)=>{ const s = document.createElement('script'); s.src = 'assets/vendor/xlsx-0.18.5.full.min.js'; s.onload = ()=>res(window.XLSX); s.onerror = ()=>{ _xlsxLoading = null; rej(new Error('엑셀 읽기 모듈을 불러오지 못했습니다')); }; document.head.appendChild(s); });
+    return _xlsxLoading;
+  }
+  function parseCsv(text){
+    const rows = []; let row = [], cell = '', q = false;
+    for (let i=0;i<text.length;i++){
+      const ch = text[i];
+      if (q){ if (ch==='"'){ if (text[i+1]==='"'){ cell+='"'; i++; } else q = false; } else cell += ch; }
+      else if (ch==='"') q = true;
+      else if (ch===','){ row.push(cell); cell=''; }
+      else if (ch==='\n' || ch==='\r'){ if (ch==='\r' && text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+      else cell += ch;
+    }
+    if (cell!=='' || row.length){ row.push(cell); rows.push(row); }
+    return rows;
+  }
+  async function sha256Hex(buf){ const h = await crypto.subtle.digest('SHA-256', buf); return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  async function readTableFile(file){
+    const buf = await file.arrayBuffer();
+    const hash = await sha256Hex(buf);
+    let sheets = [];
+    if (/\.csv$/i.test(file.name) || file.type==='text/csv'){
+      let text;
+      try{ text = new TextDecoder('utf-8', {fatal:true}).decode(buf); }catch(e){ text = new TextDecoder('euc-kr').decode(buf); }
+      sheets = [{name:'CSV', rows: parseCsv(text.replace(/^﻿/,''))}];
+    } else {
+      const XLSX = await loadXlsx();
+      const wb = XLSX.read(buf, {type:'array', cellDates:true});
+      sheets = wb.SheetNames.map(n=>({name:n, rows: XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, raw:true, defval:'', blankrows:false})}));
+    }
+    sheets.forEach(s=>{ s.rows = s.rows.filter(r=>r.some(c=>String(c==null?'':c).trim()!=='')); });
+    return {buf, hash, sheets: sheets.filter(s=>s.rows.length)};
+  }
+
+  // 가져오기 상태
+  const imp = { file:null, data:null, sheet:0, headerRow:0, map:null, preview:null, running:false, result:null, error:'', dupInfo:null };
+  function impReset(){ Object.assign(imp, {file:null, data:null, sheet:0, headerRow:0, map:null, preview:null, running:false, result:null, error:'', dupInfo:null}); }
+  function impHeaders(){ const rows = imp.data.sheets[imp.sheet].rows; return (rows[imp.headerRow]||[]).map(h=>String(h==null?'':h).trim()); }
+  function impBodyRows(){ return imp.data.sheets[imp.sheet].rows.slice(imp.headerRow+1); }
+  async function impPickFile(input){
+    const file = input.files && input.files[0]; if (!file) return;
+    impReset(); imp.file = file; renderBody();
+    try{
+      imp.data = await readTableFile(file);
+      if (!imp.data.sheets.length) throw new Error('읽을 수 있는 행이 없습니다');
+      // 같은 파일을 이미 가져왔는지(중복 가져오기 방지)
+      const { data:dup } = await sb().from(TABLES.imports).select('id,created_at,file_name').eq('file_sha256', imp.data.hash).eq('status','completed').limit(1);
+      imp.dupInfo = dup && dup[0] ? dup[0] : null;
+      impDetectHeaderRow(); impAutoMap();
+    }catch(e){ imp.error = errText(e); }
+    renderBody();
+  }
+  function impAutoMap(){ const h = impHeaders(); imp.map = savedMapping(h) || guessMapping(h); imp.preview = null; }
+  // 머리글 행 자동 찾기 — 맨 위에 "○월 예약 명단" 같은 제목 줄이 있어도 예약번호 열이 있는 첫 행을 머리글로 쓴다
+  function impDetectHeaderRow(){
+    const rows = imp.data.sheets[imp.sheet].rows;
+    for (let i=0;i<Math.min(8, rows.length);i++){
+      const h = rows[i].map(x=>String(x==null?'':x).trim());
+      if ((savedMapping(h) || guessMapping(h)).booking_no!=null){ imp.headerRow = i; return; }
+    }
+    imp.headerRow = 0;
+  }
+  function impSetSheet(i){ imp.sheet = Number(i)||0; impDetectHeaderRow(); impAutoMap(); renderBody(); }
+  function impSetHeaderRow(i){ imp.headerRow = Math.max(0, Number(i)||0); impAutoMap(); renderBody(); }
+  function impSetMap(key, idx){ if (idx==='') delete imp.map[key]; else imp.map[key] = Number(idx); imp.preview = null; renderBody(); }
+
+  // 미리보기 — 행마다 신규·갱신·변경 없음·오류를 판정
+  async function impBuildPreview(){
+    if (imp.map.booking_no==null){ imp.error = '예약번호 열을 지정해 주세요(중복 검사·갱신 기준).'; renderBody(); return; }
+    imp.error = ''; imp.preview = {loading:true}; renderBody();
+    const headers = impHeaders(); rememberMapping(headers, imp.map);
+    const get = (r, k) => imp.map[k]==null ? '' : r[imp.map[k]];
+    const rows = impBodyRows();
+    const parsed = [];
+    const seen = {};
+    rows.forEach((r, i)=>{
+      const lineNo = imp.headerRow + 2 + i;   // 엑셀 행 번호(1부터, 머리글 다음)
+      const errs = [];
+      const booking_no = String(get(r,'booking_no')==null?'':get(r,'booking_no')).trim();
+      if (!booking_no) errs.push('예약번호 없음');
+      const status = toStatus(get(r,'booking_status')); if (status===undefined) errs.push(`알 수 없는 상태 "${get(r,'booking_status')}"`);
+      const dep = toDateStr(get(r,'departure_date')); if (dep===undefined) errs.push(`출발일 형식 오류 "${get(r,'departure_date')}"`);
+      const conf = toDateStr(get(r,'confirmed_at')); if (conf===undefined) errs.push(`예약일 형식 오류 "${get(r,'confirmed_at')}"`);
+      const canc = toDateStr(get(r,'cancelled_at')); if (canc===undefined) errs.push(`취소일 형식 오류 "${get(r,'cancelled_at')}"`);
+      const party = toParty(get(r,'confirmed_party_size')); if (party===undefined) errs.push(`인원 형식 오류 "${get(r,'confirmed_party_size')}"`);
+      const title = String(get(r,'product')||'').trim();
+      const prod = title ? matchProductByTitle(title) : null;
+      const destRaw = String(get(r,'destination')||'').trim();
+      const catId = prod ? prod.catId : (destRaw ? matchCatFromDest(destRaw) : (title ? matchCatFromDest(title) : null));
+      const ci = catId ? catInfo(catId) : null;
+      const rec = {
+        booking_no, booking_status: status, departure_date: dep||null, confirmed_party_size: party==null?null:party,
+        product_uid: prod ? prod.uid : null, product_title: prod ? prod.title : (title||null), product_cat: ci ? ci.id : null,
+        travel_region: ci ? ci.region : null, country: ci ? (ci.region==='overseas'?ci.ko:'대한민국') : (destRaw||null), destination: ci ? ci.ko : (destRaw||null),
+        customer_name: String(get(r,'customer_name')||'').trim() || null, customer_phone: String(get(r,'customer_phone')||'').trim() || null,
+        cancellation_reason: String(get(r,'cancellation_reason')||'').trim() || null, source_channel: String(get(r,'source_channel')||'').trim() || null,
+        memo: String(get(r,'memo')||'').trim() || null,
+        confirmed_at: conf ? kstMidnight(conf) : null, cancelled_at: canc ? kstMidnight(canc) : null,
+      };
+      if (booking_no){ if (seen[booking_no]!=null) parsed[seen[booking_no]].errs.push(`파일 안 예약번호 중복(${lineNo}행을 사용)`); seen[booking_no] = parsed.length; }
+      parsed.push({lineNo, raw:r, rec, errs, productMatched: !!prod});
+    });
+    // 기존 예약 조회(예약번호 기준)
+    const nos = [...new Set(parsed.filter(p=>p.rec.booking_no).map(p=>p.rec.booking_no))];
+    const existing = {};
+    for (let i=0;i<nos.length;i+=200){
+      const { data, error } = await sb().from(TABLES.bookings).select('*').in('booking_no', nos.slice(i,i+200));
+      if (error){ imp.preview = null; imp.error = '기존 예약 조회 실패: '+errText(error); renderBody(); return; }
+      (data||[]).forEach(b=>existing[b.booking_no]=b);
+    }
+    const CMP = ['booking_status','departure_date','confirmed_party_size','product_uid','product_title','customer_name','customer_phone','cancellation_reason','source_channel','memo'];
+    parsed.forEach(p=>{
+      if (p.errs.length){ p.kind = 'error'; return; }
+      const ex = existing[p.rec.booking_no];
+      if (!ex){ p.kind = 'new'; return; }
+      p.existing = ex;
+      // 비어 있는 칸은 기존 값을 지우지 않는다(명단에 없는 정보는 유지)
+      const patch = {};
+      CMP.forEach(k=>{ const v = p.rec[k]; if (v!=null && v!=='' && String(v)!==String(ex[k]==null?'':ex[k])) patch[k] = v; });
+      if (!ex.confirmed_at && p.rec.confirmed_at) patch.confirmed_at = p.rec.confirmed_at;
+      if (!ex.cancelled_at && p.rec.cancelled_at) patch.cancelled_at = p.rec.cancelled_at;
+      if (patch.product_uid || patch.product_title){ ['product_cat','travel_region','country','destination'].forEach(k=>{ if (p.rec[k]) patch[k] = p.rec[k]; }); }
+      p.patch = patch;
+      p.kind = !Object.keys(patch).length ? 'same' : (patch.booking_status==='예약취소' ? 'cancel' : (patch.departure_date ? 'datechange' : 'update'));
+    });
+    const cnt = k => parsed.filter(p=>p.kind===k).length;
+    imp.preview = {rows:parsed, counts:{new:cnt('new'), update:cnt('update'), cancel:cnt('cancel'), datechange:cnt('datechange'), same:cnt('same'), error:cnt('error')}};
+    renderBody();
+  }
+  const KIND_LABEL = {new:'신규', update:'갱신', cancel:'취소 반영', datechange:'출발일 변경', same:'변경 없음', error:'오류'};
+  const KIND_CLS = {new:'ok', update:'go', cancel:'no', datechange:'hold', same:'info', error:'no'};
+
+  async function impRun(){
+    if (!imp.preview || !imp.preview.rows || imp.running) return;
+    if (imp.dupInfo){ alert(`이 파일은 ${fmtKst(imp.dupInfo.created_at)}에 이미 가져온 파일과 내용이 같아 다시 가져오지 않습니다.`); return; }
+    const work = imp.preview.rows.filter(p=>p.kind!=='error' && p.kind!=='same');
+    if (!work.length && !confirm('새로 반영할 행이 없습니다. 기록만 남길까요?')) return;
+    imp.running = true; imp.error = ''; renderBody();
+    const client = sb();
+    const report = {inserted:0, updated:0, unchanged:imp.preview.counts.same, errors:imp.preview.rows.filter(p=>p.kind==='error').map(p=>({line:p.lineNo, reason:p.errs.join(', ')})), autoLinked:0, suggested:0, backup:null};
+    let importId = null;
+    try{
+      // 1) 원본 파일 백업(비공개 저장소)
+      const kst = todayKst();
+      const path = `${kst.y}-${pad2(kst.m)}/${imp.data.hash.slice(0,16)}-${imp.file.name.replace(/[^\w.\-가-힣]/g,'_')}`;
+      try{
+        const { error:upErr } = await client.storage.from('tgt-booking-imports').upload(path, imp.file, {upsert:false});
+        if (upErr && !/exists|Duplicate/i.test(errText(upErr))) throw upErr;
+        report.backup = path;
+      }catch(e){
+        if (!confirm('원본 파일 백업에 실패했습니다('+errText(e)+').\n백업 없이 가져오기를 계속할까요?')){ imp.running = false; renderBody(); return; }
+      }
+      // 2) 가져오기 기록(끝나면 completed로 바꿈 — 중간에 멈추면 failed로 남아 다시 가져올 수 있음)
+      const { data:impRow, error:impErr } = await client.from(TABLES.imports).insert({file_name:imp.file.name, file_sha256:imp.data.hash, storage_path:report.backup, mapping:imp.map, total_rows:imp.preview.rows.length, status:'failed'}).select().single();
+      if (impErr) throw impErr;
+      importId = impRow.id;
+      // 3) 신규·갱신 반영
+      const touched = [];
+      const news = work.filter(p=>p.kind==='new').map(p=>Object.assign({}, p.rec, {import_id:importId, raw:{line:p.lineNo, cells:p.raw}}));
+      for (let i=0;i<news.length;i+=100){
+        const { data, error } = await client.from(TABLES.bookings).insert(news.slice(i,i+100)).select();
+        if (error) throw error;
+        report.inserted += (data||[]).length; touched.push(...(data||[]));
+      }
+      for (const p of work.filter(p=>p.kind!=='new')){
+        const { data, error } = await client.from(TABLES.bookings).update(Object.assign({}, p.patch, {import_id:importId})).eq('id', p.existing.id).select().single();
+        if (error){ report.errors.push({line:p.lineNo, reason:'갱신 실패: '+errText(error)}); continue; }
+        report.updated++; touched.push(data);
+      }
+      // 4) 이미 상담과 연결된 예약은 상태(확정·취소·출발완료)를 상담 결과·AI 리드 상태에 반영하고, 나머지는 자동 연결·연결 후보
+      for (const b of touched.filter(x=>x && x.consultation_id)) await syncConsultFromBooking(b);
+      const lk = await autoLink(touched);
+      report.autoLinked = lk.linked; report.suggested = lk.suggested;
+      await client.from(TABLES.imports).update({status:'completed', inserted_rows:report.inserted, updated_rows:report.updated, unchanged_rows:report.unchanged, error_rows:report.errors.length, report}).eq('id', importId);
+      imp.result = report; state.bookingsLoaded = false;
+      logAccess('import_bookings', TABLES.bookings, {import_id:importId, inserted:report.inserted, updated:report.updated});
+    }catch(e){
+      imp.error = '가져오기 중단: '+errText(e) + (importId ? ' (일부 반영된 행은 다시 가져오면 예약번호 기준으로 갱신됩니다)' : '');
+      if (importId) try{ await client.from(TABLES.imports).update({report}).eq('id', importId); }catch(x){}
+    }
+    imp.running = false; renderBody();
+  }
+  function impDownloadErrors(){
+    if (!imp.preview) return;
+    const headers = impHeaders();
+    const errLines = new Set(((imp.result && imp.result.errors) || imp.preview.rows.filter(p=>p.kind==='error').map(p=>({line:p.lineNo, reason:p.errs.join(', ')}))).map(e=>e.line));
+    const reasonBy = {}; ((imp.result && imp.result.errors) || []).forEach(e=>reasonBy[e.line]=e.reason);
+    const rows = imp.preview.rows.filter(p=>errLines.has(p.lineNo));
+    const csvCell = v => `"${String(v==null?'':v).replace(/"/g,'""')}"`;
+    const out = [['행 번호','오류 사유'].concat(headers).map(csvCell).join(',')].concat(rows.map(p=>[p.lineNo, reasonBy[p.lineNo] || p.errs.join(', ')].concat(headers.map((h,i)=>p.raw[i] instanceof Date ? toDateStr(p.raw[i]) : p.raw[i])).map(csvCell).join(',')));
+    const blob = new Blob(['﻿'+out.join('\n')], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `예약가져오기_오류행_${Date.now()}.csv`; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  // 상담 ↔ 예약 연결: 연락처가 같고 상품(또는 목적지)이 같은 상담이 하나뿐이면 자동 연결, 애매하면 승인 대기 후보로 남긴다
+  async function autoLink(bookings){
+    const client = sb(); let linked = 0, suggested = 0;
+    const todo = (bookings||[]).filter(b=>b && !b.consultation_id);
+    if (!todo.length) return {linked, suggested};
+    const { data:cons } = await client.from(TABLES.consultations).select('*').eq('is_deleted', false).order('consulted_at', {ascending:false}).limit(2000);
+    const all = cons || [];
+    for (const b of todo){
+      const bp = phoneDigits(b.customer_phone);
+      const sameTrip = c => (b.product_uid && c.product_uid===b.product_uid) || (!b.product_uid && b.product_cat && c.product_cat===b.product_cat) || (b.product_uid && !c.product_uid && c.product_cat===b.product_cat);
+      const before = c => !b.confirmed_at || new Date(c.consulted_at) <= new Date(new Date(b.confirmed_at).getTime() + 7*86400000);
+      const cands = [];
+      all.forEach(c=>{
+        if (c.booking_id && c.booking_id!==b.id) return;
+        const reasons = []; let score = 0;
+        const cp = phoneDigits(c.customer_phone);
+        if (bp && cp && bp===cp){ score += 0.6; reasons.push('연락처 일치'); }
+        if (b.customer_name && c.customer_name && b.customer_name.replace(/\s/g,'')===c.customer_name.replace(/\s/g,'')){ score += 0.2; reasons.push('고객명 일치'); }
+        if (sameTrip(c)){ score += 0.3; reasons.push(c.product_uid && c.product_uid===b.product_uid ? '상품 일치' : '국가·권역 일치'); }
+        if (score>=0.5 && before(c)) cands.push({c, score:Math.min(1, score), reasons});
+      });
+      if (!cands.length) continue;
+      // 같은 문의 묶음(후속 상담)은 최초 상담 하나로 본다
+      const roots = {}; cands.forEach(x=>{ const k = x.c.parent_id || x.c.id; if (!roots[k] || roots[k].score < x.score) roots[k] = x; });
+      const uniq = Object.values(roots).sort((a,b2)=>b2.score-a.score);
+      const top = uniq[0];
+      const certain = top.reasons.includes('연락처 일치') && top.score>=0.9 && uniq.filter(x=>x.score>=0.9).length===1;
+      if (certain){ await linkBookingConsult(b, top.c); linked++; }
+      else for (const x of uniq.slice(0,3)){
+        const { error } = await client.from(TABLES.links).insert({consultation_id:x.c.id, booking_id:b.id, score:Number(x.score.toFixed(2)), reasons:x.reasons});
+        if (!error) suggested++;
+      }
+    }
+    return {linked, suggested};
+  }
+  // 연결 확정 — 예약에 상담을, 상담에 예약을 기록하고 상담 결과·리드 상태를 예약 상태에 맞춘다
+  async function linkBookingConsult(b, c){
+    const client = sb();
+    await client.from(TABLES.bookings).update({consultation_id:c.id}).eq('id', b.id);
+    await syncConsultFromBooking(Object.assign({}, b, {consultation_id:c.id}), c);
+    await client.from(TABLES.links).update({status:'rejected', decided_at:new Date().toISOString()}).eq('booking_id', b.id).eq('status','pending').neq('consultation_id', c.id);
+    await client.from(TABLES.links).update({status:'approved', decided_at:new Date().toISOString()}).eq('booking_id', b.id).eq('consultation_id', c.id);
+  }
+  async function syncConsultFromBooking(b, c){
+    if (!b.consultation_id) return;
+    const client = sb();
+    if (!c){ const { data } = await client.from(TABLES.consultations).select('*').eq('id', b.consultation_id).maybeSingle(); c = data; }
+    if (!c) return;
+    const result = RESULT_BY_BOOKING[b.booking_status];
+    const patch = {booking_id:b.id};
+    if (result && c.result!==result) patch.result = result;
+    const { data } = await client.from(TABLES.consultations).update(patch).eq('id', c.id).select().single();
+    if (data){ const i = state.list.findIndex(x=>x.id===data.id); if (i>=0) state.list[i] = data; }
+    // 후속 상담이면 최초 상담의 리드까지 따라가 상태를 맞춘다
+    const leadId = c.lead_id || (c.parent_id ? ((state.list.find(x=>x.id===c.parent_id)||{}).lead_id) : null);
+    if (result) await syncLeadStatus(leadId, result);
+  }
+
+  // ── 예약 목록 · 직접 등록 · 상태 변경 ──
+  state.bookings = []; state.bookingsLoaded = false; state.bookingFilter = {q:'', status:'', month:''}; state.bookingHist = {}; state.bookingForm = null; state.bookingView = 'list';
+  async function loadBookings(force){
+    if (state.bookingsLoaded && !force) return;
+    await checkReady(); if (!isUsable()) return;
+    const { data, error } = await sb().from(TABLES.bookings).select('*').order('departure_date', {ascending:false}).limit(3000);
+    if (error){ state.bookingsError = errText(error); return; }
+    state.bookings = data||[]; state.bookingsLoaded = true; state.bookingsError = '';
+  }
+  function bookingFormFromConsult(c){
+    return {booking_no:'', product: c.product_uid ? 'uid:'+c.product_uid : (c.product_cat ? 'cat:'+c.product_cat : ''), booking_status:'예약확정',
+      departure_date: c.preferred_departure_date || '', confirmed_party_size: c.requested_party_size==null ? '' : String(c.requested_party_size),
+      customer_name: c.customer_name||'', customer_phone: c.customer_phone||'', source_channel: c.channel||'', memo:'', consultation_id: c.id};
+  }
+  function newBookingFromConsult(id){
+    const c = state.list.find(x=>x.id===id); if (!c) return;
+    state.bookingForm = bookingFormFromConsult(c); state.bookingView = 'form'; go('bookings');
+  }
+  function newBooking(){ state.bookingForm = {booking_no:'', product:'', booking_status:'예약확정', departure_date:'', confirmed_party_size:'', customer_name:'', customer_phone:'', source_channel:'', memo:'', consultation_id:null}; state.bookingView = 'form'; renderBody(); }
+  function bfSet(k, v){ state.bookingForm[k] = v; }
+  async function saveBooking(){
+    const f = state.bookingForm; if (!f) return;
+    const no = String(f.booking_no||'').trim() || `M${todayKst().y%100}${pad2(todayKst().m)}${pad2(todayKst().d)}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+    if (!f.product){ alert('상품(또는 국가·권역)을 선택하세요.'); return; }
+    const base = formToRow({product:f.product});
+    const row = {booking_no:no, booking_status:f.booking_status, departure_date:f.departure_date||null, confirmed_party_size: f.confirmed_party_size==='' ? null : (parseInt(f.confirmed_party_size,10)||null),
+      customer_name:(f.customer_name||'').trim()||null, customer_phone:(f.customer_phone||'').trim()||null, source_channel:f.source_channel||null, memo:(f.memo||'').trim()||null,
+      consultation_id:f.consultation_id||null, product_uid:base.product_uid||null, product_title:base.product_title||null, product_cat:base.product_cat||null, travel_region:base.travel_region||null, country:base.country||null, destination:base.destination||null};
+    const { data, error } = await sb().from(TABLES.bookings).insert(row).select().single();
+    if (error){ alert('예약 저장 실패: '+errText(error)); return; }
+    if (data.consultation_id) await syncConsultFromBooking(data);
+    state.bookings.unshift(data); state.bookingForm = null; state.bookingView = 'list';
+    state.bookingFlash = `<div class="crm-banner ok">✅ 예약 ${esc(data.booking_no)} 등록${data.consultation_id?` — 상담 #${data.consultation_id} 결과도 "${esc(RESULT_BY_BOOKING[data.booking_status])}"로 갱신`:''}</div>`;
+    renderBody();
+  }
+  async function changeBooking(id, field, value){
+    const b = state.bookings.find(x=>x.id===id); if (!b) return;
+    const patch = {};
+    if (field==='booking_status'){
+      patch.booking_status = value;
+      if (value==='예약취소'){ const r = prompt('취소 사유(선택)', b.cancellation_reason||''); if (r===null){ renderBody(); return; } patch.cancellation_reason = r.trim()||null; }
+      if (value==='출발완료'){
+        const n = prompt('실제 출발 인원을 입력하세요(출발이 확인된 경우에만 출발 완료로 처리됩니다)', b.actual_party_size || b.confirmed_party_size || '');
+        if (n===null || !/^\d+$/.test(String(n).trim())){ renderBody(); return; }
+        patch.actual_party_size = Number(n); patch.actual_departed_at = new Date().toISOString();
+      }
+    } else if (field==='departure_date'){ patch.departure_date = value || null; }
+    else if (field==='confirmed_party_size'){ patch.confirmed_party_size = value==='' ? null : (parseInt(value,10)||null); }
+    const { data, error } = await sb().from(TABLES.bookings).update(patch).eq('id', id).select().single();
+    if (error){ alert('변경 실패: '+errText(error)); return; }
+    Object.assign(b, data); delete state.bookingHist[id];
+    if (field==='booking_status' && data.consultation_id) await syncConsultFromBooking(data);
+    renderBody();
+  }
+  async function bookingHistory(id){
+    if (state.bookingHist[id]){ delete state.bookingHist[id]; renderBody(); return; }
+    state.bookingHist[id] = {loading:true}; renderBody();
+    const { data, error } = await sb().from(TABLES.bookingHistory).select('*').eq('booking_id', id).order('changed_at', {ascending:false}).limit(50);
+    state.bookingHist[id] = error ? {error:errText(error)} : {rows:data||[]}; renderBody();
+  }
+  function bookingsHTML(){
+    if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
+    if (state.bookingView==='form' && state.bookingForm) return bookingFormHTML();
+    return importHTML() + bookingListHTML();
+  }
+  function bookingFormHTML(){
+    const f = state.bookingForm;
+    return `<div class="crm-card"><h5>🧾 예약 직접 등록 ${f.consultation_id?`<span class="crm-note" style="font-weight:500">— 상담 #${f.consultation_id} 내용으로 채움</span>`:''}</h5>
+      <div class="crm-grid2">
+        <div class="crm-field"><label>예약번호 <span class="crm-note" style="font-weight:500">(비우면 자동 생성)</span></label><input type="text" value="${esc(f.booking_no)}" oninput="TGT_CRM.bfSet('booking_no', this.value)"></div>
+        <div class="crm-field"><label>예약 상태</label><select onchange="TGT_CRM.bfSet('booking_status', this.value)">${['예약대기','예약확정'].map(s=>`<option ${f.booking_status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      </div>
+      <div class="crm-field"><label>상품<span class="req">*</span></label><select onchange="TGT_CRM.bfSet('product', this.value)">${productOptionsHTML(f.product)}</select></div>
+      <div class="crm-grid2">
+        <div class="crm-field"><label>출발일</label><input type="date" value="${esc(f.departure_date)}" onchange="TGT_CRM.bfSet('departure_date', this.value)"></div>
+        <div class="crm-field"><label>확정 인원</label><input type="number" min="0" value="${esc(f.confirmed_party_size)}" oninput="TGT_CRM.bfSet('confirmed_party_size', this.value)"></div>
+        <div class="crm-field"><label>고객명</label><input type="text" value="${esc(f.customer_name)}" oninput="TGT_CRM.bfSet('customer_name', this.value)"></div>
+        <div class="crm-field"><label>연락처</label><input type="tel" value="${esc(f.customer_phone)}" oninput="TGT_CRM.bfSet('customer_phone', this.value)"></div>
+        <div class="crm-field"><label>예약 경로</label><input type="text" value="${esc(f.source_channel)}" oninput="TGT_CRM.bfSet('source_channel', this.value)"></div>
+        <div class="crm-field"><label>비고</label><input type="text" value="${esc(f.memo)}" oninput="TGT_CRM.bfSet('memo', this.value)"></div>
+      </div>
+      <p class="crm-note" style="margin-top:10px">예약 확정일과 최초 출발일은 저장할 때 자동으로 기록되며, 이후 출발일을 바꿔도 최초 값은 그대로 남습니다.</p>
+      <div class="crm-actions"><button type="button" class="crm-btn" onclick="TGT_CRM.bookingCancelForm()">취소</button><button type="button" class="crm-btn primary" onclick="TGT_CRM.saveBooking()">예약 저장</button></div>
+    </div>`;
+  }
+  function bookingCancelForm(){ state.bookingForm = null; state.bookingView = 'list'; renderBody(); }
+  function importHTML(){
+    let inner = '';
+    if (imp.result){
+      const r = imp.result;
+      inner = `<div class="crm-banner ok">✅ 가져오기 완료 — 신규 ${r.inserted}건 · 갱신 ${r.updated}건 · 변경 없음 ${r.unchanged}건 · 오류 ${r.errors.length}건<br>
+        상담 자동 연결 ${r.autoLinked}건 · 연결 승인 대기 ${r.suggested}건 ${r.backup?'· 원본 백업 완료':'· ⚠ 원본 백업 없음'}</div>
+        <div class="crm-actions">${r.errors.length?`<button type="button" class="crm-btn" onclick="TGT_CRM.impDownloadErrors()">⬇ 오류 행 다운로드</button>`:''}
+        ${r.suggested?`<button type="button" class="crm-btn" onclick="TGT_CRM.go('links')">🔗 연결 승인으로</button>`:''}
+        <button type="button" class="crm-btn primary" onclick="TGT_CRM.impReset()">다른 파일 가져오기</button></div>`;
+    } else if (!imp.file){
+      inner = `<p class="crm-note">예약 관리 프로그램·엑셀에서 내려받은 명단(CSV · XLSX)을 올리면, 예약번호를 기준으로 신규·갱신·취소·출발일 변경을 판정해 미리 보여드립니다. 같은 파일은 두 번 가져오지 않습니다.</p>
+        <div class="crm-actions" style="justify-content:flex-start"><label class="crm-btn primary" style="display:inline-block">📥 파일 선택<input type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="TGT_CRM.impPickFile(this)"></label>
+        <button type="button" class="crm-btn" onclick="TGT_CRM.newBooking()">+ 예약 직접 등록</button></div>`;
+    } else if (!imp.data){
+      inner = imp.error ? `<div class="crm-banner err">${esc(imp.error)}</div><div class="crm-actions"><button type="button" class="crm-btn" onclick="TGT_CRM.impReset()">다시 선택</button></div>` : `<div class="crm-empty">파일을 읽는 중...</div>`;
+    } else {
+      const headers = impHeaders();
+      const sheets = imp.data.sheets;
+      const pv = imp.preview;
+      inner = `<p class="crm-note"><b>${esc(imp.file.name)}</b> · ${impBodyRows().length}행</p>
+        ${imp.dupInfo?`<div class="crm-banner warn">⚠ 이 파일은 ${esc(fmtKst(imp.dupInfo.created_at))}에 이미 가져온 파일과 내용이 같아 다시 가져올 수 없습니다(중복 가져오기 방지).</div>`:''}
+        <div class="crm-grid2">
+          ${sheets.length>1?`<div class="crm-field"><label>시트</label><select onchange="TGT_CRM.impSetSheet(this.value)">${sheets.map((s,i)=>`<option value="${i}" ${imp.sheet===i?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>`:''}
+          <div class="crm-field"><label>머리글(열 이름) 행</label><select onchange="TGT_CRM.impSetHeaderRow(this.value)">${sheets[imp.sheet].rows.slice(0,8).map((r,i)=>`<option value="${i}" ${imp.headerRow===i?'selected':''}>${i+1}행: ${esc(r.slice(0,4).join(' | ').slice(0,40))}</option>`).join('')}</select></div>
+        </div>
+        <div class="crm-field"><label>열 이름 매핑 <span class="crm-note" style="font-weight:500">(자동 인식 · 다음에는 같은 양식을 기억)</span></label>
+          <div class="crm-grid2">${IMPORT_FIELDS.map(([key,label,req])=>`<div class="crm-map-row"><span>${label}${req?'<span class="req">*</span>':''}</span>
+            <select onchange="TGT_CRM.impSetMap('${key}', this.value)"><option value="">— 사용 안 함 —</option>${headers.map((h,i)=>`<option value="${i}" ${imp.map[key]===i?'selected':''}>${esc(h||('열 '+(i+1)))}</option>`).join('')}</select></div>`).join('')}</div></div>
+        ${imp.error?`<div class="crm-banner err" style="margin-top:10px">${esc(imp.error)}</div>`:''}
+        ${pv && pv.rows ? previewHTML(pv) : (pv && pv.loading ? '<div class="crm-empty">미리보기 만드는 중...</div>' : '')}
+        <div class="crm-actions">
+          <button type="button" class="crm-btn" onclick="TGT_CRM.impReset()">취소</button>
+          <button type="button" class="crm-btn" onclick="TGT_CRM.impBuildPreview()">👀 미리보기</button>
+          ${pv && pv.rows ? `<button type="button" class="crm-btn" onclick="TGT_CRM.impDownloadErrors()" ${pv.counts.error?'':'disabled'}>⬇ 오류 행</button>
+          <button type="button" class="crm-btn primary" ${imp.running||imp.dupInfo?'disabled':''} onclick="TGT_CRM.impRun()">${imp.running?'가져오는 중...':'가져오기 실행'}</button>` : ''}
+        </div>`;
+    }
+    return `<div class="crm-card"><h5>📥 예약 명단 가져오기</h5>${inner}</div>`;
+  }
+  function previewHTML(pv){
+    const c = pv.counts;
+    const show = pv.rows.filter(p=>p.kind!=='same').slice(0,60);
+    return `<div class="crm-banner ${c.error?'warn':'ok'}" style="margin-top:12px">신규 ${c.new} · 갱신 ${c.update} · 취소 반영 ${c.cancel} · 출발일 변경 ${c.datechange} · 변경 없음 ${c.same} · <b>오류 ${c.error}</b></div>
+      <div class="crm-preview">${show.map(p=>`<div class="crm-prow"><span class="crm-tag ${KIND_CLS[p.kind]}">${KIND_LABEL[p.kind]}</span>
+        <span class="crm-note">${p.lineNo}행</span> <b>${esc(p.rec.booking_no||'(번호 없음)')}</b> ${esc(p.rec.product_title||p.rec.destination||'')}${p.rec.product_title && !p.productMatched ? ' <span class="crm-note">(등록 상품과 일치 없음)</span>' : ''}
+        · ${esc(p.rec.booking_status||'')} · 출발 ${esc(fmtDate(p.rec.departure_date)||'-')} · ${p.rec.confirmed_party_size==null?'-':p.rec.confirmed_party_size+'명'}
+        ${p.kind==='error'?`<div class="crm-perr">${esc(p.errs.join(', '))}</div>`:''}
+        ${p.patch && Object.keys(p.patch).length ? `<div class="crm-note">${Object.entries(p.patch).filter(([k])=>BK_LABELS[k]).map(([k,v])=>`${BK_LABELS[k]}: ${esc(fmtBk(k, p.existing[k]))} → ${esc(fmtBk(k, v))}`).join(' / ')}</div>` : ''}
+      </div>`).join('')}${pv.rows.filter(p=>p.kind!=='same').length>60?`<div class="crm-note">… 외 ${pv.rows.filter(p=>p.kind!=='same').length-60}행</div>`:''}</div>`;
+  }
+  const BK_LABELS = {booking_status:'상태', departure_date:'출발일', confirmed_party_size:'인원', product_title:'상품', customer_name:'고객명', customer_phone:'연락처', cancellation_reason:'취소 사유', source_channel:'경로', memo:'비고', confirmed_at:'예약일', cancelled_at:'취소일'};
+  function fmtBk(k, v){ if (v==null || v==='') return '—'; if (k==='departure_date') return fmtDate(v); if (k==='confirmed_at'||k==='cancelled_at') return fmtKst(v); return String(v); }
+  function bookingListHTML(){
+    if (!state.bookingsLoaded) return `<div class="crm-card"><div class="crm-empty">${state.bookingsError?'불러오기 실패: '+esc(state.bookingsError):'예약 불러오는 중...'}</div></div>`;
+    const bf = state.bookingFilter;
+    const qq = bf.q.trim().toLowerCase();
+    const items = state.bookings.filter(b=>(!bf.status || b.booking_status===bf.status) && (!bf.month || String(b.departure_date||'').startsWith(bf.month))
+      && (!qq || [b.booking_no,b.product_title,b.destination,b.customer_name,b.customer_phone,b.memo].join(' ').toLowerCase().includes(qq)));
+    return `<div class="crm-card"><h5>🧾 예약 목록 <span class="crm-note" style="font-weight:500">${items.length}건 / 전체 ${state.bookings.length}건</span></h5>
+      ${state.bookingFlash||''}
+      <div class="crm-filter">
+        <input type="search" placeholder="예약번호·상품·고객 검색" value="${esc(bf.q)}" oninput="TGT_CRM.bFilter('q', this.value)">
+        <select onchange="TGT_CRM.bFilter('status', this.value)"><option value="">전체 상태</option>${BOOKING_STATUSES.map(s=>`<option ${bf.status===s?'selected':''}>${s}</option>`).join('')}</select>
+        <input type="month" value="${esc(bf.month)}" onchange="TGT_CRM.bFilter('month', this.value)" title="출발 월">
+        <button type="button" class="crm-btn" onclick="TGT_CRM.newBooking()">+ 직접 등록</button>
+      </div>
+      <div class="crm-list" style="margin-top:10px">${items.slice(0,300).map(bookingItemHTML).join('') || '<div class="crm-empty">예약이 없습니다.</div>'}</div>
+    </div>`;
+  }
+  function bookingItemHTML(b){
+    const h = state.bookingHist[b.id];
+    const changed = b.original_departure_date && b.departure_date && b.original_departure_date!==b.departure_date;
+    return `<div class="crm-item">
+      <div class="crm-item-top"><span class="crm-tag ${BOOKING_CLS[b.booking_status]||'info'}">${esc(b.booking_status)}</span><b>${esc(b.product_title || b.destination || '(상품 미정)')}</b><span class="crm-note">${esc(b.booking_no)}</span></div>
+      <div class="crm-item-meta">${[
+        b.departure_date ? `출발 ${fmtDate(b.departure_date)}${changed?` (최초 ${fmtDate(b.original_departure_date)})`:''}` : '출발일 미정',
+        b.confirmed_party_size!=null ? `확정 인원 ${b.confirmed_party_size}명` : '', b.actual_party_size!=null ? `실제 출발 ${b.actual_party_size}명` : '',
+        b.confirmed_at ? `예약확정일 ${fmtKst(b.confirmed_at)}` : '', b.cancelled_at ? `취소 ${fmtKst(b.cancelled_at)}${b.cancellation_reason?` (${b.cancellation_reason})`:''}` : '',
+        b.customer_name ? `고객 ${b.customer_name}` : '', b.source_channel || '', b.consultation_id ? `💬 상담 #${b.consultation_id}` : '🔗 상담 미연결'].filter(Boolean).map(esc).join(' · ')}</div>
+      <div class="crm-item-acts">
+        <select onchange="TGT_CRM.changeBooking(${b.id}, 'booking_status', this.value)">${BOOKING_STATUSES.map(s=>`<option ${b.booking_status===s?'selected':''}>${s}</option>`).join('')}</select>
+        <input type="date" value="${esc(b.departure_date||'')}" onchange="TGT_CRM.changeBooking(${b.id}, 'departure_date', this.value)" title="출발일 변경">
+        <button type="button" class="crm-btn" onclick="TGT_CRM.bookingHistory(${b.id})">🕘 이력</button>
+        ${b.consultation_id ? '' : `<button type="button" class="crm-btn" onclick="TGT_CRM.findLinks(${b.id})">🔗 상담 찾기</button>`}
+      </div>
+      ${h ? `<div class="crm-hist">${h.loading?'불러오는 중...':(h.error?esc(h.error):(h.rows.map(x=>`<div class="h"><b>${esc(fmtKst(x.changed_at))}</b> — ${esc(x.from_status||'등록')} → ${esc(x.to_status)}${x.from_departure_date!==x.to_departure_date && x.from_departure_date?` · 출발 ${esc(fmtDate(x.from_departure_date))} → ${esc(fmtDate(x.to_departure_date))}`:''}${x.from_party_size!=null && x.from_party_size!==x.to_party_size?` · 인원 ${x.from_party_size} → ${x.to_party_size}`:''} <span class="crm-note">(${x.source==='import'?'가져오기':'직접'})</span></div>`).join('')||'이력이 없습니다.'))}</div>` : ''}
+    </div>`;
+  }
+  function bFilter(k, v){ state.bookingFilter[k] = v; renderBody(); }
+  async function findLinks(bookingId){
+    const b = state.bookings.find(x=>x.id===bookingId); if (!b) return;
+    const r = await autoLink([b]);
+    await loadBookings(true); await loadLinks(true);
+    alert(r.linked ? '연락처·상품이 일치하는 상담과 자동 연결했습니다.' : (r.suggested ? `연결 후보 ${r.suggested}건을 "연결 승인"에 올렸습니다.` : '연결할 만한 상담을 찾지 못했습니다(연락처·고객명·상품 기준).'));
+    renderBody();
+  }
+
+  // ── 연결 승인 ──
+  state.links = []; state.linksLoaded = false;
+  async function loadLinks(force){
+    if (state.linksLoaded && !force) return;
+    await checkReady(); if (!isUsable()) return;
+    const client = sb();
+    const { data, error } = await client.from(TABLES.links).select('*').eq('status','pending').order('created_at', {ascending:false}).limit(300);
+    if (error){ state.linksError = errText(error); return; }
+    const rows = data||[];
+    const cIds = [...new Set(rows.map(r=>r.consultation_id))], bIds = [...new Set(rows.map(r=>r.booking_id))];
+    const cons = cIds.length ? ((await client.from(TABLES.consultations).select('*').in('id', cIds)).data||[]) : [];
+    const bks = bIds.length ? ((await client.from(TABLES.bookings).select('*').in('id', bIds)).data||[]) : [];
+    state.links = rows.map(r=>Object.assign({}, r, {c:cons.find(x=>x.id===r.consultation_id), b:bks.find(x=>x.id===r.booking_id)})).filter(r=>r.c && r.b);
+    state.linksLoaded = true; state.linksError = '';
+  }
+  function linksHTML(){
+    if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
+    if (!state.linksLoaded) return `<div class="crm-card"><div class="crm-empty">${state.linksError?'불러오기 실패: '+esc(state.linksError):'불러오는 중...'}</div></div>`;
+    return `<div class="crm-card"><h5>🔗 연결 승인 <span class="crm-note" style="font-weight:500">— 자동으로 확정하기 애매한 상담·예약 연결 ${state.links.length}건</span></h5>
+      <p class="crm-note">연락처가 같고 상품이 같은 상담이 하나뿐인 경우만 자동 연결합니다. 나머지는 여기서 확인 후 승인하면 상담 결과와 AI 리드 상태가 예약 상태에 맞춰 갱신됩니다.</p>
+      <div class="crm-list">${state.links.map(l=>`<div class="crm-item">
+        <div class="crm-item-top"><span class="crm-tag go">일치도 ${Math.round(Number(l.score||0)*100)}%</span><span class="crm-note">${(l.reasons||[]).map(esc).join(' · ')}</span></div>
+        <div class="crm-link-pair">
+          <div><span class="crm-note">💬 상담 #${l.c.id}</span><br><b>${esc(l.c.product_title || l.c.destination || '')}</b><br><span class="crm-note">${esc(fmtKst(l.c.consulted_at))} · ${esc(l.c.result)} · ${esc(l.c.customer_name||'')} ${esc(l.c.customer_phone||'')}</span></div>
+          <div><span class="crm-note">🧾 예약 ${esc(l.b.booking_no)}</span><br><b>${esc(l.b.product_title || l.b.destination || '')}</b><br><span class="crm-note">${esc(l.b.booking_status)} · 출발 ${esc(fmtDate(l.b.departure_date)||'-')} · ${esc(l.b.customer_name||'')} ${esc(l.b.customer_phone||'')}</span></div>
+        </div>
+        <div class="crm-item-acts"><button type="button" class="crm-btn primary" onclick="TGT_CRM.decideLink(${l.id}, true)">✓ 같은 고객 — 연결</button><button type="button" class="crm-btn" onclick="TGT_CRM.decideLink(${l.id}, false)">✕ 다른 고객</button></div>
+      </div>`).join('') || '<div class="crm-empty">승인을 기다리는 연결이 없습니다.</div>'}</div></div>`;
+  }
+  async function decideLink(id, ok){
+    const l = state.links.find(x=>x.id===id); if (!l) return;
+    if (ok) await linkBookingConsult(l.b, l.c);
+    else await sb().from(TABLES.links).update({status:'rejected', decided_at:new Date().toISOString()}).eq('id', id);
+    state.bookingsLoaded = false;
+    await loadLinks(true); renderBody();
+  }
+
   // ── 화면 ─────────────────────────────────────────────────────
   function render(root){
     injectStyle();
@@ -760,14 +1318,25 @@
     renderBody();
     checkReady().then(r=>{
       const b = document.getElementById('crmReadyBanner'); if (b) b.innerHTML = readyBanner(r);
-      if (state.sub==='list' && !state.listLoaded) loadList().then(renderBody); else renderBody();
+      if (state.sub==='list' && !state.listLoaded) loadList().then(renderBody);
+      else if (state.sub==='bookings' && !state.bookingsLoaded) loadBookings().then(renderBody);
+      else if (state.sub==='links' && !state.linksLoaded) loadLinks().then(renderBody);
+      else renderBody();
     });
   }
-  function go(sub){ state.sub = sub; render(); if (sub==='list') loadList().then(renderBody); }
+  function go(sub){
+    state.sub = sub; if (sub!=='bookings') state.bookingFlash = '';
+    render();
+    if (sub==='list') loadList().then(renderBody);
+    if (sub==='bookings') loadBookings().then(renderBody);
+    if (sub==='links') loadLinks(true).then(renderBody);
+  }
   function renderBody(){
     const body = document.getElementById('crmBody'); if (!body) return;
     if (state.sub==='quick') body.innerHTML = quickHTML();
     else if (state.sub==='list') body.innerHTML = listHTML();
+    else if (state.sub==='bookings') body.innerHTML = bookingsHTML();
+    else if (state.sub==='links') body.innerHTML = linksHTML();
     else if (state.sub==='check') body.innerHTML = checkHTML(state.ready);
     else body.innerHTML = `<div class="crm-card"><div class="crm-empty">이 화면은 다음 단계에서 순서대로 제공됩니다.</div></div>`;
   }
@@ -809,6 +1378,8 @@
     render, go, recheck,
     pick, set:setField, addPref, memoInput, applyMemo, mic, resetForm, save,
     filter, edit, followUp, history, remove, reloadList, fromLead,
-    _internal:{ allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state },
+    impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
+    newBooking, newBookingFromConsult, bfSet, saveBooking, bookingCancelForm, changeBooking, bookingHistory, bFilter, findLinks, decideLink,
+    _internal:{ allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
   };
 })();

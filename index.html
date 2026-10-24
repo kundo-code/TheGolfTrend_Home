@@ -1183,6 +1183,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-dp-gap.dp-line::after{content:'';position:absolute;left:0;right:0;top:22px;border-top:1px solid rgba(10,23,48,.22)}
 .pd-dp-sub{font-size:.8rem;font-weight:700;color:rgb(74,85,99);margin:0 0 8px;letter-spacing:.02em}
 .pd-dp-sub:has(+ .pd-dp-sub){margin-bottom:3px}
+.pd-dp-sub.pd-dp-box{display:block;box-sizing:border-box;width:100%;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);line-height:1.35;overflow-wrap:anywhere}
+.pd-dp-sub.pd-dp-box.dp-ind-1{padding-left:calc(12px + 1.5em)}
+.pd-dp-sub.pd-dp-box.dp-ind-2{padding-left:calc(12px + 3em)}
+.pd-dp-sub.pd-dp-box.dp-ind-3{padding-left:calc(12px + 4.5em)}
 .pd-dp-sub.dp-ind-1{padding-left:1.5em}
 .pd-dp-sub.dp-ind-2{padding-left:3em}
 .pd-dp-sub.dp-ind-3{padding-left:4.5em}
@@ -1831,6 +1835,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .dp-group-row{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
 .dp-group-lbl{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.06em}
 .dp-group-rtf{flex:1;min-width:0}
+.dp-box-ctl{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .dp-group-rtf .rtf-toolbar{display:none}
 .dp-group-rtf:focus-within .rtf-toolbar{display:flex}
 .dp-group-rtf .rtf-lh-sel,.dp-group-rtf .rtf-sub-btn,.dp-group-rtf .rtf-nosub-btn,.dp-group-rtf .rtf-btn[title="표 넣기"]{display:none}
@@ -6284,7 +6289,7 @@ function _peTextKey(v){
 }
 // 출발 요일별 요금·공휴일 요금 목록에는 일반 행 사이에 구분선({kind:'divider'})·부제목({kind:'group',title})
 // 표식이 들어갈 수 있다. 금액이 하나도 없으면 표식만 있어도 "값 없음"이고, 있으면 표식 위치도 비교 키에 포함한다
-function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+String(x.title||'').trim() : null); }
+function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+(x.box?'B'+(x.bg||''):'')+String(x.title||'').trim() : null); }
 function _peDayKey(list){
   const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
   return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
@@ -6367,7 +6372,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn, lead){
   L.forEach(it=>{
     if (it && it.kind==='divider'){ seg=null; gaps.push(!!it.showLine); return; }
     if (!seg){ seg={gaps, els:[], raw:0}; gaps=[]; segs.push(seg); }
-    if (it && it.kind==='group') seg.els.push({t:String(it.title||''), ind:Math.max(0, Math.min(3, Number(it.indent)||0))});
+    if (it && it.kind==='group') seg.els.push({t:String(it.title||''), ind:Math.max(0, Math.min(3, Number(it.indent)||0)), box:!!it.box, bg:it.bg||''});
     else { seg.raw++; if (valid(it)) seg.els.push({c:cellFn(it)}); }
   });
   let out='', pend=[], first=true;
@@ -6388,7 +6393,7 @@ function dpRenderSections(list, cellFn, valid, wrapFn, lead){
     let run=[];
     const flush=()=>{ if (run.length){ out+=wrapFn(run); run=[]; } };
     els.forEach(e=>{
-      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)) out+=`<div class="pd-dp-sub${e.ind?' dp-ind-'+e.ind:''}">${dpTitleHTML(e.t)}</div>`; }
+      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)){ const bs=e.box?cardTagBoxStyle(e.bg):''; out+=`<div class="pd-dp-sub${e.box?' pd-dp-box':''}${e.ind?' dp-ind-'+e.ind:''}"${bs?` style="${bs}"`:''}>${dpTitleHTML(e.t)}</div>`; } }
       else run.push(e.c);
     });
     flush();
@@ -18040,10 +18045,15 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
   // 서식 도구에 "들여쓰기"(1.5글자 단위, 최대 3단계) 선택을 더한다 — 값은 부제목 항목의 indent로 저장
   const ind = Math.max(0, Math.min(3, Number(m.indent)||0));
   const indSel = indentSelectHTML(`setDpTitleIndent(${peIdx},'${kind}',${i},this)`, ind);
+  const boxSt = m.box ? cardTagBoxStyle(m.bg) : '';
+  const boxCtl = `<div class="dp-box-ctl"><label class="popup-toggle" title="켜면 자세히 보기에서 이 부제목이 색상 박스 안에 표시됩니다">
+      <input type="checkbox" ${m.box?'checked':''} onchange="setDpGroupBox(${peIdx},'${kind}',${i},this.checked)"><span class="toggle-slider"></span><span class="pt-lbl">박스</span></label>
+      ${m.box ? `<label class="ctag-bg" role="button" tabindex="0" title="박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="부제목 박스 색상" data-value="${m.bg||'#f6ecd4'}" data-apply="setDpGroupBg(${peIdx},'${kind}',${i},__C__)"><span>🎨</span></label>${m.bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setDpGroupBg(${peIdx},'${kind}',${i},'')">기본</button>`:''}` : ''}</div>`;
   return `<div class="dp-group-row"><span class="dp-group-lbl">부제목</span>
     <div class="rtf-wrap dp-group-rtf">${rtfToolbarHTML()}
-      <div class="ind-line"><div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em)" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>${indSel}</div>
+      <div class="ind-line"><div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em);${boxSt||(m.box?'background:rgba(221,179,103,.2);':'')}" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>${indSel}</div>
     </div>
+    ${boxCtl}
     <button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
 }
 function dpListOf(p, peIdx, kind){
@@ -18103,6 +18113,18 @@ function setDpTitleIndent(peIdx, kind, i, selEl){
   const lv=Math.max(0, Math.min(3, Number(selEl.value)||0));
   m.indent=lv; saveAdvChange();
   const ed=selEl.closest('.dp-group-rtf').querySelector('.dp-title-edit'); if (ed) ed.style.paddingLeft=`calc(14px + ${lv*1.5}em)`;
+}
+function setDpGroupBox(peIdx, kind, i, on){
+  const p=getAdvProduct(); if (!p) return;
+  const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
+  if (on) m.box=true; else delete m.box;
+  saveAdvChange(); renderAdvBody();
+}
+function setDpGroupBg(peIdx, kind, i, color){
+  const p=getAdvProduct(); if (!p) return;
+  const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
+  if (color) m.bg=color; else delete m.bg;
+  saveAdvChange(); renderAdvBody();
 }
 function updateDpGroupTitle(peIdx, kind, i, val){
   const p=getAdvProduct(); if (!p) return;

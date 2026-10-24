@@ -4237,6 +4237,32 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-result-reasons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .ai-reason-chip{font-size:.74rem;padding:4px 10px;background:rgba(10,23,48,.06);border-radius:100px;color:var(--pine)}
 .ai-result-actions{display:flex;gap:10px;flex-wrap:wrap}
+/* 추천 근거 · 비교 · 현장 정보 */
+.ai-why{margin:-6px 0 14px;border-top:1px dashed rgba(10,23,48,.14);padding-top:8px}
+.ai-why > summary,.ai-cmp > summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--pine);list-style:revert}
+.ai-why-count{font-size:.68rem;font-weight:700;padding:1px 8px;border-radius:100px;background:rgba(221,179,103,.18);color:var(--gold-deep);margin-left:4px}
+.ai-why-sec{margin-top:8px}
+.ai-why-h{font-size:.76rem;font-weight:800;color:var(--pine-deep);margin-bottom:3px}
+.ai-why-sec ul{margin:0;padding-left:18px;font-size:.8rem;line-height:1.65;color:rgba(10,23,48,.78)}
+.ai-why-sec li.ok::marker{content:'✓  ';color:#15803d}
+.ai-why-sec li.no{color:rgba(10,23,48,.5)}
+.ai-why-sec li.no::marker{content:'–  '}
+.ai-why-none{margin:0;font-size:.76rem;color:rgba(10,23,48,.5)}
+.ai-field{list-style:none;padding-left:0 !important}
+.ai-field a{color:var(--pine);text-decoration:none;display:inline-flex;gap:6px;align-items:baseline}
+.ai-field a:hover{text-decoration:underline}
+.ai-field-type{font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:100px;white-space:nowrap;background:rgba(10,23,48,.06)}
+.ai-field-type.youtube{background:#FDECEC;color:#B91C1C}.ai-field-type.blog{background:#E8F6EC;color:#15803d}.ai-field-type.band{background:#E6F7EF;color:#0F7B4E}
+.ai-locs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ai-locs a{font-size:.72rem;padding:3px 9px;border-radius:100px;border:1px solid rgba(10,23,48,.14);color:var(--pine);text-decoration:none;background:#fff}
+.ai-cmp{background:rgba(255,255,255,.88);border:1px solid var(--glass-border);border-radius:16px;padding:12px 16px}
+.ai-cmp-wrap{overflow-x:auto;margin:10px 0 6px}
+.ai-cmp table{border-collapse:collapse;width:100%;font-size:.78rem;min-width:640px}
+.ai-cmp th,.ai-cmp td{padding:6px 8px;border-bottom:1px solid rgba(10,23,48,.08);text-align:left;white-space:nowrap}
+.ai-cmp th{font-weight:700;color:rgba(10,23,48,.6);opacity:1}
+.ai-cmp td{color:rgba(10,23,48,.82);opacity:1}
+.ai-cmp td.ai-cmp-t{white-space:normal;min-width:140px;font-weight:600;color:var(--pine-deep)}
+.ai-cmp-na{color:rgba(10,23,48,.35)}
 .ai-detail-btn{padding:10px 16px;border-radius:10px;border:1px solid rgba(10,23,48,.2);background:#fff;color:var(--pine);font-weight:600;font-size:.84rem;cursor:pointer;box-shadow:var(--btn-elevate),var(--btn-shine);transition:all .2s}
 .ai-detail-btn:hover{border-color:var(--pine);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .ai-detail-btn:active{transform:translateY(1px);box-shadow:var(--btn-press)}
@@ -19254,25 +19280,37 @@ function computeAiRecommendations(criteria){
       const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
       const bucket = nights<=2 ? 'short' : (nights<=4 ? 'mid' : 'long');
       const reasons=[]; let score=0;
+      const why=[];   // 추천 근거 — 상품에 등록된 값만 그대로 인용한다(수치를 새로 만들지 않음)
       const bScore = aiBudgetScore(price, criteria.budget);
       if (criteria.budget!=='any' && bScore>=25) reasons.push('예산 적합');
       score += bScore;
+      if (criteria.budget!=='any'){
+        const bl = AI_BUDGET_LABEL[criteria.budget]||'';
+        if (p.priceInquiry) why.push({ok:null, t:`희망 예산 ${bl} — 요금 별도 문의 상품이라 예산 비교는 상담 시 확인`});
+        else if (price>0) why.push({ok:bScore>=25, t:`희망 예산 ${bl} — 판매가 ${fmtPrice(price)}원부터${bScore>=25?'':' (예산보다 높음)'}`});
+        else why.push({ok:null, t:`희망 예산 ${bl} — 판매가 미등록`});
+      }
       if (criteria.duration==='any') score += 10;
       else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
       else score += 5;
+      if (criteria.duration!=='any') why.push(nightsMatch ? {ok:bucket===criteria.duration, t:`희망 일정 ${AI_DURATION_LABEL[criteria.duration]||''} — ${p.nights}${bucket===criteria.duration?'':' (희망 일정과 다름)'}`} : {ok:null, t:`희망 일정 ${AI_DURATION_LABEL[criteria.duration]||''} — 일정 정보 미등록`});
       const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>richToPlain(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
       criteria.styles.forEach(styleVal=>{
         const lodge = STYLE_LODGE[styleVal];
         if (lodge && p.lodgeLocation && p.lodgeLocation!=='none' && p.lodgeLocation!=='golftel'){ // 골프텔 or 외부숙소는 위치가 특정되지 않아 키워드로 판정
-          if (p.lodgeLocation===lodge){ score+=20; reasons.push(`'${styleVal}' 상품`); }
+          if (p.lodgeLocation===lodge){ score+=20; reasons.push(`'${styleVal}' 상품`); why.push({ok:true, t:`'${styleVal}' — 상품의 숙소 위치가 '${styleVal}'로 등록됨`}); }
+          else why.push({ok:false, t:`'${styleVal}' — 상품의 숙소 위치는 다른 유형으로 등록됨`});
           return; // 숙소 위치가 지정된 상품은 그 값으로만 판정(반대 위치면 가산점 없음)
         }
         const kws = STYLE_KEYWORDS[styleVal]||[];
-        if (kws.some(k=>haystack.includes(k))){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); }
+        const hitKw = kws.find(k=>haystack.includes(k));
+        if (hitKw){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); why.push({ok:true, t:`'${styleVal}' — 상품 정보에 '${hitKw}' 표현이 있음`}); }
+        else why.push({ok:false, t:`'${styleVal}' — 상품 정보에서 확인되지 않음`});
       });
       if (criteria.region!=='any'){ score+=5; reasons.push(criteria.region==='domestic'?'국내 권역 선호 반영':'해외 권역 선호 반영'); }
+      if (criteria.region!=='any') why.unshift({ok:true, t:`희망 지역 ${criteria.region==='domestic'?'국내':'해외'} — ${cat ? cat.ko : ''}`});
       // labelProfile: 등급(Level 1~5)·신상품·특가 — 아직 점수에는 반영하지 않고, 추후 AI 추천 고도화에서 활용할 수 있게 후보마다 함께 담아 둔다
-      results.push({catId, idx, p, cat, score, reasons, labelProfile: productLabelProfile(p)});
+      results.push({catId, idx, p, cat, score, reasons, why, price: p.priceInquiry ? 0 : price, nights: nightsMatch ? Number(nightsMatch[1]) : null, labelProfile: productLabelProfile(p)});
     });
   });
   results.sort((a,b)=>b.score-a.score);
@@ -19297,6 +19335,84 @@ function goDestRegion(kind){
   const target = (kind==='overseas' && window.innerWidth>780 && secHead) ? secHead : (block.querySelector('.dest-region-head') || block);
   target.scrollIntoView({behavior:'smooth', block:'start'});
 }
+const AI_BUDGET_LABEL = {'60':'~60만원', '100':'~100만원', '150':'~150만원', '200':'~200만원', '9999':'200만원+'};
+const AI_DURATION_LABEL = {short:'1~2박', mid:'3~4박', long:'5박+'};
+// 상품에 연결된 현장 정보 — 관리자가 "연결 상품"으로 지정한 블로그·유튜브 글(숨긴 글 제외, 최신순)과 상품의 밴드 링크
+function productFieldPosts(catId, idx){
+  const out = [], seen = new Set(), ovs = getChannelPostOverrides();
+  try{
+    cpSortEntries(cpAllEntries()).forEach(({ch, item})=>{
+      if (!item || !item.link) return;
+      const ov = ovs[item.link] || {};
+      if (ov.hidden || !channelPostProducts(ov).some(x=>x.cat===catId && x.idx===idx)) return;
+      const manual = normalizeExtUrl(ov.manualUrl);
+      const url = normalizeExtUrl(manual && !isBandUrl(manual) ? manual : item.link);
+      if (!url || seen.has(url)) return; seen.add(url);
+      out.push({type: ch.type==='youtube' ? 'youtube' : 'blog', title: String(ov.title1 || item.title || ch.label || '').trim(), url});
+    });
+  }catch(e){}
+  const p = (getProducts(catId)||[])[idx];
+  const band = normalizeExtUrl(p && p.linkUrl);
+  if (band && isBandUrl(band) && !seen.has(band)) out.push({type:'band', title:'네이버 밴드 현장 소식', url:band});
+  return out;
+}
+// 추천 결과끼리 비교 — 등록된 값(판매가·일정·라운드·비행시간·등급·판매 시기)만 사용
+function aiCompareNotes(r, results){
+  const notes = [];
+  const priced = results.filter(x=>x.price>0);
+  if (r.price>0 && priced.length>=2){
+    const sorted = priced.map(x=>x.price).sort((a,b)=>a-b);
+    const pos = sorted.indexOf(r.price)+1;
+    notes.push(pos===1 ? `추천 ${results.length}개 중 판매가가 가장 낮음 (${fmtPrice(r.price)}원부터)` : (r.price===sorted[sorted.length-1] ? `추천 상품 중 판매가가 가장 높음 — 최저 ${fmtPrice(sorted[0])}원부터와 비교` : `추천 상품 판매가 ${fmtPrice(sorted[0])}~${fmtPrice(sorted[sorted.length-1])}원 중 ${pos}번째로 낮음`));
+  } else if (r.p.priceInquiry) notes.push('요금 별도 문의 — 가격 비교는 상담 시 안내');
+  const withN = results.filter(x=>x.nights!=null);
+  if (r.nights!=null && withN.length>=2){
+    const ns = withN.map(x=>x.nights), mn = Math.min(...ns), mx = Math.max(...ns);
+    if (mn!==mx && r.nights===mn) notes.push(`추천 상품 중 일정이 가장 짧음 (${r.p.nights})`);
+    else if (mn!==mx && r.nights===mx) notes.push(`추천 상품 중 일정이 가장 김 (${r.p.nights})`);
+  }
+  const rn = x=>{ const m = /(\d+)\s*R/i.exec(x.p.rounds||''); return m ? Number(m[1]) : null; };
+  const withR = results.filter(x=>rn(x)!=null);
+  if (rn(r)!=null && withR.length>=2){ const mx = Math.max(...withR.map(rn)); if (rn(r)===mx && withR.some(x=>rn(x)<mx)) notes.push(`추천 상품 중 라운드 수가 가장 많음 (${r.p.rounds})`); }
+  if (r.p.flightTime && r.cat && !isDomesticCat(r.catId)) notes.push(`비행시간 ${r.p.flightTime}`);
+  if (r.p.transferTime) notes.push(`공항·숙소 이동 ${r.p.transferTime}`);
+  const lp = r.labelProfile || {};
+  if (lp.grade && !lp.gradeIsDefault) notes.push(`상품 등급 ${lp.gradeName}`);
+  const period = productPeriodBadgeText(r.p, r.catId);
+  if (period && period!=='전체 시기') notes.push(`추천 판매 시기: ${period}`);
+  return notes;
+}
+function aiWhyHTML(r, results, open){
+  const esc = escapeAttr;
+  const posts = productFieldPosts(r.catId, r.idx);
+  const locs = (typeof pdLocLinks==='function') ? pdLocLinks(r.p) : [];
+  const cmp = aiCompareNotes(r, results);
+  const icon = {blog:'📝 블로그', youtube:'▶️ 유튜브', band:'👥 밴드'};
+  const why = r.why.length ? r.why : [{ok:null, t:'선택한 조건이 없어 등록 상품 전체에서 골고루 골랐습니다'}];
+  return `<details class="ai-why"${open?' open':''}>
+    <summary>추천 근거 · 비교 · 현장 정보${posts.length?` <span class="ai-why-count">현장 정보 ${posts.length}</span>`:''}</summary>
+    <div class="ai-why-sec"><div class="ai-why-h">🎯 추천 이유</div><ul>${why.map(w=>`<li class="${w.ok===true?'ok':(w.ok===false?'no':'')}">${esc(w.t)}</li>`).join('')}</ul></div>
+    <div class="ai-why-sec"><div class="ai-why-h">⚖️ 비교 근거</div>${cmp.length?`<ul>${cmp.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:'<p class="ai-why-none">비교할 등록 정보가 부족합니다</p>'}</div>
+    <div class="ai-why-sec"><div class="ai-why-h">📍 현장 정보</div>
+      ${posts.length ? `<ul class="ai-field">${posts.slice(0,4).map(x=>`<li><a href="${esc(x.url)}" target="_blank" rel="noopener"><span class="ai-field-type ${x.type}">${icon[x.type]}</span>${esc(x.title||'현장 글 보기')}</a></li>`).join('')}</ul>${posts.length>4?`<p class="ai-why-none">외 ${posts.length-4}건 — 상세보기에서 확인</p>`:''}` : '<p class="ai-why-none">아직 연결된 현장 후기(블로그·유튜브·밴드)가 없습니다</p>'}
+      ${locs.length ? `<div class="ai-locs">${locs.slice(0,6).map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}${l.label?' · '+esc(l.label):''}</a>`).join('')}</div>` : ''}
+    </div>
+  </details>`;
+}
+function aiCompareTableHTML(results){
+  if (results.length<2) return '';
+  const esc = escapeAttr, dash = '<span class="ai-cmp-na">—</span>';
+  const rows = results.map((r,i)=>{
+    const posts = productFieldPosts(r.catId, r.idx).length;
+    const move = [(!isDomesticCat(r.catId) && r.p.flightTime) ? '비행 '+r.p.flightTime : '', r.p.transferTime ? '이동 '+r.p.transferTime : ''].filter(Boolean).join(' · ');
+    const period = productPeriodBadgeText(r.p, r.catId);
+    return `<tr><td>${i+1}</td><td class="ai-cmp-t">${esc(r.p.title||'')}</td><td>${esc(r.cat.ko)}</td><td>${r.p.nights?esc(r.p.nights):dash}</td><td>${r.p.rounds?esc(r.p.rounds):dash}</td>
+      <td>${r.p.priceInquiry ? '별도 문의' : (r.price>0 ? fmtPrice(r.price)+'원~' : dash)}</td><td>${move?esc(move):dash}</td><td>${esc(period||'')}</td><td>${posts?posts+'건':dash}</td></tr>`;
+  }).join('');
+  return `<details class="ai-cmp"><summary>📊 추천 상품 한눈에 비교</summary>
+    <div class="ai-cmp-wrap"><table><thead><tr><th>순위</th><th>상품</th><th>지역</th><th>일정</th><th>라운드</th><th>판매가</th><th>비행·이동</th><th>판매 시기</th><th>현장 정보</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="ai-why-none">상품에 등록된 정보만 비교합니다. "—"는 등록되지 않은 항목입니다.</p></details>`;
+}
 function renderAiResults(results){
   const wrap=document.getElementById('aiResults');
   if (!wrap) return;
@@ -19310,13 +19426,14 @@ function renderAiResults(results){
         <h4>${r.p.title}</h4>
         <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${priceInquiryText(r.p) || (fmtPrice(r.p.from)+'원~')}</div>
         <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>
+        ${aiWhyHTML(r, results, i===0)}
         <div class="ai-result-actions">
           <button type="button" class="ai-detail-btn" onclick="tgtTrack('recommend_click', Object.assign(tgtEvtProduct('${r.catId}',${r.idx}), {rank:${i+1}, criteria:_tgtAiCriteria}));openProductDetail('${r.catId}',${r.idx})">상세보기</button>
           <button type="button" class="ai-inquire-btn" onclick="tgtTrack('recommend_inquiry', Object.assign(tgtEvtProduct('${r.catId}',${r.idx}), {rank:${i+1}, criteria:_tgtAiCriteria}));selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
         </div>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + aiCompareTableHTML(results);
 }
 function runAiRecommend(){
   const region = document.querySelector('#aiQuiz .ai-chip-group[data-field="region"] .ai-chip.active')?.dataset.value || 'any';

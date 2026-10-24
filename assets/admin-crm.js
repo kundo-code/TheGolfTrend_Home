@@ -30,6 +30,7 @@
     ['links',    '🔗 연결 승인'],
     ['stats',    '📊 통계'],
     ['intel',    '💡 기획·운영 진단'],
+    ['strategy', '🎯 추천·판매 전략'],
     ['ops',      '🚐 운영 조건·출발 그룹'],
     ['check',    '🔧 연결 점검'],
   ];
@@ -1886,6 +1887,124 @@
     return out.join('');
   }
 
+  // ══ 추천·판매 전략(AI 멀티 큐레이션 관리) ══════════════════════════════════
+  // 판매 전략 등급(핵심/일반/틈새)은 상품 정보에 저장되어 홈페이지 추천에 쓰이고,
+  // 1인 예상 매출총이익·만족도는 관리자 전용 테이블(tgt_product_strategy)에만 저장된다
+  const STRATEGY_TABLE = 'tgt_product_strategy';
+  const STRATEGY_SQL = 'docs/sql/2026-10-25_curation.sql';
+  const TIERS = [['core','핵심','적극 판매 — 조건이 맞을 때 추천에서 조금 더 앞에 둡니다'], ['standard','일반','기본 — 고객 적합도대로'], ['niche','틈새','특정 고객용 — 조건이 아주 잘 맞을 때만 앞에 둡니다']];
+  state.strat = {loaded:false};
+  async function loadStrategy(force){
+    if (state.strat.loaded && !force) return;
+    await checkReady(); if (!isUsable()) return;
+    const client = sb();
+    const since30 = new Date(Date.now()-30*86400000).toISOString(), since90 = new Date(Date.now()-90*86400000).toISOString();
+    const [st, ev, cs, bk] = await Promise.all([
+      client.from(STRATEGY_TABLE).select('*').limit(5000),
+      client.from(TABLES.events).select('event_type,product_uid,session_id,created_at').gte('created_at', since30).limit(50000),
+      client.from(TABLES.consultations).select('id,product_uid,result,consulted_at').eq('is_deleted', false).gte('consulted_at', since90).limit(10000),
+      client.from(TABLES.bookings).select('id,product_uid,booking_status,confirmed_party_size,confirmed_at,travel_region,country,destination').gte('confirmed_at', since90).limit(10000),
+    ]);
+    state.strat = {loaded:true, missing: !!(st.error && isMissingTableError(st.error)), error: st.error && !isMissingTableError(st.error) ? errText(st.error) : '',
+      rows: Object.fromEntries((st.data||[]).map(r=>[r.product_uid, r])), events: ev.data||[], cons: cs.data||[], bookings: bk.data||[]};
+  }
+  function setTier(uid, tier){
+    const x = productByUid(uid); if (!x) return;
+    if (productOverrides[x.catId]===undefined) productOverrides[x.catId] = tgtMaterializeDefaults(x.catId);
+    const p = productOverrides[x.catId][x.idx]; if (!p) return;
+    if (tier==='standard') delete p.salesTier; else p.salesTier = tier;
+    saveProducts();   // 사이트 설정(상품 정보)에 저장 — 홈페이지 추천에 바로 반영
+    renderBody();
+  }
+  async function saveStrategy(uid, field, value){
+    if (state.strat.missing){ alert(`매출총이익·만족도는 ${STRATEGY_SQL}을 실행한 뒤 저장할 수 있습니다.`); return; }
+    const x = productByUid(uid);
+    let v = String(value||'').trim();
+    if (field==='gross_margin_per_person') v = v==='' ? null : Number(v.replace(/[^\d.-]/g,''));
+    if (field==='satisfaction'){ v = v==='' ? null : Number(v); if (v!=null && !(v>=1 && v<=5)){ alert('만족도는 1.0~5.0 사이로 입력해 주세요.'); renderBody(); return; } }
+    if (field==='satisfaction_source' || field==='memo') v = v || null;
+    if (typeof v==='number' && !isFinite(v)){ alert('숫자로 입력해 주세요.'); renderBody(); return; }
+    const row = {product_uid:uid, product_title: x ? x.title : null, [field]:v};
+    const { data, error } = await sb().from(STRATEGY_TABLE).upsert(row, {onConflict:'product_uid'}).select().single();
+    if (error){ alert('저장 실패: '+errText(error)); return; }
+    state.strat.rows[uid] = data; renderBody();
+  }
+  function strategyHTML(){
+    if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
+    const S = state.strat;
+    if (!S.loaded) return `<div class="crm-card"><div class="crm-empty">불러오는 중...</div></div>`;
+    const prods = allProducts();
+    const vis = x => typeof isProductVisible!=='function' || isProductVisible(x.p);
+    const cnt = (type, uid) => S.events.filter(e=>e.event_type===type && e.product_uid===uid).length;
+    const totalViews = S.events.filter(e=>e.event_type==='recommend_view' && e.product_uid).length;
+    const rows = prods.map(x=>{
+      const st = S.rows[x.uid] || {};
+      const bks = S.bookings.filter(b=>b.product_uid===x.uid && ACTIVE(b.booking_status));
+      const ppl = bks.reduce((s,b)=>s+(b.confirmed_party_size||0),0);
+      return {x, st, tier: ['core','niche'].includes(x.p.salesTier) ? x.p.salesTier : 'standard', visible: vis(x),
+        views: cnt('recommend_view', x.uid), clicks: cnt('recommend_click', x.uid), inq: cnt('recommend_inquiry', x.uid),
+        cons: S.cons.filter(c=>c.product_uid===x.uid).length, bookings: bks.length, people: ppl,
+        gp: st.gross_margin_per_person!=null ? st.gross_margin_per_person*ppl : null};
+    });
+    // 제안 등급(참고용) — 입력된 매출총이익·만족도가 모두 있을 때만
+    const margins = rows.map(r=>r.st.gross_margin_per_person).filter(v=>v!=null).sort((a,b)=>a-b);
+    const medMargin = margins.length ? margins[Math.floor(margins.length/2)] : null;
+    const suggest = r => {
+      const m = r.st.gross_margin_per_person, s = r.st.satisfaction;
+      if (s!=null && s<3.5) return ['만족도 점검', 'no'];
+      if (m==null || s==null) return ['판단 보류', 'info'];
+      if (margins.length<3) return ['비교 자료 부족', 'info'];   // 이익 입력 상품이 3개 이상이어야 상대 비교
+      if (margins.length>=3 && m>=medMargin && s>=4.0) return ['핵심 후보', 'ok'];
+      if (s>=4.5 && m<medMargin) return ['일반(만족도 높음)', 'go'];
+      return ['일반', 'info'];
+    };
+    // 진단
+    const diag = [];
+    const visRows = rows.filter(r=>r.visible);
+    if (totalViews < 30) diag.push(`<li><span class="crm-tag info">판단 보류</span> 최근 30일 AI 추천 노출 ${fmtN(totalViews)}건 — 30건 이상 쌓이면 노출 쏠림을 판단합니다.</li>`);
+    else {
+      const top = visRows.slice().sort((a,b)=>b.views-a.views).slice(0,3), share = top.reduce((s,r)=>s+r.views,0)/totalViews;
+      diag.push(share>0.5 ? `<li><span class="crm-tag hold">노출 쏠림</span> 상위 3개 상품이 추천 노출의 ${Math.round(share*100)}% — ${top.map(r=>`${esc(r.x.title)} ${fmtN(r.views)}`).join(', ')}</li>`
+        : `<li><span class="crm-tag ok">양호</span> 상위 3개 상품의 추천 노출 비중 ${Math.round(share*100)}%</li>`);
+      const zero = visRows.filter(r=>r.views===0);
+      if (zero.length) diag.push(`<li><span class="crm-tag hold">기회 부족</span> 최근 30일 추천에 한 번도 나오지 않은 판매 중 상품 ${zero.length}개 — ${zero.slice(0,8).map(r=>esc(r.x.title)).join(', ')}${zero.length>8?' 외':''}. 판매 시기·가격·일정이 고객 조건과 자주 어긋나는지 확인하세요.</li>`);
+    }
+    const bAll = S.bookings.filter(b=>ACTIVE(b.booking_status));
+    if (bAll.length >= MIN_N){
+      const byC = countBy(bAll, b=>countryKey(b)), topC = topRows(byC, 1)[0];
+      if (topC && topC.value/bAll.length > 0.5) diag.push(`<li><span class="crm-tag hold">국가 집중</span> 최근 90일 예약의 ${Math.round(topC.value/bAll.length*100)}%가 ${esc(topC.label)} — 항공·환율·현지 상황 변화에 대비해 다른 국가 상품의 노출·판매를 늘리는 것을 검토하세요.</li>`);
+      else if (topC) diag.push(`<li><span class="crm-tag ok">양호</span> 최근 90일 예약 최다 국가 ${esc(topC.label)} ${Math.round(topC.value/bAll.length*100)}%</li>`);
+    } else diag.push(`<li><span class="crm-tag info">판단 보류</span> 최근 90일 예약 ${bAll.length}건 — 국가 집중도는 ${MIN_N}건 이상부터 판단합니다.</li>`);
+    const coreN = visRows.filter(r=>r.tier==='core').length;
+    if (!coreN) diag.push(`<li><span class="crm-tag info">안내</span> 핵심 상품이 없습니다. 수익성·만족도가 높은 상품을 "핵심"으로 지정하면 조건이 맞는 고객에게 조금 더 앞에 소개됩니다.</li>`);
+    else if (coreN > Math.max(3, visRows.length*0.3)) diag.push(`<li><span class="crm-tag hold">핵심 과다</span> 판매 중 상품 ${visRows.length}개 중 ${coreN}개가 핵심 — 핵심이 많으면 가중치 효과가 약해집니다(전체의 30% 이내 권장).</li>`);
+    const gpRows = rows.filter(r=>r.people>0), gpKnown = gpRows.filter(r=>r.gp!=null);
+    const gpSum = gpKnown.reduce((s,r)=>s+r.gp,0), pplAll = gpRows.reduce((s,r)=>s+r.people,0), pplKnown = gpKnown.reduce((s,r)=>s+r.people,0);
+    const tierSel = r => `<select onchange="TGT_CRM.setTier('${esc(r.x.uid)}', this.value)">${TIERS.map(([v,l])=>`<option value="${v}" ${r.tier===v?'selected':''}>${l}</option>`).join('')}</select>`;
+    const numIn = (r, f, ph, w) => `<input type="text" inputmode="decimal" value="${r.st[f]!=null?esc(String(r.st[f])):''}" placeholder="${ph}" style="width:${w}px" ${S.missing?'disabled':''} onchange="TGT_CRM.saveStrategy('${esc(r.x.uid)}', '${f}', this.value)">`;
+    const sorted = rows.slice().sort((a,b)=>(b.visible-a.visible) || (['core','standard','niche'].indexOf(a.tier)-['core','standard','niche'].indexOf(b.tier)) || b.views-a.views);
+    return `${S.missing ? `<div class="crm-banner warn">🛠 1인 예상 매출총이익·만족도 입력은 Supabase SQL Editor에서 <code>${STRATEGY_SQL}</code>을 한 번 실행한 뒤 사용할 수 있습니다. 판매 전략 등급은 지금도 지정할 수 있습니다.</div>` : ''}
+      ${S.error ? `<div class="crm-banner err">불러오기 실패: ${esc(S.error)}</div>` : ''}
+      <div class="crm-card"><h5>🧭 AI 멀티 큐레이션 진단</h5><ul class="it-list" style="list-style:none;padding-left:0">${diag.join('')}</ul>
+        <div class="st-tiles" style="margin-top:10px">
+          ${tile('최근 30일 추천 노출', fmtN(totalViews)+'건', `추천 받은 방문 ${fmtN(new Set(S.events.filter(e=>e.event_type==='recommend_view').map(e=>e.session_id)).size)}회`)}
+          ${tile('핵심 / 일반 / 틈새', `${coreN} / ${visRows.filter(r=>r.tier==='standard').length} / ${visRows.filter(r=>r.tier==='niche').length}`, '판매 중 상품 기준')}
+          ${tile('예상 매출총이익(90일)', gpKnown.length ? fmtN(Math.round(gpSum))+'원' : '자료 부족', pplAll ? `확정 인원 ${fmtN(pplAll)}명 중 이익 입력 상품 ${fmtN(pplKnown)}명 기준` : '확정 예약 없음')}
+        </div>
+        <p class="crm-note" style="margin-top:8px">추천 점수 = 고객 적합도(가장 큰 비중) + 판매 전략 등급(핵심 +8%, 틈새는 적합도 80% 이상일 때 +4%) + 최근 노출이 적은 상품 기회 보정(최대 +6%).
+          가중치와 보정은 적합도가 충분한 상품에만 적용되고, 같은 국가는 최대 2개까지 여러 테마로 나눠 소개합니다. 예상 매출총이익은 입력한 1인 이익 × 확정 인원으로 계산한 참고값입니다.</p></div>
+      <div class="crm-card"><h5>🎯 상품별 판매 전략 <span class="crm-note" style="font-weight:500">— 등급은 홈페이지 추천에 반영, 이익·만족도는 관리자만 봄</span></h5>
+        <div class="st-tbl-wrap"><table class="st-tbl"><thead><tr><th>상품</th><th>판매 전략 등급</th><th>1인 예상 매출총이익(원)</th><th>만족도(1~5)</th><th>만족도 근거</th><th>제안</th><th>추천 노출(30일)</th><th>상세 보기</th><th>상담 이동</th><th>상담(90일)</th><th>예약 확정(90일)</th><th>예상 매출총이익</th></tr></thead><tbody>
+          ${sorted.map(r=>{ const sg = suggest(r); return `<tr${r.visible?'':' style="opacity:.55"'}><td style="white-space:normal;min-width:150px"><b>${esc(r.x.title)}</b><br><span class="crm-note">${esc(r.x.catKo)}${r.visible?'':' · 판매 중 아님'}</span></td>
+            <td>${tierSel(r)}</td><td>${numIn(r,'gross_margin_per_person','예: 150000',96)}</td><td>${numIn(r,'satisfaction','예: 4.5',56)}</td>
+            <td><input type="text" value="${esc(r.st.satisfaction_source||'')}" placeholder="예: 출발 고객 설문 12건" style="width:150px" ${S.missing?'disabled':''} onchange="TGT_CRM.saveStrategy('${esc(r.x.uid)}', 'satisfaction_source', this.value)"></td>
+            <td><span class="crm-tag ${sg[1]}">${sg[0]}</span></td>
+            <td>${fmtN(r.views)}${totalViews?` <span class="crm-note">(${Math.round(r.views/totalViews*100)}%)</span>`:''}</td><td>${fmtN(r.clicks)}</td><td>${fmtN(r.inq)}</td><td>${fmtN(r.cons)}</td>
+            <td>${fmtN(r.bookings)}건 · ${fmtN(r.people)}명</td><td>${r.gp!=null ? fmtN(Math.round(r.gp))+'원' : '—'}</td></tr>`; }).join('')}
+        </tbody></table></div>
+        <p class="crm-note">제안은 입력값만으로 만든 참고 표시이며 자동으로 바뀌지 않습니다. 핵심 후보: 이익이 입력 상품의 중간값 이상이고 만족도 4.0 이상(이익 입력 상품 3개 이상일 때). 만족도 3.5 미만은 점검 표시.</p></div>`;
+  }
+
   // ── 화면 ─────────────────────────────────────────────────────
   function render(root){
     injectStyle();
@@ -1907,6 +2026,7 @@
       else if (state.sub==='stats' && !state.stats.loaded) loadStats().then(renderBody);
       else if (state.sub==='ops' && !state.ops.loaded) loadOps().then(renderBody);
       else if (state.sub==='intel' && !(state.stats.loaded && state.ops.loaded)) Promise.all([loadStats(), loadOps()]).then(renderBody);
+      else if (state.sub==='strategy' && !state.strat.loaded) loadStrategy().then(renderBody);
       else renderBody();
     });
   }
@@ -1919,6 +2039,7 @@
     if (sub==='stats') loadStats(true).then(renderBody);
     if (sub==='ops') loadOps(true).then(renderBody);
     if (sub==='intel') Promise.all([loadStats(true), loadOps(true)]).then(renderBody);
+    if (sub==='strategy') loadStrategy(true).then(renderBody);
   }
   function renderBody(){
     const body = document.getElementById('crmBody'); if (!body) return;
@@ -1929,6 +2050,7 @@
     else if (state.sub==='stats') body.innerHTML = statsHTML();
     else if (state.sub==='ops') body.innerHTML = opsHTML();
     else if (state.sub==='intel') body.innerHTML = intelHTML();
+    else if (state.sub==='strategy') body.innerHTML = strategyHTML();
     else if (state.sub==='check') body.innerHTML = checkHTML(state.ready);
     else body.innerHTML = `<div class="crm-card"><div class="crm-empty">이 화면은 다음 단계에서 순서대로 제공됩니다.</div></div>`;
   }
@@ -1986,6 +2108,7 @@
         }
         out.tables[TABLES[k]] = rows;
       }
+      { const { data, error } = await client.from(STRATEGY_TABLE).select('*').limit(10000); if (!error) out.tables[STRATEGY_TABLE] = data||[]; }
       await logAccess('export_backup', 'tgt_*', {counts:Object.fromEntries(Object.entries(out.tables).map(([k,v])=>[k, v.length]))});
       const t = todayKst();
       const blob = new Blob([JSON.stringify(out, null, 1)], {type:'application/json'});
@@ -2004,7 +2127,7 @@
     impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
     statFilter, statSeason, reloadStats,
     newRule, editRule, rfSet, saveRule, deleteRule, verifyRule, cancelRule:()=>{ state.ops.ruleForm = null; renderBody(); }, opsView:v=>{ state.ops.view = v; renderBody(); },
-    createGroup, groupToggle, groupSet, groupDetach, exportBackup,
+    createGroup, groupToggle, groupSet, groupDetach, exportBackup, setTier, saveStrategy,
     newBooking, newBookingFromConsult, bfSet, saveBooking, bookingCancelForm, changeBooking, bookingHistory, bFilter, findLinks, decideLink,
     _internal:{ twoPaxStatus, buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
   };

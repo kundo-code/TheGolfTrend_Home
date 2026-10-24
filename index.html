@@ -4237,6 +4237,30 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-result-reasons{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .ai-reason-chip{font-size:.74rem;padding:4px 10px;background:rgba(10,23,48,.06);border-radius:100px;color:var(--pine)}
 .ai-result-actions{display:flex;gap:10px;flex-wrap:wrap}
+/* AI 멀티 큐레이션 — 테마 카드 그리드 */
+.ai-cur-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 24px;background:rgba(255,255,255,.92);border:1px solid var(--glass-border);border-radius:20px;box-shadow:var(--glass-shadow)}
+.ai-cur-head h3{font-size:1.12rem;font-weight:700;color:var(--pine-deep);margin:0 0 4px}
+.ai-cur-head p{margin:0;font-size:.84rem;color:rgba(10,23,48,.6)}
+.ai-cur-spark{font-size:1.2rem;color:var(--gold-deep)}
+.ai-cur-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+.ai-cur-card{background:rgba(255,255,255,.94);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--glass-shadow);display:flex;flex-direction:column;min-width:0}
+.ai-cur-card.is-relaxed{background:rgba(255,255,255,.8);border-style:dashed}
+.ai-cur-img{position:relative;aspect-ratio:16/10;background-size:cover;background-position:center;background-color:#e8edf3}
+.ai-cur-cat{position:absolute;left:12px;top:12px;font-size:.7rem;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:100px;background:rgba(10,23,48,.62);color:#fff}
+.ai-cur-body{padding:16px 18px 18px;display:flex;flex-direction:column;min-width:0}
+.ai-cur-theme{font-size:.72rem;font-weight:700;color:var(--gold-deep);margin-bottom:4px}
+.ai-cur-card.is-relaxed .ai-cur-theme{color:#9a6b12}
+.ai-cur-body h4{font-size:1.06rem;font-weight:700;color:var(--pine-deep);margin:0 0 4px;line-height:1.35}
+.ai-cur-note{font-size:.8rem;color:rgba(10,23,48,.68);margin-bottom:6px;line-height:1.5}
+.ai-cur-body .ai-result-meta{margin-bottom:8px}
+.ai-cur-body .ai-result-reasons{margin-bottom:12px}
+.ai-cur-body .ai-result-actions{margin-top:auto}
+.ai-cur-body .ai-detail-btn,.ai-cur-body .ai-inquire-btn{padding:9px 13px;font-size:.8rem}
+.ai-cur-alt-head{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-top:6px}
+.ai-cur-alt-head span{font-weight:500;font-size:.8rem;color:rgba(10,23,48,.55)}
+.ai-cur-foot{margin:0;font-size:.76rem;color:rgba(10,23,48,.55)}
+@media (max-width:1100px){ .ai-cur-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:640px){ .ai-cur-grid{grid-template-columns:1fr} .ai-cur-head{padding:16px 18px} }
 /* 추천 근거 · 비교 · 현장 정보 */
 .ai-why{margin:-6px 0 14px;border-top:1px dashed rgba(10,23,48,.14);padding-top:8px}
 .ai-why > summary,.ai-cmp > summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--pine);list-style:revert}
@@ -5207,7 +5231,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
       <div class="left">
         <span class="tag">AI Concierge</span>
         <h2>AI 골프 여행 <em>추천</em></h2>
-        <p>몇 가지 질문에 답하면, 전체 상품 중 지금 조건에 가장 잘 맞는 여행을 AI가 즉시 골라드립니다.</p>
+        <p>몇 가지 질문에 답하면, 조건에 맞는 상품 중에서 고객님께 잘 맞는 여행을 여러 테마로 골라드립니다.</p>
       </div>
     </div>
     <div class="ai-quiz" id="aiQuiz">
@@ -5239,8 +5263,14 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
           <button type="button" class="ai-chip" data-value="long">5박+</button>
         </div>
       </div>
+      <div class="ai-q-group">
+        <div class="ai-q-label">④ 출발 시기</div>
+        <div class="ai-chip-group" data-field="depart" id="aiDepartChips">
+          <button type="button" class="ai-chip active" data-value="any">미정</button>
+        </div>
+      </div>
       <div class="ai-q-group full">
-        <div class="ai-q-label">④ 선호 스타일 <em>(복수 선택 가능)</em></div>
+        <div class="ai-q-label">⑤ 선호 스타일 <em>(복수 선택 가능)</em></div>
         <div class="ai-chip-group" id="aiStyleChips" data-field="style"></div>
       </div>
       <button type="button" class="ai-submit-btn" onclick="runAiRecommend()">✨ AI 추천 받기</button>
@@ -16167,7 +16197,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102406';
+const TGT_CRM_VERSION='2026102501';
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;
@@ -19265,63 +19295,188 @@ function aiBudgetScore(price, pref){
   if (price<=cap) return 30;
   return Math.max(0, 30-(price-cap)/50000);
 }
+// ── AI 멀티 큐레이션 ─────────────────────────────────────────────
+// 1) 조건 필터: 예산·일정·출발 시기(판매 시기)를 충족한 상품만 추천 후보로 둔다(못 미치면 "조건을 넓힌 대안"으로 따로)
+// 2) 점수: 고객 적합도(가장 큰 비중) + 판매 전략 등급 가중치 + 노출이 적었던 상품의 기회 보정
+//    — 가중치·보정은 적합도가 충분한 상품에만 주므로, 맞지 않는 상품을 사업 목적으로 끌어올리지 않는다
+// 3) 테마별 배치: 가장 잘 맞는 여행 · 가성비와 이동 편의 · 풍경과 특별한 경험 · 코스 다양성 · 장기 체류와 휴식 · 새로운 발견
+//    — 같은 국가·권역은 최대 2개, 테마 근거는 상품에 등록된 값만 사용
+const AI_TIER_LABEL = {core:'핵심', standard:'일반', niche:'틈새'};
+const AI_THEMES = [
+  {key:'best',     label:'고객 조건에 가장 잘 맞는 여행'},
+  {key:'value',    label:'가성비와 이동 편의'},
+  {key:'scenery',  label:'풍경과 특별한 경험'},
+  {key:'course',   label:'골프 코스 다양성'},
+  {key:'stay',     label:'장기 체류와 휴식'},
+  {key:'discover', label:'새로운 발견'},
+];
+const AI_THEME_KW = {
+  value:   ['가성비','실속','특가','평일특가','올인원'],
+  scenery: ['오션뷰','풍경','절경','호수','레이크','바다','마운틴','설산','명문','특별'],
+  course:  ['27홀','36홀','45홀','54홀','챔피언','다양한 코스'],
+  stay:    ['골프텔','체류','온천','휴식','힐링','한달','장기'],
+};
+let _aiExposure = null, _aiExposureLoading = null;
+function aiLoadExposure(){
+  if (_aiExposure || _aiExposureLoading) return _aiExposureLoading;
+  const client = (typeof getSupabaseClient==='function') ? getSupabaseClient() : null;
+  if (!client || !client.rpc) return null;
+  _aiExposureLoading = Promise.resolve(client.rpc('tgt_recommend_exposure', {p_days:30})).then(res=>{
+    if (res && !res.error && Array.isArray(res.data)){ const m = {}; res.data.forEach(r=>{ if (r && r.product_uid) m[r.product_uid] = Number(r.views)||0; }); _aiExposure = m; }
+  }).catch(()=>{});
+  return _aiExposureLoading;
+}
+function aiDepartMonths(){
+  const now = new Date(Date.now() + 9*3600000);   // 한국 시간 기준 이번 달
+  const y0 = now.getUTCFullYear(); let y = y0, m = now.getUTCMonth()+1; const out = [];
+  for (let i=0;i<6;i++){ out.push({key:`${y}-${String(m).padStart(2,'0')}`, m, label: y===y0 ? `${m}월` : `${String(y).slice(2)}년 ${m}월`}); m++; if (m>12){ m=1; y++; } }
+  return out;
+}
+function aiDepartLabel(key){ const d = aiDepartMonths().find(x=>x.key===key); return d ? d.label : (key ? key.replace(/^(\d{4})-0?(\d+)$/, (a,yy,mm)=>`${mm}월`) : ''); }
+function aiScoreProduct(catId, idx, p, cat, criteria){
+  const price = (p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0;
+  const nightsMatch = /([0-9]+)\s*박/.exec(p.nights||'');
+  const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
+  const bucket = nights<=2 ? 'short' : (nights<=4 ? 'mid' : 'long');
+  const reasons=[], why=[], fails=[]; let score=0, maxScore=0;
+  // 예산
+  const bScore = aiBudgetScore(price, criteria.budget);
+  score += bScore; maxScore += criteria.budget==='any' ? 12 : 30;
+  if (criteria.budget!=='any' && bScore>=25) reasons.push('예산 적합');
+  if (criteria.budget!=='any'){
+    const bl = AI_BUDGET_LABEL[criteria.budget]||'';
+    if (p.priceInquiry) why.push({ok:null, t:`희망 예산 ${bl} — 요금 별도 문의 상품이라 예산 비교는 상담 시 확인`});
+    else if (price>0) why.push({ok:bScore>=25, t:`희망 예산 ${bl} — 판매가 ${fmtPrice(price)}원부터${bScore>=25?'':' (예산보다 높음)'}`});
+    else why.push({ok:null, t:`희망 예산 ${bl} — 판매가 미등록`});
+    const cap = Number(criteria.budget)*10000;
+    if (criteria.budget!=='9999' && !p.priceInquiry && price>0 && price>cap) fails.push({k:'budget', t:`예산보다 ${fmtPrice(price-cap)}원 높음 (판매가 ${fmtPrice(price)}원부터)`});
+  }
+  // 일정
+  if (criteria.duration==='any') score += 10;
+  else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
+  else score += 5;
+  maxScore += criteria.duration==='any' ? 10 : 20;
+  if (criteria.duration!=='any'){
+    why.push(nightsMatch ? {ok:bucket===criteria.duration, t:`희망 일정 ${AI_DURATION_LABEL[criteria.duration]||''} — ${p.nights}${bucket===criteria.duration?'':' (희망 일정과 다름)'}`} : {ok:null, t:`희망 일정 ${AI_DURATION_LABEL[criteria.duration]||''} — 일정 정보 미등록`});
+    if (nightsMatch && bucket!==criteria.duration) fails.push({k:'duration', t:`일정이 ${p.nights}`});
+  }
+  // 출발 시기 — 상품의 추천 판매 시기(월)에 들어 있는지. 판매 시기가 등록되지 않은 상품은 제한 없음으로 본다
+  if (criteria.depart && criteria.depart!=='any'){
+    const m = Number(criteria.depart.slice(5,7)), months = productEffMonths(p), dl = aiDepartLabel(criteria.depart);
+    if (!months.length) why.push({ok:null, t:`희망 출발 ${dl} — 판매 시기 제한 없음(출발 가능일은 상담 시 확인)`});
+    else if (months.includes(m)){ why.push({ok:true, t:`희망 출발 ${dl} — 추천 판매 시기에 포함`}); reasons.push('출발 시기 적합'); }
+    else { why.push({ok:false, t:`희망 출발 ${dl} — 추천 판매 시기(${productPeriodBadgeText(p, catId)}) 밖`}); fails.push({k:'depart', t:`판매 시기 ${productPeriodBadgeText(p, catId)}`}); }
+  }
+  // 스타일
+  const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>richToPlain(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
+  (criteria.styles||[]).forEach(styleVal=>{
+    const lodge = STYLE_LODGE[styleVal];
+    if (lodge && p.lodgeLocation && p.lodgeLocation!=='none' && p.lodgeLocation!=='golftel'){ // 골프텔 or 외부숙소는 위치가 특정되지 않아 키워드로 판정
+      maxScore += 20;
+      if (p.lodgeLocation===lodge){ score+=20; reasons.push(`'${styleVal}' 상품`); why.push({ok:true, t:`'${styleVal}' — 상품의 숙소 위치가 '${styleVal}'로 등록됨`}); }
+      else why.push({ok:false, t:`'${styleVal}' — 상품의 숙소 위치는 다른 유형으로 등록됨`});
+      return; // 숙소 위치가 지정된 상품은 그 값으로만 판정(반대 위치면 가산점 없음)
+    }
+    maxScore += 15;
+    const kws = STYLE_KEYWORDS[styleVal]||[];
+    const hitKw = kws.find(k=>haystack.includes(k));
+    if (hitKw){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); why.push({ok:true, t:`'${styleVal}' — 상품 정보에 '${hitKw}' 표현이 있음`}); }
+    else why.push({ok:false, t:`'${styleVal}' — 상품 정보에서 확인되지 않음`});
+  });
+  if (criteria.region!=='any'){ score+=5; maxScore+=5; reasons.push(criteria.region==='domestic'?'국내 권역 선호 반영':'해외 권역 선호 반영'); why.unshift({ok:true, t:`희망 지역 ${criteria.region==='domestic'?'국내':'해외'} — ${cat ? cat.ko : ''}`}); }
+  const rm = /(\d+)\s*R/i.exec(p.rounds||'');
+  return {catId, idx, p, cat, score, fit: maxScore ? Math.min(1, score/maxScore) : 1, reasons, why, fails, haystack,
+    price: p.priceInquiry ? 0 : price, nights: nightsMatch ? Number(nightsMatch[1]) : null, rounds: rm ? Number(rm[1]) : null,
+    tier: AI_TIER_LABEL[p.salesTier] ? p.salesTier : 'standard', labelProfile: productLabelProfile(p)};
+}
+function aiThemeAffinity(key, r, pool){
+  const kwHit = (AI_THEME_KW[key]||[]).find(k=>r.haystack.includes(k));
+  if (key==='value'){
+    const priced = pool.filter(x=>x.price>0).map(x=>x.price).sort((a,b)=>a-b);
+    const notes = []; let sc = 0;
+    if (r.price>0 && priced.length>=3 && r.price<=priced[Math.floor((priced.length-1)/3)]){ sc += 0.6; notes.push(`추천 후보 중 판매가가 낮은 편 (${fmtPrice(r.price)}원부터)`); }
+    const fh = /(\d+)\s*시간/.exec(r.p.flightTime||'');
+    if (!isDomesticCat(r.catId) && r.p.flightTime && fh && Number(fh[1])<=2){ sc += 0.3; notes.push(`비행시간 ${r.p.flightTime}`); }
+    if (kwHit){ sc += 0.3; notes.push(`상품 정보: '${kwHit}'`); }
+    return sc ? {sc, note:notes.join(' · ')} : null;
+  }
+  if (key==='course'){
+    const notes = []; let sc = 0;
+    const maxR = Math.max(0, ...pool.map(x=>x.rounds||0));
+    if (r.rounds && r.rounds>=3 && r.rounds===maxR){ sc += 0.6; notes.push(`라운드 ${r.p.rounds} — 추천 후보 중 가장 많음`); }
+    else if (r.rounds && r.rounds>=3){ sc += 0.4; notes.push(`라운드 ${r.p.rounds}`); }
+    if (kwHit){ sc += 0.4; notes.push(`상품 정보: '${kwHit}'`); }
+    return sc ? {sc, note:notes.join(' · ')} : null;
+  }
+  if (key==='stay'){
+    const notes = []; let sc = 0;
+    if (r.nights!=null && r.nights>=4){ sc += 0.5; notes.push(`${r.p.nights} 일정`); }
+    if (kwHit){ sc += 0.5; notes.push(`상품 정보: '${kwHit}'`); }
+    return sc ? {sc, note:notes.join(' · ')} : null;
+  }
+  if (key==='scenery') return kwHit ? {sc:0.8, note:`상품 정보: '${kwHit}'`} : null;
+  return null;
+}
+function aiSessionHash(){ try{ const s = tgtSessionId(); let h = 0; for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i))|0; return Math.abs(h); }catch(e){ return 0; } }
+function aiCurate(all){
+  const pass = all.filter(r=>!r.fails.length);
+  const topFit = Math.max(0, ...pass.map(r=>r.fit));
+  const exp = (_aiExposure && Object.keys(_aiExposure).length) ? _aiExposure : null;   // 기록이 아직 없으면 보정하지 않음
+  const viewsOf = r => (exp && r.p.uid) ? (exp[r.p.uid]||0) : null;
+  const vs = exp ? pass.map(viewsOf).sort((a,b)=>a-b) : [];
+  const med = vs.length ? vs[Math.floor(vs.length/2)] : 0;
+  pass.forEach(r=>{
+    r.gated = r.fit>=0.35 && r.fit >= topFit*0.6;   // 적합도가 충분한 상품만 가중치·기회 보정 대상
+    r.views = viewsOf(r);
+    r.bizBoost = !r.gated ? 0 : (r.tier==='core' ? 0.08 : (r.tier==='niche' && r.fit>=0.8 ? 0.04 : 0));
+    r.oppBoost = (r.gated && exp && med>0) ? 0.06*Math.max(0, Math.min(1, (med - r.views)/med)) : 0;
+    r.total = r.fit + r.bizBoost + r.oppBoost;
+  });
+  pass.sort((a,b)=>b.total-a.total || b.fit-a.fit);
+  const picked = [], perCat = {};
+  const can = r => !picked.includes(r) && (perCat[r.catId]||0) < 2;
+  const take = (r, theme, note) => { picked.push(r); perCat[r.catId] = (perCat[r.catId]||0)+1; r.theme = theme.key; r.themeLabel = theme.label; r.themeNote = note || ''; };
+  AI_THEMES.forEach(theme=>{
+    if (picked.length>=6) return;
+    if (theme.key==='best'){ const r = pass.find(can); if (r) take(r, theme, r.reasons.length ? `조건 ${r.why.filter(w=>w.ok===true).length}/${r.why.filter(w=>w.ok!==null).length||r.why.length} 일치` : '조건에 맞는 상품'); return; }
+    if (theme.key==='discover'){
+      const cands = pass.filter(r=>r.gated && can(r));
+      if (!cands.length) return;
+      let r = null, note = '';
+      if (exp){ const low = cands.filter(x=>x.views < med || (med===0 && x.views===0)).sort((a,b)=>a.views-b.views || b.fit-a.fit); r = low[0]; note = '최근 추천에서 소개가 적었던, 조건에 맞는 상품'; }
+      else { r = cands[aiSessionHash() % cands.length]; note = '조건에 맞는 상품 중 새롭게 소개하는 여행'; }
+      if (r) take(r, theme, note);
+      return;
+    }
+    let best = null, bestKey = -1, bestNote = '';
+    pass.forEach(r=>{ if (!r.gated || !can(r)) return; const a = aiThemeAffinity(theme.key, r, pass); if (!a) return; const k = r.total + 0.15*a.sc; if (k>bestKey){ best=r; bestKey=k; bestNote=a.note; } });
+    if (best) take(best, theme, bestNote);
+  });
+  pass.forEach(r=>{ if (picked.length<6 && can(r)) take(r, {key:'more', label:'조건에 맞는 다른 선택'}, ''); });
+  // 조건을 조금 넓힌 대안 — 추천 후보가 6개보다 적을 때만, 못 미친 조건이 적은 순
+  const alts = [];
+  if (picked.length<6){
+    all.filter(r=>r.fails.length).sort((a,b)=>a.fails.length-b.fails.length || b.fit-a.fit).slice(0, Math.min(3, 6-picked.length)).forEach(r=>{
+      r.relaxed = true; r.theme = 'relaxed'; r.themeLabel = '조건을 조금 넓힌 대안'; r.themeNote = r.fails.map(x=>x.t).join(' · '); alts.push(r);
+    });
+  }
+  return picked.concat(alts);
+}
 function computeAiRecommendations(criteria){
+  criteria = Object.assign({region:'any', budget:'any', duration:'any', depart:'any', styles:[]}, criteria||{});
   // 화면에서 숨긴 국가/권역은 AI 추천 후보에서도 제외한다
   const regionIds = criteria.region==='domestic' ? visibleCategories('domestic').map(c=>c.id)
                    : criteria.region==='overseas' ? visibleCategories('overseas').map(c=>c.id)
                    : visibleCategories('domestic').concat(visibleCategories('overseas')).map(c=>c.id);
-  const results=[];
+  const all = [];
   regionIds.forEach(catId=>{
-    const cat=findCat(catId);
+    const cat = findCat(catId);
     getProducts(catId).forEach((p,idx)=>{
-      if (!isProductVisible(p)) return; // AI 추천에서도 제외
-      const price = (p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0;
-      const nightsMatch = /([0-9]+)\s*박/.exec(p.nights||'');
-      const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
-      const bucket = nights<=2 ? 'short' : (nights<=4 ? 'mid' : 'long');
-      const reasons=[]; let score=0;
-      const why=[];   // 추천 근거 — 상품에 등록된 값만 그대로 인용한다(수치를 새로 만들지 않음)
-      const bScore = aiBudgetScore(price, criteria.budget);
-      if (criteria.budget!=='any' && bScore>=25) reasons.push('예산 적합');
-      score += bScore;
-      if (criteria.budget!=='any'){
-        const bl = AI_BUDGET_LABEL[criteria.budget]||'';
-        if (p.priceInquiry) why.push({ok:null, t:`희망 예산 ${bl} — 요금 별도 문의 상품이라 예산 비교는 상담 시 확인`});
-        else if (price>0) why.push({ok:bScore>=25, t:`희망 예산 ${bl} — 판매가 ${fmtPrice(price)}원부터${bScore>=25?'':' (예산보다 높음)'}`});
-        else why.push({ok:null, t:`희망 예산 ${bl} — 판매가 미등록`});
-      }
-      if (criteria.duration==='any') score += 10;
-      else if (bucket===criteria.duration){ score+=20; reasons.push('희망 일정과 일치'); }
-      else score += 5;
-      if (criteria.duration!=='any') why.push(nightsMatch ? {ok:bucket===criteria.duration, t:`희망 일정 ${AI_DURATION_LABEL[criteria.duration]||''} — ${p.nights}${bucket===criteria.duration?'':' (희망 일정과 다름)'}`} : {ok:null, t:`희망 일정 ${AI_DURATION_LABEL[criteria.duration]||''} — 일정 정보 미등록`});
-      const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>richToPlain(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
-      criteria.styles.forEach(styleVal=>{
-        const lodge = STYLE_LODGE[styleVal];
-        if (lodge && p.lodgeLocation && p.lodgeLocation!=='none' && p.lodgeLocation!=='golftel'){ // 골프텔 or 외부숙소는 위치가 특정되지 않아 키워드로 판정
-          if (p.lodgeLocation===lodge){ score+=20; reasons.push(`'${styleVal}' 상품`); why.push({ok:true, t:`'${styleVal}' — 상품의 숙소 위치가 '${styleVal}'로 등록됨`}); }
-          else why.push({ok:false, t:`'${styleVal}' — 상품의 숙소 위치는 다른 유형으로 등록됨`});
-          return; // 숙소 위치가 지정된 상품은 그 값으로만 판정(반대 위치면 가산점 없음)
-        }
-        const kws = STYLE_KEYWORDS[styleVal]||[];
-        const hitKw = kws.find(k=>haystack.includes(k));
-        if (hitKw){ score+=15; reasons.push(`'${styleVal}' 스타일 부합`); why.push({ok:true, t:`'${styleVal}' — 상품 정보에 '${hitKw}' 표현이 있음`}); }
-        else why.push({ok:false, t:`'${styleVal}' — 상품 정보에서 확인되지 않음`});
-      });
-      if (criteria.region!=='any'){ score+=5; reasons.push(criteria.region==='domestic'?'국내 권역 선호 반영':'해외 권역 선호 반영'); }
-      if (criteria.region!=='any') why.unshift({ok:true, t:`희망 지역 ${criteria.region==='domestic'?'국내':'해외'} — ${cat ? cat.ko : ''}`});
-      // labelProfile: 등급(Level 1~5)·신상품·특가 — 아직 점수에는 반영하지 않고, 추후 AI 추천 고도화에서 활용할 수 있게 후보마다 함께 담아 둔다
-      results.push({catId, idx, p, cat, score, reasons, why, price: p.priceInquiry ? 0 : price, nights: nightsMatch ? Number(nightsMatch[1]) : null, labelProfile: productLabelProfile(p)});
+      if (!isProductVisible(p)) return; // 숨김·판매 종료 상품은 추천에서도 제외
+      all.push(aiScoreProduct(catId, idx, p, cat, criteria));
     });
   });
-  results.sort((a,b)=>b.score-a.score);
-  const perCat={}, final=[];
-  for (const r of results){
-    perCat[r.catId]=(perCat[r.catId]||0)+1;
-    if (perCat[r.catId]>2) continue;
-    final.push(r);
-    if (final.length>=6) break;
-  }
-  return final;
+  return aiCurate(all);
 }
 // [추가] EDITOR'S PICK의 "해외/국내" 버튼 — "권역별·국가별 골프 여행지" 섹션의 해당(해외/국내) 구역으로 부드럽게 스크롤한다
 // (html의 scroll-padding-top이 고정 탑바·메뉴바 높이만큼 여백을 잡아 준다)
@@ -19413,37 +19568,67 @@ function aiCompareTableHTML(results){
     <div class="ai-cmp-wrap"><table><thead><tr><th>순위</th><th>상품</th><th>지역</th><th>일정</th><th>라운드</th><th>판매가</th><th>비행·이동</th><th>판매 시기</th><th>현장 정보</th></tr></thead><tbody>${rows}</tbody></table></div>
     <p class="ai-why-none">상품에 등록된 정보만 비교합니다. "—"는 등록되지 않은 항목입니다.</p></details>`;
 }
-function renderAiResults(results){
+let _tgtAiShown = [];
+function aiTrackPick(type, i){
+  const x = _tgtAiShown[i]; if (!x) return;
+  tgtTrack(type, Object.assign(tgtEvtProduct(x.catId, x.idx), {rank:i+1, criteria:Object.assign({}, _tgtAiCriteria, {theme:x.theme})}));
+}
+function aiCriteriaText(c){
+  const parts = [];
+  parts.push(c.region==='domestic' ? '국내' : (c.region==='overseas' ? '해외' : '권역 상관없음'));
+  parts.push(c.budget==='any' ? '예산 상관없음' : (c.budget==='9999' ? '200만원 이상' : `${c.budget}만원 이하`));
+  parts.push(c.duration==='any' ? '일정 상관없음' : AI_DURATION_LABEL[c.duration]);
+  parts.push(c.depart && c.depart!=='any' ? `${aiDepartLabel(c.depart)} 출발` : '출발 시기 미정');
+  if (c.styles && c.styles.length){ const lab = v => ((STYLE_OPTIONS.find(o=>o.value===v)||{}).label||v).replace(/^[^\wㄱ-힣]+\s*/,''); parts.push(c.styles.slice(0,2).map(lab).join(', ') + (c.styles.length>2 ? ` 외 ${c.styles.length-2}` : '')); }
+  return parts.join(' · ');
+}
+function aiCardImage(r){
+  const p = r.p;
+  return (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) || (p.gallery && p.gallery[0] && p.gallery[0].url) || getImage(r.catId);
+}
+function renderAiResults(results, criteria){
   const wrap=document.getElementById('aiResults');
   if (!wrap) return;
+  _tgtAiShown = results.slice();
   if (!results.length){ wrap.innerHTML='<div class="ai-empty">조건에 맞는 상품을 찾지 못했습니다. 조건을 조정해보세요.</div>'; return; }
-  wrap.innerHTML = `<div class="ai-results-head">✨ AI가 고른 추천 여행 ${results.length}건</div>` + results.map((r,i)=>{
-    const img = getImage(r.catId);
-    return `<div class="ai-result-card">
-      <div class="ai-result-img" style="background-image:url('${img}')"></div>
-      <div class="ai-result-body">
-        <div class="ai-result-top"><span class="ai-result-cat">${r.cat.ko}</span>${cardTagsOf(r.p)[0]?`<span class="ai-result-tag">${escapeAttr(cardTagsOf(r.p)[0])}</span>`:''}</div>
-        <h4>${r.p.title}</h4>
-        <div class="ai-result-meta">${r.p.nights||''} · ${r.p.rounds||''} · ${priceInquiryText(r.p) || (fmtPrice(r.p.from)+'원~')}</div>
-        <div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${x}</span>`).join('')}</div>
-        ${aiWhyHTML(r, results, i===0)}
+  const main = results.filter(r=>!r.relaxed), alts = results.filter(r=>r.relaxed);
+  const card = (r, i) => `<article class="ai-cur-card${r.relaxed?' is-relaxed':''}">
+      <div class="ai-cur-img" style="background-image:url('${escapeAttr(aiCardImage(r))}')" role="img" aria-label="${escapeAttr(productImgAlt(r.cat, r.p))}">
+        <span class="ai-cur-cat">${escapeAttr(r.cat.ko)}</span>
+      </div>
+      <div class="ai-cur-body">
+        <div class="ai-cur-theme">${escapeAttr(r.themeLabel||'')}</div>
+        <h4>${escapeAttr(r.p.title||'')}</h4>
+        ${r.themeNote ? `<div class="ai-cur-note">${escapeAttr(r.themeNote)}</div>` : ''}
+        <div class="ai-result-meta">${[r.p.nights, r.p.rounds, priceInquiryText(r.p) || (r.price>0 ? fmtPrice(r.price)+'원~' : '')].filter(Boolean).map(escapeAttr).join(' · ')}</div>
+        ${r.reasons.length ? `<div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${escapeAttr(x)}</span>`).join('')}</div>` : ''}
+        ${aiWhyHTML(r, main.length ? main : results, false)}
         <div class="ai-result-actions">
-          <button type="button" class="ai-detail-btn" onclick="tgtTrack('recommend_click', Object.assign(tgtEvtProduct('${r.catId}',${r.idx}), {rank:${i+1}, criteria:_tgtAiCriteria}));openProductDetail('${r.catId}',${r.idx})">상세보기</button>
-          <button type="button" class="ai-inquire-btn" onclick="tgtTrack('recommend_inquiry', Object.assign(tgtEvtProduct('${r.catId}',${r.idx}), {rank:${i+1}, criteria:_tgtAiCriteria}));selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
+          <button type="button" class="ai-detail-btn" onclick="aiTrackPick('recommend_click', ${i});openProductDetail('${r.catId}',${r.idx})">상세보기</button>
+          <button type="button" class="ai-inquire-btn" onclick="aiTrackPick('recommend_inquiry', ${i});selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
         </div>
       </div>
-    </div>`;
-  }).join('') + aiCompareTableHTML(results);
+    </article>`;
+  wrap.innerHTML = `<div class="ai-cur-head"><div><h3>AI 골프여행 맞춤 추천</h3><p>고객님이 선택한 조건: ${escapeAttr(aiCriteriaText(criteria||_tgtAiCriteria||{}))}</p></div><span class="ai-cur-spark" aria-hidden="true">✦</span></div>`
+    + (main.length ? `<div class="ai-cur-grid">${main.map((r,i)=>card(r,i)).join('')}</div>` : '<div class="ai-empty">모든 조건을 충족하는 상품이 없어, 조건을 조금 넓힌 대안을 보여드립니다.</div>')
+    + (alts.length ? `<div class="ai-cur-alt-head">조건을 조금 넓힌 대안 <span>— 아래 상품은 표시된 조건이 다릅니다. 상담 시 조정 가능 여부를 안내해 드립니다.</span></div><div class="ai-cur-grid">${alts.map((r,j)=>card(r, main.length+j)).join('')}</div>` : '')
+    + `<p class="ai-cur-foot">조건에 맞는 상품 중에서 여러 국가·테마를 고루 소개합니다. 판매가·일정·판매 시기는 상품에 등록된 정보 기준이며, 실제 출발 가능 여부와 요금은 상담 시 확정됩니다.</p>`
+    + aiCompareTableHTML(main.length>=2 ? main : results);
 }
 function runAiRecommend(){
-  const region = document.querySelector('#aiQuiz .ai-chip-group[data-field="region"] .ai-chip.active')?.dataset.value || 'any';
-  const budget = document.querySelector('#aiQuiz .ai-chip-group[data-field="budget"] .ai-chip.active')?.dataset.value || 'any';
-  const duration = document.querySelector('#aiQuiz .ai-chip-group[data-field="duration"] .ai-chip.active')?.dataset.value || 'any';
+  const val = f => document.querySelector(`#aiQuiz .ai-chip-group[data-field="${f}"] .ai-chip.active`)?.dataset.value || 'any';
   const styles = Array.from(document.querySelectorAll('#aiStyleChips .ai-chip.active')).map(b=>b.dataset.value);
-  const results = computeAiRecommendations({region, budget, duration, styles});
-  renderAiResults(results);
-  _tgtAiCriteria = {region, budget, duration, styles:styles.slice(0,14)};
-  if (results.length) tgtTrack('recommend_view', results.map((r,i)=>Object.assign(tgtEvtProduct(r.catId, r.idx), {rank:i+1, criteria:_tgtAiCriteria})));
+  const criteria = {region:val('region'), budget:val('budget'), duration:val('duration'), depart:val('depart'), styles};
+  _tgtAiCriteria = {region:criteria.region, budget:criteria.budget, duration:criteria.duration, depart:criteria.depart, styles:styles.slice(0,14)};
+  const go = () => {
+    const results = computeAiRecommendations(criteria);
+    renderAiResults(results, criteria);
+    if (results.length) tgtTrack('recommend_view', results.map((r,i)=>Object.assign(tgtEvtProduct(r.catId, r.idx), {rank:i+1, criteria:Object.assign({}, _tgtAiCriteria, {theme:r.theme})})));
+  };
+  // 노출 기록을 아직 못 받았으면 잠깐(최대 0.8초)만 기다렸다가 추천 — 실패하면 기록 없이 추천
+  const pending = aiLoadExposure();
+  if (_aiExposure || !pending) go();
+  else Promise.race([pending, new Promise(r=>setTimeout(r, 800))]).then(go);
 }
 function selectAiProduct(catId, idx){
   const p = getProducts(catId)[idx];
@@ -19464,6 +19649,10 @@ function selectAiProduct(catId, idx){
 (function initAiRecommend(){
   const chipsEl = document.getElementById('aiStyleChips');
   if (chipsEl) chipsEl.innerHTML = STYLE_OPTIONS.map(o=>`<button type="button" class="ai-chip" data-value="${escapeAttr(o.value)}">${o.label}</button>`).join('');
+  // 출발 시기 — 이번 달부터 6개월(연도가 바뀌면 "27년 1월"처럼 표시)
+  const departEl = document.getElementById('aiDepartChips');
+  if (departEl) departEl.innerHTML += aiDepartMonths().map(d=>`<button type="button" class="ai-chip" data-value="${d.key}">${d.label}</button>`).join('');
+  setTimeout(aiLoadExposure, 2500);   // 추천 노출 기록(합계)을 미리 받아 둔다 — 실패해도 추천은 정상 동작
   document.querySelectorAll('#aiQuiz .ai-chip-group').forEach(group=>{
     group.addEventListener('click', e=>{
       const btn = e.target.closest('.ai-chip');

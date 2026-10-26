@@ -328,6 +328,9 @@ section.block{padding:100px 24px;position:relative}
 .cat-card::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.85) 100%)}
 .cat-card .content{position:absolute;inset:0;z-index:2;padding:24px;display:flex;flex-direction:column;justify-content:space-between}
 .cat-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+/* 국가별·권역별 카드 왼쪽 상단의 문구 라벨은 노출하지 않는다(상품 수 배지는 오른쪽 그대로) */
+.cat-card .tagline{display:none}
+.cat-card .count-badge{margin-left:auto}
 .cat-card .tagline{font-size:.72rem;color:rgba(255,255,255,.9);font-weight:500;letter-spacing:.05em;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.15);max-width:80%}
 .cat-card .count-badge{background:rgba(221,179,103,.9);backdrop-filter:blur(8px);color:#fff;font-size:.72rem;font-weight:700;padding:6px 12px;border-radius:100px;letter-spacing:.05em;white-space:nowrap}
 .cat-card .divider{display:flex;align-items:center;gap:10px;margin-bottom:8px;color:var(--gold)}
@@ -4223,7 +4226,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-submit-btn{justify-self:start;padding:15px 32px;background:var(--btn-highlight),var(--gold);border:1px solid rgba(221,179,103,.5);color:#fff;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:var(--btn-elevate),var(--btn-shine)}
 .ai-submit-btn:hover{background:var(--btn-highlight),var(--gold-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
 .ai-submit-btn:active{background:var(--gold-deep);transform:translateY(1px);box-shadow:var(--btn-press)}
-.ai-results{margin-top:32px;display:grid;gap:20px}
+.ai-results{margin-top:32px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;max-width:100%}
+.ai-results > *{min-width:0;max-width:100%}
 .ai-results-head{font-size:.95rem;font-weight:700;color:var(--pine-deep)}
 .ai-empty{padding:32px;text-align:center;color:rgba(10,23,48,.55);background:rgba(255,255,255,.7);border-radius:16px}
 .ai-result-card{display:grid;grid-template-columns:200px 1fr;gap:0;background:rgba(255,255,255,.92);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--glass-shadow)}
@@ -4246,7 +4250,6 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-cur-card{background:rgba(255,255,255,.94);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:var(--glass-shadow);display:flex;flex-direction:column;min-width:0}
 .ai-cur-card.is-relaxed{background:rgba(255,255,255,.8);border-style:dashed}
 .ai-cur-img{position:relative;aspect-ratio:16/10;background-size:cover;background-position:center;background-color:#e8edf3}
-.ai-cur-cat{position:absolute;left:12px;top:12px;font-size:.7rem;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:100px;background:rgba(10,23,48,.62);color:#fff}
 .ai-cur-body{padding:16px 18px 18px;display:flex;flex-direction:column;min-width:0}
 .ai-cur-theme{font-size:.72rem;font-weight:700;color:var(--gold-deep);margin-bottom:4px}
 .ai-cur-card.is-relaxed .ai-cur-theme{color:#9a6b12}
@@ -4257,9 +4260,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-cur-body .ai-result-actions{margin-top:auto}
 .ai-cur-body .ai-result-actions{gap:6px}
 .ai-cur-body .ai-detail-btn,.ai-cur-body .ai-call-btn,.ai-cur-body .ai-inquire-btn{padding:9px 10px;font-size:.78rem;white-space:nowrap}
-.ai-call-btn{padding:10px 16px;border-radius:10px;border:1px solid var(--pine);background:var(--pine);color:#fff;font-weight:700;font-size:.84rem;cursor:pointer;box-shadow:var(--btn-elevate),var(--btn-shine);transition:all .2s;white-space:nowrap}
-.ai-call-btn:hover{background:var(--pine-deep);border-color:var(--pine-deep);transform:translateY(-2px);box-shadow:var(--btn-elevate-hover),var(--btn-shine)}
-.ai-call-btn:active{transform:translateY(1px);box-shadow:var(--btn-press)}
+
 .ai-cur-alt-head{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-top:6px}
 .ai-cur-alt-head span{font-weight:500;font-size:.8rem;color:rgba(10,23,48,.55)}
 .ai-cur-foot{margin:0;font-size:.76rem;color:rgba(10,23,48,.55)}
@@ -4287,7 +4288,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-locs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .ai-locs a{font-size:.72rem;padding:3px 9px;border-radius:100px;border:1px solid rgba(10,23,48,.14);color:var(--pine);text-decoration:none;background:#fff}
 .ai-cmp{background:rgba(255,255,255,.88);border:1px solid var(--glass-border);border-radius:16px;padding:12px 16px}
-.ai-cmp-wrap{overflow-x:auto;margin:10px 0 6px}
+.ai-cmp-wrap{overflow-x:auto;margin:10px 0 6px;max-width:100%;-webkit-overflow-scrolling:touch}
 .ai-cmp table{border-collapse:collapse;width:100%;font-size:.78rem;min-width:640px}
 .ai-cmp th,.ai-cmp td{padding:6px 8px;border-bottom:1px solid rgba(10,23,48,.08);text-align:left;white-space:nowrap}
 .ai-cmp th{font-weight:700;color:rgba(10,23,48,.6);opacity:1}
@@ -19609,7 +19610,6 @@ function renderAiResults(results, criteria){
   const main = results.filter(r=>!r.relaxed), alts = results.filter(r=>r.relaxed);
   const card = (r, i) => `<article class="ai-cur-card${r.relaxed?' is-relaxed':''}">
       <div class="ai-cur-img" style="background-image:url('${escapeAttr(aiCardImage(r))}')" role="img" aria-label="${escapeAttr(productImgAlt(r.cat, r.p))}">
-        <span class="ai-cur-cat">${escapeAttr(r.cat.ko)}</span>
       </div>
       <div class="ai-cur-body">
         <div class="ai-cur-theme">${escapeAttr(r.themeLabel||'')}</div>
@@ -19620,7 +19620,7 @@ function renderAiResults(results, criteria){
         ${aiWhyHTML(r, main.length ? main : results, false)}
         <div class="ai-result-actions">
           <button type="button" class="ai-detail-btn" onclick="aiTrackPick('recommend_click', ${i});openProductDetail('${r.catId}',${r.idx})">상세보기</button>
-          <button type="button" class="ai-call-btn" onclick="aiCallProduct(${i})">📞 전화문의</button>
+          <button type="button" class="ai-detail-btn ai-call-btn" onclick="aiCallProduct(${i})">📞 전화문의</button>
           <button type="button" class="ai-inquire-btn" onclick="aiTrackPick('recommend_inquiry', ${i});selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
         </div>
       </div>

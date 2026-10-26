@@ -4342,7 +4342,14 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   .ai-chip-group,.cv-nav-track,.period-filter-track{
     flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
     scroll-snap-type:x proximity;cursor:grab;scrollbar-width:none;-ms-overflow-style:none;
+    /* [수정] 가로로 밀 때 줄이 위아래로도 따라 움직이던 문제 — overflow-x만 auto로 두면 overflow-y도 auto로 계산되어,
+       칩의 소수 높이(35.4px 등)·눌림(translateY) 때문에 생기는 1px 남짓한 세로 넘침만으로도 줄 안이 세로로 스크롤(iOS는 출렁임)된다.
+       세로는 아예 막아 세로 움직임은 페이지 스크롤로만 이어지게 하고, 가로 끝에서 페이지가 옆으로 끌리지 않게 한다 */
+    overflow-y:hidden;overscroll-behavior-x:contain;
   }
+  /* [수정] 터치에서는 칩이 눌림·호버로 1px씩 위아래로 움직이며 세로 넘침을 만들므로 이동 효과를 끄고 그림자·색으로만 반응한다 */
+  .ai-chip-group .ai-chip:hover,.ai-chip-group .ai-chip:active,.cv-nav-track .cv-nav-item:hover,.cv-nav-track .cv-nav-item:active,
+  .period-filter-track .period-filter-btn:hover,.period-filter-track .period-filter-btn:active{transform:none}
   .ai-chip-group::-webkit-scrollbar,.cv-nav-track::-webkit-scrollbar,.period-filter-track::-webkit-scrollbar{display:none}
   .ai-chip-group.dragging,.cv-nav-track.dragging,.period-filter-track.dragging{cursor:grabbing}
   .ai-chip-group .ai-chip,.cv-nav-track .cv-nav-item,.period-filter-track .period-filter-btn{
@@ -12673,6 +12680,8 @@ window.addEventListener('resize', ()=>{
 // 네이티브 팬(가로 스크롤)을 허용하는 한 브라우저가 자체적으로 부드러운 관성 스크롤을 처리한다
 function initCarouselDrag(track){
   let dragging=false, moved=false, startX=0, startScroll=0, pointerId=null;
+  // 어떤 이유로든 세로로 밀려 올라간 상태가 되면 바로 제자리로 — 이 줄은 가로로만 움직인다
+  track.addEventListener('scroll', ()=>{ if (track.scrollTop) track.scrollTop = 0; }, {passive:true});
   track.addEventListener('pointerdown', e=>{
     if (e.pointerType!=='mouse') return;
     if (e.button!==0) return;

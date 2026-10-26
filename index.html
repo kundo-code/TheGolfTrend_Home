@@ -4265,7 +4265,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-cur-body .ai-result-reasons{margin-bottom:12px}
 .ai-cur-body .ai-result-actions{margin-top:auto}
 .ai-cur-body .ai-result-actions{gap:6px}
-.ai-cur-body .ai-detail-btn,.ai-cur-body .ai-call-btn,.ai-cur-body .ai-inquire-btn{padding:9px 10px;font-size:.78rem;white-space:nowrap}
+.ai-cur-body .ai-detail-btn,.ai-cur-body .ai-call-btn,.ai-cur-body .ai-inquire-btn{padding:11px 12px;font-size:.78rem;white-space:nowrap}
 
 .ai-cur-alt-head{font-size:.92rem;font-weight:700;color:var(--pine-deep);margin-top:6px}
 .ai-cur-alt-head span{font-weight:500;font-size:.8rem;color:rgba(10,23,48,.55)}
@@ -4274,7 +4274,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 @media (max-width:640px){ .ai-cur-grid{grid-template-columns:1fr} .ai-cur-head{padding:16px 18px}
   .ai-cur-body .ai-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .ai-cur-body .ai-inquire-btn{grid-column:1/-1}
-  .ai-cur-body .ai-detail-btn,.ai-cur-body .ai-call-btn,.ai-cur-body .ai-inquire-btn{padding:11px 10px;font-size:.84rem} }
+  .ai-cur-body .ai-detail-btn,.ai-cur-body .ai-call-btn,.ai-cur-body .ai-inquire-btn{padding:13px 12px;font-size:.84rem} }
 /* 추천 근거 · 비교 · 현장 정보 */
 .ai-why{margin:-6px 0 14px;border-top:1px dashed rgba(10,23,48,.14);padding-top:8px}
 .ai-why > summary,.ai-cmp > summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--pine);list-style:revert}
@@ -4357,7 +4357,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   .ai-recommend-section .sec-head{margin-bottom:6px}
   /* [Phase] "AI추천 받기" 버튼은 폰트 크기(1rem)는 그대로 두고, 버튼 자체 크기(패딩)만 80% 줄여
      (기존 15px 32px → 20%인 3px 6px) 글자를 감싸는 여백만 확 좁아진 작은 버튼으로 만든다 */
-  .ai-submit-btn{padding:3px 6px}
+  .ai-submit-btn{padding:5px 8px}
   /* [Phase] 완전히 없앴던 카드 그림자를 "살짝 돌출된" 정도의 옅은 그림자로 되돌리고, 이미지
      (.product-visual)는 카드 패딩(18px)만큼 음수 마진을 줘 카드 바깥쪽 프레임(테두리)까지 꽉 차
      보이게 한다(peek 비율 자체는 그대로 유지, 이미지만 카드 경계에 더 꽉 맞춤). 이미지 위쪽
@@ -4572,18 +4572,18 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .mobile-call-fab .fab-icon{font-size:.9em}
 /* [추가] AI 추천 받기 — 참고 이미지의 사각 골드 버튼: 두툼한 금속 금색 프레임 + 안쪽 짙은 선/밝은 금색 선(이중 프레임) + 골드 면 */
 .ai-submit-btn,.ai-submit-btn:hover,.ai-submit-btn:active,.ai-submit-btn:focus-visible{
-  border:4px solid transparent;border-radius:14px;
+  border:2px solid transparent;border-radius:14px;
   background:
     linear-gradient(168deg,rgba(255,255,255,0) 38%,rgba(255,240,180,.30) 54%,rgba(255,255,255,0) 70%) padding-box,
     radial-gradient(ellipse 70% 100% at 12% 0%,rgba(255,255,255,.38) 0%,rgba(255,255,255,0) 65%) padding-box,
     linear-gradient(160deg,#d8a31f 0%,#c4900a 48%,#cf9a1c 100%) padding-box,
     linear-gradient(180deg,#ffeea8 0%,#e9bb48 16%,#b97e10 46%,#8e5a06 60%,#dca83a 82%,#ffe99a 100%) border-box;
   color:#fff;text-shadow:0 1px 1px rgba(90,50,0,.5);
-  box-shadow:inset 0 0 0 1.5px #8a5a0a,inset 0 0 0 3px rgba(255,226,130,.92),0 5px 12px rgba(122,80,8,.32),0 0 0 1px rgba(255,255,255,.55);
+  box-shadow:inset 0 0 0 .75px #8a5a0a,inset 0 0 0 1.5px rgba(255,226,130,.92),0 5px 12px rgba(122,80,8,.32),0 0 0 .5px rgba(255,255,255,.55);
 }
 .ai-submit-btn:hover{filter:brightness(1.05) saturate(1.05);transform:translateY(-1px)}
 .ai-submit-btn:active{filter:brightness(.95);transform:translateY(1px)}
-@media(min-width:781px){.ai-submit-btn{padding:13px 32px}}
+@media(min-width:781px){.ai-submit-btn{padding:15px 34px}}
 
 /* [수정] 히어로 레이아웃 — "필드에서 시작되는 완벽한 여행" 소개 박스를 위(가로로 긴 형태), "Editor's Pick · 이번 주 추천" 카드는 아래에 배치.
    (소개 박스 안의 "국내외 여행지·해외 골프 운영·B2B 파트너" 숫자 요약은 삭제) */
@@ -4636,8 +4636,8 @@ button.spot-region-tag:hover{filter:brightness(1.05) saturate(1.05);transform:tr
 button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 /* [수정] AI가 고른 추천 여행의 버튼(상세보기·상담 신청) — 사각 골드 버튼(AI 추천 받기와 같은 디자인, 크림/골드 2종) */
 .ai-detail-btn,.ai-detail-btn:hover,.ai-detail-btn:active,.ai-inquire-btn,.ai-inquire-btn:hover,.ai-inquire-btn:active{
-  border:3px solid transparent;border-radius:12px;padding:8px 18px;
-  box-shadow:inset 0 0 0 1.5px #8a5a0a,inset 0 0 0 2.5px rgba(255,226,130,.92),0 4px 10px rgba(122,80,8,.28)}
+  border:1px solid transparent;border-radius:12px;padding:10px 20px;
+  box-shadow:inset 0 0 0 .5px #c9962b,inset 0 0 0 1.25px #8a5a0a,inset 0 0 0 1.75px rgba(255,226,130,.92),0 4px 10px rgba(122,80,8,.28)}
 .ai-inquire-btn,.ai-inquire-btn:hover,.ai-inquire-btn:active{
   background:
     linear-gradient(168deg,rgba(255,255,255,0) 38%,rgba(255,240,180,.30) 54%,rgba(255,255,255,0) 70%) padding-box,

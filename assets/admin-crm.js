@@ -1684,7 +1684,8 @@
       ${srch.length ? `<div class="st-grid2">
           <div><div class="st-sm-l" style="margin-top:4px">예산(1인)</div>${barList(cRows(e=>budgetL(crit(e).budget)), '회')}<div class="st-sm-l">일정</div>${barList(cRows(e=>durL(crit(e).duration)), '회')}</div>
           <div><div class="st-sm-l" style="margin-top:4px">권역 · 출발 시기</div>${barList(cRows(e=>regionL(crit(e).region), 3).concat(cRows(e=>depL(crit(e).depart), 7)), '회')}<div class="st-sm-l">선호 스타일</div>${barList(cRows(e=>(crit(e).styles||[]).map(styleL), 10), '회')}</div>
-        </div>` : '<div class="crm-empty">AI 추천 검색 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
+        </div>
+        ${srch.some(e=>(crit(e).details||[]).length) ? `<div class="st-sm-l">세부 조건(출발 공항·항공·이동·라운드·식사·등급)</div>${barList(cRows(e=>(crit(e).details||[]).map(k=>(typeof AI_DETAIL_LABEL==='object' && AI_DETAIL_LABEL[k]) || k), 12), '회')}` : ''}` : '<div class="crm-empty">AI 추천 검색 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
       <div class="st-sm-l">국가·권역 관심도</div>
       ${catRows.length ? table(['국가·권역','카드 열기(방문)','판매 중 상품','상품 상세 본 방문','그중 상담 행동'], catRows.map(r=>[esc(r.name), fmtN(r.n), r.prods ? fmtN(r.prods) : '<b style="color:#B91C1C">0</b>', fmtN(r.detail), `${fmtN(r.act)} (${pct(r.act, r.detail)})`])) : '<div class="crm-empty">국가·권역 카드 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
       <div class="st-sm-l">상품별 반응</div>
@@ -1757,6 +1758,17 @@
           items.push({grp:'add', pri: n/srch.length>=0.2 ? 3 : 2, title:`'${lab}' 취향 상품 보강`, ev:[`검색의 ${pct(n, srch.length)}%(${fmtN(n)}회)가 이 취향 선택`, `상품 정보에서 이 취향이 확인되는 판매 상품 ${match.length}개`],
             act:`이 취향에 맞는 상품을 추가하거나, 이미 해당하는 상품이 있다면 카드 태그·대표 문구에 관련 표현을 넣어 주세요(추천은 등록된 표현으로만 판단합니다).`}); }
       });
+      // 2-1) 세부 조건(출발 공항·항공·이동·라운드 등) 수요 대비 — 맞는 상품이 적은지, 정보가 비어서 판단이 안 되는지 구분
+      if (typeof aiDetailTest==='function' && typeof aiProdFacts==='function'){
+        const dt = countBy(srch, e=>crit(e).details||[]);
+        Object.entries(dt).filter(([,n])=>n>=3 && n/srch.length>=0.1).forEach(([k, n])=>{
+          const lab = (typeof AI_DETAIL_LABEL==='object' && AI_DETAIL_LABEL[k]) || k;
+          const res = prods.map(x=>aiDetailTest(k, aiProdFacts(x.p, x.catId)).v);
+          const yes = res.filter(v=>v===true).length, unk = res.filter(v=>v===null).length;
+          if (unk >= prods.length*0.5) items.push({grp:'fix', pri:2, title:`'${esc(lab)}' 판단에 필요한 상품 정보가 비어 있음`, ev:[`검색의 ${pct(n, srch.length)}%(${fmtN(n)}회)가 이 조건 선택`, `판매 중 ${prods.length}개 중 ${unk}개는 관련 정보 미등록으로 '미확인'`], act:'고객이 자주 고르는 조건입니다. 상품 편집에서 해당 정보(출발 공항·항공 포함·출발 요일·비행/이동시간·라운드·식사·최소 인원·등급 등)를 채우면 추천에 바로 반영됩니다.'});
+          else if (yes <= 2) items.push({grp:'add', pri: n/srch.length>=0.2 ? 3 : 2, title:`'${esc(lab)}' 조건에 맞는 상품 보강`, ev:[`검색의 ${pct(n, srch.length)}%(${fmtN(n)}회)가 이 조건 선택`, `이 조건이 확인되는 판매 상품 ${yes}개 / ${prods.length}개`], act:'이 조건을 충족하는 상품(또는 요금 항목)을 추가하는 것을 검토하세요.'});
+        });
+      }
       // 3) 희망 출발 월 대비 판매 상품
       const dep = countBy(srch.filter(e=>crit(e).depart && crit(e).depart!=='any'), e=>crit(e).depart);
       const depTot = Object.values(dep).reduce((a,b)=>a+b,0);

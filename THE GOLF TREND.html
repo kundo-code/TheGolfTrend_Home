@@ -8509,9 +8509,39 @@ document.addEventListener('click', e=>{
   const a = e.target && e.target.closest && e.target.closest('a[href]'); if (!a) return;
   if (a.closest('#adminPanel')) return;
   const h = a.getAttribute('href')||'';
-  if (/^tel:/i.test(h)) tgtTrack('call_click');
-  else if (/kakao\.com/i.test(h)) tgtTrack('kakao_click');
+  const pdOpen = typeof currentPd!=='undefined' && currentPd && document.getElementById('pdOverlay')?.classList.contains('show');
+  const ctx = pdOpen ? Object.assign(tgtEvtProduct(currentPd.catId, currentPd.idx), {criteria:{from:'detail'}}) : undefined;
+  if (/^tel:/i.test(h)) tgtTrack('call_click', ctx);
+  else if (/kakao\.com/i.test(h)) tgtTrack('kakao_click', ctx);
   else if (/blog\.naver\.com|youtube\.com|youtu\.be|band\.us/i.test(h)) tgtTrack('channel_click', {criteria:{host:(h.match(/^https?:\/\/([^\/?#]+)/i)||[])[1]||null}});
+}, true);
+// 방문 1회(탭 단위) — 유입 도메인·기기·광고 태그만 남긴다(전체 주소·IP 없음). 관리자 화면 확인이 끝난 뒤(3초) 기록
+setTimeout(()=>{
+  try{
+    if (sessionStorage.getItem('tgt_pv')) return;
+    sessionStorage.setItem('tgt_pv', '1');
+    let ref = 'direct';
+    try{ if (document.referrer){ const h = new URL(document.referrer).hostname.replace(/^www\./,''); ref = h===location.hostname.replace(/^www\./,'') ? 'internal' : h; } }catch(e){}
+    const q = new URLSearchParams(location.search), utm = {};
+    ['utm_source','utm_medium','utm_campaign'].forEach(k=>{ const v = q.get(k); if (v) utm[k.slice(4)] = v.slice(0,40); });
+    const device = window.matchMedia && window.matchMedia('(max-width:780px)').matches ? 'mobile' : 'desktop';
+    tgtTrack('page_view', {criteria:Object.assign({ref:ref.slice(0,80), device}, Object.keys(utm).length ? {utm} : {})});
+  }catch(e){}
+}, 3000);
+// 상담 신청서 작성 시작(탭당 1회) — 시작 대비 제출 비율로 신청서 이탈을 본다
+document.addEventListener('focusin', e=>{
+  const form = e.target && e.target.closest && e.target.closest('#bookingForm'); if (!form) return;
+  try{ if (sessionStorage.getItem('tgt_fs')) return; sessionStorage.setItem('tgt_fs','1'); }catch(err){ return; }
+  const src = form.querySelector('[name=source]');
+  tgtTrack('form_start', {criteria:{source:(src && src.value) || 'direct'}});
+});
+// 상품 상세를 어디까지 읽었는지(50%·90%, 상품당 1회씩)
+const _tgtDepth = {};
+document.addEventListener('scroll', e=>{
+  const el = e.target; if (!el || el.id!=='pdOverlay' || typeof currentPd==='undefined' || !currentPd) return;
+  const max = el.scrollHeight - el.clientHeight; if (max < 200) return;
+  const pct = (el.scrollTop / max) * 100, key = currentPd.catId+'#'+currentPd.idx;
+  [50, 90].forEach(d=>{ if (pct >= d && !_tgtDepth[key+'@'+d]){ _tgtDepth[key+'@'+d] = 1; tgtTrack('detail_view', Object.assign(tgtEvtProduct(currentPd.catId, currentPd.idx), {criteria:{depth:d}})); } });
 }, true);
 let _tgtAiCriteria = null;
 let _leadsCache=[];
@@ -12032,6 +12062,7 @@ function selectCategory(id, opts){
   const next=current===id?null:id; // 이미 열려있는 카드를 다시 클릭하면 닫는다
   destAllView[regionKey]=false; // 국가/권역을 고르면 "전체보기"는 해제
   if (isOverseas) selectedOverseasId=next; else selectedDomesticId=next;
+  if (next && typeof tgtTrack==='function') tgtTrack('category_view', {product_cat:id, travel_region:regionKey});
   renderRegionGrid(regionKey);
   if (next && opts.scroll!==false){
     setTimeout(()=>{
@@ -16205,7 +16236,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102501';
+const TGT_CRM_VERSION='2026102601';
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;
@@ -19461,6 +19492,8 @@ function aiCurate(all){
     if (best) take(best, theme, bestNote);
   });
   pass.forEach(r=>{ if (picked.length<6 && can(r)) take(r, {key:'more', label:'조건에 맞는 다른 선택'}, ''); });
+  aiCurate.lastMatched = pass.length; aiCurate.lastFails = {};
+  all.forEach(r=>r.fails.forEach(x=>{ aiCurate.lastFails[x.k] = (aiCurate.lastFails[x.k]||0) + 1; }));
   // 조건을 조금 넓힌 대안 — 추천 후보가 6개보다 적을 때만, 못 미친 조건이 적은 순
   const alts = [];
   if (picked.length<6){
@@ -19639,6 +19672,7 @@ function runAiRecommend(){
   const go = () => {
     const results = computeAiRecommendations(criteria);
     renderAiResults(results, criteria);
+    tgtTrack('recommend_search', {criteria:Object.assign({}, _tgtAiCriteria, {matched:aiCurate.lastMatched||0, shown:results.filter(r=>!r.relaxed).length, relaxed:results.filter(r=>r.relaxed).length, fails:aiCurate.lastFails||{}})});
     if (results.length) tgtTrack('recommend_view', results.map((r,i)=>Object.assign(tgtEvtProduct(r.catId, r.idx), {rank:i+1, criteria:Object.assign({}, _tgtAiCriteria, {theme:r.theme})})));
   };
   // 노출 기록을 아직 못 받았으면 잠깐(최대 0.8초)만 기다렸다가 추천 — 실패하면 기록 없이 추천

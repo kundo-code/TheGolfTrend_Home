@@ -247,6 +247,17 @@
       .st-heat td.st-rh{text-align:left;white-space:nowrap;font-weight:700}
       .st-short{color:#8A4B00;font-weight:700}
       .it-list{margin:0;padding-left:18px;font-size:.8rem;line-height:1.7}
+      .st-tbl td:first-child{min-width:120px;white-space:normal}
+      .st-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 18px}
+      .st-funnel{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+      .st-fn-row{display:grid;grid-template-columns:minmax(110px,30%) 1fr auto;gap:8px;align-items:center;font-size:.76rem}
+      .st-fn-l{color:#0b0b0b;font-weight:600}
+      .st-fn-t{height:16px;background:rgba(10,23,48,.05);border-radius:4px;overflow:hidden}
+      .st-fn-b{height:100%;background:#2a78d6;border-radius:4px}
+      .st-fn-v{font-weight:800;color:#0b0b0b;white-space:nowrap}.st-fn-v span{font-weight:500;color:#52514e;margin-left:6px;font-size:.7rem}
+      .adv-item{background:var(--nm-white,#fff);border-radius:12px;padding:10px 12px;margin:6px 0;box-shadow:var(--nm-shadow-raised-sm)}
+      .adv-h{display:flex;gap:8px;align-items:center;font-size:.84rem;margin-bottom:4px;flex-wrap:wrap}
+      .adv-act{font-size:.78rem;color:#1f3a5f;background:rgba(42,120,214,.07);border-radius:8px;padding:6px 9px;margin-top:6px;line-height:1.55}
       @media(max-width:640px){ .crm-link-pair{grid-template-columns:1fr} }
       @media(max-width:640px){ .crm-grid2{grid-template-columns:1fr} .crm-memo-row{flex-direction:column} .crm-memo-btns{flex-direction:row} }
     `;
@@ -1361,7 +1372,7 @@
       client.from(TABLES.consultations).select('*').eq('is_deleted', false).limit(10000),
       client.from(TABLES.bookings).select('*').limit(10000),
       client.from(LEADS_TABLE_NAME).select('id,created_at,destination,party_size,source,recommended_product,status').limit(10000),   // 개인정보(이름·연락처)는 통계에 불러오지 않음
-      client.from(TABLES.events).select('created_at,session_id,event_type,product_uid,product_title,travel_region,rank').gte('created_at', since).limit(50000),
+      client.from(TABLES.events).select('created_at,session_id,event_type,product_uid,product_title,product_cat,travel_region,rank,criteria').gte('created_at', since).order('created_at', {ascending:false}).limit(60000),
     ]);
     if (c.error || b.error){ state.stats.error = errText(c.error || b.error); return; }
     state.stats.cons = c.data||[]; state.stats.bookings = b.data||[]; state.stats.leads = l.error ? [] : (l.data||[]); state.stats.events = ev.error ? [] : (ev.data||[]);
@@ -1571,30 +1582,239 @@
       <div class="st-sm-l">국가·지역별 인원 수요 (문의)</div>
       ${countryBucketRows.length ? table(['국가·지역'].concat(BUCKETS), countryBucketRows.map(k=>[esc(k)].concat(BUCKETS.map(bk=>fmtN(T.filter(t=>countryKey(t)===k && partyBucket(t.party)===bk).length))))) : '<div class="crm-empty">자료가 없습니다.</div>'}
       <p class="crm-note">문의 건수와 인원, 예약 건수와 인원은 따로 집계합니다. 인원 미기록 문의는 "미확인"으로 둡니다.</p></div>
-    ${eventsHTML(D)}`;
+    ${visitorHTML(D)}
+    ${advisorHTML(D)}`;
   }
   // 홈페이지 방문자 반응(익명) — 관심 지표일 뿐 상담·예약 실적에는 넣지 않는다
-  function eventsHTML(D){
+  // ══ 홈페이지 방문 행동(익명) — 관심 지표일 뿐 상담·예약 실적에는 넣지 않는다 ══════════════
+  const ACTION_TYPES = ['call_click','kakao_click','form_start','recommend_inquiry','inquiry_submit'];
+  const EVT_LABEL = {page_view:'방문', category_view:'국가·권역 카드 열기', recommend_search:'AI 추천 검색', recommend_view:'추천 노출', recommend_click:'추천 상품 상세 보기',
+    recommend_inquiry:'추천 → 상담 신청 이동', product_view:'상품 상세 보기', detail_view:'상세 정독', form_start:'상담 신청서 작성 시작', inquiry_submit:'상담 신청 제출',
+    call_click:'전화 버튼', kakao_click:'카카오톡 버튼', channel_click:'블로그·유튜브·밴드'};
+  const VISIT_MIN = 30;   // 방문 분석을 판단할 최소 방문 수
+  function eventsInScope(D){
     const f = state.stats.filter;
-    const ev = (state.stats.events||[]).filter(e=>(!D.startKey || (monthKeyTs(e.created_at)||'') >= D.startKey) && (!f.region || !e.travel_region || e.travel_region===f.region));
-    const sessions = type => new Set(ev.filter(e=>e.event_type===type).map(e=>e.session_id)).size;
-    const cnt = type => ev.filter(e=>e.event_type===type).length;
+    return (state.stats.events||[]).filter(e=>(!D.startKey || (monthKeyTs(e.created_at)||'') >= D.startKey) && (!f.region || !e.travel_region || e.travel_region===f.region));
+  }
+  const crit = e => (e && e.criteria && typeof e.criteria==='object') ? e.criteria : {};
+  const sessSet = (ev, pred) => new Set(ev.filter(pred).map(e=>e.session_id));
+  function visitStats(ev){
+    const visits = sessSet(ev, e=>e.event_type==='page_view');
+    const allSess = new Set(ev.map(e=>e.session_id));
+    const base = visits.size ? visits : allSess;   // 방문 기록 이전 데이터는 행동이 있는 탭 수로 대신
+    const inBase = s => !visits.size || visits.has(s);
+    const S = pred => new Set([...sessSet(ev, pred)].filter(inBase));
+    const explore = S(e=>['category_view','product_view','recommend_search','recommend_view'].includes(e.event_type));
+    const reco = S(e=>e.event_type==='recommend_search' || e.event_type==='recommend_view');
+    const detail = S(e=>e.event_type==='product_view');
+    const action = S(e=>ACTION_TYPES.includes(e.event_type));
+    const submit = S(e=>e.event_type==='inquiry_submit');
+    return {visits, allSess, base, explore, reco, detail, action, submit, hasPV: visits.size>0};
+  }
+  function dayKeyKst(ts){ const d = new Date(ts); return isNaN(d) ? null : new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul'}).format(d); }
+  function dayBars(days, vals){
+    const max = Math.max(...vals, 1);
+    return `<div class="st-cols">${days.map((d,i)=>`<div class="st-col" title="${d}: ${fmtN(vals[i])}회"><div class="st-cv">${vals[i]?fmtN(vals[i]):''}</div><div class="st-cb"><div style="height:${vals[i]?Math.max(3, vals[i]/max*100):0}%"></div></div><div class="st-cm">${Number(d.slice(8))}</div></div>`).join('')}</div>`;
+  }
+  function funnelHTML(steps){
+    const first = steps[0].n || 1;
+    return `<div class="st-funnel">${steps.map((s,i)=>{ const prev = i ? steps[i-1].n : s.n; const conv = i && prev ? Math.round(s.n/prev*100) : null;
+      return `<div class="st-fn-row" title="${esc(s.label)}: ${fmtN(s.n)}회${conv!=null?` · 앞 단계의 ${conv}%`:''}"><div class="st-fn-l">${esc(s.label)}</div>
+        <div class="st-fn-t"><div class="st-fn-b" style="width:${Math.max(2, s.n/first*100)}%"></div></div>
+        <div class="st-fn-v">${fmtN(s.n)}<span>${i ? (conv!=null ? `앞 단계의 ${conv}%` : '') : '기준'}</span></div></div>`; }).join('')}</div>`;
+  }
+  function visitorHTML(D){
+    const ev = eventsInScope(D);
+    if (!ev.length) return `<div class="crm-card"><h5>🖱️ 홈페이지 방문 행동</h5><div class="crm-empty">아직 기록이 없습니다. 방문자가 홈페이지를 이용하면 쌓입니다(관리자 로그인 중 사용은 기록하지 않음).</div></div>`;
+    const V = visitStats(ev), base = V.base.size;
+    const pct = (a, b) => b ? `${Math.round(a/b*100)}%` : '—';
+    const pv = ev.filter(e=>e.event_type==='page_view');
+    // 유입·기기
+    const refs = topRows(countBy(pv, e=>{ const r = crit(e).ref || 'direct'; return r==='direct' ? '직접 방문·북마크' : (r==='internal' ? '사이트 내 이동' : r); }), 8);
+    const utms = topRows(countBy(pv.filter(e=>crit(e).utm), e=>[crit(e).utm.source, crit(e).utm.campaign].filter(Boolean).join(' / ')), 6);
+    const dev = countBy(pv, e=>crit(e).device==='mobile' ? '모바일' : 'PC');
+    const devAct = k => { const ss = new Set(pv.filter(e=>(crit(e).device==='mobile' ? '모바일' : 'PC')===k).map(e=>e.session_id)); return {n:ss.size, a:[...ss].filter(s=>V.action.has(s)).length}; };
+    // 일별 방문(최근 30일)
+    const days = []; for (let i=29;i>=0;i--) days.push(new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul'}).format(new Date(Date.now()-i*86400000)));
+    const visitByDay = {}; (V.hasPV ? pv : ev).forEach(e=>{ const k = dayKeyKst(e.created_at); if (k) (visitByDay[k] = visitByDay[k] || new Set()).add(e.session_id); });
+    // 행동 종류별 건수
+    const typeRows = Object.keys(EVT_LABEL).map(t=>({label:EVT_LABEL[t], value:ev.filter(e=>e.event_type===t).length, sub:`${fmtN(sessSet(ev, e=>e.event_type===t).size)}회 방문`})).filter(r=>r.value);
+    // 고객이 찾는 조건(AI 추천 검색)
+    const srch = ev.filter(e=>e.event_type==='recommend_search');
+    const cRows = (fn, n) => topRows(countBy(srch, fn), n||8);
+    const regionL = v => ({domestic:'국내', overseas:'해외'})[v] || '상관없음';
+    const budgetL = v => v==='any' || !v ? '상관없음' : (typeof AI_BUDGET_LABEL==='object' && AI_BUDGET_LABEL[v]) || v;
+    const durL = v => v==='any' || !v ? '상관없음' : (typeof AI_DURATION_LABEL==='object' && AI_DURATION_LABEL[v]) || v;
+    const depL = v => !v || v==='any' ? '미정' : `${Number(String(v).slice(5,7))}월`;
+    const styleL = v => ((typeof STYLE_OPTIONS!=='undefined' && STYLE_OPTIONS.find(o=>o.value===v)) || {label:v}).label.replace(/^[^\wㄱ-힣]+\s*/,'');
+    const thin = srch.filter(e=>(crit(e).matched||0) < 3).length, none = srch.filter(e=>!(crit(e).matched||0)).length;
+    // 국가·권역 관심
+    const catV = {}; ev.filter(e=>e.event_type==='category_view' && e.product_cat).forEach(e=>{ (catV[e.product_cat] = catV[e.product_cat] || new Set()).add(e.session_id); });
+    const prods = allProducts(), vis = x => typeof isProductVisible!=='function' || isProductVisible(x.p);
+    const catRows = Object.entries(catV).map(([cid, ss])=>{ const ci = catInfo(cid); const ps = prods.filter(x=>x.catId===cid && vis(x));
+      const pvS = sessSet(ev, e=>e.event_type==='product_view' && e.product_cat===cid);
+      return {name: ci ? ci.ko : cid, n: ss.size, prods: ps.length, detail: pvS.size, act: [...pvS].filter(s=>V.action.has(s)).length}; }).sort((a,b)=>b.n-a.n).slice(0, 12);
+    // 상품별 반응
     const byP = {};
-    ev.filter(e=>e.product_title && /^recommend_/.test(e.event_type)).forEach(e=>{ const r = byP[e.product_title] = byP[e.product_title] || {view:0, click:0, inq:0, ranks:[]}; if (e.event_type==='recommend_view'){ r.view++; if (e.rank) r.ranks.push(e.rank); } else if (e.event_type==='recommend_click') r.click++; else r.inq++; });
-    const rows = Object.entries(byP).sort((a,b)=>b[1].view-a[1].view).slice(0, 15);
-    const views = ev.filter(e=>e.event_type==='product_view');
-    const topViews = topRows(countBy(views, e=>e.product_title), 10);
-    return `<div class="crm-card"><h5>🖱️ 홈페이지 AI 추천·상품 반응 <span class="crm-note" style="font-weight:500">— 익명 방문 기록(개인정보 없음) · 관심 지표이며 상담·예약 실적에는 포함하지 않음</span></h5>
-      ${ev.length ? `<div class="st-tiles">
-        ${tile('AI 추천 받은 방문', fmtN(sessions('recommend_view'))+'회', `추천 노출 ${fmtN(cnt('recommend_view'))}건`)}
-        ${tile('추천 상품 상세 보기', fmtN(cnt('recommend_click'))+'건', `상담 신청으로 이동 ${fmtN(cnt('recommend_inquiry'))}건`)}
-        ${tile('상담 신청 제출', fmtN(cnt('inquiry_submit'))+'건', `상품 상세 보기 ${fmtN(views.length)}건`)}
-        ${tile('전화·카카오 클릭', fmtN(cnt('call_click'))+' / '+fmtN(cnt('kakao_click')), `채널(블로그·유튜브·밴드) ${fmtN(cnt('channel_click'))}건`)}
+    ev.filter(e=>e.product_uid || e.product_title).forEach(e=>{ const k = e.product_uid || e.product_title; const r = byP[k] = byP[k] || {title:e.product_title||k, detail:new Set(), d50:0, d90:0, rv:0, rc:0, ri:0, call:0, kakao:0, ranks:[]};
+      if (e.event_type==='product_view') r.detail.add(e.session_id); else if (e.event_type==='detail_view'){ if (crit(e).depth>=90) r.d90++; else r.d50++; }
+      else if (e.event_type==='recommend_view'){ r.rv++; if (e.rank) r.ranks.push(e.rank); } else if (e.event_type==='recommend_click') r.rc++; else if (e.event_type==='recommend_inquiry') r.ri++;
+      else if (e.event_type==='call_click') r.call++; else if (e.event_type==='kakao_click') r.kakao++; });
+    const pRows = Object.values(byP).sort((a,b)=>(b.detail.size+b.rv/10)-(a.detail.size+a.rv/10)).slice(0, 15);
+    const fs = sessSet(ev, e=>e.event_type==='form_start').size, sub = ev.filter(e=>e.event_type==='inquiry_submit').length;
+    return `<div class="crm-card"><h5>🖱️ 홈페이지 방문 행동 <span class="crm-note" style="font-weight:500">— 익명 기록(이름·연락처·IP 없음) · 관심 지표이며 상담·예약 실적에는 넣지 않음 · 기간·권역 필터 적용</span></h5>
+      ${V.hasPV ? '' : `<div class="crm-banner warn">방문 수 기록이 아직 없어 "행동이 있었던 방문"을 기준으로 계산합니다. <code>docs/sql/2026-10-26_visitor_insights.sql</code>을 실행하면 방문·유입 경로·검색 조건까지 기록됩니다.</div>`}
+      <div class="st-tiles">
+        ${tile(V.hasPV ? '방문' : '행동이 있었던 방문', fmtN(base)+'회', V.hasPV ? `행동 기록 ${fmtN(ev.length)}건` : '탭 단위')}
+        ${tile('AI 추천 이용', pct(V.reco.size, base), `${fmtN(V.reco.size)}회 방문`)}
+        ${tile('상품 상세 조회', pct(V.detail.size, base), `${fmtN(V.detail.size)}회 방문`)}
+        ${tile('상담 행동(전화·카톡·신청)', pct(V.action.size, base), `${fmtN(V.action.size)}회 방문`)}
+        ${tile('상담 신청 제출', fmtN(sub)+'건', fs ? `작성 시작 ${fmtN(fs)}회 · 제출률 ${pct(sub, fs)}` : '작성 시작 기록 없음')}
       </div>
-      <div class="st-sm-l">AI 추천 상품별 반응</div>
-      ${rows.length ? table(['상품','추천 노출','평균 순위','상세 보기','상세 보기율','상담 신청 이동'], rows.map(([k,r])=>[esc(k), fmtN(r.view), r.ranks.length ? (r.ranks.reduce((a,b)=>a+b,0)/r.ranks.length).toFixed(1) : '—', fmtN(r.click), pct(r.click, r.view), fmtN(r.inq)])) : '<div class="crm-empty">AI 추천 기록이 없습니다.</div>'}
-      ${topViews.length ? `<div class="st-sm-l">많이 본 상품 상세 (건)</div>${barList(topViews, '건')}` : ''}`
-      : '<div class="crm-empty">아직 기록이 없습니다. SQL 실행 후 방문자가 AI 추천·상품 상세·전화/카카오 버튼을 사용하면 쌓입니다(관리자 로그인 중 사용은 기록하지 않음).</div>'}</div>`;
+      <div class="st-sm-l">방문 → 상담까지(방문 수 기준)</div>
+      ${funnelHTML([{label:V.hasPV?'방문':'행동이 있었던 방문', n:base}, {label:'여행지·상품 탐색', n:V.explore.size}, {label:'상품 상세 보기', n:V.detail.size}, {label:'상담 행동(전화·카톡·신청서)', n:V.action.size}, {label:'상담 신청 제출', n:V.submit.size}])}
+      <div class="st-sm-l">최근 30일 일별 방문</div>${dayBars(days, days.map(d=>(visitByDay[d]||new Set()).size))}
+      <div class="st-grid2">
+        <div><div class="st-sm-l">유입 경로</div>${refs.length ? barList(refs, '회') : '<div class="crm-empty">방문 기록 후 표시</div>'}
+          ${utms.length ? `<div class="st-sm-l">광고·캠페인(utm)</div>${barList(utms, '회')}` : ''}</div>
+        <div><div class="st-sm-l">기기</div>${Object.keys(dev).length ? table(['기기','방문','상담 행동','상담 행동 비율'], ['모바일','PC'].filter(k=>dev[k]).map(k=>{ const x = devAct(k); return [k, fmtN(x.n), fmtN(x.a), pct(x.a, x.n)]; })) : '<div class="crm-empty">방문 기록 후 표시</div>'}
+          <div class="st-sm-l">행동 종류별</div>${barList(typeRows, '건')}</div>
+      </div>
+      <div class="st-sm-l">고객이 AI 추천에서 고른 조건 ${srch.length ? `(검색 ${fmtN(srch.length)}회 · 조건 충족 상품 3개 미만 ${fmtN(thin)}회 · 0개 ${fmtN(none)}회)` : ''}</div>
+      ${srch.length ? `<div class="st-grid2">
+          <div><div class="st-sm-l" style="margin-top:4px">예산(1인)</div>${barList(cRows(e=>budgetL(crit(e).budget)), '회')}<div class="st-sm-l">일정</div>${barList(cRows(e=>durL(crit(e).duration)), '회')}</div>
+          <div><div class="st-sm-l" style="margin-top:4px">권역 · 출발 시기</div>${barList(cRows(e=>regionL(crit(e).region), 3).concat(cRows(e=>depL(crit(e).depart), 7)), '회')}<div class="st-sm-l">선호 스타일</div>${barList(cRows(e=>(crit(e).styles||[]).map(styleL), 10), '회')}</div>
+        </div>` : '<div class="crm-empty">AI 추천 검색 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
+      <div class="st-sm-l">국가·권역 관심도</div>
+      ${catRows.length ? table(['국가·권역','카드 열기(방문)','판매 중 상품','상품 상세 본 방문','그중 상담 행동'], catRows.map(r=>[esc(r.name), fmtN(r.n), r.prods ? fmtN(r.prods) : '<b style="color:#B91C1C">0</b>', fmtN(r.detail), `${fmtN(r.act)} (${pct(r.act, r.detail)})`])) : '<div class="crm-empty">국가·권역 카드 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
+      <div class="st-sm-l">상품별 반응</div>
+      ${pRows.length ? table(['상품','상세 본 방문','정독 50% / 90%','추천 노출','추천 클릭률','상담 이동','전화 / 카톡(상세)'], pRows.map(r=>[esc(r.title), fmtN(r.detail.size), `${fmtN(r.d50+r.d90)} / ${fmtN(r.d90)}`, fmtN(r.rv), r.rv ? pct(r.rc, r.rv) : '—', fmtN(r.ri), `${fmtN(r.call)} / ${fmtN(r.kakao)}`])) : '<div class="crm-empty">상품 기록이 아직 없습니다.</div>'}
+      <p class="crm-note">방문은 브라우저 탭 단위입니다. 같은 사람이 다른 날 다시 오면 다른 방문으로 셉니다. 비율은 방문 수가 적으면 크게 흔들리므로 방문 ${VISIT_MIN}회 이상부터 판단에 쓰세요.</p></div>`;
+  }
+
+  // ══ 경영 진단·제안 — 통계 지표를 근거로 부족한 상품·보완할 조건을 제안(규칙 기반, 근거 숫자 표시) ══════
+  function productGaps(x){
+    const p = x.p, miss = [];
+    const price = (p.priceEntries && p.priceEntries[0] && Number(p.priceEntries[0].salePrice)) || Number(p.from) || 0;
+    if (!price && !p.priceInquiry) miss.push('판매가');
+    if (!/([0-9]+)\s*박/.test(p.nights||'')) miss.push('일정(박수)');
+    const pe = (p.priceEntries||[])[0] || {};
+    const eff = f => (typeof peEff==='function' && p.priceEntries && p.priceEntries[0]) ? peEff(p, pe, f) : p[f];
+    const plain = v => String(v==null?'':(Array.isArray(v)?v.join(' '):v)).replace(/<[^>]+>/g,'').trim();
+    if (!/\d+\s*R/i.test(plain(eff('rounds')) || p.rounds || '')) miss.push('라운드 수');
+    if (x.region==='overseas' && !p.flightTime) miss.push('비행시간');
+    if (!p.transferTime && !p.hotelToGolfTime) miss.push('이동 시간');
+    if (!p.lodgeLocation || p.lodgeLocation==='none') miss.push('숙소 위치');
+    if (typeof cardTagsOf==='function' && !cardTagsOf(p).length) miss.push('카드 태그');
+    if (!plain(eff('minPeople'))) miss.push('최소 인원');
+    if (!plain(eff('included')) && !plain(p.commonIncluded)) miss.push('포함사항');
+    if (!((p.gallery||[]).length >= 3)) miss.push('사진 3장 이상');
+    if (typeof productFieldPosts==='function' && !productFieldPosts(x.catId, x.idx).length) miss.push('현장 후기 연결');
+    return miss;
+  }
+  function supplyFor(c){
+    if (typeof aiScoreProduct!=='function') return null;
+    return allProducts().filter(x=>(typeof isProductVisible!=='function' || isProductVisible(x.p)) && (!c.region || c.region==='any' || x.region===c.region))
+      .filter(x=>!aiScoreProduct(x.catId, x.idx, x.p, catInfo(x.catId) ? findCat(x.catId) : null, Object.assign({region:'any', budget:'any', duration:'any', depart:'any', styles:[]}, c)).fails.length);
+  }
+  function advisorHTML(D){
+    const ev = eventsInScope(D), V = visitStats(ev), T = D.threads;
+    const srch = ev.filter(e=>e.event_type==='recommend_search');
+    const items = [];   // {grp, pri:0~3, title, ev:[근거], act}
+    const pct = (a, b) => b ? Math.round(a/b*100) : 0;
+    const budgetL = v => (typeof AI_BUDGET_LABEL==='object' && AI_BUDGET_LABEL[v]) || v;
+    const durL = v => (typeof AI_DURATION_LABEL==='object' && AI_DURATION_LABEL[v]) || v;
+    const condText = c => [c.region==='domestic'?'국내':(c.region==='overseas'?'해외':''), c.budget && c.budget!=='any' ? `1인 ${budgetL(c.budget)}` : '', c.duration && c.duration!=='any' ? durL(c.duration) : '', c.depart && c.depart!=='any' ? `${Number(String(c.depart).slice(5,7))}월 출발` : ''].filter(Boolean).join(' · ') || '조건 없음';
+    const prods = allProducts().filter(x=>typeof isProductVisible!=='function' || isProductVisible(x.p));
+    const hold = [];
+    // 1) 검색 수요 대비 상품 공급 부족 — 조건 조합별
+    if (srch.length >= 20){
+      const g = {};
+      srch.forEach(e=>{ const c = crit(e); const k = [c.region||'any', c.budget||'any', c.duration||'any', c.depart||'any'].join('|'); (g[k] = g[k] || {c, n:0, thin:0}).n++; if ((c.matched||0) < 3) g[k].thin++; });
+      Object.values(g).filter(x=>x.n>=3 && x.n/srch.length>=0.08).sort((a,b)=>b.n-a.n).slice(0, 6).forEach(x=>{
+        const sup = supplyFor({region:x.c.region, budget:x.c.budget, duration:x.c.duration, depart:x.c.depart});
+        if (sup && sup.length <= 2) items.push({grp:'add', pri: x.n/srch.length>=0.2 ? 3 : 2, title:`${condText(x.c)} 상품 추가`,
+          ev:[`AI 추천 검색 ${fmtN(srch.length)}회 중 ${fmtN(x.n)}회(${pct(x.n, srch.length)}%)가 이 조건`, `현재 이 조건을 모두 충족하는 판매 상품 ${sup.length}개${sup.length ? ` (${sup.slice(0,3).map(s=>esc(s.title)).join(', ')})` : ''}`],
+          act:`이 조건에 맞는 상품을 ${Math.max(1, 3-sup.length)}개 이상 더 등록하면 조건에 맞는 추천이 3개 이상이 됩니다. 이미 비슷한 상품이 있다면 판매가·일정·추천 판매 시기 값이 조건과 맞게 등록됐는지 먼저 확인하세요.`});
+      });
+      const fails = {}; srch.forEach(e=>Object.entries(crit(e).fails||{}).forEach(([k,v])=>{ fails[k] = (fails[k]||0) + v; }));
+      const tot = Object.values(fails).reduce((a,b)=>a+b,0);
+      const FN = {budget:'예산', duration:'일정(박수)', depart:'출발 시기(판매 시기)'};
+      const topF = Object.entries(fails).sort((a,b)=>b[1]-a[1])[0];
+      if (topF && tot && topF[1]/tot >= 0.45) items.push({grp:'cond', pri:2, title:`"${FN[topF[0]]||topF[0]}" 조건 때문에 추천에서 빠지는 상품이 가장 많음`,
+        ev:[`검색 결과에서 상품이 조건 미충족으로 빠진 경우 중 ${pct(topF[1], tot)}%가 ${FN[topF[0]]||topF[0]} 때문`],
+        act: topF[0]==='budget' ? '고객 예산대에 맞춘 실속형 요금 항목(평일·비수기·숙박 등급 조정)을 기존 상품에 추가하는 것을 검토하세요.'
+          : topF[0]==='duration' ? '같은 상품에 다른 박수(예: 3박 → 2박·4박) 일정 옵션을 추가하는 것을 검토하세요.'
+          : '판매 시기가 지난 상품의 다음 시즌 요금을 등록하거나, 판매 가능한 달을 "추천 판매 시기"에 정확히 넓혀 주세요.'});
+      const none = srch.filter(e=>!(crit(e).matched||0)).length;
+      if (none/srch.length >= 0.2) items.push({grp:'add', pri:3, title:'조건에 맞는 상품이 하나도 없는 검색이 많음', ev:[`검색 ${fmtN(srch.length)}회 중 ${fmtN(none)}회(${pct(none, srch.length)}%)는 조건 충족 상품 0개 — 고객은 "조건을 넓힌 대안"만 봄`], act:'위 "상품 추가" 항목의 조건 조합부터 상품을 보강하세요.'});
+      // 2) 선호 스타일 수요 대비 상품
+      const st = countBy(srch, e=>crit(e).styles||[]);
+      Object.entries(st).filter(([,n])=>n/srch.length>=0.1 && n>=3).forEach(([style, n])=>{
+        const sup = supplyFor({styles:[style]}); if (!sup) return;
+        const match = sup.filter(x=>{ const r = aiScoreProduct(x.catId, x.idx, x.p, findCat(x.catId), {region:'any', budget:'any', duration:'any', depart:'any', styles:[style]}); return r.why.some(w=>w.ok===true); });
+        if (match.length <= 2){ const lab = ((typeof STYLE_OPTIONS!=='undefined' && STYLE_OPTIONS.find(o=>o.value===style)) || {label:style}).label;
+          items.push({grp:'add', pri: n/srch.length>=0.2 ? 3 : 2, title:`'${lab}' 취향 상품 보강`, ev:[`검색의 ${pct(n, srch.length)}%(${fmtN(n)}회)가 이 취향 선택`, `상품 정보에서 이 취향이 확인되는 판매 상품 ${match.length}개`],
+            act:`이 취향에 맞는 상품을 추가하거나, 이미 해당하는 상품이 있다면 카드 태그·대표 문구에 관련 표현을 넣어 주세요(추천은 등록된 표현으로만 판단합니다).`}); }
+      });
+      // 3) 희망 출발 월 대비 판매 상품
+      const dep = countBy(srch.filter(e=>crit(e).depart && crit(e).depart!=='any'), e=>crit(e).depart);
+      const depTot = Object.values(dep).reduce((a,b)=>a+b,0);
+      Object.entries(dep).filter(([,n])=>depTot>=10 && n/depTot>=0.15).forEach(([m, n])=>{
+        const sup = supplyFor({depart:m}); if (sup && sup.length <= Math.max(2, prods.length*0.2))
+          items.push({grp:'add', pri:2, title:`${Number(m.slice(5,7))}월 출발 상품 보강`, ev:[`출발 시기를 고른 검색의 ${pct(n, depTot)}%(${fmtN(n)}회)가 ${Number(m.slice(5,7))}월`, `${Number(m.slice(5,7))}월이 판매 시기에 포함된 상품 ${sup.length}개 / 판매 중 ${prods.length}개`], act:'이 달에 판매할 수 있는 상품을 추가하거나 기존 상품의 해당 월 요금을 등록하세요. 수요가 몰리는 달이므로 티타임·객실을 미리 확보하는 것도 검토하세요.'});
+      });
+    } else hold.push(`AI 추천 검색 ${fmtN(srch.length)}회 — 상품 공백·취향·출발 시기 분석은 20회 이상부터`);
+    // 4) 관심 국가 대비 상품 수
+    const catV = {}; ev.filter(e=>e.event_type==='category_view' && e.product_cat).forEach(e=>{ (catV[e.product_cat] = catV[e.product_cat] || new Set()).add(e.session_id); });
+    const catTot = Object.values(catV).reduce((a,s)=>a+s.size,0);
+    if (catTot >= 20) Object.entries(catV).forEach(([cid, ss])=>{ const n = prods.filter(x=>x.catId===cid).length; const ci = catInfo(cid);
+      if (ss.size/catTot >= 0.12 && n <= 1) items.push({grp:'add', pri:2, title:`${ci?ci.ko:cid} 상품 추가`, ev:[`국가·권역 카드 열기의 ${pct(ss.size, catTot)}%(${fmtN(ss.size)}회)가 ${ci?ci.ko:cid}`, `판매 중 상품 ${n}개`], act:'관심에 비해 고를 수 있는 상품이 적습니다. 일정·가격대가 다른 상품을 1~2개 더 등록하세요.'}); });
+    else hold.push(`국가·권역 카드 열기 ${fmtN(catTot)}회 — 관심 국가 분석은 20회 이상부터`);
+    // 5) 상세는 많이 보는데 상담 행동이 적은 상품 + 부족한 정보
+    const pv = {}; ev.filter(e=>e.event_type==='product_view' && e.product_uid).forEach(e=>{ (pv[e.product_uid] = pv[e.product_uid] || new Set()).add(e.session_id); });
+    const avgRate = V.detail.size ? [...V.detail].filter(s=>V.action.has(s)).length / V.detail.size : 0;
+    Object.entries(pv).filter(([,ss])=>ss.size>=10).forEach(([uid, ss])=>{
+      const x = productByUid(uid); if (!x) return;
+      const a = [...ss].filter(s=>V.action.has(s)).length, rate = a/ss.size;
+      const d50 = new Set(ev.filter(e=>e.event_type==='detail_view' && e.product_uid===uid).map(e=>e.session_id)).size;
+      const gaps = productGaps(x);
+      if (avgRate && rate < avgRate*0.5) items.push({grp:'fix', pri:2, title:`${esc(x.title)} — 관심 대비 상담 전환 낮음`,
+        ev:[`상세를 본 방문 ${fmtN(ss.size)}회 중 상담 행동 ${fmtN(a)}회(${pct(a, ss.size)}%) · 전체 평균 ${Math.round(avgRate*100)}%`, d50 ? `상세를 절반 이상 읽은 방문 ${fmtN(d50)}회(${pct(d50, ss.size)}%)` : '상세 정독 기록 없음', gaps.length ? `비어 있는 정보: ${gaps.join(', ')}` : '주요 정보는 모두 등록됨'],
+        act: gaps.length ? `먼저 비어 있는 정보(${gaps.slice(0,4).join(', ')})를 채우세요. 그다음 가격 근거(포함사항·요금 비교)와 현장 후기를 상단에 보이게 하면 상담으로 이어질 가능성이 높아집니다.` : '정보는 갖춰져 있으니 가격 경쟁력·출발 요일·최소 인원 조건을 점검하고, 상세 상단에 핵심 장점과 후기를 배치해 보세요.'});
+    });
+    // 6) 추천 노출 대비 클릭이 낮은 상품
+    const rv = {}, rc = {}; ev.forEach(e=>{ if (!e.product_uid) return; if (e.event_type==='recommend_view') rv[e.product_uid] = (rv[e.product_uid]||0)+1; if (e.event_type==='recommend_click') rc[e.product_uid] = (rc[e.product_uid]||0)+1; });
+    const rvTot = Object.values(rv).reduce((a,b)=>a+b,0), rcTot = Object.values(rc).reduce((a,b)=>a+b,0), ctr = rvTot ? rcTot/rvTot : 0;
+    Object.entries(rv).filter(([,n])=>n>=30).forEach(([uid, n])=>{ const x = productByUid(uid); const c = rc[uid]||0;
+      if (x && ctr && c/n < ctr*0.4) items.push({grp:'expose', pri:1, title:`${esc(x.title)} — 추천 카드 클릭률 낮음`, ev:[`추천 노출 ${fmtN(n)}회 중 상세 보기 ${fmtN(c)}회(${pct(c, n)}%) · 전체 평균 ${Math.round(ctr*100)}%`], act:'카드 대표 이미지(타이틀 이미지)·상품명·카드 태그가 상품의 장점을 바로 보여 주는지 점검하세요.'}); });
+    // 7) 상담 신청서 이탈
+    const fsN = sessSet(ev, e=>e.event_type==='form_start').size, subN = ev.filter(e=>e.event_type==='inquiry_submit').length;
+    if (fsN >= 10 && subN/fsN < 0.4) items.push({grp:'cond', pri:2, title:'상담 신청서 작성 중 이탈이 많음', ev:[`작성 시작 ${fmtN(fsN)}회 중 제출 ${fmtN(subN)}건(${pct(subN, fsN)}%)`], act:'필수 입력을 이름·연락처·희망 여행지 정도로 줄이고, 신청서 옆에 카카오톡 바로 상담을 함께 보여 주세요.'});
+    // 8) 모바일 전환
+    const pvE = ev.filter(e=>e.event_type==='page_view');
+    const devRate = k => { const ss = new Set(pvE.filter(e=>(crit(e).device==='mobile')===(k==='m')).map(e=>e.session_id)); return {n:ss.size, r: ss.size ? [...ss].filter(s=>V.action.has(s)).length/ss.size : 0}; };
+    const mo = devRate('m'), pc = devRate('d');
+    if (mo.n >= 30 && pc.n >= 30 && mo.r < pc.r*0.6) items.push({grp:'expose', pri:2, title:'모바일 방문의 상담 전환이 PC보다 낮음', ev:[`모바일 ${fmtN(mo.n)}회 방문 중 상담 행동 ${Math.round(mo.r*100)}% · PC ${fmtN(pc.n)}회 중 ${Math.round(pc.r*100)}%`], act:'모바일 상세 페이지에서 요금·전화·카카오 버튼이 첫 화면 가까이에 보이는지, 사진이 너무 길게 이어지지 않는지 점검하세요.'});
+    // 9) 상담 기록의 미예약 사유 → 조건 보완
+    const rs = countBy(T.filter(t=>!t.converted && t.unbooked_reason), t=>t.unbooked_reason);
+    const RS_ACT = {'가격':['cond','가격 때문에 예약하지 않은 상담이 많음','실속형 요금(평일·비수기·숙박 등급 조정)이나 얼리버드 요금을 추가하는 것을 검토하세요.'], '일정 불일치':['cond','고객이 원하는 일정과 맞지 않는 상담이 많음','출발 요일·박수 옵션을 늘리거나 판매 시기를 넓히는 것을 검토하세요.'], '인원 미달':['cond','인원 조건 때문에 성사되지 않은 상담이 많음','2인 출발·다른 팀 합류형 일정을 운영 조건에 등록하고 상품으로 만드는 것을 검토하세요.'], '소인원 추가요금':['cond','소인원 추가요금이 예약을 막고 있음','소인원 추가요금을 줄인 합류형 출발일을 정해 공지하는 것을 검토하세요.'], '원하는 상품 없음':['add','원하는 상품이 없어 놓친 상담이 많음','기획·운영 진단의 "적합한 등록 상품이 없는 고객 수요"에서 국가·취향 조합을 확인하고 상품을 추가하세요.']};
+    Object.entries(rs).filter(([k,n])=>n>=3 && RS_ACT[k]).forEach(([k,n])=>items.push({grp:RS_ACT[k][0], pri: n>=6 ? 3 : 2, title:RS_ACT[k][1], ev:[`기간 내 미예약·보류 상담 중 사유 "${k}" ${fmtN(n)}건`], act:RS_ACT[k][2]}));
+    // 10) 추천 근거가 부족한 상품(데이터 품질) — 기록 양과 무관하게 항상 점검
+    const gapList = prods.map(x=>({x, g:productGaps(x)})).filter(o=>o.g.length);
+    if (gapList.length){ const cnt = countBy(gapList, o=>o.g); const top = topRows(cnt, 6);
+      items.push({grp:'fix', pri:1, title:`추천·상세 정보가 비어 있는 상품 ${gapList.length}개 / 판매 중 ${prods.length}개`, ev:[`많이 비어 있는 항목: ${top.map(r=>`${esc(r.label)} ${r.value}개`).join(', ')}`],
+        act:'AI 추천은 등록된 값으로만 상품을 고르고 근거를 보여 줍니다. 판매가·일정·라운드·판매 시기·숙소 위치·카드 태그를 채우면 추천 정확도와 상세 페이지 신뢰도가 함께 올라갑니다.'}); }
+    // 화면
+    const GRP = {add:['🆕 추가해야 할 상품','hold'], fix:['🛠 기존 상품 보완','go'], cond:['⚙️ 조건·운영 보완','info'], expose:['📣 노출·전환 개선','ok']};
+    const PRI = ['참고','참고','보통','높음'];
+    const body = Object.entries(GRP).map(([k,[label]])=>{ const list = items.filter(i=>i.grp===k).sort((a,b)=>b.pri-a.pri); if (!list.length) return '';
+      return `<div class="st-sm-l">${label} <span class="crm-note">${list.length}건</span></div>${list.map(i=>`<div class="adv-item"><div class="adv-h"><span class="crm-tag ${i.pri>=3?'no':(i.pri===2?'hold':'info')}">${PRI[i.pri]}</span><b>${i.title}</b></div>
+        <ul class="it-list">${i.ev.map(x=>`<li>${x}</li>`).join('')}</ul><div class="adv-act">💡 ${esc(i.act)}</div></div>`).join('')}`; }).join('');
+    return `<div class="crm-card"><h5>🧭 경영 진단·제안 <span class="crm-note" style="font-weight:500">— 홈페이지 방문 행동 + 상담·예약 기록 + 상품 정보를 함께 본 규칙 기반 제안 · 기간·권역 필터 적용</span></h5>
+      ${body || '<div class="crm-empty">지금 기준으로 눈에 띄는 문제는 없습니다.</div>'}
+      ${hold.length ? `<div class="st-sm-l">판단 보류</div><ul class="it-list">${hold.map(h=>`<li>${h}</li>`).join('')}</ul>` : ''}
+      <p class="crm-note">제안은 기록된 숫자에서 나온 점검 항목이며 매출 증가를 보장하지 않습니다. 원가·현지 운영 조건을 확인한 뒤 결정하세요. 상담 기록 기반 진단은 "💡 기획·운영 진단"에도 있습니다.</p></div>`;
   }
   function statFilter(k, v){ state.stats.filter[k] = v; renderBody(); }
   function statSeason(k, v){ state.stats[k] = v; renderBody(); }
@@ -2129,6 +2349,6 @@
     newRule, editRule, rfSet, saveRule, deleteRule, verifyRule, cancelRule:()=>{ state.ops.ruleForm = null; renderBody(); }, opsView:v=>{ state.ops.view = v; renderBody(); },
     createGroup, groupToggle, groupSet, groupDetach, exportBackup, setTier, saveStrategy,
     newBooking, newBookingFromConsult, bfSet, saveBooking, bookingCancelForm, changeBooking, bookingHistory, bFilter, findLinks, decideLink,
-    _internal:{ twoPaxStatus, buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
+    _internal:{ visitStats, productGaps, supplyFor, eventsInScope, twoPaxStatus, buildThreads, summarize, quantile, allProducts, checkReady, fmtKst, parseMemo, formToRow, TABLES, state, imp, toDateStr, toStatus, guessMapping, autoLink },
   };
 })();

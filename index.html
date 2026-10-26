@@ -4360,6 +4360,10 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
      칩 사이 여백을 글자 한 칸 정도(1ch)로 좁히고 폰트·패딩(=노출 크기)을 90% 크기로 축소한다 */
   .ai-chip-group{gap:1ch}
   .ai-chip{font-size:.756rem;padding:8px 14px}
+  /* [수정] 선택 옵션 영역 가로 폭 확보 — 카드 안쪽 여백을 40px → 16px로 줄이고 카드를 화면 쪽으로 8px씩 넓히며,
+     옵션 줄은 카드 가장자리까지 이어져 한 번에 더 많은 칩이 보인다(맨 앞 칩은 제목과 같은 위치에서 시작) */
+  .ai-quiz{padding:26px 16px;margin-left:-8px;margin-right:-8px;border-radius:24px}
+  .ai-quiz .ai-chip-group{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;scroll-padding-left:16px}
   /* [Phase] "AI 골프 여행 추천" 제목/설명 블록과 그 아래 옵션 프레임 박스 사이 여백(기본 44px)을
      약 1.5줄(설명 문단 1rem·line-height 1.6 기준 약 38px) 만큼 좁힌다 */
   .ai-recommend-section .sec-head{margin-bottom:6px}

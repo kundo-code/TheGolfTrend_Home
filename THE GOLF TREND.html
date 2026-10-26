@@ -8505,11 +8505,37 @@ function tgtEvtProduct(catId, idx){
   if (!p) return {};
   return {product_uid:p.uid||null, product_title:String(p.title||'').slice(0,200)||null, product_cat:catId, travel_region:(CATEGORIES.domestic||[]).some(c=>c.id===catId)?'domestic':'overseas'};
 }
+// 관리자 로그인 여부 — 패널을 열지 않아도 페이지가 열릴 때 저장된 로그인 상태를 먼저 확인한다.
+// 확인 전(null)에 생긴 기록은 잠시 모아 두었다가 확인 후 일반 방문자일 때만 보낸다. 로그인·로그아웃은 즉시 반영
+let _tgtAuthed = null, _tgtQueue = [];
+function tgtAuthResolved(v){
+  _tgtAuthed = !!v;
+  const q = _tgtQueue; _tgtQueue = [];
+  if (!_tgtAuthed) q.forEach(x=>tgtSend(x.type, x.rows, x.page));
+}
+(function tgtAuthWatch(){
+  let tries = 0;
+  const start = () => {
+    const client = (typeof window.supabase!=='undefined') ? getSupabaseClient() : null;
+    if (!client || !client.auth){ if (++tries < 40) return setTimeout(start, 250); return tgtAuthResolved(false); }   // 10초 안에 라이브러리가 없으면 기록 자체가 불가
+    try{
+      if (client.auth.onAuthStateChange) client.auth.onAuthStateChange((ev, sess)=>{ if (_tgtAuthed!==null) _tgtAuthed = !!sess; });
+      Promise.resolve(client.auth.getSession()).then(r=>tgtAuthResolved(r && r.data && r.data.session), ()=>tgtAuthResolved(false));
+    }catch(e){ tgtAuthResolved(false); }
+  };
+  if (document.readyState==='complete') start(); else window.addEventListener('load', start);
+})();
 function tgtTrack(type, rows){
-  if (_tgtEvtOff || adminSession) return;
+  if (_tgtEvtOff || adminSession || _tgtAuthed===true) return;
+  const page = (location.pathname+location.hash).slice(0,200);
+  if (_tgtAuthed===null){ if (_tgtQueue.length < 60) _tgtQueue.push({type, rows, page}); return; }
+  tgtSend(type, rows, page);
+}
+function tgtSend(type, rows, page){
+  if (_tgtEvtOff || adminSession || _tgtAuthed===true) return;
   try{
     const client = getSupabaseClient(); if (!client) return;
-    const sid = tgtSessionId(), page = (location.pathname+location.hash).slice(0,200);
+    const sid = tgtSessionId();
     const payload = [].concat(rows||{}).map(r=>Object.assign({session_id:sid, event_type:type, page}, r));
     client.from('tgt_site_events').insert(payload).then(res=>{
       if (res && res.error && /does not exist|42P01|PGRST205|Could not find/i.test(String(res.error.message||'')+' '+String(res.error.code||''))) _tgtEvtOff = true;

@@ -4356,6 +4356,25 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 /* 고급편집 공통 label 서식(대문자·위 여백 18px)이 이 칸들에 섞이지 않게 */
 .adv-body .ai-info-f,.adv-body .ai-info-multi label{margin:0;letter-spacing:0;text-transform:none;font-size:.8rem;font-weight:600;color:var(--nm-text)}
 .adv-body .ai-info-f>span{display:block;margin:0;font-size:.8rem}
+/* AI 추천 정보 — 판단 기준(ⓘ) · 숙소·골프장 등록부 연결 */
+.ai-info-lab{display:flex;align-items:center;gap:4px}
+.ai-help-btn{flex:none;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:rgba(10,23,48,.08);color:#8a5a0a;font-size:.78rem;line-height:20px;cursor:pointer;box-shadow:none}
+.adv-body .ai-help-btn{width:20px;min-height:0}
+.ai-info-help{display:none;font-size:.74rem;line-height:1.5;color:var(--nm-text-soft,#667);font-weight:400;background:rgba(201,150,43,.08);border-radius:8px;padding:6px 8px}
+.ai-info-f.show-help .ai-info-help{display:block}
+.ai-link-box{margin:10px 0 6px;padding:12px;border-radius:12px;background:rgba(10,23,48,.03);border:1px dashed rgba(10,23,48,.18)}
+.ai-link-head{font-size:.86rem;margin-bottom:8px}.ai-link-head span{font-size:.76rem;color:var(--nm-text-soft,#667)}
+.ai-link-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.ai-link-acts select{flex:1 1 220px;min-width:0}
+.adv-body .ai-link-acts select{width:auto}
+.ai-place-card{margin:8px 0 0;background:#fff}
+.ai-place-card>summary{font-size:.88rem}
+.ai-place-sum{font-size:.76rem;color:var(--nm-text-soft,#667);font-weight:400}
+.ai-place-acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:6px 2px 4px}
+.ai-place-acts .ai-del{color:#b42318}
+.ai-legacy{margin:8px 0;padding:10px 12px;border-radius:10px;background:#fff6dc;border:1px solid #e3c383;font-size:.8rem}
+.ai-legacy p{margin:4px 0 8px;color:#5a4208}
+.ai-sub-l{margin:14px 2px 0;font-size:.78rem;font-weight:700;color:var(--nm-text-soft,#667)}
 /* 선호 스타일 분류 · 선택 안내(최대 개수 · 자동 교체) */
 .ai-style-g{margin:0 0 10px}.ai-style-g:last-child{margin-bottom:0}
 .ai-q-label em b{color:var(--gold-deep);font-style:normal}
@@ -8516,6 +8535,7 @@ function collectSiteState(){
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides, calHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
     collectorEndpoint: collectorEndpointOverride,
+    aiPlaces,
   };
 }
 function applySiteState(state){
@@ -8548,6 +8568,8 @@ function applySiteState(state){
   if (state.collectorEndpoint !== undefined){ collectorEndpointOverride = state.collectorEndpoint; try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){} }
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
+  // 등록부가 없는 예전 상태(이 기능 이전에 저장된 데이터)를 받으면 이 기기의 등록부를 유지하고, 다음 저장 때 함께 올린다
+  if (state.aiPlaces && typeof state.aiPlaces==='object'){ aiPlaces = aiPlacesNorm(state.aiPlaces); try{ localStorage.setItem(AI_PLACES_KEY, JSON.stringify(aiPlaces)); }catch(e){} }
   try{
     localStorage.setItem(IMG_KEY, JSON.stringify(imageOverrides));
     localStorage.setItem(IMG_HIDDEN_KEY, JSON.stringify(imageHiddenOverrides));
@@ -10482,6 +10504,12 @@ try{imageHiddenOverrides=JSON.parse(localStorage.getItem(IMG_HIDDEN_KEY)||'{}')}
 try{calHiddenOverrides=JSON.parse(localStorage.getItem(CAL_HIDDEN_KEY)||'{}')}catch(e){}
 try{customLinkItems=Object.assign({band:[],blog:[],sns:[]}, JSON.parse(localStorage.getItem(CUSTOM_LINKS_KEY)||'{}'))}catch(e){}
 try{linkHiddenOverrides=JSON.parse(localStorage.getItem(LINK_HIDDEN_KEY)||'{}')}catch(e){}
+// [추가] AI 추천용 숙소·골프장 등록부 — 한 번 등록해 두고 여러 상품에서 선택(연결)만 한다. 수정하면 연결된 모든 상품에 반영
+const AI_PLACES_KEY='kundo_ai_places_v1';
+let aiPlaces={lodges:[], courses:[]};
+function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id) : []}; }
+try{ const v=JSON.parse(localStorage.getItem(AI_PLACES_KEY)||'null'); if (v) aiPlaces=aiPlacesNorm(v); }catch(e){}
+function saveAiPlaces(){try{localStorage.setItem(AI_PLACES_KEY,JSON.stringify(aiPlaces))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 
 function saveImages(){try{localStorage.setItem(IMG_KEY,JSON.stringify(imageOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 function saveCalHidden(){try{localStorage.setItem(CAL_HIDDEN_KEY,JSON.stringify(calHiddenOverrides))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
@@ -17719,123 +17747,282 @@ function advBasicHTML(p){
 }
 // ═══ 🤖 AI 추천 정보 — AI 골프여행 추천의 선호 스타일·세부 조건 판정에 쓰는 상품 정보(모두 선택 입력) ═══
 // 값 형식: text/num은 문자열·숫자, select는 옵션 문자열, yn은 'y'|'n', multi는 문자열 배열. 비워 두면 키를 지워 '미확인'으로 둔다
-const AI_INFO_SCHEMA = [
-  {key:'lodge', label:'① 숙박·객실', fields:[
-    {k:'lodgeName', label:'숙소명', type:'text'},
-    {k:'lodgeType', label:'숙소 유형', type:'select', opts:['골프텔','리조트','시내호텔','기타']},
-    {k:'lodgeStar', label:'숙박 등급', type:'select', opts:['3성급','4성급','5성급']},
-    {k:'lodgeStarSrc', label:'숙박 등급 확인 출처', type:'text', ph:'예: 호텔 공식 사이트'},
-    {k:'roomSize', label:'객실 크기', type:'text', ph:'예: 32㎡'},
-    {k:'bedType', label:'침대 구성', type:'text', ph:'예: 트윈 2 / 더블 1'},
-    {k:'roomTypes', label:'가능 객실', type:'multi', opts:['1인실','2인실','4인실']},
-    {k:'breakfast', label:'조식', type:'yn', yes:'포함', no:'불포함'},
-    {k:'golfDistance', label:'숙소↔골프장 거리', type:'num', unit:'분'},
-    {k:'elevator', label:'엘리베이터', type:'yn', yes:'있음', no:'없음'},
-    {k:'shuttle', label:'셔틀', type:'yn', yes:'있음', no:'없음'},
-    {k:'sameLodge', label:'숙소 변경 없음(동일 숙소)', type:'yn'},
-    {k:'longStay', label:'장박(7박 이상) 가능', type:'yn'}]},
-  {key:'course', label:'② 골프코스·라운드', fields:[
-    {k:'courseName', label:'코스명', type:'text'},
-    {k:'holes', label:'홀 수', type:'select', opts:['18','27','36','45+']},
-    {k:'par', label:'PAR', type:'num'},
-    {k:'courseLength', label:'전장', type:'text', ph:'예: 6,850yd'},
-    {k:'rating', label:'Course Rating·Slope (제공 시)', type:'text', ph:'예: 72.4 / 131'},
-    {k:'turf', label:'잔디 상태', type:'text', ph:'예: 양잔디, 관리 우수'},
-    {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼']},
-    {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적']},
-    {k:'famous', label:'명문·대회 개최 코스', type:'yn'},
-    {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통']},
-    {k:'multiCourse', label:'다색 골프(여러 골프장)', type:'yn'},
-    {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','카트 도로만','카트 없음(도보)']},
-    {k:'cartUse', label:'카트 이용', type:'select', opts:['포함','현지 지불','미운영']},
-    {k:'caddie', label:'캐디 운영', type:'select', opts:['필수','선택','노캐디']},
-    {k:'lesson', label:'레슨 포함', type:'yn'},
-    {k:'practice', label:'연습 시설', type:'yn', yes:'있음', no:'없음'}]},
-  {key:'meal', label:'③ 식사·관광·쇼핑', fields:[
-    {k:'mealsIncl', label:'포함 식사', type:'multi', opts:['조식','중식','석식']},
-    {k:'mealCount', label:'포함 식사 횟수', type:'text', ph:'예: 조식 3회 · 석식 2회'},
-    {k:'mealChoice', label:'식사 선택권', type:'yn', yes:'있음', no:'없음'},
-    {k:'koreanFood', label:'한식 접근', type:'yn', yes:'쉬움', no:'어려움'},
-    {k:'localFood', label:'현지 맛집 가까움', type:'yn'},
-    {k:'cityTour', label:'시내 관광 가능', type:'yn'},
-    {k:'famousSpot', label:'유명 관광지 가까움', type:'yn'},
-    {k:'mall', label:'쇼핑몰 가까움', type:'yn'},
-    {k:'market', label:'전통시장 가까움', type:'yn'},
-    {k:'spa', label:'온천·스파', type:'yn', yes:'있음', no:'없음'},
-    {k:'shopDistance', label:'맛집·쇼핑시설 거리', type:'text', ph:'예: 시내까지 차량 15분'},
-    {k:'freeTime', label:'자유시간', type:'yn', yes:'있음', no:'없음'},
-    {k:'tourIncluded', label:'관광 포함 여부', type:'select', opts:['포함','선택 관광','없음']},
-    {k:'localExtra', label:'현지 추가 비용', type:'text', ph:'예: 캐디팁 1인 $15'}]},
-  {key:'move', label:'④ 이동·일정 편의', fields:[
-    {k:'airportMin', label:'공항→숙소 이동', type:'num', unit:'분'},
-    {k:'pickupTime', label:'공항 픽업시간', type:'text', ph:'예: 도착 후 30분 내'},
-    {k:'dailyMove', label:'날짜별 골프장 이동시간', type:'text', ph:'예: 1일차 20분 / 2일차 40분'},
-    {k:'rideCount', label:'차량 탑승 횟수(전체 일정)', type:'num', unit:'회'},
-    {k:'lodgeChanges', label:'숙소 변경 횟수', type:'num', unit:'회'},
-    {k:'teeOff', label:'티오프 시간대', type:'select', opts:['오전','오후','혼합']},
-    {k:'privateCar', label:'전용 차량', type:'yn'},
-    {k:'tourShuttle', label:'관광 송영', type:'yn'},
-    {k:'minWalk', label:'도보 이동 최소', type:'yn'},
-    {k:'moveSupport', label:'이동 지원 범위', type:'text', ph:'예: 공항·골프장 왕복 송영'}]},
-  {key:'party', label:'⑤ 동반자·서비스·가격', note:'최소 출발 인원과 포함·불포함 항목은 기존 입력값(상품 카드의 최소 인원 · 자세히 보기의 포함/불포함)을 그대로 씁니다.', fields:[
-    {k:'paxOk', label:'출발 가능 인원', type:'multi', opts:['2인','3인','4인','단체']},
-    {k:'paxSurcharge', label:'인원별 추가요금', type:'text', ph:'예: 3인 출발 시 1인 3만원 추가'},
-    {k:'singleSurcharge', label:'1인실 추가요금', type:'text'},
-    {k:'packageType', label:'상품 구성', type:'select', opts:['올인원','일반형','실속형','특가']},
-    {k:'dealPeriod', label:'특가 기간', type:'text', ph:'예: 2026-11-01 ~ 2026-12-15'},
-    {k:'vip', label:'VIP 전용', type:'yn'},
-    {k:'private', label:'프라이빗(단독 진행)', type:'yn'},
-    {k:'optionalTour', label:'선택 관광', type:'yn', yes:'있음', no:'없음'},
-    {k:'localMandatory', label:'현지 필수 지불금', type:'text', ph:'없으면 비워 두세요'},
-    {k:'noExtraPay', label:'현지 추가 지불 없음', type:'yn'}]}
+// 가까운 정도 — 숙소 기준 이동 시간 단계. '가까움' 조건은 차량 15분 이내까지(AI_PROX_NEAR)
+const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['v15','차량 15분 이내'], ['v30','차량 30분 이내'], ['far','30분 초과'], ['none','없음']];
+const AI_PROX_NEAR = ['in','v15'];
+const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 30분 이내는 \'조금 떨어짐\'으로 안내합니다. 확인 안 되면 미확인.';
+function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : v; }
+// 숙소 등록부 항목
+const AI_LODGE_FIELDS = [
+  {k:'name', label:'숙소명', type:'text', help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
+  {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 숙소를 고를 때 같은 국가·권역의 숙소를 먼저 보여 줍니다.'},
+  {k:'lodgeType', label:'숙소 유형', type:'select', opts:['골프텔','리조트','시내호텔','기타'], help:'골프텔: 골프장 부지 안 숙박 전용 시설 · 리조트: 수영장·스파 등 부대시설을 갖춘 휴양형 · 시내호텔: 도심·번화가에 있는 호텔'},
+  {k:'lodgeStar', label:'숙박 등급', type:'select', opts:['3성급','4성급','5성급'], help:'정부·관광청 공식 등급 또는 주요 예약 사이트 표기 등급. 둘이 다르면 낮은 쪽, 확인 안 되면 미확인. 아래에 확인 출처를 꼭 적어 주세요.'},
+  {k:'lodgeStarSrc', label:'등급 확인 출처', type:'text', ph:'예: 호텔 공식 사이트, 관광청', help:'등급을 확인한 곳(사이트·문서). 고객 안내 근거로 함께 보여 줍니다.'},
+  {k:'roomSize', label:'객실 크기', type:'text', ph:'예: 32㎡', help:'상품에 배정되는 기본 객실의 면적(㎡).'},
+  {k:'bedType', label:'침대 구성', type:'text', ph:'예: 트윈 2 / 더블 1', help:'기본 객실 기준 침대 종류와 개수.'},
+  {k:'roomTypes', label:'가능 객실', type:'multi', opts:['1인실','2인실','4인실'], help:'실제로 배정 가능한 객실만 체크. 1인실은 추가요금이 있어도 가능하면 체크.'},
+  {k:'breakfast', label:'조식', type:'yn', yes:'포함', no:'불포함', help:'상품 요금에 조식이 포함되면 \'포함\'.'},
+  {k:'golfDistance', label:'골프장까지', type:'num', unit:'분', help:'차량 기준 편도 평균 시간. 골프장이 여러 곳이면 가장 자주 가는 곳 기준. 10분 이내·30분 이내 조건에 쓰입니다.'},
+  {k:'airportMin', label:'공항에서', type:'num', unit:'분', help:'도착 공항→숙소 차량 편도 시간. 60분 이내 조건에 쓰입니다.'},
+  {k:'elevator', label:'엘리베이터', type:'yn', yes:'있음', no:'없음', help:'객실 동에 엘리베이터가 있는지.'},
+  {k:'shuttle', label:'셔틀', type:'yn', yes:'있음', no:'없음', help:'숙소가 운영하는 무료 셔틀(골프장·시내)이 있는지.'},
+  {k:'nearFood', label:'현지 맛집', type:'prox', help:AI_PROX_HELP},
+  {k:'nearCity', label:'시내(번화가)', type:'prox', help:AI_PROX_HELP},
+  {k:'nearSpot', label:'유명 관광지', type:'prox', help:AI_PROX_HELP},
+  {k:'nearMall', label:'쇼핑몰', type:'prox', help:AI_PROX_HELP},
+  {k:'nearMarket', label:'전통시장', type:'prox', help:AI_PROX_HELP},
+  {k:'nearSpa', label:'온천·스파', type:'prox', help:AI_PROX_HELP+' 숙소에 온천·스파가 있으면 \'숙소 안\'.'},
+  {k:'nearKorean', label:'한식당', type:'prox', help:AI_PROX_HELP+' \'한식 접근\' 조건에 쓰입니다.'},
+  {k:'memo', label:'메모', type:'text', help:'기타 참고 사항(고객에게는 보이지 않음).'}
 ];
+// 골프장 등록부 항목
+const AI_COURSE_FIELDS = [
+  {k:'name', label:'골프장(코스)명', type:'text', help:'공식 명칭. 같은 골프장을 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
+  {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 골프장을 고를 때 같은 국가·권역을 먼저 보여 줍니다.'},
+  {k:'holes', label:'홀 수', type:'select', opts:['18','27','36','45+'], help:'골프장 전체 홀 수(27홀 골프장이면 27).'},
+  {k:'par', label:'PAR', type:'num', help:'정규 18홀 기준 PAR.'},
+  {k:'courseLength', label:'전장', type:'text', ph:'예: 6,850yd', help:'레귤러(화이트) 티 기준, 단위(yd·m)를 함께.'},
+  {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'골프장·협회가 공개한 값만. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
+  {k:'turf', label:'잔디 상태', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
+  {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼'], help:'평탄: 대부분 평지 · 보통 · 큼: 오르막·내리막이 많아 카트 이동이 사실상 필수.'},
+  {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상).'},
+  {k:'famous', label:'명문·대회 개최', type:'yn', help:'프로 투어(KPGA·KLPGA·JGTO·아시안투어·LPGA 등) 정규 대회 개최 이력이 있거나 공신력 있는 골프장 랭킹(국가별 100대 등)에 든 곳이면 \'예\'.'},
+  {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통'], help:'우수: 최근 1년 안에 현장 확인 또는 고객 평가로 잔디·그린·시설 관리가 좋다고 확인됨. 근거가 없으면 미확인.'},
+  {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','카트 도로만','카트 없음(도보)'], help:'평소 운영 기준(우천 등 예외 제외).'},
+  {k:'cartUse', label:'카트 이용', type:'select', opts:['포함','현지 지불','미운영'], help:'카트비가 상품 요금에 포함인지, 현지에서 내는지.'},
+  {k:'caddie', label:'캐디 운영', type:'select', opts:['필수','선택','노캐디'], help:'캐디 동반이 의무인지, 고를 수 있는지, 없는지.'},
+  {k:'lesson', label:'레슨 프로그램', type:'yn', help:'골프장(또는 연계 아카데미)에서 레슨을 받을 수 있으면 \'예\'.'},
+  {k:'practice', label:'연습 시설', type:'yn', yes:'있음', no:'없음', help:'드라이빙 레인지·퍼팅 그린을 이용할 수 있는지.'},
+  {k:'memo', label:'메모', type:'text', help:'기타 참고 사항(고객에게는 보이지 않음).'}
+];
+// 상품마다 다른 정보 — 숙소·골프장 자체 정보는 등록부에서 가져온다
+const AI_INFO_SCHEMA = [
+  {key:'lodge', label:'① 숙박·객실', place:'lodge', fields:[
+    {k:'sameLodge', label:'숙소 변경 없음(동일 숙소)', type:'yn', help:'전 일정을 한 숙소에서 묵으면 \'예\'.'},
+    {k:'lodgeChanges', label:'숙소 변경 횟수', type:'num', unit:'회', help:'일정 중 숙소를 옮기는 횟수(0이면 동일 숙소).'},
+    {k:'longStay', label:'장박(7박 이상) 가능', type:'yn', help:'7박 이상으로 연장 예약이 가능하면 \'예\'.'}]},
+  {key:'course', label:'② 골프코스·라운드', place:'course', fields:[
+    {k:'multiCourse', label:'다색 골프(여러 골프장)', type:'yn', help:'일정 중 2곳 이상 골프장을 돌면 \'예\'. 연결된 골프장이 2곳 이상이면 비워 둬도 자동으로 \'예\'로 판정.'}]},
+  {key:'meal', label:'③ 식사·관광·쇼핑', note:'맛집·관광지·쇼핑몰·온천 등 주변 시설의 가까운 정도는 ① 숙소 등록부에서 입력합니다.', fields:[
+    {k:'mealsIncl', label:'포함 식사', type:'multi', opts:['조식','중식','석식'], help:'상품 요금에 포함된 식사만 체크(일부 일정만 포함이면 그 식사도 체크하고 횟수를 적기).'},
+    {k:'mealCount', label:'포함 식사 횟수', type:'text', ph:'예: 조식 3회 · 석식 2회', help:'전체 일정 기준 횟수.'},
+    {k:'mealChoice', label:'식사 선택권', type:'yn', yes:'있음', no:'없음', help:'포함 식사의 메뉴·식당을 고를 수 있으면 \'있음\'.'},
+    {k:'freeTime', label:'자유시간', type:'yn', yes:'있음', no:'없음', help:'골프·이동 외에 반나절 이상 자유 일정이 있으면 \'있음\'.'},
+    {k:'tourIncluded', label:'관광 포함 여부', type:'select', opts:['포함','선택 관광','없음'], help:'요금에 관광이 포함인지, 원하는 사람만 추가하는지.'},
+    {k:'localExtra', label:'현지 추가 비용', type:'text', ph:'예: 캐디팁 1인 $15', help:'현지에서 추가로 들 수 있는 비용 안내.'}]},
+  {key:'move', label:'④ 이동·일정 편의', note:'공항→숙소·숙소→골프장 시간은 ① 숙소 등록부에서 입력합니다.', fields:[
+    {k:'pickupTime', label:'공항 픽업시간', type:'text', ph:'예: 도착 후 30분 내', help:'도착 후 픽업까지 대기 시간 등.'},
+    {k:'dailyMove', label:'날짜별 골프장 이동시간', type:'text', ph:'예: 1일차 20분 / 2일차 40분', help:'골프장이 날마다 다르면 날짜별로.'},
+    {k:'rideCount', label:'차량 탑승 횟수(전체 일정)', type:'num', unit:'회', help:'공항 송영 포함 전체 차량 이동 횟수.'},
+    {k:'teeOff', label:'티오프 시간대', type:'select', opts:['오전','오후','혼합'], help:'대부분 12시 이전이면 오전, 이후면 오후, 섞여 있으면 혼합.'},
+    {k:'privateCar', label:'전용 차량', type:'yn', help:'일행만 타는 단독 차량이면 \'예\'(다른 팀과 합승이면 \'아니오\').'},
+    {k:'tourShuttle', label:'관광 송영', type:'yn', help:'관광지·시내 이동 차량을 제공하면 \'예\'.'},
+    {k:'minWalk', label:'도보 이동 최소', type:'yn', help:'숙소↔골프장·식당 이동에 도보 10분 넘는 구간이 없으면 \'예\'.'},
+    {k:'moveSupport', label:'이동 지원 범위', type:'text', ph:'예: 공항·골프장 왕복 송영', help:'포함된 이동 서비스 범위.'}]},
+  {key:'party', label:'⑤ 동반자·서비스·가격', note:'최소 출발 인원과 포함·불포함 항목은 기존 입력값(상품 카드의 최소 인원 · 자세히 보기의 포함/불포함)을 그대로 씁니다.', fields:[
+    {k:'paxOk', label:'출발 가능 인원', type:'multi', opts:['2인','3인','4인','단체'], help:'추가요금이 있어도 출발 가능하면 체크. 단체: 8인 이상.'},
+    {k:'paxSurcharge', label:'인원별 추가요금', type:'text', ph:'예: 3인 출발 시 1인 3만원 추가', help:'인원에 따라 달라지는 요금.'},
+    {k:'singleSurcharge', label:'1인실 추가요금', type:'text', help:'1인실 사용 시 추가요금.'},
+    {k:'packageType', label:'상품 구성', type:'select', opts:['올인원','일반형','실속형','특가'], help:'올인원: 그린피·숙박·식사·카트·캐디피 포함 · 일반형: 기본 패키지 · 실속형: 그린피·숙박·조식 중심 · 특가: 기간 한정 할인가.'},
+    {k:'dealPeriod', label:'특가 기간', type:'text', ph:'예: 2026-11-01 ~ 2026-12-15', help:'특가가 적용되는 출발 기간.'},
+    {k:'vip', label:'VIP 전용', type:'yn', help:'고급 숙박에 전담 가이드·의전 등이 포함된 상품이면 \'예\'.'},
+    {k:'private', label:'프라이빗(단독 진행)', type:'yn', help:'다른 팀과 합류 없이 일행만 진행하면 \'예\'.'},
+    {k:'optionalTour', label:'선택 관광', type:'yn', yes:'있음', no:'없음', help:'원하는 사람만 추가하는 관광이 있으면 \'있음\'.'},
+    {k:'localMandatory', label:'현지 필수 지불금', type:'text', ph:'없으면 비워 두세요', help:'현지에서 반드시 내야 하는 비용(캐디팁·리조트피 등).'},
+    {k:'noExtraPay', label:'현지 추가 지불 없음', type:'yn', help:'현지 필수 지불 없이 요금에 모두 포함이면 \'예\'.'}]}
+];
+// 예전(상품별 직접 입력) 숙소·골프장 항목 — 등록부로 옮기기 전까지는 그대로 판정에 쓴다
+const AI_LEGACY_LODGE = {lodgeName:'name', lodgeType:'lodgeType', lodgeStar:'lodgeStar', lodgeStarSrc:'lodgeStarSrc', roomSize:'roomSize', bedType:'bedType', roomTypes:'roomTypes', breakfast:'breakfast', golfDistance:'golfDistance', airportMin:'airportMin', elevator:'elevator', shuttle:'shuttle', localFood:'nearFood', cityTour:'nearCity', famousSpot:'nearSpot', mall:'nearMall', market:'nearMarket', spa:'nearSpa', koreanFood:'nearKorean', shopDistance:'memo'};
+const AI_LEGACY_COURSE = {courseName:'name', holes:'holes', par:'par', courseLength:'courseLength', rating:'rating', turf:'turf', elevation:'elevation', courseLevel:'courseLevel', famous:'famous', courseQuality:'courseQuality', cartRule:'cartRule', cartUse:'cartUse', caddie:'caddie', lesson:'lesson', practice:'practice'};
+const AI_LEGACY_YN_PROX = ['localFood','cityTour','famousSpot','mall','market','spa','koreanFood'];
+function aiLegacyPlace(ai, map, fallbackName){
+  const out = {}; let any = false;
+  Object.keys(map).forEach(k=>{
+    if (!aiInfoFilled(ai[k])) return;
+    any = true;
+    out[map[k]] = AI_LEGACY_YN_PROX.includes(k) ? (ai[k]==='y' ? 'v15' : (k==='spa' ? 'none' : 'far')) : ai[k];   // 예/아니오 → 가까움(차량 15분 이내)/떨어짐
+  });
+  if (!any) return null;
+  if (!out.name) out.name = fallbackName;
+  out.legacy = true;
+  return out;
+}
 function aiInfoFilled(v){ return Array.isArray(v) ? v.length>0 : (v!==undefined && v!==null && String(v).trim()!==''); }
-function aiInfoFieldHTML(fd, v){
-  const k = fd.k, lab = `<span>${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}</span>`;
+function aiPlaceList(kind){ return kind==='lodge' ? aiPlaces.lodges : aiPlaces.courses; }
+function aiPlaceFields(kind){ return kind==='lodge' ? AI_LODGE_FIELDS : AI_COURSE_FIELDS; }
+function aiPlaceIdsKey(kind){ return kind==='lodge' ? 'lodgeIds' : 'courseIds'; }
+function aiFindPlace(kind, id){ return aiPlaceList(kind).find(x=>x.id===id) || null; }
+// 상품에 연결된 숙소·골프장(등록부) + 예전 직접 입력값
+function aiLinkedPlaces(p, kind){
+  const ai = (p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {};
+  const ids = Array.isArray(ai[aiPlaceIdsKey(kind)]) ? ai[aiPlaceIdsKey(kind)] : [];
+  const out = ids.map(id=>aiFindPlace(kind, id)).filter(Boolean);
+  const legacy = aiLegacyPlace(ai, kind==='lodge' ? AI_LEGACY_LODGE : AI_LEGACY_COURSE, kind==='lodge' ? '이 상품에 직접 입력한 숙소' : '이 상품에 직접 입력한 골프장');
+  if (legacy) out.push(legacy);
+  return out;
+}
+function aiPlaceUseCount(kind, id){
+  let n = 0; const key = aiPlaceIdsKey(kind);
+  Object.keys(productOverrides||{}).forEach(c=>(productOverrides[c]||[]).forEach(p=>{ if (p && p.aiInfo && Array.isArray(p.aiInfo[key]) && p.aiInfo[key].includes(id)) n++; }));
+  return n;
+}
+function aiCatName(id){ const c = CATEGORIES.domestic.concat(CATEGORIES.overseas).find(x=>x.id===id); return c ? c.ko : ''; }
+function aiHelpHTML(fd){ return fd.help ? `<button type="button" class="ai-help-btn" aria-label="${escapeAttr(fd.label)} 판단 기준" onclick="this.closest('.ai-info-f').classList.toggle('show-help')">ⓘ</button></span><small class="ai-info-help">${escapeAttr(fd.help)}</small>` : '</span>'; }
+// 입력 칸 — save(k, valueExpr)는 저장 호출 문자열(상품: updateAiInfo / 등록부: updateAiPlace)
+function aiFieldHTML(fd, v, save, saveMulti, extraInput){
+  const k = fd.k, lab = `<span class="ai-info-lab">${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}${aiHelpHTML(fd)}`;
   if (fd.type==='multi'){
     const arr = Array.isArray(v) ? v : [];
-    return `<div class="ai-info-f">${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="updateAiInfoMulti('${k}','${escapeAttr(o)}',this.checked)">${escapeAttr(o)}</label>`).join('')}</div></div>`;
+    return `<div class="ai-info-f">${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
   }
-  if (fd.type==='select' || fd.type==='yn'){
-    const opts = fd.type==='yn' ? [['y', fd.yes||'예'], ['n', fd.no||'아니오']] : fd.opts.map(o=>[o,o]);
-    return `<label class="ai-info-f">${lab}<select onchange="updateAiInfo('${k}',this.value)"><option value="">미확인</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v||'')===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select></label>`;
+  if (fd.type==='select' || fd.type==='yn' || fd.type==='prox' || fd.type==='cat'){
+    const opts = fd.type==='yn' ? [['y', fd.yes||'예'], ['n', fd.no||'아니오']]
+      : fd.type==='prox' ? AI_PROX_OPTS
+      : fd.type==='cat' ? CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>[c.id, c.ko])
+      : fd.opts.map(o=>[o,o]);
+    return `<div class="ai-info-f">${lab}<select onchange="${save(k,'this.value')}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select></div>`;
   }
-  if (fd.type==='num') return `<label class="ai-info-f">${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="updateAiInfo('${k}',this.value===''?'':Number(this.value))"></label>`;
-  return `<label class="ai-info-f">${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="updateAiInfo('${k}',this.value)"></label>`;
+  if (fd.type==='num') return `<div class="ai-info-f">${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
+  return `<div class="ai-info-f">${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
+}
+function aiPlaceSummary(kind, x){
+  const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiInfoFilled(x.golfDistance) ? `골프장 ${x.golfDistance}분` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', x.courseLevel, x.famous==='y' ? '명문' : ''];
+  return bits.filter(Boolean).join(' · ');
+}
+// 연결된 숙소·골프장 — 칩 목록 + 등록부에서 선택 + 새로 등록 + 각 항목 편집 카드(등록부 공용)
+function aiPlaceLinkHTML(p, kind){
+  const ai = p.aiInfo || {}, ids = Array.isArray(ai[aiPlaceIdsKey(kind)]) ? ai[aiPlaceIdsKey(kind)] : [];
+  const linked = ids.map(id=>aiFindPlace(kind, id)).filter(Boolean);
+  const word = kind==='lodge' ? '숙소' : '골프장', ico = kind==='lodge' ? '🏨' : '⛳';
+  const cat = currentAdv ? currentAdv.catId : '';
+  const rest = aiPlaceList(kind).filter(x=>!ids.includes(x.id));
+  const same = rest.filter(x=>x.cat===cat), other = rest.filter(x=>x.cat!==cat);
+  const opt = x => `<option value="${x.id}">${escapeAttr(x.name||'(이름 없음)')}${x.cat && x.cat!==cat ? ` — ${escapeAttr(aiCatName(x.cat))}` : ''}</option>`;
+  const fields = aiPlaceFields(kind);
+  return `<div class="ai-link-box">
+      <div class="ai-link-head"><b>${ico} 연결된 ${word}</b> <span>${linked.length ? linked.length+'곳' : '없음'} · 여러 곳을 연결할 수 있으며, 하나라도 고객 조건에 맞으면 부합으로 판정합니다</span></div>
+      <div class="ai-link-acts">
+        <select onchange="if(this.value){aiLinkPlace('${kind}',this.value)}"><option value="">＋ 등록부에서 ${word} 선택 (${rest.length}곳)</option>${same.length?`<optgroup label="${escapeAttr(aiCatName(cat)||'같은 지역')}">${same.map(opt).join('')}</optgroup>`:''}${other.length?`<optgroup label="다른 지역">${other.map(opt).join('')}</optgroup>`:''}</select>
+        <button type="button" class="apc-btn-sm" onclick="aiNewPlace('${kind}')">＋ 새 ${word} 등록</button>
+      </div>
+      ${linked.map(x=>{
+        const used = aiPlaceUseCount(kind, x.id);
+        const save = (k, expr) => `updateAiPlace('${kind}','${x.id}','${k}',${expr})`;
+        const saveMulti = (k, o) => `updateAiPlaceMulti('${kind}','${x.id}','${k}','${escapeAttr(o)}',this.checked)`;
+        return `<details class="pe-labels ai-place-card" ${advDetailsAttrs('aiP-'+x.id, !x.name)}>
+          <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
+          ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
+          <div class="ai-info-grid">${fields.map(fd=>aiFieldHTML(fd, x[fd.k], save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '')).join('')}</div>
+          <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
+        </details>`;
+      }).join('')}
+    </div>`;
+}
+// 예전에 상품에 직접 입력한 숙소·골프장 값 — 등록부로 옮기는 버튼
+function aiLegacyBoxHTML(p, kind){
+  const leg = aiLegacyPlace(p.aiInfo||{}, kind==='lodge' ? AI_LEGACY_LODGE : AI_LEGACY_COURSE, '');
+  if (!leg) return '';
+  const word = kind==='lodge' ? '숙소' : '골프장';
+  const fields = aiPlaceFields(kind);
+  const items = Object.keys(leg).filter(k=>k!=='legacy' && k!=='name' && aiInfoFilled(leg[k])).map(k=>{ const fd = fields.find(f=>f.k===k); const v = leg[k]; return `${fd?fd.label:k}: ${Array.isArray(v)?v.join('·'):(fd && fd.type==='prox' ? aiProxLabel(v) : (v==='y'?'예':(v==='n'?'아니오':v)))}`; });
+  return `<div class="ai-legacy"><b>이 상품에 직접 입력해 둔 ${word} 정보${leg.name?` (${escapeAttr(leg.name)})`:''}</b><p>${escapeAttr(items.join(' · '))}</p><button type="button" class="apc-btn-sm" onclick="aiMigrateLegacy('${kind}')">${word} 등록부로 옮기고 연결</button><span class="ai-info-note"> 옮기기 전까지도 추천 판정에는 그대로 쓰입니다.</span></div>`;
 }
 function advAiInfoHTML(p){
   const ai = (p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {};
-  const total = AI_INFO_SCHEMA.reduce((n,g)=>n+g.fields.length, 0), filled = AI_INFO_SCHEMA.reduce((n,g)=>n+g.fields.filter(fd=>aiInfoFilled(ai[fd.k])).length, 0);
+  const nL = Array.isArray(ai.lodgeIds) ? ai.lodgeIds.length : 0, nC = Array.isArray(ai.courseIds) ? ai.courseIds.length : 0;
+  const filled = AI_INFO_SCHEMA.reduce((n,g)=>n+g.fields.filter(fd=>aiInfoFilled(ai[fd.k])).length, 0);
+  const badge = (nL||nC||filled) ? advBadge(`숙소 ${nL} · 골프장 ${nC} · 항목 ${filled}`, 'ok') : advBadge('비어 있음','empty');
+  const save = (k, expr) => `updateAiInfo('${k}',${expr})`, saveMulti = (k, o) => `updateAiInfoMulti('${k}','${escapeAttr(o)}',this.checked)`;
   return `
     <!-- ═══ 🤖 AI 추천 정보 ═══ -->
     <details class="adv-group" ${advDetailsAttrs('g-ai', false)}>
-      <summary><span class="adv-g-title">🤖 AI 추천 정보</span><span class="adv-where">AI 골프여행 추천의 선호 스타일·세부 조건 판정 (고객 화면에는 표시 안 됨)</span>${filled ? advBadge(`✓ ${filled}/${total} 입력`, 'ok') : advBadge('비어 있음','empty')}</summary>
+      <summary><span class="adv-g-title">🤖 AI 추천 정보</span><span class="adv-where">AI 골프여행 추천의 선호 스타일·세부 조건 판정 (고객 화면에는 표시 안 됨)</span>${badge}</summary>
       <div class="adv-group-body">
-        <div class="pe-inh-banner"><div class="pe-inh-banner-text"><b>💡 아는 항목만 입력하세요 — 모두 선택 사항입니다.</b><br>비워 둔 항목은 '미확인'으로 처리돼 감점되지 않고, 상품명·태그·숙박·식사 등 기존 정보로 보조 판정합니다. 입력한 값은 추천 근거로 고객에게 그대로 안내되므로 확인된 정보만 넣어 주세요.</div></div>
+        <div class="pe-inh-banner"><div class="pe-inh-banner-text"><b>💡 숙소·골프장은 등록부에 한 번만 등록하고, 상품에서는 골라서 연결만 하세요.</b><br>등록부 정보를 고치면 연결된 모든 상품에 반영됩니다. 모든 항목은 선택 입력이며, 비워 둔 항목은 '미확인'으로 처리돼 감점되지 않습니다. 각 항목의 ⓘ를 누르면 판단 기준이 보입니다. 입력한 값은 추천 근거로 고객에게 그대로 안내되므로 확인된 정보만 넣어 주세요.</div></div>
         ${AI_INFO_SCHEMA.map(g=>{
-          const n = g.fields.filter(fd=>aiInfoFilled(ai[fd.k])).length;
+          const n = g.fields.filter(fd=>aiInfoFilled(ai[fd.k])).length + (g.place ? (g.place==='lodge' ? nL : nC) : 0);
           return `<details class="pe-labels" ${advDetailsAttrs('ai-'+g.key, false)}>
-            <summary>${g.label} ${n ? advBadge(`✓ ${n}/${g.fields.length}`, 'ok') : advBadge('비어 있음','empty')}</summary>
+            <summary>${g.label} ${n ? advBadge(`✓ ${n}`, 'ok') : advBadge('비어 있음','empty')}</summary>
+            ${g.place ? aiPlaceLinkHTML(p, g.place) + aiLegacyBoxHTML(p, g.place) : ''}
             ${g.note ? `<p class="ai-info-note">${escapeAttr(g.note)}</p>` : ''}
-            <div class="ai-info-grid">${g.fields.map(fd=>aiInfoFieldHTML(fd, ai[fd.k])).join('')}</div>
+            ${g.place ? `<div class="ai-sub-l">이 상품의 일정 정보</div>` : ''}
+            <div class="ai-info-grid">${g.fields.map(fd=>aiFieldHTML(fd, ai[fd.k], save, saveMulti)).join('')}</div>
           </details>`;
         }).join('')}
       </div>
     </details>`;
 }
+function aiInfoOf(p){ if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArray(p.aiInfo)) p.aiInfo = {}; return p.aiInfo; }
 function updateAiInfo(k, v){
   const p=getAdvProduct(); if (!p) return;
-  if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArray(p.aiInfo)) p.aiInfo = {};
-  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete p.aiInfo[k]; else p.aiInfo[k] = typeof v==='string' ? v.slice(0,200) : v;
+  const ai = aiInfoOf(p);
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0,200) : v;
   saveAdvChange();
 }
 function updateAiInfoMulti(k, opt, on){
   const p=getAdvProduct(); if (!p) return;
-  if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArray(p.aiInfo)) p.aiInfo = {};
-  const arr = Array.isArray(p.aiInfo[k]) ? p.aiInfo[k].filter(x=>x!==opt) : [];
+  const ai = aiInfoOf(p);
+  const arr = Array.isArray(ai[k]) ? ai[k].filter(x=>x!==opt) : [];
   if (on) arr.push(opt);
-  if (arr.length) p.aiInfo[k] = arr; else delete p.aiInfo[k];
+  if (arr.length) ai[k] = arr; else delete ai[k];
   saveAdvChange();
+}
+function updateAiPlace(kind, id, k, v){
+  const x = aiFindPlace(kind, id); if (!x) return;
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete x[k]; else x[k] = typeof v==='string' ? v.slice(0,200) : v;
+  x.updatedAt = new Date().toISOString();
+  saveAiPlaces();
+}
+function updateAiPlaceMulti(kind, id, k, opt, on){
+  const x = aiFindPlace(kind, id); if (!x) return;
+  const arr = Array.isArray(x[k]) ? x[k].filter(o=>o!==opt) : [];
+  if (on) arr.push(opt);
+  if (arr.length) x[k] = arr; else delete x[k];
+  saveAiPlaces();
+}
+function aiPlaceNameSync(id, v){ document.querySelectorAll(`[data-place-name="${id}"]`).forEach(el=>{ el.textContent = v || '(이름 없음)'; }); }
+function aiNewPlaceId(kind){ return (kind==='lodge' ? 'L' : 'C') + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function aiLinkPlace(kind, id, noRender){
+  const p=getAdvProduct(); if (!p || !aiFindPlace(kind, id)) return;
+  const ai = aiInfoOf(p), key = aiPlaceIdsKey(kind);
+  ai[key] = (Array.isArray(ai[key]) ? ai[key] : []).filter(x=>x!==id).concat([id]);
+  saveAdvChange(); if (!noRender) renderAdvBody();
+}
+function aiNewPlace(kind, seed){
+  const p=getAdvProduct(); if (!p) return;
+  const x = Object.assign({id:aiNewPlaceId(kind), name:'', cat:currentAdv ? currentAdv.catId : '', createdAt:new Date().toISOString()}, seed||{});
+  aiPlaceList(kind).push(x); saveAiPlaces();
+  advOpenState['aiP-'+x.id] = true; advOpenState['ai-'+(kind==='lodge'?'lodge':'course')] = true;
+  aiLinkPlace(kind, x.id, true); renderAdvBody();
+  setTimeout(()=>{ const el = document.querySelector(`#advBody details[data-ck="aiP-${x.id}"] input[type=text]`); if (el && !x.name) el.focus(); }, 50);
+  return x;
+}
+function aiUnlinkPlace(kind, id){
+  const p=getAdvProduct(); if (!p) return;
+  const ai = aiInfoOf(p), key = aiPlaceIdsKey(kind);
+  ai[key] = (Array.isArray(ai[key]) ? ai[key] : []).filter(x=>x!==id);
+  if (!ai[key].length) delete ai[key];
+  saveAdvChange(); renderAdvBody();
+}
+function aiDeletePlace(kind, id){
+  const x = aiFindPlace(kind, id); if (!x) return;
+  const used = aiPlaceUseCount(kind, id), word = kind==='lodge' ? '숙소' : '골프장';
+  if (!confirm(`'${x.name||'(이름 없음)'}' ${word}를 등록부에서 삭제할까요?${used ? `\n연결된 상품 ${used}개에서도 연결이 해제됩니다.` : ''}`)) return;
+  const key = aiPlaceIdsKey(kind);
+  if (kind==='lodge') aiPlaces.lodges = aiPlaces.lodges.filter(o=>o.id!==id); else aiPlaces.courses = aiPlaces.courses.filter(o=>o.id!==id);
+  Object.keys(productOverrides||{}).forEach(c=>(productOverrides[c]||[]).forEach(p=>{ if (p && p.aiInfo && Array.isArray(p.aiInfo[key])){ p.aiInfo[key] = p.aiInfo[key].filter(v=>v!==id); if (!p.aiInfo[key].length) delete p.aiInfo[key]; } }));
+  saveAiPlaces(); saveAdvChange(); renderAdvBody();
+}
+// 예전 직접 입력값 → 등록부 항목으로 옮기고 연결(옮긴 뒤 상품의 예전 값은 지운다)
+function aiMigrateLegacy(kind){
+  const p=getAdvProduct(); if (!p) return;
+  const ai = aiInfoOf(p), map = kind==='lodge' ? AI_LEGACY_LODGE : AI_LEGACY_COURSE;
+  const leg = aiLegacyPlace(ai, map, ''); if (!leg) return;
+  delete leg.legacy;
+  if (!leg.name) leg.name = (p.title||'') + (kind==='lodge' ? ' 숙소' : ' 골프장');
+  Object.keys(map).forEach(k=>{ delete ai[k]; });
+  aiNewPlace(kind, leg);
 }
 // 값이 실제로 입력돼 있는지 — 리치 텍스트는 태그를 뺀 내용으로, 'none'은 미입력으로 본다
 // [추가] 체크포인트 서식 편집기 — 서식 툴바 + 편집 칸(실제 카드 박스 색상 미리보기) + 박스 색상 선택
@@ -19890,6 +20077,7 @@ function aiProdFacts(p, catId){
     minPeople: mp.length ? Math.min(...mp) : null, grade: productLabelProfile(p), emph: emph.join(' '),
     // 관리자 "AI 추천 정보"(p.aiInfo) · 상품 문구(태그·제목·숙박·대표 문구·강조) · 포함사항 · 티오프 시간
     ai: (p.aiInfo && typeof p.aiInfo==='object' && !Array.isArray(p.aiInfo)) ? p.aiInfo : {},
+    lodges: aiLinkedPlaces(p, 'lodge'), courses: aiLinkedPlaces(p, 'course'),   // 등록부에서 연결한 숙소·골프장(+예전 직접 입력값)
     hay: cardTagsOf(p).concat([p.title||'', p.stay||'']).concat(flat(eff('stay'))).concat(entries.map(pe=>richToPlain(pe.headline||''))).concat(emph).join(' '),
     inc: [p.commonIncluded].concat(entries.map(pe=>pe.included)).map(v=>richToPlain(v||'')).join(' '),
     nights: nm ? Number(nm[1]) : null,
@@ -19941,7 +20129,7 @@ function aiDetailTest(key, F){
   if (key==='dep_weekend' || key==='dep_weekday'){ if (!F.days.length) return {v:null, t:'출발 요일 미등록'}; const d = aiDaySet(F.days);
     const ok = key==='dep_weekend' ? ['금','토','일','공휴일'].some(x=>d.has(x)) : ['월','화','수','목'].some(x=>d.has(x)); return {v:ok, t:`출발 요일: ${F.days.join('·')}`}; }
   if (key==='short_flight'){ if (F.dom) return {v:null, t:'국내 상품 — 비행 없음'}; if (F.flightMin==null) return {v:null, t:'비행시간 미등록'}; return {v:F.flightMin<=180, t:`비행시간 약 ${Math.floor(F.flightMin/60)}시간${F.flightMin%60?` ${F.flightMin%60}분`:''}`}; }
-  if (key==='near_golf'){ if (F.ai && aiNum(F.ai.golfDistance)!=null) return {v:aiNum(F.ai.golfDistance)<=30, t:`숙소↔골프장 약 ${aiNum(F.ai.golfDistance)}분`}; if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'}; if (F.golfMin==null) return {v:null, t:'숙소↔골프장 이동시간 미등록'}; return {v:F.golfMin<=30, t:`숙소↔골프장 약 ${F.golfMin}분`}; }
+  if (key==='near_golf'){ const lr = aiMulti(F.lodges||[], x=>x.golfDistance, v=>Number(v)<=30, v=>`골프장까지 약 ${v}분`); if (lr) return lr; if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'}; if (F.golfMin==null) return {v:null, t:'숙소↔골프장 이동시간 미등록'}; return {v:F.golfMin<=30, t:`숙소↔골프장 약 ${F.golfMin}분`}; }
   if (key==='many_rounds' || key==='relaxed_rounds'){ if (F.perNight==null) return {v:null, t:'라운드·박수 정보 부족'}; const ok = key==='many_rounds' ? F.perNight>=1.5 : F.perNight<=1; return {v:ok, t:`1박당 약 ${F.perNight.toFixed(1)}라운드 (${F.roundsTxt.trim()})`}; }
   if (key==='meals_incl'){ if (!F.meals.trim()) return {v:null, t:'식사 정보 미등록'}; return {v:/중식|석식|전\s*일정|3식|올인클|all/i.test(F.meals), t:`식사: ${F.meals.slice(0,40)}`}; }
   if (key==='premium'){ const g = F.grade; if (!g || g.gradeIsDefault) return {v:null, t:'상품 등급 미지정'}; return {v:g.grade>=4, t:`상품 등급 ${g.gradeName}`}; }
@@ -19964,13 +20152,43 @@ function aiAny(rs){
   if (rs.some(r=>r.v===null)) return rs.find(r=>r.v===null && r.t) || {v:null, t:'상품 정보에서 확인되지 않음 — 상담 시 확인'};
   return rs.length ? {v:false, t:rs.map(r=>r.t).filter(Boolean).join(' · ')} : {v:null, t:''};
 }
+// 여러 숙소·골프장 중 하나라도 조건에 맞으면 부합 — 근거에 어느 곳이 맞는지 이름을 함께 적는다.
+// 값이 있는 곳이 모두 불일치이고 나머지가 미등록이면 '미확인', 값이 있는 곳 모두 불일치면 불일치, 값이 하나도 없으면 null(다음 근거로)
+function aiMulti(list, get, ok, fmt){
+  if (!list || !list.length) return null;
+  const known = [], unknown = [];
+  list.forEach(x=>{ const v = get(x); (aiInfoFilled(v) ? known : unknown).push({x, v}); });
+  if (!known.length) return null;
+  const nm = o => o.x.name || '이름 없음', one = list.length===1;
+  const line = o => one ? fmt(o.v) : `${nm(o)} ${fmt(o.v)}`;
+  const hit = known.filter(o=>ok(o.v));
+  if (hit.length) return {v:true, t:hit.map(line).join(' · ')};
+  const t = known.map(line).join(' · ');
+  return unknown.length ? {v:null, t:`${t} — ${unknown.map(nm).join(', ')} 정보 미등록`} : {v:false, t};
+}
+// 난이도 — 입력값이 없으면 Slope Rating으로 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적)
+function aiCourseLevel(c){
+  if (c.courseLevel) return c.courseLevel;
+  const nums = String(c.rating||'').match(/\d+(?:\.\d+)?/g); if (!nums) return '';
+  const slope = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop();
+  if (slope==null) return '';
+  return slope<120 ? '쉬움' : (slope<135 ? '보통' : '도전적');
+}
 function aiInfoTest(key, F){
-  const ai = F.ai || {};
+  const ai = F.ai || {}, L = F.lodges || [], C = F.courses || [];
   const yn = (k, label, words, withInc) => { const v = aiYn(ai[k]); if (v!==null) return {v, t:`관리자 입력: ${label} — ${v?'예':'아니오'}`}; return words ? aiKwRes(F, words, withInc, `${label} 정보 미등록 — 상담 시 확인`) : {v:null, t:`${label} 정보 미등록 — 상담 시 확인`}; };
+  const ynTxt = (v, y, n) => v==='y' ? (y||'예') : (n||'아니오');
+  // 숙소 주변 시설 — 가까운 정도(숙소 안·도보 5분 / 차량 15분 이내 = 가까움)
+  const PROX = {'food:local':['nearFood','현지 맛집',['맛집','미식','로컬 푸드','현지식']], 'tour:city':['nearCity','시내',['시내 관광','시티투어','시내투어','시내']], 'tour:famous':['nearSpot','유명 관광지',['관광지','명소']],
+    'shop:mall':['nearMall','쇼핑몰',['쇼핑','아울렛','쇼핑몰']], 'shop:market':['nearMarket','전통시장',['전통시장','야시장','시장']], 'spa':['nearSpa','온천·스파',['온천','스파','마사지','사우나']], 'meal:korean':['nearKorean','한식당',['한식']]};
+  if (PROX[key]){
+    const [f, label, words] = PROX[key];
+    return aiMulti(L, x=>x[f], v=>AI_PROX_NEAR.includes(v), v=>`${label}: ${aiProxLabel(v)}`) || aiKwRes(F, words, key==='spa', `${label} 거리 정보 미등록 — 상담 시 확인`);
+  }
   const LODGE = {'lodge:golftel':'골프텔', 'lodge:resort':'리조트', 'lodge:city':'시내호텔'};
   if (LODGE[key]){
     const want = LODGE[key];
-    if (ai.lodgeType) return {v:ai.lodgeType===want, t:`숙소 유형: ${ai.lodgeType}`};
+    const r = aiMulti(L, x=>x.lodgeType, v=>v===want, v=>`숙소 유형 ${v}`); if (r) return r;
     if (key==='lodge:golftel' && F.lodge==='inside') return {v:true, t:'골프장 안 숙박(골프텔·리조트)'};
     if (key==='lodge:city' && F.lodge==='inside') return {v:false, t:'골프장 안 숙박'};
     return aiKwRes(F, key==='lodge:golftel' ? ['골프텔'] : (key==='lodge:resort' ? ['리조트'] : ['시내 호텔','시내호텔','시내']), false, '숙소 유형 미등록 — 상담 시 확인');
@@ -19978,42 +20196,42 @@ function aiInfoTest(key, F){
   if (key==='lodge:inside' || key==='lodge:outside'){
     const inside = key==='lodge:inside';
     if (F.lodge==='inside' || F.lodge==='outside') return {v:(F.lodge==='inside')===inside, t:`숙소 위치: ${F.lodge==='inside'?'골프장 안':'골프장 밖'}`};
-    if (ai.lodgeType==='골프텔') return {v:inside, t:'숙소 유형: 골프텔'};
-    if (ai.lodgeType==='시내호텔') return {v:!inside, t:'숙소 유형: 시내호텔'};
+    const r = aiMulti(L, x=>x.lodgeType==='골프텔' ? 'in' : (x.lodgeType==='시내호텔' ? 'out' : ''), v=>(v==='in')===inside, v=>v==='in' ? '골프텔(골프장 안)' : '시내호텔(골프장 밖)'); if (r) return r;
     return {v:null, t:'숙소 위치 미등록 — 상담 시 확인'};
   }
-  if (key==='lodge:5star'){ if (ai.lodgeStar) return {v:ai.lodgeStar==='5성급', t:`숙박 등급: ${ai.lodgeStar}${ai.lodgeStarSrc?` (출처: ${ai.lodgeStarSrc})`:''}`}; return aiKwRes(F, ['5성급','5성','★5'], false, '숙박 등급 미등록 — 상담 시 확인'); }
+  if (key==='lodge:5star') return aiMulti(L, x=>x.lodgeStar, v=>v==='5성급', v=>v) || aiKwRes(F, ['5성급','5성','★5'], false, '숙박 등급 미등록 — 상담 시 확인');
   if (key.startsWith('room:')){
     const n = key.slice(5), lab = n+'인실';
-    if (Array.isArray(ai.roomTypes) && ai.roomTypes.length) return {v:ai.roomTypes.includes(lab), t:`가능 객실: ${ai.roomTypes.join('·')}`};
-    return aiKwRes(F, n==='1' ? ['1인실','1인 1실','싱글'] : [lab, `${n}인 1실`], false, '객실 구성 미등록 — 상담 시 확인');
+    return aiMulti(L, x=>x.roomTypes, v=>v.includes(lab), v=>`객실 ${v.join('·')}`) || aiKwRes(F, n==='1' ? ['1인실','1인 1실','싱글'] : [lab, `${n}인 1실`], false, '객실 구성 미등록 — 상담 시 확인');
   }
   if (key==='lodge:same'){ const v = aiYn(ai.sameLodge); if (v!==null) return {v, t:`관리자 입력: 숙소 변경 ${v?'없음':'있음'}`}; const c = aiNum(ai.lodgeChanges); if (c!=null) return {v:c===0, t:`숙소 변경 ${c}회`}; return {v:null, t:'숙소 변경 여부 미등록 — 상담 시 확인'}; }
   if (key==='lodge:long'){ const v = aiYn(ai.longStay); if (v!==null) return {v, t:`관리자 입력: 장박 ${v?'가능':'불가'}`}; if (F.nights!=null && F.nights>=7) return {v:true, t:`${F.nights}박 일정`}; return aiKwRes(F, ['한달','장박','롱스테이','장기 체류','장기체류'], false, '장박 가능 여부 미등록 — 상담 시 확인'); }
   const LEVEL = {'course:easy':'쉬움', 'course:normal':'보통', 'course:hard':'도전적'};
   if (LEVEL[key]){
-    if (ai.courseLevel) return {v:ai.courseLevel===LEVEL[key], t:`코스 난이도: ${ai.courseLevel}`};
+    const r = aiMulti(C, aiCourseLevel, v=>v===LEVEL[key], v=>`난이도 ${v}`); if (r) return r;
     if (key==='course:easy') return aiKwRes(F, ['쉬운 코스','쉬운','초보','평이'], false, '코스 난이도 미등록 — 상담 시 확인');
     if (key==='course:hard') return aiKwRes(F, ['챔피언','도전','난이도 높','토너먼트'], false, '코스 난이도 미등록 — 상담 시 확인');
     return {v:null, t:'코스 난이도 미등록 — 상담 시 확인'};
   }
-  if (key==='course:famous') return yn('famous', '명문·대회 개최 코스', ['명문','챔피언십','대회','토너먼트','PGA','LPGA','KPGA','KLPGA']);
+  if (key==='course:famous') return aiMulti(C, x=>x.famous, v=>v==='y', v=>v==='y' ? '명문·대회 개최 코스' : '일반 코스') || aiKwRes(F, ['명문','챔피언십','대회','토너먼트','PGA','LPGA','KPGA','KLPGA'], false, '명문·대회 개최 여부 미등록 — 상담 시 확인');
   if (key==='course:quality'){
-    if (ai.courseQuality) return {v:ai.courseQuality==='우수', t:`코스 품질: ${ai.courseQuality}`};
-    if (aiYn(ai.famous)===true) return {v:true, t:'관리자 입력: 명문·대회 개최 코스'};
+    const r = aiMulti(C, x=>x.courseQuality || (x.famous==='y' ? '우수(명문)' : ''), v=>v.startsWith('우수'), v=>`코스 품질 ${v}`); if (r) return r;
     const g = F.grade; if (g && !g.gradeIsDefault && g.grade>=4) return {v:true, t:`상품 등급 ${g.gradeName}`};
     return aiKwRes(F, ['명문','프리미엄','BEST','베스트'], false, '코스 품질 정보 미등록 — 상담 시 확인');
   }
   if (key.startsWith('holes:')){
     const n = key.slice(6);
-    if (ai.holes) return {v: n==='36' ? (ai.holes==='36' || ai.holes==='45+') : ai.holes===n, t:`홀 수: ${ai.holes}홀${ai.courseName?` (${ai.courseName})`:''}`};
-    return aiKwRes(F, n==='36' ? ['36홀','45홀','54홀'] : [n+'홀'], false, '홀 수 미등록 — 상담 시 확인');
+    return aiMulti(C, x=>x.holes, v=>n==='36' ? (v==='36' || v==='45+') : v===n, v=>`${v}홀`) || aiKwRes(F, n==='36' ? ['36홀','45홀','54홀'] : [n+'홀'], false, '홀 수 미등록 — 상담 시 확인');
   }
-  if (key==='course:multi') return yn('multiCourse', '다색 골프', ['다색','골프장 2곳','골프장 3곳','2개 골프장','3개 골프장','멀티 코스']);
-  if (key==='course:lesson') return yn('lesson', '레슨 포함', ['레슨'], true);
+  if (key==='course:multi'){
+    const v = aiYn(ai.multiCourse); if (v!==null) return {v, t:`관리자 입력: 다색 골프 ${v?'예':'아니오'}`};
+    const named = C.filter(x=>!x.legacy);
+    if (named.length>=2) return {v:true, t:`골프장 ${named.length}곳: ${named.map(x=>x.name||'이름 없음').join(', ')}`};
+    return aiKwRes(F, ['다색','골프장 2곳','골프장 3곳','2개 골프장','3개 골프장','멀티 코스'], false, '다색 골프 여부 미등록 — 상담 시 확인');
+  }
+  if (key==='course:lesson') return aiMulti(C, x=>x.lesson, v=>v==='y', v=>`레슨 ${ynTxt(v,'가능','없음')}`) || aiKwRes(F, ['레슨'], true, '레슨 정보 미등록 — 상담 시 확인');
   if (key==='course:cart'){
-    if (ai.cartUse) return {v:ai.cartUse!=='미운영', t:`카트 이용: ${ai.cartUse}${ai.cartRule?` · ${ai.cartRule}`:''}`};
-    if (ai.cartRule) return {v:ai.cartRule!=='카트 없음(도보)', t:`카트 규정: ${ai.cartRule}`};
+    const r = aiMulti(C, x=>x.cartUse || (x.cartRule==='카트 없음(도보)' ? '미운영' : (x.cartRule ? x.cartRule : '')), v=>v!=='미운영', v=>`카트 ${v}`); if (r) return r;
     return aiKwRes(F, ['카트'], true, '카트 운영 정보 미등록 — 상담 시 확인');
   }
   const MEAL = {'meal:b':'조식', 'meal:l':'중식', 'meal:d':'석식'};
@@ -20021,22 +20239,20 @@ function aiInfoTest(key, F){
   if (MEAL[key]){
     if (mealsSet) return {v:mealsSet.includes(MEAL[key]), t:`포함 식사: ${mealsSet.join('·')}`};
     if (F.meals.includes(MEAL[key]) || F.inc.includes(MEAL[key])) return {v:true, t:`식사: ${(F.meals||MEAL[key]).slice(0,40)}`};
-    if (key==='meal:b' && aiYn(ai.breakfast)!==null) return {v:aiYn(ai.breakfast), t:`관리자 입력: 조식 ${aiYn(ai.breakfast)?'포함':'불포함'}`};
+    if (key==='meal:b'){ const r = aiMulti(L, x=>x.breakfast, v=>v==='y', v=>`조식 ${ynTxt(v,'포함','불포함')}`); if (r) return r; }
     return {v:null, t:'식사 정보 미등록 — 상담 시 확인'};
   }
   if (key==='meal:all'){ if (mealsSet) return {v:['조식','중식','석식'].every(m=>mealsSet.includes(m)), t:`포함 식사: ${mealsSet.join('·')}`};
     if (/전\s*일정|3식|전식|올인클|all/i.test(F.meals) || ['조식','중식','석식'].every(m=>F.meals.includes(m))) return {v:true, t:`식사: ${F.meals.slice(0,40)}`}; return {v:null, t:'식사 정보 미등록 — 상담 시 확인'}; }
   if (key==='meal:free'){ if (mealsSet) return {v:!(mealsSet.includes('중식') && mealsSet.includes('석식')), t:`포함 식사: ${mealsSet.join('·')} (나머지 자유식)`}; return aiKwRes(F, ['자유식'], true, '식사 정보 미등록 — 상담 시 확인'); }
-  if (key==='meal:korean') return yn('koreanFood', '한식 접근', ['한식']);
-  if (key==='food:local') return yn('localFood', '현지 맛집', ['맛집','미식','로컬 푸드','현지식']);
-  if (key==='tour:city') return yn('cityTour', '시내 관광', ['시내 관광','시티투어','시내투어','시내']);
-  if (key==='tour:famous') return yn('famousSpot', '유명 관광지', ['관광지','명소']);
-  if (key==='shop:mall') return yn('mall', '쇼핑몰', ['쇼핑','아울렛','쇼핑몰']);
-  if (key==='shop:market') return yn('market', '전통시장', ['전통시장','야시장','시장']);
-  if (key==='spa') return yn('spa', '온천·스파', ['온천','스파','마사지','사우나']);
   if (key==='free_time') return yn('freeTime', '자유시간', ['자유시간','자유 시간','자유일정','자유 일정'], true);
-  if (key==='move:apt60'){ const m = aiNum(ai.airportMin); if (m!=null) return {v:m<=60, t:`공항→숙소 약 ${m}분`}; return {v:null, t:'공항↔숙소 이동시간 미등록 — 상담 시 확인'}; }
-  if (key==='move:golf10'){ const m = aiNum(ai.golfDistance); if (m!=null) return {v:m<=10, t:`숙소↔골프장 약 ${m}분`}; if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'}; if (F.golfMin!=null) return {v:F.golfMin<=10, t:`숙소↔골프장 약 ${F.golfMin}분`}; return {v:null, t:'숙소↔골프장 이동시간 미등록 — 상담 시 확인'}; }
+  if (key==='move:apt60') return aiMulti(L, x=>x.airportMin, v=>Number(v)<=60, v=>`공항에서 약 ${v}분`) || {v:null, t:'공항↔숙소 이동시간 미등록 — 상담 시 확인'};
+  if (key==='move:golf10'){
+    const r = aiMulti(L, x=>x.golfDistance, v=>Number(v)<=10, v=>`골프장까지 약 ${v}분`); if (r) return r;
+    if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'};
+    if (F.golfMin!=null) return {v:F.golfMin<=10, t:`숙소↔골프장 약 ${F.golfMin}분`};
+    return {v:null, t:'숙소↔골프장 이동시간 미등록 — 상담 시 확인'};
+  }
   if (key==='move:private') return yn('privateCar', '전용 차량', ['전용 차량','전용차량','단독 차량','단독차량']);
   if (key==='move:tour') return yn('tourShuttle', '관광 송영', ['송영']);
   if (key==='tee:am'){
@@ -20083,7 +20299,7 @@ function aiStyleTest(styleVal, F){
     case '쉬운 골프장 선호': return D('course:easy');
     case '어려운 골프장 선호': return D('course:hard');
     case '집중 라운드형': return first(D('many_rounds'), K(['무제한','1일 2R','하루 2R','1일 36홀']));
-    case '골프 실력 향상형': return aiAny([D('course:lesson'), aiYn(ai.practice)!==null ? {v:aiYn(ai.practice), t:`관리자 입력: 연습 시설 ${aiYn(ai.practice)?'있음':'없음'}`} : null, K(['레슨','연습장','아카데미','전지훈련'], true)]);
+    case '골프 실력 향상형': return aiAny([D('course:lesson'), aiMulti(F.courses||[], x=>x.practice, v=>v==='y', v=>`연습 시설 ${v==='y'?'있음':'없음'}`), K(['레슨','연습장','아카데미','전지훈련'], true)]);
     case '미식 및 주변 관광 중심': return aiAny([D('food:local'), D('tour:city'), D('tour:famous')]);
     case '미식 및 쇼핑 중심': return aiAny([D('food:local'), D('shop:mall'), D('shop:market')]);
     case '자연경관·힐링형': return K(['오션뷰','바다','호수','레이크','마운틴','산악','절경','풍경','힐링','설산']);
@@ -20100,11 +20316,11 @@ function aiStyleTest(styleVal, F){
     }
     case '여유로운 라운드': return first(D('relaxed_rounds'), K(['여유','휴식']));
     case '편안한 라운드형': {
-      if (ai.cartRule==='카트 없음(도보)' || ai.cartUse==='미운영') return {v:false, t:'카트 미운영'};
-      if (ai.cartRule==='페어웨이 진입 가능') return {v:true, t:'카트 페어웨이 진입 가능'};
-      if (ai.cartUse==='포함') return {v:true, t:'카트 포함'};
-      if (ai.caddie==='필수' || ai.caddie==='선택') return {v:true, t:`캐디 ${ai.caddie}`};
-      return K(['페어웨이 진입','카트','캐디'], true);
+      // 골프장 중 하나라도 카트 페어웨이 진입·카트 포함·캐디 운영이면 편안한 라운드
+      const comfy = x => (x.cartRule==='페어웨이 진입 가능' || x.cartUse==='포함' || x.caddie==='필수' || x.caddie==='선택') ? 'y' : ((x.cartRule==='카트 없음(도보)' || x.cartUse==='미운영') ? 'n' : '');
+      const lab = x => [x.cartRule, x.cartUse ? '카트 '+x.cartUse : '', x.caddie ? '캐디 '+x.caddie : ''].filter(Boolean).join(' · ');
+      const r = aiMulti((F.courses||[]).map(x=>Object.assign({}, x, {_c:comfy(x), _l:lab(x)})), x=>x._c, v=>v==='y', v=>v==='y' ? '카트·캐디 편의' : '카트 미운영');
+      return r || K(['페어웨이 진입','카트','캐디'], true);
     }
     case '부부·커플 골프': return D('two_pax');
     case '친구·동호회 골프': return aiAny([D('pax:4'), D('pax:group')]);

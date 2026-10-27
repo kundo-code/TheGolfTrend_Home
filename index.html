@@ -3739,7 +3739,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .tk-field .tk-lab{margin-bottom:6px}
 .tk-in{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid rgba(10,23,48,.22);background:#fff;color:#0a1730;font-size:1rem;font-family:'Pretendard','Noto Sans KR',sans-serif}
 .tk-in:focus{outline:none;border-color:#c9962b;box-shadow:0 0 0 3px rgba(201,150,43,.18)}
-.tk-in::placeholder{color:rgba(10,23,48,.35)}
+.tk-in::placeholder{color:var(--nm-placeholder)}
 .tk-bottom .tk-grid-2{margin-bottom:16px}
 .tk-more{margin:2px 0 16px}
 .tk-more-btn{border:none;background:none;padding:2px 0;font:inherit;font-size:.88rem;font-weight:600;color:#8a5a0a;cursor:pointer}
@@ -4300,7 +4300,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .booking-section .form-grid select:focus,
 .booking-section .form-grid textarea:focus{border-color:var(--pine);background:#fff}
 .booking-section .form-grid input::placeholder,
-.booking-section .form-grid textarea::placeholder{color:rgba(10,23,48,.4)}
+.booking-section .form-grid textarea::placeholder{color:var(--nm-placeholder)}
 .booking-section .sd-tags{background:rgba(255,255,255,.85);border-color:rgba(10,23,48,.2);color:#0A1730}
 .booking-section .sd-placeholder{color:rgba(10,23,48,.45)}
 .booking-section .sd-arrow{color:rgba(10,23,48,.5)}
@@ -4421,6 +4421,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .card-tag-editor.ctag-style-dragging .card-tag-grid{min-height:46px;outline:2px dashed #c9962b;outline-offset:3px;border-radius:10px}
 .card-tag-editor.ctag-style-dragging .ctag-drop-hint{display:flex;align-items:center;justify-content:center;padding:8px;font-size:.78rem;color:#8a5a0a}
 .card-tag-grid.drop-target{background:rgba(201,150,43,.08)}
+/* 입력칸 가이드(placeholder) 글자색 — 모든 입력칸 공통(밝은 바탕). 어두운 바탕 입력칸(.field·갤러리 캡션)은 입력 글자(흰색)와 구분되도록 위에서 따로 지정한다 */
+input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 /* 자동 판정 안내 */
 .ai-auto-banner{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#eaf7ef;border:1px solid #9bd3b1;color:#1d5b37;font-size:.8rem;line-height:1.6}
 /* 요금 항목별 AI 정보 · 추천 요금 항목 */

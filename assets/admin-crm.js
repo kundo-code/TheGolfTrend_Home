@@ -1686,7 +1686,7 @@
           <div><div class="st-sm-l" style="margin-top:4px">예산(1인)</div>${barList(cRows(e=>budgetL(crit(e).budget)), '회')}<div class="st-sm-l">일정</div>${barList(cRows(e=>durL(crit(e).duration)), '회')}</div>
           <div><div class="st-sm-l" style="margin-top:4px">권역 · 출발 시기</div>${barList(cRows(e=>regionL(crit(e).region), 3).concat(cRows(e=>depL(crit(e).depart), 7)), '회')}<div class="st-sm-l">선호 스타일</div>${barList(cRows(e=>(crit(e).styles||[]).map(styleL), 10), '회')}</div>
         </div>
-        ${srch.some(e=>(crit(e).details||[]).length) ? `<div class="st-sm-l">세부 조건(출발 공항·항공·이동·라운드·식사·등급)</div>${barList(cRows(e=>(crit(e).details||[]).map(k=>(typeof AI_DETAIL_LABEL==='object' && AI_DETAIL_LABEL[k]) || k), 12), '회')}` : ''}` : '<div class="crm-empty">AI 추천 검색 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
+        ${srch.some(e=>(crit(e).details||[]).length) ? `<div class="st-sm-l">세부 조건(출발·항공 · 숙박 · 코스 · 식사·관광 · 이동 · 동반·가격)</div>${barList(cRows(e=>(crit(e).details||[]).map(k=>(typeof AI_DETAIL_LABEL==='object' && AI_DETAIL_LABEL[k]) || k), 12), '회')}` : ''}` : '<div class="crm-empty">AI 추천 검색 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
       <div class="st-sm-l">국가·권역 관심도</div>
       ${catRows.length ? table(['국가·권역','카드 열기(방문)','판매 중 상품','상품 상세 본 방문','그중 상담 행동'], catRows.map(r=>[esc(r.name), fmtN(r.n), r.prods ? fmtN(r.prods) : '<b style="color:#B91C1C">0</b>', fmtN(r.detail), `${fmtN(r.act)} (${pct(r.act, r.detail)})`])) : '<div class="crm-empty">국가·권역 카드 기록이 아직 없습니다(SQL 실행 후 기록).</div>'}
       <div class="st-sm-l">상품별 반응</div>

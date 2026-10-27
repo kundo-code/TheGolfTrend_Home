@@ -3663,6 +3663,30 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .kakao-btn:hover{background:var(--btn-highlight),#FDD800;border-color:#FDD800;transform:translateY(-2px);box-shadow:0 16px 36px rgba(180,150,0,.36),var(--btn-shine)}
 .kakao-btn:active{background:#FDD800;border-color:#FDD800;transform:translateY(1px);box-shadow:var(--btn-press)}
 @media(max-width:500px){.submit-row{flex-direction:column}}
+/* 상담 신청 — 개인정보 수집·이용 동의 / 접수 완료 화면 */
+.lead-done{display:none!important}
+.success h3,.success p{word-break:keep-all}
+.success p{color:rgba(10,23,48,.72)}
+.lead-consent{gap:8px}
+.lc-row{display:flex;align-items:flex-start;gap:10px;font-size:.88rem;line-height:1.5;color:rgba(10,23,48,.82);letter-spacing:0;text-transform:none;font-weight:500;cursor:pointer}
+.lc-row input[type=checkbox]{flex:none;width:20px;height:20px;margin:1px 0 0;padding:0;accent-color:#b88a2e;cursor:pointer}
+.lc-req{color:#c0392b;font-weight:700}.lc-sel{color:rgba(10,23,48,.55);font-weight:700}
+.lc-toggle{background:none;border:none;padding:0;margin-left:4px;font:inherit;font-size:.82rem;color:#8a5a0a;text-decoration:underline;cursor:pointer}
+.lc-box{margin:0 0 4px 30px;padding:12px 14px;border-radius:10px;background:rgba(10,23,48,.04);border:1px solid rgba(10,23,48,.1);font-size:.8rem;line-height:1.6;color:rgba(10,23,48,.78);letter-spacing:0;text-transform:none;font-weight:400}
+.lc-box dl{margin:0;display:grid;grid-template-columns:78px 1fr;gap:4px 10px}.lc-box dt{font-weight:700;color:rgba(10,23,48,.9)}.lc-box dd{margin:0}
+.lc-box a{color:#8a5a0a;text-decoration:underline}
+.lead-error{margin-top:12px;padding:12px 14px;border-radius:10px;background:#fdeceb;border:1px solid #f0b8b4;color:#8e2a22;font-size:.86rem;line-height:1.6}
+.lead-error a{color:#8e2a22;font-weight:700;text-decoration:underline}
+.succ-receipt{display:inline-flex;flex-wrap:wrap;justify-content:center;max-width:100%;box-sizing:border-box;align-items:center;gap:6px 10px;margin:14px 0 4px;padding:10px 16px;border-radius:12px;background:rgba(184,138,46,.12);border:1px dashed rgba(184,138,46,.6);color:rgba(10,23,48,.85);font-size:.88rem}
+.succ-receipt b{white-space:nowrap;font-size:1.05rem;letter-spacing:.06em;color:#0a1730}
+.succ-copy{white-space:nowrap;padding:4px 12px;border-radius:999px;border:1px solid rgba(184,138,46,.7);background:#fff;color:#8a5a0a;font-size:.8rem;font-weight:700;cursor:pointer}
+.succ-hint{margin-top:10px;font-size:.88rem;color:rgba(10,23,48,.66)}
+.succ-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
+.succ-btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:12px;font-size:.95rem;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
+.succ-btn[hidden]{display:none}
+.succ-btn.kakao{background:#FEE500;border:1px solid #FEE500;color:#391B1B}
+.succ-btn.band{background:#fff;border:1px solid #0e9f6e;color:#0b7a55}
+@media(max-width:500px){.succ-btn{width:100%}.lc-box{margin-left:0}.lc-box dl{grid-template-columns:1fr}}
 
 /* ── 법적고지 관리자 패널 ──────────────────────────────────────── */
 .legal-admin-item{
@@ -5660,14 +5684,28 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
                 </div>
               </div>
               <div class="field full"><label>세부 요청 · Details</label><textarea name="details" placeholder="원하시는 여행 스타일에 대해 자유롭게 적어주세요">원하시는 여행 스타일에 대해 자유롭게 적어주세요</textarea></div>
+              <div class="field full lead-consent">
+                <label class="lc-row"><input type="checkbox" name="consentPrivacy" id="leadConsent" required><span><b class="lc-req">[필수]</b> 개인정보 수집·이용에 동의합니다. <button type="button" class="lc-toggle" aria-expanded="false" onclick="toggleLeadConsent(this)">내용 보기</button></span></label>
+                <div class="lc-box" id="leadConsentBox" hidden></div>
+                <label class="lc-row lc-opt"><input type="checkbox" name="consentMarketing"><span><b class="lc-sel">[선택]</b> 여행 소식·혜택 안내 수신에 동의합니다. <button type="button" class="lc-toggle" aria-expanded="false" onclick="toggleLeadConsent(this)">내용 보기</button></span></label>
+                <div class="lc-box" id="leadMarketingBox" hidden></div>
+              </div>
               <div class="field full"><div class="submit-row">
-                <button type="submit" class="submit-btn">📧 상담 신청하기</button>
+                <button type="submit" class="submit-btn">📝 상담 신청하기</button>
                 <button type="button" class="kakao-btn" onclick="openKakaoChat()">💬 카톡 상담</button>
                 <button type="button" class="call-btn" onclick="callHotline()">📞 전화하기</button>
-              </div></div>
+              </div>
+              <div class="lead-error" id="leadError" role="alert" hidden></div></div>
             </div>
           </form>
-          <div class="success" id="successMsg"><div class="big">⛳</div><h3>탑승권이 발급되었습니다</h3><p>담당 플래너가 24시간 이내 연락드립니다.</p></div>
+          <div class="success" id="successMsg"><div class="big">⛳</div><h3>탑승권이 발급되었습니다</h3><p>담당 플래너가 24시간 이내 연락드립니다.</p>
+            <div class="succ-receipt">접수번호 <b id="leadReceiptNo"></b><button type="button" class="succ-copy" onclick="copyLeadReceipt(this)">복사</button></div>
+            <p class="succ-hint">더 빠른 상담을 원하시면 카카오톡 채널에 접수번호를 남겨 주세요.</p>
+            <div class="succ-actions">
+              <a class="succ-btn kakao" id="leadSuccKakao" target="_blank" rel="noopener" hidden>💬 카카오톡 채널로 상담하기</a>
+              <a class="succ-btn band" id="leadSuccBand" target="_blank" rel="noopener" hidden>👥 밴드 가입하고 소식 받기</a>
+            </div>
+          </div>
         </div>
         <div class="pass-stub">
           <div class="row"><span class="k">From</span><span class="v">Seoul</span></div>
@@ -8485,13 +8523,63 @@ async function pullSiteState(){
 }
 
 // ── AI 리드(문의) 관리 ─────────────────────────────────────────
-// 상담 신청 폼 제출 시 mailto: 발송과 별개로 Supabase kundo_leads 테이블에도 저장해
-// 관리자 패널 "AI 리드" 탭에서 조회·상태관리·CSV 내보내기가 가능하도록 함.
-// 테이블이 아직 생성되지 않은 환경에서도 사이트 동작에 지장이 없도록 항상 조용히 실패한다.
-async function insertLead(fd){
+// 상담 신청 — 개인정보 수집·이용 동의 문구(버전을 올리면 저장되는 동의 기록의 버전도 함께 바뀐다). 보유 기간 등은 운영 기준에 맞게 이곳에서 고친다
+const LEAD_CONSENT = {
+  version:'2026-10-27',
+  items:'이름, 연락처, 희망 여행지·출발일·인원·숙박 타입·체류 기간·선호 스타일·세부 요청(직접 입력한 내용)',
+  purpose:'골프 여행 상담·견적 안내 및 문의 응대',
+  retention:'상담 종료 후 1년(관계 법령에 따라 보존이 필요한 경우 해당 기간)',
+  refusal:'동의를 거부할 수 있으며, 거부하시면 온라인 상담 신청이 제한됩니다(전화·카카오톡 상담은 이용 가능).',
+  marketing:{
+    items:'이름, 연락처',
+    purpose:'여행 상품·혜택·이벤트 소식 안내(카카오톡 채널·밴드·문자 등)',
+    retention:'동의 철회 시까지',
+    refusal:'동의하지 않아도 상담 신청에는 영향이 없으며, 언제든 철회할 수 있습니다.'
+  }
+};
+function leadPrivacyLinkHTML(){
+  const content = getLegalContent('privacy'), url = getLegalUrl('privacy');
+  if (content) return `<a href="#" onclick="openLegalModal('privacy');return false">개인정보처리방침 전문 보기</a>`;
+  if (url) return `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">개인정보처리방침 전문 보기</a>`;
+  return '';
+}
+function leadConsentBoxHTML(box){
+  const row = (k,v)=>`<dt>${k}</dt><dd>${escapeAttr(v)}</dd>`;
+  if (box==='leadMarketingBox'){
+    const m = LEAD_CONSENT.marketing;
+    return `<dl>${row('수집 항목',m.items)}${row('이용 목적',m.purpose)}${row('보유 기간',m.retention)}${row('동의 거부',m.refusal)}</dl>`;
+  }
+  const c = LEAD_CONSENT;
+  return `<dl>${row('수집 항목',c.items)}${row('이용 목적',c.purpose)}${row('보유 기간',c.retention)}${row('동의 거부',c.refusal)}</dl><div style="margin-top:6px">${leadPrivacyLinkHTML()}</div>`;
+}
+function toggleLeadConsent(btn){
+  const row = btn.closest('.lc-row'), box = row && row.nextElementSibling;
+  if (!box || !box.classList.contains('lc-box')) return;
+  const open = box.hidden;
+  if (open) box.innerHTML = leadConsentBoxHTML(box.id);
+  box.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.textContent = open ? '접기' : '내용 보기';
+}
+// 접수번호 — 고객이 카카오톡 문의에 남기면 홈페이지 접수건과 바로 연결할 수 있다(예: TGT-261027-K7M2)
+function newReceiptNo(){
+  const d = new Date(), ymd = String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', buf = new Uint32Array(4);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(buf); else for (let i=0;i<4;i++) buf[i] = Math.floor(Math.random()*4294967296);
+  return `TGT-${ymd}-${Array.from(buf, n=>A[n%A.length]).join('')}`;
+}
+function copyLeadReceipt(btn){
+  const t = (document.getElementById('leadReceiptNo')||{}).textContent || '';
+  const done = ()=>{ const o = btn.textContent; btn.textContent = '복사됨 ✓'; setTimeout(()=>{ btn.textContent = o; }, 1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, ()=>{});
+  else { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){} ta.remove(); }
+}
+// 상담 신청 폼 제출 시 Supabase kundo_leads 테이블에 저장해 관리자 패널 "AI 리드" 탭에서 조회·상태관리·CSV 내보내기가 가능하도록 함.
+// 저장에 성공하면 true — 실패하면 false(접수 완료로 처리하지 않고 고객에게 다시 시도·전화·카카오톡·메일 접수를 안내한다).
+// 동의 기록 칸(2026-10-27_lead_consent.sql)이 아직 없는 환경에서는 접수를 막지 않고 동의 기록을 세부 요청 끝에 덧붙여 저장한다
+async function insertLead(fd, receipt){
   const client=getSupabaseClient();
-  if (!client) return;
-  const payload = {
+  if (!client) return false;
+  const base = {
     name: fd.get('name')||'',
     phone: fd.get('phone')||'',
     destination: fd.get('destination')||'',
@@ -8504,8 +8592,16 @@ async function insertLead(fd){
     source: fd.get('source')||'direct',
     recommended_product: fd.get('recommendedProduct')||null,
   };
-  try{ await client.from(LEADS_TABLE).insert(payload); }
-  catch(e){ console.error('lead insert failed', e); }
+  const consentAt = new Date().toISOString(), marketing = !!fd.get('consentMarketing');
+  try{
+    let { error } = await client.from(LEADS_TABLE).insert(Object.assign({}, base, {consent_at:consentAt, consent_version:LEAD_CONSENT.version, marketing_opt_in:marketing, receipt_no:receipt}));
+    if (error && /consent_at|consent_version|marketing_opt_in|receipt_no|PGRST204|42703|column/i.test(String(error.message||'')+' '+String(error.code||''))){
+      const note = `\n\n[접수번호 ${receipt} · 개인정보 수집·이용 동의 ${consentAt} (v${LEAD_CONSENT.version}) · 선택 동의 ${marketing?'동의':'미동의'}]`;
+      ({ error } = await client.from(LEADS_TABLE).insert(Object.assign({}, base, {details:(base.details||'')+note})));
+    }
+    if (error){ console.error('lead insert failed', error); return false; }
+    return true;
+  }catch(e){ console.error('lead insert failed', e); return false; }
 }
 // 방문자 행동 기록(익명) — AI 추천 노출·클릭·상담 신청, 상품 상세 보기, 전화·카카오·채널 클릭을 tgt_site_events에 남긴다.
 // 이름·연락처 등 개인정보는 담지 않는다. 테이블이 아직 없거나 저장에 실패해도 사이트 동작에는 영향이 없고, 관리자 로그인 중에는 기록하지 않는다
@@ -8633,6 +8729,7 @@ function renderLeadsList(){
         </select>
       </div>
       <div class="lead-row-meta">${escapeAttr(l.destination||'-')} · 출발 ${escapeAttr(l.departure_date||'미정')} · ${escapeAttr(l.party_size||'-')} · ${created}</div>
+      <div class="lead-row-meta">${l.receipt_no?`접수번호 <b>${escapeAttr(l.receipt_no)}</b> · `:''}${l.consent_at?`개인정보 동의 ✓ ${escapeAttr(new Date(l.consent_at).toLocaleString('ko-KR'))} (v${escapeAttr(l.consent_version||'-')}) · 선택 동의 ${l.marketing_opt_in?'✓':'✗'}`:'개인정보 동의 기록 없음(이전 접수 또는 SQL 적용 전)'}</div>
       ${l.source==='ai_recommend'?`<div class="lead-ai-tag">✨ AI 추천 상품: ${escapeAttr(l.recommended_product||'-')}</div>`:''}
       ${l.styles?`<div class="lead-styles">${escapeAttr(l.styles)}</div>`:''}
       ${l.details?`<div class="lead-details">${escapeAttr(l.details)}</div>`:''}
@@ -8657,7 +8754,7 @@ async function updateLeadStatus(id, status){
 }
 function exportLeadsCsv(){
   if (!_leadsCache.length){ alert('내보낼 문의가 없습니다.'); return; }
-  const cols=['created_at','name','phone','destination','departure_date','party_size','room_type','stay_duration','styles','source','recommended_product','status','details'];
+  const cols=['created_at','receipt_no','name','phone','destination','departure_date','party_size','room_type','stay_duration','styles','source','recommended_product','status','consent_at','consent_version','marketing_opt_in','details'];
   const rows=[cols.join(',')].concat(_leadsCache.map(l=>cols.map(c=>`"${String(l[c]==null?'':l[c]).replace(/"/g,'""')}"`).join(',')));
   const blob=new Blob(['﻿'+rows.join('\n')], {type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -19886,14 +19983,34 @@ function openKakaoChat(){
   tgtTrack('kakao_click');
   window.open(SITE_CONTACT.kakaoChat || 'http://pf.kakao.com/_SSxgFG/chat', '_blank', 'noopener');
 }
-// 상담 신청 - 이메일 전송 (mailto:) 및 성공 화면
+// 상담 신청 — 개인정보 동의 확인 → Supabase 저장 → 접수 완료 화면(접수번호 + 카카오톡 채널·밴드 안내)
+// 저장에 실패하면 완료 화면을 보여주지 않고 입력한 내용을 그대로 둔 채 다시 시도·전화·카카오톡·메일 접수를 안내한다
+function showLeadError(html){
+  const el = document.getElementById('leadError'); if (!el) return;
+  el.innerHTML = html; el.hidden = false;
+  el.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+function showLeadSuccess(receipt){
+  const form = document.getElementById('bookingForm'), box = document.getElementById('successMsg');
+  document.getElementById('leadReceiptNo').textContent = receipt;
+  const kUrl = SITE_CONTACT.kakaoChat || SITE_CONTACT.kakaoChannel, bUrl = getLinkUrl('band_b2c') || getLinkUrl('band_main');
+  const k = document.getElementById('leadSuccKakao'), b = document.getElementById('leadSuccBand');
+  k.href = kUrl || '#'; k.hidden = !kUrl; b.href = bUrl || '#'; b.hidden = !bUrl;
+  // form.style은 폼 안의 name="style" 입력칸(선호 스타일 체크박스)이 가려 CSS 스타일이 아니라 입력칸 목록을 가리키므로 클래스로 숨긴다
+  form.classList.add('lead-done'); box.classList.add('show');
+}
 document.getElementById('bookingForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const form=e.target;
+  const form=e.target, btn=form.querySelector('.submit-btn'), errEl=document.getElementById('leadError');
+  if (errEl) errEl.hidden = true;
+  const consent = form.querySelector('[name=consentPrivacy]');
+  if (!consent || !consent.checked){ showLeadError('개인정보 수집·이용에 동의해 주셔야 상담을 신청할 수 있습니다.'); if (consent) consent.focus(); return; }
   const fd=new FormData(form);
+  const receipt = newReceiptNo();
   const styles = fd.getAll('style').join(', ') || '선택 없음';
   const body = `[티타임 상담 신청]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▪ 접수번호: ${receipt}
 ▪ 이름: ${fd.get('name')||'-'}
 ▪ 연락처: ${fd.get('phone')||'-'}
 ▪ 희망 여행지: ${fd.get('destination')||'-'}
@@ -19906,25 +20023,20 @@ document.getElementById('bookingForm').addEventListener('submit', async e=>{
 ▪ 세부 요청:
 ${fd.get('details')||'-'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-※ THE GOLF TREND 홈페이지 상담 신청 폼에서 자동 발송된 메시지입니다.
+▪ 개인정보 수집·이용 동의: 동의 (v${LEAD_CONSENT.version}) / 선택 동의: ${fd.get('consentMarketing')?'동의':'미동의'}
+※ THE GOLF TREND 홈페이지 상담 신청 폼에서 작성된 메시지입니다.
 `;
   const subject = `[THE GOLF TREND] 상담 신청 - ${fd.get('name')||''} ${fd.get('destination')||''}`;
-  const mailto = `mailto:thegolftrend@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  // 이메일 발송과 별개로 Supabase에도 리드 저장 (실패해도 상담 신청 흐름에는 영향 없음).
-  // mailto: 이동이 (Outlook on the web 등) 브라우저 탭 자체를 이동시켜버리는 환경에서는
-  // 저장 요청이 끝나기 전에 페이지가 넘어가 리드가 유실될 수 있어, 완료되거나 일정 시간(2.5초)이
-  // 지날 때까지 잠깐 기다린 뒤에 메일 클라이언트로 이동한다.
-  tgtTrack('inquiry_submit', {product_title:String(fd.get('recommendedProduct')||'').slice(0,200)||null, criteria:{source:fd.get('source')||'direct', destination:fd.get('destination')||null}});   // 개인정보 없이 신청 사실만
-  await Promise.race([
-    insertLead(fd),
-    new Promise(resolve=>setTimeout(resolve, 2500))
-  ]);
-  // 메일 클라이언트 오픈 후 성공 화면 전환
-  window.location.href = mailto;
-  setTimeout(()=>{
-    form.style.display='none';
-    document.getElementById('successMsg').classList.add('show');
-  }, 500);
+  const mailto = `mailto:${SITE_CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const label = btn.textContent; btn.disabled = true; btn.textContent = '접수 중...';
+  const ok = await Promise.race([insertLead(fd, receipt), new Promise(resolve=>setTimeout(()=>resolve(false), 12000))]);
+  btn.disabled = false; btn.textContent = label;
+  if (!ok){
+    showLeadError(`접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주시거나 전화(<a href="tel:${SITE_CONTACT.phone}">${SITE_CONTACT.phone}</a>) · <a href="${escapeAttr(SITE_CONTACT.kakaoChat||SITE_CONTACT.kakaoChannel||'#')}" target="_blank" rel="noopener">카카오톡</a>으로 문의해 주세요. 작성하신 내용은 그대로 남아 있으며, <a href="${mailto}">메일로 접수하기</a>도 가능합니다.`);
+    return;
+  }
+  tgtTrack('inquiry_submit', {product_title:String(fd.get('recommendedProduct')||'').slice(0,200)||null, criteria:{source:fd.get('source')||'direct', destination:fd.get('destination')||null}});   // 개인정보 없이 문의 건수·출처만 기록
+  showLeadSuccess(receipt);
 });
 // [Phase 3 접근성 강화] 메뉴 버튼의 aria-expanded를 실제 열림 상태와 동기화
 function toggleNavMenu(){

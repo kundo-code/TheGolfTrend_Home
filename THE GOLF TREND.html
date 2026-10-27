@@ -3687,6 +3687,100 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .succ-btn.kakao{background:#FEE500;border:1px solid #FEE500;color:#391B1B}
 .succ-btn.band{background:#fff;border:1px solid #0e9f6e;color:#0b7a55}
 @media(max-width:500px){.succ-btn{width:100%}.lc-box{margin-left:0}.lc-box dl{grid-template-columns:1fr}}
+/* ── 골프 패키지 상담 탑승권 — 눌러서 고르는 선택형 폼(항공 탑승권 모양: 줄무늬 테두리·좌우 절취 홈·점선 구분·바코드) ── */
+.tk-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;max-width:1120px;margin:0 auto;align-items:stretch}
+.tk-col{min-width:0}
+.tk-main{filter:drop-shadow(0 14px 28px rgba(0,0,0,.38))}
+.tk-block{position:relative;background:#fff;color:#0a1730}
+.tk-top{border-radius:24px 24px 0 0;
+  -webkit-mask:radial-gradient(circle 15px at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 15px at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-bottom{border-radius:0 0 24px 24px;
+  -webkit-mask:radial-gradient(circle 15px at 0 0,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 0,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 15px at 0 0,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 0,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-stripe{height:16px;background:repeating-linear-gradient(135deg,#e3c383 0 11px,#fff 11px 22px);border-radius:24px 24px 0 0}
+.tk-stripe-b{border-radius:0 0 24px 24px}
+.tk-body{padding:22px 34px 26px}
+.tk-top .tk-body{padding-bottom:30px}
+.tk-cut{position:absolute;left:22px;right:22px;top:0;border-top:2px dashed rgba(10,23,48,.28)}
+.tk-bottom .tk-body{padding-top:30px}
+.tk-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px;padding-bottom:12px;margin-bottom:10px}
+.tk-head .brand{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.15rem;letter-spacing:.05em;color:#0a1730}
+.tk-head .brand small{color:#b88a2e;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;font-family:'Pretendard','Noto Sans KR',sans-serif;margin-left:8px}
+.tk-head .code{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.9rem;letter-spacing:.15em;color:rgba(10,23,48,.5)}
+.tk-lead{margin:0 0 16px;font-size:.9rem;color:rgba(10,23,48,.62);word-break:keep-all}
+.tk-ai{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px;padding:10px 14px;border-radius:12px;background:#fff6dc;border:1px solid #e3c383;font-size:.88rem;color:#5a4208}
+.tk-ai[hidden]{display:none}
+.tk-ai button{flex:none;border:none;background:none;color:#8a5a0a;font-size:.82rem;font-weight:700;text-decoration:underline;cursor:pointer}
+.tk-grid{display:grid;grid-template-columns:1fr;gap:20px}
+.tk-grid-2{grid-template-columns:1fr 1fr;gap:16px 20px}
+.tkq{min-width:0}
+.tk-lab{display:flex;align-items:baseline;gap:8px;margin-bottom:9px}
+.tk-lab .en{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(10,23,48,.42);font-weight:500}
+.tk-lab b{font-size:.98rem;color:#0a1730}
+.tk-lab em{margin-left:auto;font-style:normal;font-size:.72rem;color:rgba(10,23,48,.45)}
+.tk-sec-title{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+.tk-sec-title .en{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(10,23,48,.42)}
+.tk-sec-title b{font-size:1.02rem}
+.tk-chips{display:flex;flex-wrap:wrap;gap:8px}
+.tk-chip{padding:9px 15px;border-radius:999px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font:inherit;font-size:.9rem;line-height:1.2;cursor:pointer;transition:background .15s,border-color .15s,transform .1s;-webkit-tap-highlight-color:transparent}
+.tk-chip:hover{border-color:#c9962b;background:#fffaf0}
+.tk-chip:active{transform:scale(.97)}
+.tk-chip.active{background:linear-gradient(135deg,#f6e3b5,#e2b865);border-color:#c9962b;color:#3b2a06;font-weight:700}
+.tk-chip:focus-visible{outline:2px solid #0a1730;outline-offset:2px}
+.tk-seg{display:inline-flex;gap:4px;padding:3px;margin-bottom:10px;border-radius:999px;background:rgba(10,23,48,.07)}
+.tk-seg button{border:none;background:none;padding:6px 18px;border-radius:999px;font:inherit;font-size:.86rem;font-weight:600;color:rgba(10,23,48,.6);cursor:pointer}
+.tk-seg button.active{background:#0a1730;color:#fff}
+.tk-field{display:flex;flex-direction:column;min-width:0}
+.tk-field .tk-lab{margin-bottom:6px}
+.tk-in{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid rgba(10,23,48,.22);background:#fff;color:#0a1730;font-size:1rem;font-family:'Pretendard','Noto Sans KR',sans-serif}
+.tk-in:focus{outline:none;border-color:#c9962b;box-shadow:0 0 0 3px rgba(201,150,43,.18)}
+.tk-in::placeholder{color:rgba(10,23,48,.35)}
+.tk-bottom .tk-grid-2{margin-bottom:16px}
+.tk-more{margin:2px 0 16px}
+.tk-more-btn{border:none;background:none;padding:2px 0;font:inherit;font-size:.88rem;font-weight:600;color:#8a5a0a;cursor:pointer}
+.tk-more-btn em{font-style:normal;font-weight:400;color:rgba(10,23,48,.5)}
+.tk-more textarea{margin-top:8px;resize:vertical;min-height:84px}
+.tk-more textarea[hidden]{display:none}
+.tk-bottom .lead-consent{margin:6px 0 18px}
+.tk-submit{width:100%;flex:none;display:block;font-size:1.05rem;padding:16px}
+.tk-serial{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:22px}
+.tk-serial .barcode{width:100%;max-width:420px;height:42px;background:repeating-linear-gradient(90deg,#0a1730 0 2px,transparent 2px 5px,#0a1730 5px 7px,transparent 7px 11px);opacity:.85;border-radius:2px}
+.tk-serial span{font-size:.68rem;letter-spacing:.14em;color:rgba(10,23,48,.45);text-transform:uppercase;text-align:center}
+.tk-success{background:#fff;border-radius:24px;filter:drop-shadow(0 14px 28px rgba(0,0,0,.38));padding:0}
+.tk-success .tk-body{padding:34px 28px 40px}
+.tk-success h3{color:#0a1730}
+.tk-stub{position:relative;overflow:hidden;border-radius:24px;padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between;gap:22px;color:#fff;text-align:center;
+  background:radial-gradient(circle at 85% 10%,rgba(221,179,103,.18) 0 90px,transparent 91px),radial-gradient(circle at 10% 90%,rgba(255,255,255,.07) 0 120px,transparent 121px),linear-gradient(165deg,#132a55,#0a1730 62%,#0e2145);
+  border:1px solid rgba(221,179,103,.35);filter:drop-shadow(0 14px 28px rgba(0,0,0,.38));
+  -webkit-mask:radial-gradient(circle 15px at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 15px at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat}
+.tk-stub-top{font-size:.7rem;letter-spacing:.2em;color:rgba(255,255,255,.6)}
+.tk-flag{width:64px;height:64px;color:#e3c383;margin:0 auto 8px}
+.tk-stub-brand{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2rem;letter-spacing:.08em;color:#fff;line-height:1.1}
+.tk-stub-sub{margin-top:4px;font-size:.9rem;color:rgba(255,255,255,.72)}
+.tk-steps{list-style:none;margin:20px 0 0;padding:0;text-align:left;display:grid;gap:10px;font-size:.88rem;color:rgba(255,255,255,.85)}
+.tk-steps li{display:flex;align-items:center;gap:10px;word-break:keep-all}
+.tk-steps b{flex:none;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#e3c383;color:#0a1730;font-size:.75rem}
+.tk-stub-more{font-size:.74rem;letter-spacing:.16em;color:#e3c383;font-weight:700;margin-bottom:10px}
+.tk-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tk-q{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:14px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:.78rem;font-weight:600;text-decoration:none;cursor:pointer}
+.tk-q span{font-size:1.2rem;line-height:1}
+.tk-q.kakao{background:#FEE500;border-color:#FEE500;color:#391B1B}
+.tk-q:hover{filter:brightness(1.08)}
+.tk-stub-tel{margin-top:12px;font-size:.74rem;color:rgba(255,255,255,.55)}
+@media(max-width:900px){
+  .tk-wrap{grid-template-columns:1fr;gap:18px}
+  .tk-stub{gap:16px}
+  .tk-steps{display:none}
+}
+@media(max-width:560px){
+  .tk-body{padding:18px 18px 22px}
+  .tk-grid-2{grid-template-columns:1fr}
+  .tk-chip{padding:9px 13px;font-size:.88rem}
+  .tk-stripe{height:12px}
+}
+
 
 /* ── 법적고지 관리자 패널 ──────────────────────────────────────── */
 .legal-admin-item{
@@ -5612,110 +5706,76 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
         <p>희망 지역·코스·일정을 남겨주시면, 24시간 이내에 담당 플래너가 연락드립니다.</p>
       </div>
     </div>
-    <div class="booking-wrap">
-      <div class="pass">
-        <div class="pass-main">
-          <div class="pass-head">
-            <span class="brand">THE GOLF TREND <small>Boarding Pass</small></span>
-            <span class="code">TGT · 2026</span>
+    <div class="tk-wrap">
+      <div class="tk-col">
+        <form id="bookingForm" class="tk-main">
+          <input type="hidden" name="source" id="leadSource" value="direct">
+          <input type="hidden" name="recommendedProduct" id="leadProduct" value="">
+          <div id="tkHidden" hidden></div>
+          <div class="tk-block tk-top">
+            <div class="tk-stripe" aria-hidden="true"></div>
+            <div class="tk-body">
+              <div class="tk-head"><span class="brand">THE GOLF TREND <small>Boarding Pass</small></span><span class="code">TGT · 2026</span></div>
+              <p class="tk-lead">탭 몇 번이면 끝나요. 아는 만큼만 골라 주세요 — 모르는 항목은 건너뛰어도 됩니다.</p>
+              <div class="tk-ai" id="tkAiBanner" hidden><span>✨ AI 추천 상품 <b id="tkAiTitle"></b> 으로 상담 신청</span><button type="button" onclick="tkClearAi()">해제</button></div>
+              <div class="tk-grid" id="tkQuestions"></div>
+            </div>
           </div>
-          <form id="bookingForm">
-            <input type="hidden" name="source" id="leadSource" value="direct">
-            <input type="hidden" name="recommendedProduct" id="leadProduct" value="">
-            <div class="form-grid">
-              <div class="field"><label>이름 · Passenger</label><input type="text" name="name" placeholder="홍길동" required></div>
-              <div class="field"><label>연락처 · Contact</label><input type="tel" name="phone" placeholder="010-0000-0000" required></div>
-              <div class="field">
-                <label>희망 여행지 · Destination</label>
-                <select id="bookDest" name="destination">
-                  <option>선택해 주세요</option>
-                  <optgroup label="해외"><option>일본</option><option>중국</option><option>몽골</option><option>베트남</option><option>태국</option><option>필리핀</option><option>말레이시아</option><option>인도네시아</option><option>미국령-괌/사이판</option></optgroup>
-                  <optgroup label="국내"><option>강원권</option><option>충청권 (충북·충남·대전·세종)</option><option>호남권 (전북·전남·광주)</option><option>영남권 (경북·대구·경남·부산·울산)</option><option>수도권</option><option>제주</option></optgroup>
-                </select>
+          <div class="tk-block tk-bottom">
+            <div class="tk-cut" aria-hidden="true"></div>
+            <div class="tk-body">
+              <div class="tk-sec-title"><span class="en">Passenger</span><b>신청자 정보</b></div>
+              <div class="tk-grid tk-grid-2">
+                <label class="tk-field"><span class="tk-lab"><span class="en">Name</span><b>이름</b></span><input type="text" name="name" class="tk-in" placeholder="홍길동" maxlength="30" autocomplete="name" required></label>
+                <label class="tk-field"><span class="tk-lab"><span class="en">Contact</span><b>연락처</b></span><input type="tel" name="phone" class="tk-in" placeholder="010-0000-0000" maxlength="20" inputmode="tel" pattern="[0-9+\-\s]{9,20}" autocomplete="tel" required></label>
               </div>
-              <div class="field"><label>출발일 · Departure</label><input type="date" name="departureDate"></div>
-              <div class="field"><label>인원(팀수) · Party</label><input type="text" name="partySize" placeholder="예: 4명 / 1팀"></div>
-              <div class="field">
-                <label>선호 숙박 타입 · Room Type</label>
-                <select name="roomType">
-                  <option value="">선택</option>
-                  <option>2인실</option>
-                  <option>4인실</option>
-                  <option>싱글</option>
-                  <option>스위트</option>
-                </select>
+              <div class="tk-grid tk-grid-2" id="tkContactPref"></div>
+              <div class="tk-more">
+                <button type="button" class="tk-more-btn" id="tkMoreBtn" aria-expanded="false" onclick="tkToggleNote()">＋ 전하고 싶은 말이 더 있어요 <em>(선택)</em></button>
+                <textarea name="extraNote" id="tkNote" class="tk-in" rows="3" maxlength="1000" placeholder="예: 부모님 모시고 가요, 캐디 동반 선호 등" hidden></textarea>
               </div>
-              <div class="field">
-                <label>체류 기간 · Stay Duration</label>
-                <select name="stayDuration">
-                  <option value="">선택</option>
-                  <option>1박</option><option>2박</option><option>3박</option><option>4박</option><option>5박</option><option>6박+</option>
-                </select>
-              </div>
-              <div class="field full">
-                <label>골프 여행 선호 스타일 · Travel Style <em style="font-size:.78rem;color:rgba(247,245,240,.55);font-style:normal">(복수 선택 가능)</em></label>
-                <div class="style-dropdown-wrap" id="styleDropdownWrap">
-                  <!-- 선택된 태그 표시 영역 -->
-                  <div class="sd-tags" id="sdTags" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-controls="sdPanel" onclick="toggleStyleMenu()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleStyleMenu();}">
-                    <span class="sd-placeholder" id="sdPlaceholder">클릭하여 스타일 선택...</span>
-                    <span class="sd-arrow">▾</span>
-                  </div>
-                  <!-- 드롭다운 패널 -->
-                  <div class="sd-panel" id="sdPanel" role="listbox" aria-multiselectable="true">
-                    <div class="sd-group-label">숙박 타입</div>
-                    <label class="sd-opt"><input type="checkbox" name="style" value="골프텔 (체류형)" onchange="syncStyleTags()">🏨 골프텔 (체류형)</label>
-                    <label class="sd-opt"><input type="checkbox" name="style" value="시내 호텔 (이동형)" onchange="syncStyleTags()">🏙 시내 호텔 (이동형)</label>
-                    <div class="sd-group-label">관광 · 미식</div>
-                    <label class="sd-opt"><input type="checkbox" name="style" value="미식 및 주변 관광 중심" onchange="syncStyleTags()">🍴 미식 · 주변 관광 중심</label>
-                    <label class="sd-opt"><input type="checkbox" name="style" value="미식 및 쇼핑 중심" onchange="syncStyleTags()">🛍 미식 · 쇼핑 중심</label>
-                    <div class="sd-group-label">코스 · 시설</div>
-                    <label class="sd-opt"><input type="checkbox" name="style" value="골프장 퀄리티 중시" onchange="syncStyleTags()">⛳ 골프장 퀄리티 중시</label>
-                    <label class="sd-opt"><input type="checkbox" name="style" value="숙박 시설 중시 (5성급 준)" onchange="syncStyleTags()">🌟 5성급 준하는 숙박 시설</label>
-                    <div class="sd-group-label">🎯 골프장 난이도</div>
-                    <label class="sd-opt sd-sub"><input type="checkbox" name="style" value="어려운 골프장 선호" onchange="syncStyleTags()">어려운 골프장 선호</label>
-                    <label class="sd-opt sd-sub"><input type="checkbox" name="style" value="쉬운 골프장 선호" onchange="syncStyleTags()">쉬운 골프장 선호</label>
-                    <div class="sd-group-label">💰 가성비 · 휴양형</div>
-                    <label class="sd-opt sd-sub"><input type="checkbox" name="style" value="올인원 패키지 (그린피·숙박·식사·카트·캐디피)" onchange="syncStyleTags()">올인원 패키지 (그린피·숙박·식사·카트·캐디피)</label>
-                    <label class="sd-opt sd-sub"><input type="checkbox" name="style" value="일반형 (기본 패키지)" onchange="syncStyleTags()">일반형 (기본 패키지)</label>
-                    <label class="sd-opt sd-sub"><input type="checkbox" name="style" value="실속형 (그린피·숙박·2일차 조식)" onchange="syncStyleTags()">실속형 (그린피·숙박·2일차 조식)</label>
-                    <label class="sd-opt sd-sub"><input type="checkbox" name="style" value="특가 (그린피·숙박)" onchange="syncStyleTags()">특가 선호 (그린피·숙박)</label>
-                    <div class="sd-footer"><button type="button" onclick="closeStyleMenu()">확인 ✓</button></div>
-                  </div>
-                </div>
-              </div>
-              <div class="field full"><label>세부 요청 · Details</label><textarea name="details" placeholder="원하시는 여행 스타일에 대해 자유롭게 적어주세요">원하시는 여행 스타일에 대해 자유롭게 적어주세요</textarea></div>
-              <div class="field full lead-consent">
+              <div class="lead-consent">
                 <label class="lc-row"><input type="checkbox" name="consentPrivacy" id="leadConsent" required><span><b class="lc-req">[필수]</b> 개인정보 수집·이용에 동의합니다. <button type="button" class="lc-toggle" aria-expanded="false" onclick="toggleLeadConsent(this)">내용 보기</button></span></label>
                 <div class="lc-box" id="leadConsentBox" hidden></div>
                 <label class="lc-row lc-opt"><input type="checkbox" name="consentMarketing"><span><b class="lc-sel">[선택]</b> 여행 소식·혜택 안내 수신에 동의합니다. <button type="button" class="lc-toggle" aria-expanded="false" onclick="toggleLeadConsent(this)">내용 보기</button></span></label>
                 <div class="lc-box" id="leadMarketingBox" hidden></div>
               </div>
-              <div class="field full"><div class="submit-row">
-                <button type="submit" class="submit-btn">📝 상담 신청하기</button>
-                <button type="button" class="kakao-btn" onclick="openKakaoChat()">💬 카톡 상담</button>
-                <button type="button" class="call-btn" onclick="callHotline()">📞 전화하기</button>
-              </div>
-              <div class="lead-error" id="leadError" role="alert" hidden></div></div>
+              <button type="submit" class="submit-btn tk-submit">📝 상담 신청하기</button>
+              <div class="lead-error" id="leadError" role="alert" hidden></div>
+              <div class="tk-serial"><div class="barcode" aria-hidden="true"></div><span>SERIAL NUMBER · 신청하시면 접수번호가 발급됩니다</span></div>
             </div>
-          </form>
-          <div class="success" id="successMsg"><div class="big">⛳</div><h3>탑승권이 발급되었습니다</h3><p>담당 플래너가 24시간 이내 연락드립니다.</p>
-            <div class="succ-receipt">접수번호 <b id="leadReceiptNo"></b><button type="button" class="succ-copy" onclick="copyLeadReceipt(this)">복사</button></div>
-            <p class="succ-hint">더 빠른 상담을 원하시면 카카오톡 채널에 접수번호를 남겨 주세요.</p>
-            <div class="succ-actions">
-              <a class="succ-btn kakao" id="leadSuccKakao" target="_blank" rel="noopener" hidden>💬 카카오톡 채널로 상담하기</a>
-              <a class="succ-btn band" id="leadSuccBand" target="_blank" rel="noopener" hidden>👥 밴드 가입하고 소식 받기</a>
-            </div>
+            <div class="tk-stripe tk-stripe-b" aria-hidden="true"></div>
           </div>
-        </div>
-        <div class="pass-stub">
-          <div class="row"><span class="k">From</span><span class="v">Seoul</span></div>
-          <div class="row"><span class="k">To</span><span class="v">Fairway</span></div>
-          <div class="row"><span class="k">Gate</span><span class="v">K-07</span></div>
-          <div class="barcode" aria-hidden="true"></div>
+        </form>
+        <div class="success tk-success" id="successMsg"><div class="tk-stripe" aria-hidden="true"></div><div class="tk-body"><div class="big">⛳</div><h3>탑승권이 발급되었습니다</h3><p>담당 플래너가 24시간 이내 연락드립니다.</p>
+          <div class="succ-receipt">접수번호 <b id="leadReceiptNo"></b><button type="button" class="succ-copy" onclick="copyLeadReceipt(this)">복사</button></div>
+          <p class="succ-hint">더 빠른 상담을 원하시면 카카오톡 채널에 접수번호를 남겨 주세요.</p>
+          <div class="succ-actions">
+            <a class="succ-btn kakao" id="leadSuccKakao" target="_blank" rel="noopener" hidden>💬 카카오톡 채널로 상담하기</a>
+            <a class="succ-btn band" id="leadSuccBand" target="_blank" rel="noopener" hidden>👥 밴드 가입하고 소식 받기</a>
+          </div></div><div class="tk-stripe tk-stripe-b" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>thegolftrend@gmail.com</b></p>
+      <aside class="tk-stub" aria-label="빠른 상담 안내">
+        <div class="tk-stub-top">WWW.THEGOLFTREND.COM</div>
+        <div class="tk-stub-mid">
+          <svg class="tk-flag" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 6v52" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M22 8l26 9-26 10z" fill="currentColor"/><ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity=".45"/></svg>
+          <div class="tk-stub-brand">GOLF PACKAGE</div>
+          <div class="tk-stub-sub">골프 패키지 상담 탑승권</div>
+          <ol class="tk-steps"><li><b>1</b> 원하는 조건을 눌러 고르고</li><li><b>2</b> 연락처를 남기면</li><li><b>3</b> 24시간 이내 플래너가 연락드려요</li></ol>
+        </div>
+        <div class="tk-stub-bot">
+          <div class="tk-stub-more">빠른 상담이 필요하신가요?</div>
+          <div class="tk-quick">
+            <button type="button" class="tk-q kakao" onclick="openKakaoChat()" aria-label="카카오톡 상담"><span>💬</span>카카오톡</button>
+            <a class="tk-q band" id="tkBandLink" target="_blank" rel="noopener" aria-label="밴드 가입"><span>👥</span>밴드</a>
+            <button type="button" class="tk-q call" onclick="callHotline()" aria-label="전화 상담"><span>📞</span>전화</button>
+          </div>
+          <div class="tk-stub-tel">평일 09:00–18:00 · 010-9405-6842</div>
+        </div>
+      </aside>
     </div>
+    <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>thegolftrend@gmail.com</b></p>
   </div>
 </section>
 </main>
@@ -15130,7 +15190,7 @@ function renderProductDetail(p,cat,idx){
   if (kchan)   contactBtns.push(`<a href="${escapeAttr(kchan)}" target="_blank" rel="noopener" class="kakao">💬 카카오 채널</a>`);
   if (kfriend) contactBtns.push(`<a href="${escapeAttr(kfriend)}" target="_blank" rel="noopener" class="kakao">➕ 카톡 친구 추가</a>`);
   // Always offer booking form as fallback
-  contactBtns.push(`<a onclick="closeProductDetail();document.getElementById('bookDest').value='${cat.ko}';window.scrollTo({top:scrollTargetY(document.getElementById('booking')),behavior:'smooth'})"><img class="pd-contact-ic" src="assets/icons/icon-inquiry.png" alt="" width="64" height="64" draggable="false"> 예약 문의</a>`);
+  contactBtns.push(`<a onclick="closeProductDetail();tkPickDest(DEST_LABELS['${cat.id}']||'${cat.ko}');window.scrollTo({top:scrollTargetY(document.getElementById('booking')),behavior:'smooth'})"><img class="pd-contact-ic" src="assets/icons/icon-inquiry.png" alt="" width="64" height="64" draggable="false"> 예약 문의</a>`);
   // [추가] 예약 문의 오른쪽에 "📍 위치보기" — 관리자에서 등록한 숙박·골프장 위치 링크(국내 카카오맵 / 해외 구글맵)로 이동.
   // 등록된 링크가 하나도 없으면 버튼을 노출하지 않는다
   if (pdLocLinks(p).length) contactBtns.push(`<a class="loc" role="button" tabindex="0" onclick="openLocChooser()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLocChooser()}">📍 위치보기</a>`);
@@ -16421,7 +16481,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102602';
+const TGT_CRM_VERSION='2026102701';
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;
@@ -19419,55 +19479,6 @@ safeRender(()=>applySeasonTheme(getSeasonTheme(), false));
 try{ applyTheme(); }catch(e){}
 safeRender(initLazyBg);
 
-// ══ 여행 스타일 드롭다운 다중선택 ════════════════════════════════
-function toggleStyleMenu(){
-  const panel = document.getElementById('sdPanel');
-  if(!panel) return;
-  const isOpen = panel.classList.contains('open');
-  if(isOpen) closeStyleMenu();
-  else {
-    panel.classList.add('open');
-    document.getElementById('sdTags')?.setAttribute('aria-expanded','true'); // [Phase 3 접근성 강화]
-    // 외부 클릭 시 닫기
-    setTimeout(()=>{
-      document.addEventListener('click', _sdOutsideClick, {once:true});
-    }, 10);
-  }
-}
-function _sdOutsideClick(e){
-  const wrap = document.getElementById('styleDropdownWrap');
-  if(wrap && !wrap.contains(e.target)) closeStyleMenu();
-}
-function closeStyleMenu(){
-  const panel = document.getElementById('sdPanel');
-  if(panel) panel.classList.remove('open');
-  document.getElementById('sdTags')?.setAttribute('aria-expanded','false'); // [Phase 3 접근성 강화]
-}
-function syncStyleTags(){
-  const checks = document.querySelectorAll('#sdPanel input[type=checkbox]:checked');
-  const tags = document.getElementById('sdTags');
-  const placeholder = document.getElementById('sdPlaceholder');
-  if(!tags) return;
-  // 기존 태그 제거 (placeholder, arrow는 유지)
-  tags.querySelectorAll('.sd-tag').forEach(t=>t.remove());
-  if(checks.length===0){
-    placeholder.style.display='';
-  } else {
-    placeholder.style.display='none';
-    checks.forEach(cb=>{
-      const tag = document.createElement('span');
-      tag.className = 'sd-tag';
-      tag.textContent = cb.value;
-      tag.onclick = (e)=>{
-        e.stopPropagation();
-        cb.checked = false;
-        syncStyleTags();
-      };
-      tags.insertBefore(tag, tags.querySelector('.sd-arrow'));
-    });
-  }
-}
-
 // ══ AI 골프 여행 추천 엔진 ══════════════════════════════════════
 // 별도 서버/외부 AI API 없이, 전체 상품 카탈로그(getProducts)를 대상으로
 // 지역·예산·일정·스타일 조건을 규칙 기반으로 스코어링하는 클라이언트 사이드 추천.
@@ -19512,6 +19523,131 @@ const DEST_LABELS = {
   japan:'일본', china:'중국', mongolia:'몽골', vietnam:'베트남', thailand:'태국',
   philippines:'필리핀', malaysia:'말레이시아', indonesia:'인도네시아', guam:'미국령-괌/사이판'
 };
+// ══ 골프 패키지 상담 탑승권 — 눌러서 고르는 선택형 폼 ══════════════════════════
+// 선택값은 폼 안의 숨은 입력칸(destination·departureDate·partySize·roomType·stayDuration·style)으로 옮겨져,
+// 접수 시 기존 리드 칸(kundo_leads)에 그대로 저장된다. 직접 입력은 이름·연락처(필수)와 "전하고 싶은 말"(선택)뿐
+const TK_DEST = {
+  overseas:[['일본'],['중국'],['몽골'],['베트남'],['태국'],['필리핀'],['말레이시아'],['인도네시아'],['미국령-괌/사이판','괌·사이판']],
+  domestic:[['강원권'],['충청권 (충북·충남·대전·세종)','충청권'],['호남권 (전북·전남·광주)','호남권'],['영남권 (경북·대구·경남·부산·울산)','영남권'],['수도권'],['제주']]
+};
+const TK_UNDECIDED = '아직 정하지 못했어요';
+const TK_Q = [
+  {key:'dest',   en:'Destination', ko:'여행지',     hidden:'destination'},
+  {key:'depart', en:'Departure',   ko:'출발 시기',  hidden:'departureDate'},
+  {key:'party',  en:'Party',       ko:'인원',       hidden:'partySize', half:true, opts:['1~2명','3~4명','5~8명','9명 이상','아직 미정']},
+  {key:'stay',   en:'Stay',        ko:'체류 기간',  hidden:'stayDuration', half:true, opts:['1박','2박','3박','4박','5박','6박+']},
+  {key:'room',   en:'Room Type',   ko:'숙박 타입',  hidden:'roomType', opts:['2인실','4인실','싱글','스위트']},
+  {key:'style',  en:'Travel Style',ko:'여행 스타일', multi:true, hidden:'style', note:'복수 선택'},
+  {key:'topic',  en:'Inquiry',     ko:'문의 내용',  multi:true, opts:['견적·일정 안내','2인 출발 가능 여부','단체·동호회 문의','골프장·코스 추천','항공 포함/별도 문의','기타 상담'], note:'복수 선택'}
+];
+const TK_PREF = [
+  {key:'via',  en:'Contact Method', ko:'연락 방법', opts:['전화','카카오톡','문자']},
+  {key:'time', en:'Best Time',      ko:'편한 시간', opts:['오전','오후','상관없음']}
+];
+const tkSel = {dest:'', depart:'', party:'', stay:'', room:'', style:[], topic:[], via:'', time:''};
+let tkRegion = 'overseas';
+function tkChipHTML(group, value, label){
+  const on = Array.isArray(tkSel[group]) ? tkSel[group].includes(value) : tkSel[group]===value;
+  return `<button type="button" class="tk-chip${on?' active':''}" data-g="${group}" data-v="${escapeAttr(value)}" aria-pressed="${on}">${escapeAttr(label||value)}</button>`;
+}
+function tkOptsFor(q){
+  if (q.key==='depart') return aiDepartMonths().map(d=>[d.key, d.label]).concat([['undecided','아직 미정']]);
+  if (q.key==='style') return STYLE_OPTIONS.map(o=>[o.value, o.label]);
+  return (q.opts||[]).map(o=>[o]);
+}
+function tkQuestionHTML(q){
+  const note = q.note ? `<em>${q.note}</em>` : '<em>선택</em>';
+  let body;
+  if (q.key==='dest'){
+    body = `<div class="tk-seg" role="tablist"><button type="button" data-region="overseas" class="${tkRegion==='overseas'?'active':''}">✈️ 해외</button><button type="button" data-region="domestic" class="${tkRegion==='domestic'?'active':''}">🚗 국내</button></div>
+      <div class="tk-chips" id="tkDestChips">${TK_DEST[tkRegion].map(([v,l])=>tkChipHTML('dest',v,l)).join('')}${tkChipHTML('dest',TK_UNDECIDED)}</div>`;
+  } else body = `<div class="tk-chips">${tkOptsFor(q).map(([v,l])=>tkChipHTML(q.key,v,l)).join('')}</div>`;
+  return `<div class="tkq" data-q="${q.key}"><div class="tk-lab"><span class="en">${q.en}</span><b>${q.ko}</b>${note}</div>${body}</div>`;
+}
+function tkRender(){
+  const host = document.getElementById('tkQuestions'); if (!host) return;
+  host.innerHTML = TK_Q.map(tkQuestionHTML).join('');
+  // 인원·체류 기간은 한 줄에 둘씩
+  const half = [...host.querySelectorAll('.tkq')].filter(el=>TK_Q.find(q=>q.key===el.dataset.q).half);
+  if (half.length===2){ const wrap = document.createElement('div'); wrap.className = 'tk-grid tk-grid-2'; half[0].before(wrap); half.forEach(el=>wrap.appendChild(el)); }
+  const pref = document.getElementById('tkContactPref');
+  if (pref) pref.innerHTML = TK_PREF.map(q=>`<div class="tkq"><div class="tk-lab"><span class="en">${q.en}</span><b>${q.ko}</b><em>선택</em></div><div class="tk-chips">${q.opts.map(o=>tkChipHTML(q.key,o)).join('')}</div></div>`).join('');
+  tkSync();
+}
+// 눌러서 고른 값을 폼의 숨은 입력칸으로 옮긴다(접수 시 FormData가 그대로 읽는다)
+function tkSync(){
+  const box = document.getElementById('tkHidden'); if (!box) return;
+  const hid = (n,v)=>`<input type="hidden" name="${n}" value="${escapeAttr(v)}">`;
+  const label = (list,v)=>{ const o = list.find(x=>x[0]===v); return o ? (o[1]||o[0]) : v; };
+  let h = '';
+  if (tkSel.dest && tkSel.dest!==TK_UNDECIDED) h += hid('destination', tkSel.dest);
+  if (tkSel.depart && tkSel.depart!=='undecided') h += hid('departureDate', tkSel.depart);   // 'YYYY-MM' — 월 단위로만 받는다(정확한 날짜는 상담에서)
+  if (tkSel.party) h += hid('partySize', tkSel.party);
+  if (tkSel.stay) h += hid('stayDuration', tkSel.stay);
+  if (tkSel.room) h += hid('roomType', tkSel.room);
+  tkSel.style.forEach(v=>{ h += hid('style', v); });
+  box.innerHTML = h;
+}
+function tkPick(group, value, force){
+  const multi = Array.isArray(tkSel[group]);
+  if (multi){ const i = tkSel[group].indexOf(value); if (i>=0 && force!==true) tkSel[group].splice(i,1); else if (i<0) tkSel[group].push(value); }
+  else tkSel[group] = (tkSel[group]===value && force!==true) ? '' : value;
+  document.querySelectorAll(`#bookingForm .tk-chip[data-g="${group}"]`).forEach(b=>{
+    const on = multi ? tkSel[group].includes(b.dataset.v) : tkSel[group]===b.dataset.v;
+    b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  tkSync();
+}
+function tkSetRegion(region){
+  tkRegion = region;
+  document.querySelectorAll('#bookingForm .tk-seg button').forEach(b=>b.classList.toggle('active', b.dataset.region===region));
+  const chips = document.getElementById('tkDestChips');
+  if (chips) chips.innerHTML = TK_DEST[region].map(([v,l])=>tkChipHTML('dest',v,l)).join('') + tkChipHTML('dest',TK_UNDECIDED);
+}
+// 다른 곳(상품 상세의 "예약 문의", AI 추천)에서 여행지를 미리 골라 둘 때 사용
+function tkPickDest(label){
+  if (!label) return;
+  const region = TK_DEST.domestic.some(d=>d[0]===label) ? 'domestic' : 'overseas';
+  if (region!==tkRegion) tkSetRegion(region);
+  tkPick('dest', label, true);
+}
+function tkAiProduct(title){
+  const src = document.getElementById('leadSource'), rp = document.getElementById('leadProduct');
+  if (src) src.value = title ? 'ai_recommend' : 'direct'; if (rp) rp.value = title || '';
+  const ban = document.getElementById('tkAiBanner'); if (!ban) return;
+  document.getElementById('tkAiTitle').textContent = title || ''; ban.hidden = !title;
+}
+function tkClearAi(){ tkAiProduct(''); }
+function tkToggleNote(){
+  const ta = document.getElementById('tkNote'), btn = document.getElementById('tkMoreBtn'); if (!ta) return;
+  ta.hidden = !ta.hidden; btn.setAttribute('aria-expanded', ta.hidden ? 'false' : 'true');
+  if (!ta.hidden) ta.focus();
+}
+// 선택한 문의 내용·연락 선호·AI 추천 상품·남긴 말을 하나의 "세부 요청"으로 묶어 저장한다(관리자 리드·CRM에서 그대로 읽힌다)
+function tkDetails(fd){
+  const lines = [];
+  const prod = fd.get('recommendedProduct');
+  if (prod) lines.push(`[AI 추천] ${prod} 상품에 대해 상담을 원합니다.`);
+  if (tkSel.topic.length) lines.push(`[문의 내용] ${tkSel.topic.join(', ')}`);
+  const pref = [tkSel.via, tkSel.time].filter(Boolean).join(' · ');
+  if (pref) lines.push(`[연락 선호] ${pref}`);
+  const note = String(fd.get('extraNote')||'').trim();
+  if (note) lines.push(note);
+  return lines.join('\n');
+}
+function tkBandUrl(){ return getLinkUrl('band_b2c') || getLinkUrl('band_main') || ''; }
+(function tkInit(){
+  tkRender();
+  const form = document.getElementById('bookingForm'); if (!form) return;
+  form.addEventListener('click', e=>{
+    const chip = e.target.closest && e.target.closest('.tk-chip');
+    if (chip){ tkPick(chip.dataset.g, chip.dataset.v); return; }
+    const seg = e.target.closest && e.target.closest('.tk-seg button');
+    if (seg) tkSetRegion(seg.dataset.region);
+  });
+  const band = document.getElementById('tkBandLink');
+  if (band){ band.href = tkBandUrl() || '#'; band.addEventListener('click', ()=>{ band.href = tkBandUrl() || '#'; }); }
+})();
 function aiBudgetScore(price, pref){
   if (pref==='any') return 12;
   if (pref==='9999') return price>=2000000 ? 30 : Math.max(0, 30-(2000000-price)/50000);
@@ -19934,18 +20070,17 @@ function runAiRecommend(){
 function selectAiProduct(catId, idx){
   const p = getProducts(catId)[idx];
   if (!p) return;
-  const destSel = document.getElementById('bookDest');
-  if (destSel && DEST_LABELS[catId]) destSel.value = DEST_LABELS[catId];
+  if (DEST_LABELS[catId]) tkPickDest(DEST_LABELS[catId]);
+  // AI 추천에서 고른 스타일·출발 시기를 탑승권에 미리 채워 둔다
   const activeStyles = Array.from(document.querySelectorAll('#aiStyleChips .ai-chip.active')).map(b=>b.dataset.value);
-  document.querySelectorAll('#sdPanel input[type=checkbox]').forEach(cb=>{ cb.checked = activeStyles.includes(cb.value); });
-  syncStyleTags();
-  const details = document.querySelector('#bookingForm textarea[name=details]');
-  if (details) details.value = `[AI 추천] ${p.title} 상품에 대해 상담을 원합니다.`;
-  const src = document.getElementById('leadSource'); if (src) src.value = 'ai_recommend';
-  const rp = document.getElementById('leadProduct'); if (rp) rp.value = p.title;
+  tkSel.style.slice().forEach(v=>{ if (!activeStyles.includes(v)) tkPick('style', v); });
+  activeStyles.forEach(v=>{ if (!tkSel.style.includes(v)) tkPick('style', v, true); });
+  const dep = Array.from(document.querySelectorAll('#aiDepartChips .ai-chip.active')).map(b=>b.dataset.value).find(v=>v && aiDepartMonths().some(d=>d.key===v));
+  if (dep) tkPick('depart', dep, true);
+  tkAiProduct(p.title);
   const bookingSec = document.getElementById('booking');
   if (bookingSec) window.scrollTo({top: scrollTargetY(bookingSec), behavior:'smooth'});
-  setTimeout(()=>{ document.querySelector('#bookingForm input[name=name]')?.focus(); }, 400);
+  setTimeout(()=>{ document.querySelector('#bookingForm input[name=name]')?.focus({preventScroll:true}); }, 400);
 }
 (function initAiRecommend(){
   const chipsEl = document.getElementById('aiStyleChips');
@@ -20006,6 +20141,7 @@ document.getElementById('bookingForm').addEventListener('submit', async e=>{
   const consent = form.querySelector('[name=consentPrivacy]');
   if (!consent || !consent.checked){ showLeadError('개인정보 수집·이용에 동의해 주셔야 상담을 신청할 수 있습니다.'); if (consent) consent.focus(); return; }
   const fd=new FormData(form);
+  fd.set('details', tkDetails(fd));
   const receipt = newReceiptNo();
   const styles = fd.getAll('style').join(', ') || '선택 없음';
   const body = `[티타임 상담 신청]

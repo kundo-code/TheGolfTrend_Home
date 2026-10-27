@@ -787,6 +787,7 @@
     const ps = /(\d{1,3})/.exec(String(lead.party_size||''));
     if (ps) f.requested_party_size = /팀/.test(lead.party_size) ? String(Number(ps[1])*4) : ps[1];
     if (/^\d{4}-\d{2}-\d{2}$/.test(String(lead.departure_date||''))){ f.preferred_departure_date = lead.departure_date; f.preferred_departure_month = lead.departure_date.slice(0,7); }
+    else if (/^\d{4}-\d{2}$/.test(String(lead.departure_date||''))) f.preferred_departure_month = lead.departure_date;   // 탑승권에서 월 단위로 고른 출발 시기
     f.channel = '홈페이지';
     f.customer_name = lead.name || ''; f.customer_phone = lead.phone || '';
     f.memo = [lead.details, lead.room_type ? `숙박: ${lead.room_type}` : '', lead.stay_duration ? `체류: ${lead.stay_duration}` : ''].filter(Boolean).join('\n');

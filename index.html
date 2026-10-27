@@ -6637,13 +6637,16 @@ function peInheritState(p, pe, f){
 // 2개 이상이고 모두 같은 값일 때 그 값을 공통으로 끌어올린다(기존에 항목마다 같은 내용을 복사해 둔
 // 상품도 저장값을 건드리지 않고 바로 중복 없이 보이게 하기 위함). 항목이 하나뿐이면 반복이 없으므로
 // 끌어올리지 않고 기존처럼 항목 카드에 그대로 둔다
+// 포함·불포함·참고사항은 끌어올리지 않는다 — 관리자가 요금 항목에 입력한 내용은 그 항목에 그대로 보이고,
+// "자세히 보기(공통)"에 입력한 내용이 있을 때만 공통 섹션에 나온다(항목들이 우연히 같은 문구여도 공통으로 옮기지 않음)
+const PE_NO_PROMOTE = ['included','notIncluded','precautions'];
 function pdCommonPlan(p, visibleEntries){
   const plan = {};
   PE_INHERIT_KEYS.forEach(f=>{
     const F = PE_INHERIT[f];
     const cmV = F.cm(p), cmK = F.key(cmV);
     if (cmK){ plan[f] = {value:cmV, key:cmK, source:'common'}; return; }
-    if (visibleEntries.length >= 2){
+    if (visibleEntries.length >= 2 && !PE_NO_PROMOTE.includes(f)){
       const k0 = F.key(F.pe(visibleEntries[0]));
       if (k0 && visibleEntries.every(pe=>F.key(F.pe(pe))===k0)){
         plan[f] = {value:F.pe(visibleEntries[0]), key:k0, source:'promoted'}; return;
@@ -10455,6 +10458,37 @@ function sanitizeRichHTML(html, opts){
 }
 // 리치 텍스트 필드용 줄 단위 체크리스트 렌더링 — bulletRows()와 같은 결과 형태를 내지만
 // 일반 텍스트(\n 구분) 대신 서식이 포함된 HTML(<br>/<div> 구분)을 다룬다
+// 한 서식(<span style="color">…<br>…<br>…</span>)이 여러 줄에 걸쳐 있으면 줄 단위로 나눌 때 첫 줄에만 여는 태그가,
+// 마지막 줄에만 닫는 태그가 남아 나머지 줄의 색상·굵기가 사라진다 — 줄마다 아직 열려 있는 서식 태그를 닫아 주고
+// 다음 줄 앞에서 다시 열어 모든 줄에 같은 서식이 적용되게 한다(줄 맨 앞의 하위서식 표시 문자는 그대로 앞에 둔다)
+const RICH_INLINE_TAGS = /^(span|b|strong|i|em|u|s|strike|font|sub|sup|mark|div)$/i;
+function rtfBalanceLines(lines){
+  let carry = [];
+  return lines.map(line=>{
+    const lead = (/^[\u0001\u0002]*/.exec(line)||[''])[0];
+    const stack = carry.slice();
+    let out = '', last = lead.length;
+    line.replace(/<(\/?)([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, close, name, attrs, pos)=>{
+      if (pos < lead.length || !RICH_INLINE_TAGS.test(name)) return m;
+      out += line.slice(last, pos); last = pos + m.length;
+      name = name.toLowerCase();
+      // 줄을 나누며 버리는 <div>는 안에 든 색·크기(style)만 <span>으로 바꿔 이어 준다
+      const ent = name==='div'
+        ? (/\bstyle\s*=/i.test(attrs) ? {name, open:'<span'+attrs+'>', close:'</span>'} : {name, open:'', close:''})
+        : {name, open:m, close:'</'+name+'>'};
+      if (!close){ if (!/\/>$/.test(m)){ stack.push(ent); out += ent.open; } else out += m; }
+      else {
+        let k = stack.length-1; while (k>=0 && stack[k].name!==name) k--;
+        if (k>=0){ for (let j=stack.length-1; j>=k; j--) out += stack[j].close; stack.length = k; } // 짝이 맞는 닫는 태그만 남기고, 짝 없는 닫는 태그는 버린다
+      }
+      return m;
+    });
+    out += line.slice(last);
+    const pre = carry.map(t=>t.open).join(''), post = stack.slice().reverse().map(t=>t.close).join('');
+    carry = stack;
+    return lead + pre + out + post;
+  });
+}
 function bulletRowsRich(html, icon, opts){
   const clean = sanitizeRichHTML(html||'');
   if (!clean.replace(/<[^>]*>/g,'').trim()) return '';
@@ -10468,13 +10502,13 @@ function bulletRowsRich(html, icon, opts){
   // [추가] "하위서식"으로 표시된 줄(<div class="rtf-sub">)은 앞에 \u0001 표시를 붙여 두었다가,
   // 체크(✓)·점(•)·엑스(✕) 아이콘 없이 윗줄 글자 시작 위치에서 1.5글자 들여쓴 줄(row-sub)로 그린다
   const normalized = withPlaceholders
-    .replace(/<div[^>]*class="[^"]*\brtf-sub2\b[^"]*"[^>]*>/gi,'\n\u0002')
-    .replace(/<div[^>]*class="[^"]*\brtf-sub\b[^"]*"[^>]*>/gi,'\n\u0001')
     // [버그 수정] 일반 <div> 줄 앞에도 줄바꿈 — "첫 줄<div>둘째 줄</div>"이 "첫 줄둘째 줄"로 붙어 보이던 문제(빈 줄은 아래에서 걸러짐)
-    .replace(/<div[^>]*>/gi,'\n').replace(/<\/div>/gi,'\n')
+    .replace(/<div[^>]*>/gi,m=>'\n'+m).replace(/<\/div>/gi,'</div>\n')
+    .replace(/<div[^>]*class="[^"]*\brtf-sub2\b[^"]*"[^>]*>/gi,'\u0002<div>')
+    .replace(/<div[^>]*class="[^"]*\brtf-sub\b[^"]*"[^>]*>/gi,'\u0001<div>')
     .replace(/<p>/gi,'').replace(/<\/p>/gi,'\n')
     .replace(/<br\s*\/?>/gi,'\n');
-  return normalized.split('\n').map(s=>s.trim())
+  return rtfBalanceLines(normalized.split('\n').map(s=>s.trim()))
     .filter(s=>s.replace(/[\u0001\u0002]/g,'').replace(/<[^>]*>/g,'').trim() || /\u0000TBL/.test(s))
     .map(line=>{
       const tblMatch = line.match(/^\u0000TBL(\d+)\u0000$/);

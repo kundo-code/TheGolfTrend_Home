@@ -4362,6 +4362,24 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .adv-body .ai-help-btn{width:20px;min-height:0}
 .ai-info-help{display:none;font-size:.74rem;line-height:1.5;color:var(--nm-text-soft,#667);font-weight:400;background:rgba(201,150,43,.08);border-radius:8px;padding:6px 8px}
 .ai-info-f.show-help .ai-info-help{display:block}
+/* 입력된 칸 / 비어 있는 칸 구분 — 입력됨: 초록 테두리·옅은 초록 바탕·✓ 표시·굵은 값 / 비어 있음: 점선·흐린 값 / 🔄 자동 판정: 파란 점선 */
+.ai-info-f{padding:8px 10px 9px;border-radius:12px;border:1px dashed rgba(10,23,48,.16);background:rgba(255,255,255,.45);transition:background .15s,border-color .15s}
+.ai-info-f:not(.filled) select,.ai-info-f:not(.filled) input[type=text],.ai-info-f:not(.filled) input[type=number]{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
+.ai-info-f select option{color:#0a1730}
+.ai-info-f.has-auto{border-color:rgba(37,99,235,.35);background:rgba(239,246,255,.7)}
+.ai-info-f.filled{border:1px solid rgba(22,163,74,.45);background:#effcf3;box-shadow:inset 4px 0 0 #16a34a}
+.adv-body .ai-info-f.filled>.ai-info-lab,.ai-info-f.filled>.ai-info-lab{color:#065f46}
+.ai-info-f.filled>.ai-info-lab::before{content:'✓';display:inline-flex;align-items:center;justify-content:center;flex:none;width:16px;height:16px;border-radius:50%;background:#16a34a;color:#fff;font-size:.64rem;font-weight:800;margin-right:2px}
+.ai-info-f.filled select,.ai-info-f.filled input[type=text],.ai-info-f.filled input[type=number]{border-color:#16a34a;color:#064e3b;font-weight:700;background:#fff}
+.ai-info-f.filled .ai-len select{font-weight:600}
+.ai-info-multi label:has(input:checked){color:#065f46;font-weight:800}
+.ai-info-f:not(.filled) .ai-info-multi label{color:#6b7587}
+.ai-len{display:flex;gap:6px;align-items:stretch}
+.ai-info-f .ai-len input[type=number]{flex:1 1 auto;min-width:0}
+.ai-info-f .ai-len select{flex:0 0 auto;width:auto!important;min-width:96px;color:#0a1730!important;background:#fff!important}
+.ai-len-conv{font-size:.72rem;color:#2563eb;font-weight:600;min-height:0}
+.ai-len-conv:empty{display:none}
+.ai-sub{padding:6px 0 0;gap:6px 12px}
 .ai-link-box{margin:10px 0 6px;padding:12px;border-radius:12px;background:rgba(10,23,48,.03);border:1px dashed rgba(10,23,48,.18)}
 .ai-link-head{font-size:.86rem;margin-bottom:8px}.ai-link-head span{font-size:.76rem;color:var(--nm-text-soft,#667)}
 .ai-link-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
@@ -10528,7 +10546,9 @@ try{linkHiddenOverrides=JSON.parse(localStorage.getItem(LINK_HIDDEN_KEY)||'{}')}
 // [추가] AI 추천용 숙소·골프장 등록부 — 한 번 등록해 두고 여러 상품에서 선택(연결)만 한다. 수정하면 연결된 모든 상품에 반영
 const AI_PLACES_KEY='kundo_ai_places_v1';
 let aiPlaces={lodges:[], courses:[]};
-function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id) : []}; }
+function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
+// 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
+function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; return x; }
 try{ const v=JSON.parse(localStorage.getItem(AI_PLACES_KEY)||'null'); if (v) aiPlaces=aiPlacesNorm(v); }catch(e){}
 function saveAiPlaces(){try{localStorage.setItem(AI_PLACES_KEY,JSON.stringify(aiPlaces))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 
@@ -12493,7 +12513,7 @@ function cardTagStyles(p){
   const out = [];
   for (let n=1;n<=CARD_TAG_MAX;n++){
     const t = p['cardTag'+n]; if (!cardTagFilled(t)) continue;
-    const sv = p['cardTagStyle'+n];
+    const sv = styleCanon(p['cardTagStyle'+n]);
     if (sv==='__none') continue;
     if (sv && STYLE_OPTIONS.some(o=>o.value===sv)){ if (!out.includes(sv)) out.push(sv); continue; }
     const plain = String(richToPlain(t)).trim();
@@ -16575,7 +16595,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102702';
+const TGT_CRM_VERSION='2026102703';
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;
@@ -17630,7 +17650,7 @@ function advBasicHTML(p){
                 ${bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setCardTagBg(${n},'')">기본</button>`:''}
                 <button type="button" class="ctag-del" title="이 태그 삭제" onclick="removeCardTag(${n})">✕</button>
                 ${(()=>{ const st = p['cardTagStyle'+n]; const auto = !st && cardTagFilled(p['cardTag'+n]) && STYLE_OPTIONS.find(o=>styleTagText(o.value)===String(richToPlain(p['cardTag'+n])).trim());
-                  const sv = st && st!=='__none' ? st : (auto ? auto.value : '');
+                  const sv = st && st!=='__none' ? styleCanon(st) : (auto ? auto.value : '');
                   return sv ? `<button type="button" class="ctag-link" title="AI 골프여행 추천 '${escapeAttr(styleTagText(sv))}' 스타일과 연동됨 — 누르면 연동 해제(태그는 유지)" onclick="unlinkCardTagStyle(${n})">🔗 AI 연동</button>` : ''; })()}
               </div>`;
             }).join('');
@@ -17827,18 +17847,18 @@ const AI_COURSE_FIELDS = [
   {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 골프장을 고를 때 같은 국가·권역을 먼저 보여 줍니다.'},
   {k:'holes', label:'홀 수', type:'select', opts:['18','27','36','45+'], help:'골프장 전체 홀 수(27홀 골프장이면 27).'},
   {k:'par', label:'PAR', type:'num', help:'정규 18홀 기준 PAR.'},
-  {k:'courseLength', label:'전장', type:'text', ph:'예: 6,850yd', help:'레귤러(화이트) 티 기준, 단위(yd·m)를 함께.'},
+  {k:'courseLength', label:'전장', type:'len', help:'레귤러(화이트) 티 기준. 숫자를 입력하고 단위를 고르세요 — 야드로 입력한 뒤 m를 고르면 미터로 자동 환산됩니다(1yd = 0.9144m, 반대도 동일).'},
   {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'골프장·협회가 공개한 값만. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
   {k:'turf', label:'잔디 상태', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
   {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼'], help:'평탄: 대부분 평지 · 보통 · 큼: 오르막·내리막이 많아 카트 이동이 사실상 필수.'},
   {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상).'},
   {k:'famous', label:'명문·대회 개최', type:'yn', help:'프로 투어(KPGA·KLPGA·JGTO·아시안투어·LPGA 등) 정규 대회 개최 이력이 있거나 공신력 있는 골프장 랭킹(국가별 100대 등)에 든 곳이면 \'예\'.'},
   {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통'], help:'우수: 최근 1년 안에 현장 확인 또는 고객 평가로 잔디·그린·시설 관리가 좋다고 확인됨. 근거가 없으면 미확인.'},
-  {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','카트 도로만','카트 없음(도보)'], help:'평소 운영 기준(우천 등 예외 제외).'},
+  {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','페어웨이 진입 불가','카트 없음(도보)'], help:'페어웨이 진입 불가: 카트 도로로만 이동. 평소 운영 기준(우천 등 예외 제외).'},
   {k:'cartUse', label:'카트 이용', type:'select', opts:['포함','현지 지불','미운영'], help:'카트비가 상품 요금에 포함인지, 현지에서 내는지.'},
   {k:'caddie', label:'캐디 운영', type:'select', opts:['필수','선택','노캐디'], help:'캐디 동반이 의무인지, 고를 수 있는지, 없는지.'},
   {k:'lesson', label:'레슨 프로그램', type:'yn', help:'골프장(또는 연계 아카데미)에서 레슨을 받을 수 있으면 \'예\'.'},
-  {k:'practice', label:'연습 시설', type:'yn', yes:'있음', no:'없음', help:'드라이빙 레인지·퍼팅 그린을 이용할 수 있는지.'},
+  {k:'practice', label:'연습 시설', type:'yn', yes:'있음', no:'없음', sub:'practiceItems', subOpts:['드라이빙 레인지','퍼팅그린','벙커연습장','숏게임 연습장'], help:'이용할 수 있는 연습 시설을 체크하세요(하나라도 체크하면 \'있음\'으로 자동 선택). 없으면 \'없음\'.'},
   {k:'memo', label:'메모', type:'text', help:'기타 참고 사항(고객에게는 보이지 않음).'}
 ];
 // 상품마다 다른 정보 — 숙소·골프장 자체 정보는 등록부에서 가져온다
@@ -17890,6 +17910,7 @@ function aiLegacyPlace(ai, map, fallbackName){
     out[map[k]] = AI_LEGACY_YN_PROX.includes(k) ? (ai[k]==='y' ? 'v15' : (k==='spa' ? 'none' : 'far')) : ai[k];   // 예/아니오 → 가까움(차량 15분 이내)/떨어짐
   });
   if (!any) return null;
+  aiCourseNorm(out);
   if (!out.name) out.name = fallbackName;
   out.legacy = true;
   return out;
@@ -17981,22 +18002,67 @@ function aiPlaceUseCount(kind, id){
 function aiCatName(id){ const c = CATEGORIES.domestic.concat(CATEGORIES.overseas).find(x=>x.id===id); return c ? c.ko : ''; }
 function aiHelpHTML(fd){ return fd.help ? `<button type="button" class="ai-help-btn" aria-label="${escapeAttr(fd.label)} 판단 기준" onclick="this.closest('.ai-info-f').classList.toggle('show-help')">ⓘ</button></span><small class="ai-info-help">${escapeAttr(fd.help)}</small>` : '</span>'; }
 // 입력 칸 — save(k, valueExpr)는 저장 호출 문자열(상품: updateAiInfo / 등록부: updateAiPlace)
-function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint){
+// obj: 값이 들어 있는 객체 전체(연습 시설처럼 보조 칸(fd.sub)이 있는 항목용)
+// 입력된 칸은 .filled(초록 강조), 비어 있는 칸은 흐리게 — 입력할 때마다 aiFieldFillSync가 다시 판정한다
+function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
   const k = fd.k, lab = `<span class="ai-info-lab">${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}${aiHelpHTML(fd)}${hint ? `<small class="ai-inh">${hint}</small>` : ''}`;
+  const subArr = fd.sub && obj && Array.isArray(obj[fd.sub]) ? obj[fd.sub] : [];
+  const filled = aiInfoFilled(v) || subArr.length>0;
+  const box = `class="ai-info-f${filled ? ' filled' : (hint ? ' has-auto' : '')}"`;
   if (fd.type==='multi'){
     const arr = Array.isArray(v) ? v : [];
-    return `<div class="ai-info-f">${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
+    return `<div ${box}>${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
+  }
+  if (fd.type==='len'){
+    const L = aiLenParse(v);
+    if (!L.ok) return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" oninput="${save(k,'this.value')}"><small class="ai-len-conv">예전에 글자로 입력한 값입니다. 지우고 숫자로 다시 입력하면 yd↔m 자동 환산을 쓸 수 있어요.</small></div>`;
+    return `<div ${box}>${lab}<div class="ai-len" data-unit="${L.u}"><input type="number" min="0" step="1" inputmode="numeric" value="${L.n===''?'':L.n}" placeholder="미확인" oninput="${save(k,'aiLenVal(this)')}"><select data-nofill aria-label="전장 단위" onchange="aiLenUnit(this);${save(k,'aiLenVal(this)')}"><option value="yd" ${L.u==='yd'?'selected':''}>yd (야드)</option><option value="m" ${L.u==='m'?'selected':''}>m (미터)</option></select></div><small class="ai-len-conv">${aiLenConvTxt(L.n, L.u)}</small></div>`;
   }
   if (fd.type==='select' || fd.type==='yn' || fd.type==='prox' || fd.type==='cat'){
     const opts = fd.type==='yn' ? [['y', fd.yes||'예'], ['n', fd.no||'아니오']]
       : fd.type==='prox' ? AI_PROX_OPTS
       : fd.type==='cat' ? CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>[c.id, c.ko])
       : fd.opts.map(o=>[o,o]);
-    return `<div class="ai-info-f">${lab}<select onchange="${save(k,'this.value')}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select></div>`;
+    // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
+    const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
+    const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
+    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}</div>`;
   }
-  if (fd.type==='num') return `<div class="ai-info-f">${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
-  return `<div class="ai-info-f">${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
+  if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
+  return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
 }
+// 전장 — "6,850yd" / "6,264m" 형식으로 저장. 숫자+단위가 아닌 예전 글자 값은 ok:false(그대로 글자 칸으로 표시)
+const AI_YD_M = 0.9144;
+function aiLenParse(v){
+  const t = String(v==null?'':v).trim(); if (!t) return {ok:true, n:'', u:'yd'};
+  const m = /^([\d,]+(?:\.\d+)?)\s*(yds?|y|야드|m|미터|meters?)?$/i.exec(t); if (!m) return {ok:false};
+  return {ok:true, n:Number(m[1].replace(/,/g,'')), u:/^(m|미터|meter)/i.test(m[2]||'') ? 'm' : 'yd'};
+}
+function aiLenConvTxt(n, u){ if (n==='' || n==null || !isFinite(n) || !Number(n)) return ''; const o = u==='m' ? Math.round(n/AI_YD_M) : Math.round(n*AI_YD_M); return `≈ ${o.toLocaleString('en-US')}${u==='m'?'yd':'m'}`; }
+function aiLenVal(el){
+  const w = el.closest('.ai-len'), inp = w.querySelector('input'), u = w.querySelector('select').value;
+  const conv = w.parentNode.querySelector('.ai-len-conv'); if (conv) conv.textContent = aiLenConvTxt(inp.value==='' ? '' : Number(inp.value), u);
+  return inp.value==='' ? '' : `${Math.round(Number(inp.value)).toLocaleString('en-US')}${u}`;
+}
+// 단위를 바꾸면 입력한 숫자를 새 단위로 환산(야드로 입력 → m 선택 시 미터로)
+function aiLenUnit(sel){
+  const w = sel.closest('.ai-len'), inp = w.querySelector('input'), prev = w.dataset.unit || 'yd';
+  if (inp.value!=='' && prev!==sel.value){ const n = Number(inp.value); inp.value = String(sel.value==='m' ? Math.round(n*AI_YD_M) : Math.round(n/AI_YD_M)); }
+  w.dataset.unit = sel.value;
+}
+// 입력·선택할 때마다 칸의 입력됨(.filled) 표시를 다시 판정
+function aiFieldFillSync(e){
+  const f = e.target && e.target.closest && e.target.closest('.ai-info-f'); if (!f) return;
+  const any = [...f.querySelectorAll('input,select')].some(el=>{
+    if (el.hasAttribute('data-nofill')) return false;
+    if (el.type==='checkbox') return el.checked;
+    return String(el.value||'').trim()!=='';
+  });
+  f.classList.toggle('filled', any);
+  if (any) f.classList.remove('has-auto'); else if (f.querySelector('.ai-inh')) f.classList.add('has-auto');
+}
+document.addEventListener('input', aiFieldFillSync, true);
+document.addEventListener('change', aiFieldFillSync, true);
 function aiPlaceSummary(kind, x){
   const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiInfoFilled(x.golfDistance) ? `골프장 ${x.golfDistance}분` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', x.courseLevel, x.famous==='y' ? '명문' : ''];
   return bits.filter(Boolean).join(' · ');
@@ -18025,7 +18091,7 @@ function aiPlaceLinkHTML(p, kind){
         return `<details class="pe-labels ai-place-card" ${advDetailsAttrs('aiP-'+x.id, !x.name)}>
           <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
-          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom)).map(fd=>aiFieldHTML(fd, x[fd.k], fd.k==='cat' ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '')).join('')}</div>
+          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom)).map(fd=>aiFieldHTML(fd, x[fd.k], fd.k==='cat' ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', '', x)).join('')}</div>
           <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
         </details>`;
       }).join('')}
@@ -18092,6 +18158,8 @@ function updateAiInfoMulti(k, opt, on){
 function updateAiPlace(kind, id, k, v){
   const x = aiFindPlace(kind, id); if (!x) return;
   if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete x[k]; else x[k] = typeof v==='string' ? v.slice(0,200) : v;
+  const fd = aiPlaceFields(kind).find(f=>f.k===k);
+  if (fd && fd.sub && v!=='y') delete x[fd.sub];   // '없음'·'미확인'이면 보조 체크(연습 시설 종류)도 비운다
   x.updatedAt = new Date().toISOString();
   saveAiPlaces();
 }
@@ -20044,17 +20112,29 @@ const STYLE_GROUPS = [
     {value:'프라이빗·VIP형', label:'🔒 프라이빗·VIP'}]},
   {label:'🎁 상품·가격', items:[
     {value:'올인원 패키지 (그린피·숙박·식사·카트·캐디피)', label:'🎁 올인원 패키지'},
-    {value:'일반형 (기본 패키지)', label:'📦 일반형'},
-    {value:'실속형 (그린피·숙박·2일차 조식)', label:'💡 실속형'},
-    {value:'특가 (그린피·숙박)', label:'🏷 특가'}]}
+    // 상품 레이블(CARD_LABEL_META)과 같은 이름·순서 — 판정은 상품에 적용된 레이블로 한다(aiLabelStyleTest)
+    {value:'신상품', label:'🆕 신상품', lbl:'new'},
+    {value:'강력추천 상품', label:'🔥 강력추천', lbl:'recommend'},
+    {value:'추천 상품', label:'👍 추천', lbl:'suggest'},
+    {value:'특가 상품', label:'🏷 특가', lbl:'special'},
+    {value:'가격인상 상품', label:'📈 가격인상', lbl:'priceUp'},
+    {value:'가격인하 상품', label:'📉 가격인하', lbl:'priceDown'},
+    {value:'럭셔리 등급', label:'💎 럭셔리', lbl:'luxury'},
+    {value:'프리미엄 등급', label:'👑 프리미엄', lbl:'premium'},
+    {value:'품격 등급', label:'🎩 품격', lbl:'quality'},
+    {value:'스탠다드 등급', label:'📦 스탠다드', lbl:'standard'},
+    {value:'실속+ 등급', label:'💡 실속+', lbl:'value'}]}
 ];
+// 예전 상품·가격 스타일 값 → 새 값(일반형→스탠다드, 실속형→실속+, 특가→특가 레이블). 이미 저장된 카드 태그 연동·상담 기록을 읽을 때 쓴다
+const STYLE_LEGACY = {'일반형 (기본 패키지)':'스탠다드 등급', '실속형 (그린피·숙박·2일차 조식)':'실속+ 등급', '특가 (그린피·숙박)':'특가 상품'};
+function styleCanon(v){ return STYLE_LEGACY[v] || v; }
 const STYLE_OPTIONS = [].concat(...STYLE_GROUPS.map(g=>g.items));
 // 너무 많이 고르면 모든 상품의 적합도가 함께 낮아져 추천이 흐려지므로 최대 3개 — 함께 성립할 수 없는 항목은 새로 고른 쪽으로 자동 교체
 const STYLE_MAX = 3;
 const STYLE_EXCLUSIVE = [
   ['골프장 內 숙박','골프장 外 숙박'], ['골프텔 (체류형)','시내 호텔 (이동형)'], ['골프텔 (체류형)','골프장 外 숙박'], ['시내 호텔 (이동형)','골프장 內 숙박'],
   ['쉬운 골프장 선호','어려운 골프장 선호'], ['여유로운 라운드','집중 라운드형'], ['부부·커플 골프','친구·동호회 골프'],
-  ['올인원 패키지 (그린피·숙박·식사·카트·캐디피)','일반형 (기본 패키지)','실속형 (그린피·숙박·2일차 조식)','특가 (그린피·숙박)']
+  ['럭셔리 등급','프리미엄 등급','품격 등급','스탠다드 등급','실속+ 등급'], ['강력추천 상품','추천 상품'], ['가격인상 상품','가격인하 상품'], ['가격인상 상품','특가 상품']
 ];
 // value와 함께 고를 수 없는 항목들
 function aiExclOf(value, sets){ const out = new Set(); sets.forEach(set=>{ if (set.includes(value)) set.forEach(x=>{ if (x!==value) out.add(x); }); }); return out; }
@@ -20073,9 +20153,6 @@ const STYLE_KEYWORDS = {
   '어려운 골프장 선호': ['명문','챔피언','프리미엄'],
   '쉬운 골프장 선호': ['가성비','실속','편안'],
   '올인원 패키지 (그린피·숙박·식사·카트·캐디피)': ['올인원'],
-  '일반형 (기본 패키지)': [],
-  '실속형 (그린피·숙박·2일차 조식)': ['가성비','실속','평일특가'],
-  '특가 (그린피·숙박)': ['특가','가성비']
 };
 const DEST_LABELS = {
   gangwon:'강원권', chungcheong:'충청권 (충북·충남·대전·세종)', honam:'호남권 (전북·전남·광주)',
@@ -20485,6 +20562,21 @@ function aiInfoTest(key, F){
   if (key==='nopay'){ const v = aiYn(ai.noExtraPay); if (v!==null) return {v, t:`${by('noExtraPay')}: 현지 추가 지불 ${v?'없음':'있음'}${String(ai.localMandatory||'').trim()&&!v?` (${String(ai.localMandatory).slice(0,40)})`:''}`}; if (String(ai.localMandatory||'').trim()) return {v:false, t:`현지 필수 지불: ${String(ai.localMandatory).slice(0,40)}`}; return {v:null, t:'현지 추가 지불 정보 미등록 — 상담 시 확인'}; }
   return {v:null, t:''};
 }
+// 상품·가격 스타일(레이블) 판정 — 관리자가 상품에 적용한 레이블(카드에 노출 켜짐)로 판정한다
+//  · 등급(럭셔리~실속+): 등급 레이블이 적용돼 있으면 같은 등급이면 부합, 다르면 불일치. 등급 레이블이 없으면 미확인(기본 스탠다드로 간주하지만 확정은 아님)
+//  · 상태(신상품·강력추천·추천·특가·가격인상·가격인하): 레이블이 적용돼 있으면 부합, 없으면 불일치(레이블이 곧 운영자의 지정)
+//    특가는 AI 추천 정보의 상품 구성 '특가'로도 인정
+function aiLabelStyleTest(key, F){
+  const g = F.grade || productLabelProfile(null);
+  const meta = Object.values(CARD_LABEL_META).find(m=>m.key===key); if (!meta) return {v:null, t:''};
+  if (meta.type==='grade'){
+    if (g.gradeIsDefault) return {v:null, t:'등급 레이블 미적용 — 상담 시 확인'};
+    return {v:g.gradeKey===key, t:`상품 등급 레이블: ${g.gradeName}`};
+  }
+  if ((g.keys||[]).includes(key)) return {v:true, t:`'${meta.name}' 레이블 적용 상품`};
+  if (key==='special' && (F.ai||{}).packageType==='특가') return {v:true, t:'상품 구성: 특가'};
+  return {v:false, t:`'${meta.name}' 레이블 미적용`};
+}
 // 선호 스타일 판정 — 스타일마다 위 세부 조건·등록값을 조합한다. 키워드만으로 정하던 예전 방식을 보강(난이도·미식 등)
 function aiStyleTest(styleVal, F){
   const D = k => aiDetailTest(k, F), K = (words, withInc) => aiKwRes(F, words, withInc);
@@ -20502,7 +20594,7 @@ function aiStyleTest(styleVal, F){
     case '쉬운 골프장 선호': return D('course:easy');
     case '어려운 골프장 선호': return D('course:hard');
     case '집중 라운드형': return first(D('many_rounds'), K(['무제한','1일 2R','하루 2R','1일 36홀']));
-    case '골프 실력 향상형': return aiAny([D('course:lesson'), aiMulti(F.courses||[], x=>x.practice, v=>v==='y', v=>`연습 시설 ${v==='y'?'있음':'없음'}`), K(['레슨','연습장','아카데미','전지훈련'], true)]);
+    case '골프 실력 향상형': return aiAny([D('course:lesson'), aiMulti(F.courses||[], x=>(Array.isArray(x.practiceItems) && x.practiceItems.length) ? x.practiceItems.join('·') : (x.practice==='y' ? '있음' : (x.practice==='n' ? '없음' : '')), v=>v!=='없음', v=>`연습 시설 ${v}`), K(['레슨','연습장','아카데미','전지훈련'], true)]);
     case '미식 및 주변 관광 중심': return aiAny([D('food:local'), D('tour:city'), D('tour:famous')]);
     case '미식 및 쇼핑 중심': return aiAny([D('food:local'), D('shop:mall'), D('shop:market')]);
     case '자연경관·힐링형': return K(['오션뷰','바다','호수','레이크','마운틴','산악','절경','풍경','힐링','설산']);
@@ -20529,10 +20621,9 @@ function aiStyleTest(styleVal, F){
     case '친구·동호회 골프': return aiAny([D('pax:4'), D('pax:group')]);
     case '프라이빗·VIP형': return aiAny([D('svc:vip'), D('svc:private'), D('move:private')]);
     case '올인원 패키지 (그린피·숙박·식사·카트·캐디피)': return D('pkg:allin');
-    case '일반형 (기본 패키지)': return D('pkg:normal');
-    case '실속형 (그린피·숙박·2일차 조식)': return D('pkg:value');
-    case '특가 (그린피·숙박)': return D('pkg:deal');
   }
+  const lo = STYLE_OPTIONS.find(o=>o.value===styleVal);
+  if (lo && lo.lbl) return aiLabelStyleTest(lo.lbl, F);
   return K(STYLE_KEYWORDS[styleVal]||[]);
 }
 let _aiExposure = null, _aiExposureLoading = null;
@@ -20606,7 +20697,7 @@ function aiScoreOne(catId, idx, p, cat, criteria, onlyPe){
   // 스타일
   const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>richToPlain(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
   const tagStyles = cardTagStyles(p);
-  (criteria.styles||[]).forEach(styleVal=>{
+  (criteria.styles||[]).map(styleCanon).forEach(styleVal=>{
     if (tagStyles.includes(styleVal)){   // 관리자가 상품 카드 태그로 지정한 스타일 — 가장 확실한 근거
       maxScore += 15; score += 15; reasons.push(`'${styleVal}' 스타일 부합`);
       why.push({ok:true, t:`'${styleVal}' — 상품 카드 태그로 지정된 스타일`}); return;

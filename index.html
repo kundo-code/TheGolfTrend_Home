@@ -4383,6 +4383,20 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-link-box{margin:10px 0 6px;padding:12px;border-radius:12px;background:rgba(10,23,48,.03);border:1px dashed rgba(10,23,48,.18)}
 .ai-link-head{font-size:.86rem;margin-bottom:8px}.ai-link-head span{font-size:.76rem;color:var(--nm-text-soft,#667)}
 .ai-link-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.kga-search{position:relative;margin:0 0 10px}
+.kga-search input[type=search]{width:100%;box-sizing:border-box;min-height:40px;padding:9px 12px;border-radius:10px;border:1.5px solid #16a34a;background:#fff;color:#0a1730;font-size:.86rem;font-family:inherit}
+.kga-results{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.kga-results:empty{display:none}
+.kga-hit{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;text-align:left;padding:9px 12px;border-radius:10px;border:1px solid rgba(10,23,48,.12);background:#fff;color:#0a1730;font-size:.84rem;cursor:pointer;box-shadow:none}
+.kga-hit:hover,.kga-hit:focus{background:#effcf3;border-color:#16a34a}
+.kga-hit span{font-size:.74rem;color:var(--nm-text-soft,#667);white-space:nowrap}
+.kga-none{font-size:.78rem;color:var(--nm-text-soft,#667);padding:6px 2px}
+.kga-box{margin:6px 0 10px;padding:10px 12px;border-radius:12px;background:#f0f7ff;border:1px solid rgba(37,99,235,.25)}
+.kga-head{font-size:.84rem;font-weight:800;color:#1e3a8a;margin-bottom:6px}.kga-head span{font-weight:500;font-size:.74rem;color:#475569}
+.kga-sel{display:flex;flex-wrap:wrap;gap:8px 12px}
+.kga-sel label{display:flex;flex-direction:column;gap:4px;flex:1 1 200px;min-width:0;margin:0;font-size:.76rem;font-weight:700;color:#1e3a8a;text-transform:none;letter-spacing:0}
+.kga-sel select{width:100%;box-sizing:border-box;min-height:36px;padding:6px 8px;border-radius:9px;border:1px solid rgba(37,99,235,.35);background:#fff;color:#0a1730;font-size:.82rem}
+.kga-note{font-size:.74rem;line-height:1.5;color:#475569;margin:8px 0 0}
 .ai-link-acts select{flex:1 1 220px;min-width:0}
 .adv-body .ai-link-acts select{width:auto}
 .ai-place-card{margin:8px 0 0;background:#fff}
@@ -17848,7 +17862,7 @@ const AI_COURSE_FIELDS = [
   {k:'holes', label:'홀 수', type:'select', opts:['18','27','36','45+'], help:'골프장 전체 홀 수(27홀 골프장이면 27).'},
   {k:'par', label:'PAR', type:'num', help:'정규 18홀 기준 PAR.'},
   {k:'courseLength', label:'전장', type:'len', help:'레귤러(화이트) 티 기준. 숫자를 입력하고 단위를 고르세요 — 야드로 입력한 뒤 m를 고르면 미터로 자동 환산됩니다(1yd = 0.9144m, 반대도 동일).'},
-  {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'골프장·협회가 공개한 값만. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
+  {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'레귤러(남성 화이트) 티 기준, 골프장·협회가 공개한 값만(백 티 값만 있으면 비워 두고 메모에). 국내 골프장은 위 🔍 검색에서 고르면 KGA 값이 자동 입력됩니다. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
   {k:'turf', label:'잔디 상태', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
   {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼'], help:'평탄: 대부분 평지 · 보통 · 큼: 오르막·내리막이 많아 카트 이동이 사실상 필수.'},
   {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상).'},
@@ -18084,6 +18098,7 @@ function aiPlaceLinkHTML(p, kind){
         <select onchange="if(this.value){aiLinkPlace('${kind}',this.value)}"><option value="">＋ 등록부에서 ${word} 선택 (${rest.length}곳)</option>${same.length?`<optgroup label="${escapeAttr(aiCatName(cat)||'같은 지역')}">${same.map(opt).join('')}</optgroup>`:''}${other.length?`<optgroup label="${isDomesticCat(cat)?'다른 국내 권역':'다른 해외 국가'} · 지역 미지정">${other.map(opt).join('')}</optgroup>`:''}</select>
         <button type="button" class="apc-btn-sm" onclick="aiNewPlace('${kind}')">＋ 새 ${word} 등록</button>
       </div>
+      ${kind==='course' && pdom ? (kgaLoad(), `<div class="kga-search"><input type="search" placeholder="🔍 골프장 이름으로 찾기 — 고르면 홀 수·전장·Rating·Slope 자동 입력${_kga ? ` (KGA ${_kga.clubs.length}곳)` : ''}" oninput="aiKgaSearch(this)" onfocus="aiKgaSearch(this)" onblur="setTimeout(()=>{const b=this.parentNode&&this.parentNode.querySelector('.kga-results');if(b)b.innerHTML=''},200)" autocomplete="off"><div class="kga-results"></div></div>`) : ''}
       ${linked.map(x=>{
         const used = aiPlaceUseCount(kind, x.id);
         const save = (k, expr) => `updateAiPlace('${kind}','${x.id}','${k}',${expr})`;
@@ -18091,6 +18106,7 @@ function aiPlaceLinkHTML(p, kind){
         return `<details class="pe-labels ai-place-card" ${advDetailsAttrs('aiP-'+x.id, !x.name)}>
           <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
+          ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
           <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom)).map(fd=>aiFieldHTML(fd, x[fd.k], fd.k==='cat' ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', '', x)).join('')}</div>
           <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
         </details>`;
@@ -18186,6 +18202,83 @@ function aiNewPlace(kind, seed){
   aiLinkPlace(kind, x.id, true); renderAdvBody();
   setTimeout(()=>{ const el = document.querySelector(`#advBody details[data-ck="aiP-${x.id}"] input[type=text]`); if (el && !x.name) el.focus(); }, 50);
   return x;
+}
+// ── KGA 코스레이팅 목록(assets/kga-course-ratings.json, 대한민국 2023-05-24) — 국내 골프장은 이름을 고르면 홀 수·전장·Course Rating·Slope를 자동 입력 ──
+// 기준 티는 레귤러(남성 화이트). 화이트·레귤러 티가 없으면 남성 티 중 가운데 길이의 티. 코스 조합·티는 카드에서 바꿀 수 있다.
+// 홀 수는 KGA에 등록된 코스 조합으로 계산한 값(예: Birch+Maple·Maple+Pine·Pine+Birch → 27홀). PAR는 목록에 없어 직접 입력
+let _kga = null, _kgaLoading = null;
+function kgaLoad(){
+  if (_kga || _kgaLoading) return _kgaLoading;
+  _kgaLoading = fetch('assets/kga-course-ratings.json').then(r=>r.ok ? r.json() : null).then(d=>{ if (d && Array.isArray(d.clubs)) _kga = d; if (currentAdv) renderAdvBody(); }).catch(()=>{ _kgaLoading = null; });
+  return _kgaLoading;
+}
+function kgaNorm(t){ return String(t||'').toLowerCase().replace(/\s+/g,'').replace(/(컨트리클럽|골프클럽|골프앤리조트|골프리조트|골프장|cc|gc)$/,''); }
+function kgaFind(name){ if (!_kga || !name) return null; const k = kgaNorm(name); return _kga.clubs.find(c=>c.g===name) || _kga.clubs.find(c=>kgaNorm(c.g)===k) || null; }
+function kgaDefaultTee(combo){
+  const male = combo.t.filter(t=>t[1]==='M'); if (!male.length) return combo.t[0] ? combo.t[0][0] : '';
+  const tests = [/^white$/i, /^(white1|white\(m\)|regular|reg)$/i, /(regular|\breg\b|\(reg\))/i, /white(?!.*senior)/i];
+  for (const re of tests){ const hit = male.find(t=>re.test(t[0]) && !/\(20\d\d\)/.test(t[0])) || male.find(t=>re.test(t[0])); if (hit) return hit[0]; }
+  const byLen = male.slice().sort((a,b)=>b[4]-a[4]); return byLen[Math.floor(byLen.length/2)][0];
+}
+function kgaHolesOpt(h){ return h>=45 ? '45+' : (h===36 ? '36' : (h===27 ? '27' : (h===18 ? '18' : ''))); }
+// x(골프장 등록부 항목)에 KGA 값 입력 — over=true면 전장·Rating을 고른 조합·티 값으로 덮어쓰고, 아니면 빈 칸만 채운다
+function kgaApply(x, over){
+  const club = kgaFind((x.kga && x.kga.g) || x.name); if (!club) return 0;
+  const combo = club.c.find(c=>x.kga && c.n===x.kga.c) || club.c[0];
+  const teeName = (x.kga && x.kga.c===combo.n && combo.t.some(t=>t[0]===x.kga.t)) ? x.kga.t : kgaDefaultTee(combo);
+  const tee = combo.t.find(t=>t[0]===teeName) || combo.t[0];
+  x.kga = {g:club.g, c:combo.n, t:tee[0], sex:tee[1]};
+  const vals = {holes:kgaHolesOpt(club.h), courseLength:`${tee[4].toLocaleString('en-US')}yd`, rating:`${tee[2].toFixed(1)} / ${tee[3]}`};
+  let n = 0;
+  Object.keys(vals).forEach(k=>{ if (!vals[k]) return; if (over && k!=='holes' ? true : !aiInfoFilled(x[k])){ if (x[k]!==vals[k]){ x[k] = vals[k]; n++; } } });
+  if (!x.name) x.name = club.g;
+  x.updatedAt = new Date().toISOString();
+  return n;
+}
+// 상품 고급 편집: KGA 목록에서 골프장 고르기 — 등록부에 이미 있으면 연결(빈 칸만 채움), 없으면 새로 등록해 자동 입력 후 연결
+function aiPickKga(name){
+  const club = kgaFind(name); if (!club) return;
+  const exist = aiPlaces.courses.find(x=>(x.kga && x.kga.g===club.g) || kgaNorm(x.name)===kgaNorm(club.g));
+  if (exist){ kgaApply(exist, false); saveAiPlaces(); advOpenState['aiP-'+exist.id] = true; aiLinkPlace('course', exist.id); return; }
+  const x = {id:aiNewPlaceId('course'), name:club.g, cat:currentAdv ? currentAdv.catId : '', createdAt:new Date().toISOString(), kga:{g:club.g}};
+  kgaApply(x, true);
+  aiPlaces.courses.push(x); saveAiPlaces();
+  advOpenState['aiP-'+x.id] = true; advOpenState['ai-course'] = true;
+  aiLinkPlace('course', x.id);
+}
+function aiKgaSearch(inp){
+  const box = inp.parentNode.querySelector('.kga-results'); if (!box) return;
+  const q = kgaNorm(inp.value);
+  if (!_kga || !q){ box.innerHTML = ''; return; }
+  const hits = _kga.clubs.filter(c=>kgaNorm(c.g).includes(q)).slice(0, 12);
+  box.innerHTML = hits.length ? hits.map(c=>`<button type="button" class="kga-hit" onmousedown="event.preventDefault()" onclick="aiPickKga('${escapeAttr(c.g)}')"><b>${escapeAttr(c.g)}</b><span>${kgaHolesOpt(c.h)||c.h}홀 · 코스 조합 ${c.c.length}개</span></button>`).join('') : `<div class="kga-none">목록에 없는 골프장입니다 — 오른쪽 "＋ 새 골프장 등록"으로 직접 입력해 주세요.</div>`;
+}
+// 골프장 카드: 코스 조합·티 바꾸기(바꾸면 전장·Rating을 그 값으로 다시 입력)
+function aiKgaSet(id, k, v){
+  const x = aiFindPlace('course', id); if (!x) return;
+  x.kga = Object.assign({}, x.kga||{}, {[k]:v}); if (k==='c') delete x.kga.t;
+  kgaApply(x, true); saveAiPlaces(); renderAdvBody();
+}
+function aiKgaFill(id){
+  const x = aiFindPlace('course', id); if (!x) return;
+  const n = kgaApply(x, false); saveAiPlaces(); renderAdvBody();
+  if (!n) alert('비어 있는 칸이 없어 바꾼 값이 없습니다. 코스 조합이나 티를 고르면 그 값으로 다시 입력됩니다.');
+}
+function aiKgaBoxHTML(x){
+  const club = kgaFind((x.kga && x.kga.g) || x.name); if (!club) return '';
+  const linked = !!(x.kga && x.kga.c);
+  const combo = club.c.find(c=>linked && c.n===x.kga.c) || club.c[0];
+  const tee = linked ? x.kga.t : kgaDefaultTee(combo);
+  const teeTxt = t => `${t[0]} (${t[1]==='M'?'남':'여'}) · ${t[2].toFixed(1)}/${t[3]} · ${t[4].toLocaleString('en-US')}yd`;
+  return `<div class="kga-box">
+    <div class="kga-head">📋 KGA 코스레이팅 현황 <span>${escapeAttr(_kga.date)} 기준 · ${escapeAttr(club.g)}</span></div>
+    ${linked ? `<div class="kga-sel">
+      <label>코스 조합<select onchange="aiKgaSet('${x.id}','c',this.value)">${club.c.map(c=>`<option value="${escapeAttr(c.n)}" ${c.n===combo.n?'selected':''}>${escapeAttr(c.n)}</option>`).join('')}</select></label>
+      <label>기준 티<select onchange="aiKgaSet('${x.id}','t',this.value)">${combo.t.map(t=>`<option value="${escapeAttr(t[0])}" ${t[0]===tee?'selected':''}>${escapeAttr(teeTxt(t))}</option>`).join('')}</select></label>
+    </div>
+    <p class="kga-note">처음에는 레귤러(남성 화이트) 티 값으로 입력합니다. 코스 조합·기준 티를 바꾸면 전장·Course Rating·Slope가 그 값으로 다시 입력됩니다. 홀 수는 KGA에 등록된 코스 조합으로 계산한 값이라 실제와 다르면 고쳐 주세요. PAR는 목록에 없어 직접 입력합니다.</p>`
+    : `<p class="kga-note">이 골프장이 KGA 목록에 있습니다. <button type="button" class="apc-btn-sm" onclick="aiKgaFill('${x.id}')">KGA 정보로 빈 칸 채우기</button> (이미 입력한 값은 그대로 둡니다)</p>`}
+  </div>`;
 }
 function aiUnlinkPlace(kind, id){
   const p=getAdvProduct(); if (!p) return;

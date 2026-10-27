@@ -2348,6 +2348,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .price-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}
 .price-row input[type=number]{padding:9px 11px;font-size:.85rem}
 .curr-sel{padding:9px 10px;font-size:.75rem;min-width:132px}
+@media(max-width:560px){.price-row{grid-template-columns:minmax(0,1fr) auto}.price-row input[type=number]{grid-column:1/-1;min-width:0}.curr-sel{min-width:0}} /* 좁은 화면: 금액 입력칸이 한 줄을 쓰고 통화·~부터는 아래 줄(이전에는 금액 칸이 22px로 눌렸음) */
 .from-toggle{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--nm-surface);border:none;border-radius:var(--nm-r-sm);cursor:pointer;font-size:.72rem;color:var(--nm-text-soft);box-shadow:var(--nm-shadow-raised-sm)}
 .from-toggle input{accent-color:var(--nm-blue);cursor:pointer;width:14px;height:14px}
 .from-toggle input:checked ~ span{color:var(--nm-blue-deep);font-weight:700}
@@ -4380,6 +4381,15 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-len-conv{font-size:.72rem;color:#2563eb;font-weight:600;min-height:0}
 .ai-len-conv:empty{display:none}
 .ai-sub{padding:6px 0 0;gap:6px 12px}
+/* 상품 고급 편집 — 입력된 칸(초록 테두리·왼쪽 막대·굵은 글씨·라벨 ✓) / 비어 있는 칸(점선) */
+.adv-body .adv-empty{outline:1px dashed rgba(10,23,48,.22);outline-offset:-1px}
+.adv-body select.adv-empty{color:#8a94a6}
+.adv-body .adv-filled{outline:1.5px solid rgba(22,163,74,.55);outline-offset:-1.5px}
+.adv-body input.adv-filled,.adv-body select.adv-filled,.adv-body textarea.adv-filled{box-shadow:inset 4px 0 0 #16a34a,var(--nm-shadow-inset);font-weight:700;color:#064e3b}
+.adv-body input.adv-filled:focus,.adv-body select.adv-filled:focus,.adv-body textarea.adv-filled:focus{box-shadow:inset 4px 0 0 #16a34a,var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
+.adv-body .rtf-editable.adv-filled{box-shadow:inset 4px 0 0 #16a34a}
+.adv-body label.adv-lab-filled{color:#065f46}
+.adv-body label.adv-lab-filled::before{content:'✓';display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-right:5px;border-radius:50%;background:#16a34a;color:#fff;font-size:.62rem;font-weight:800;vertical-align:1px;letter-spacing:0}
 .ai-link-box{margin:10px 0 6px;padding:12px;border-radius:12px;background:rgba(10,23,48,.03);border:1px dashed rgba(10,23,48,.18)}
 .ai-link-head{font-size:.86rem;margin-bottom:8px}.ai-link-head span{font-size:.76rem;color:var(--nm-text-soft,#667)}
 .ai-link-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
@@ -18087,6 +18097,53 @@ function aiFieldFillSync(e){
   f.classList.toggle('filled', any);
   if (any) f.classList.remove('has-auto'); else if (f.querySelector('.ai-inh')) f.classList.add('has-auto');
 }
+// ── 상품 고급 편집: 입력된 칸 / 비어 있는 칸 구분 ──
+// 입력칸마다 .adv-filled(입력됨: 초록 테두리·왼쪽 막대·굵은 글씨) / .adv-empty(비어 있음: 점선)를 붙이고, 바로 위 라벨에는 ✓를 붙인다.
+// 항목을 다시 그리거나 값을 바꿀 때마다(MutationObserver·입력 이벤트) 다시 판정한다. 'AI 추천 정보' 칸(.ai-info-f)은 위 aiFieldFillSync가 따로 처리
+const ADV_FILL_SEL = 'input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]):not([type=range]):not([type=color]):not([type=button]), select, textarea, [contenteditable="true"]';
+function advCtlState(el){
+  if (el.isContentEditable && el.tagName!=='INPUT' && el.tagName!=='TEXTAREA') return (el.textContent||'').trim()!=='' || !!el.querySelector('img,table,hr,video') ? 'filled' : 'empty';
+  if (el.tagName==='SELECT'){
+    if ([...el.options].some(o=>o.value==='')) return el.value!=='' ? 'filled' : 'empty';
+    return el.selectedIndex>0 ? 'filled' : '';   // 첫 항목이 기본값인 선택칸(통화·'표시 안 함' 등)은 기본값이면 구분 표시를 하지 않는다
+  }
+  return String(el.value||'').trim()!=='' ? 'filled' : 'empty';
+}
+// 입력칸 바로 위 라벨 — 같은 줄 묶음(div)에 들어 있으면 그 묶음 위의 라벨까지 올라가며 찾는다
+function advLabelOf(el){
+  let host = el.closest('.rtf-wrap') || el;
+  for (let up=0; host && up<3; up++, host = host.parentElement){
+    if (!host.parentElement || host.matches('.adv-body,details,.adv-group')) return null;
+    let n = host.previousElementSibling;
+    for (let i=0; n && i<2; i++, n = n.previousElementSibling){ if (n.tagName==='LABEL') return n; if (n.matches && (n.matches(ADV_FILL_SEL) || n.querySelector(ADV_FILL_SEL))) break; }
+    if (host.previousElementSibling && host.previousElementSibling.tagName!=='LABEL' && host.parentElement.querySelectorAll(':scope > label').length>1) return null;
+  }
+  return null;
+}
+function advLabelSync(lab){
+  let n = lab.nextElementSibling, any = false;
+  for (; n && n.tagName!=='LABEL'; n = n.nextElementSibling){ if ((n.matches && n.matches('.adv-filled')) || (n.querySelector && n.querySelector('.adv-filled'))){ any = true; break; } }
+  lab.classList.toggle('adv-lab-filled', any);
+}
+function advFillSyncAll(root){
+  const body = root || document.getElementById('advBody'); if (!body) return;
+  const labs = new Set();
+  body.querySelectorAll(ADV_FILL_SEL).forEach(el=>{
+    if (el.closest('.rtf-toolbar,.ai-info-f,.adv-titlebar')) return;
+    const st = advCtlState(el);
+    el.classList.toggle('adv-filled', st==='filled'); el.classList.toggle('adv-empty', st==='empty');
+    const lab = advLabelOf(el); if (lab) labs.add(lab);
+  });
+  labs.forEach(advLabelSync);
+}
+let _advFillQ = false;
+function advFillSchedule(){ if (_advFillQ) return; _advFillQ = true; requestAnimationFrame(()=>{ _advFillQ = false; advFillSyncAll(); }); }
+function advFillInit(){
+  const body = document.getElementById('advBody'); if (!body || body._fillObs) return;
+  body._fillObs = new MutationObserver(advFillSchedule); body._fillObs.observe(body, {childList:true, subtree:true});
+  body.addEventListener('input', advFillSchedule, true); body.addEventListener('change', advFillSchedule, true);
+}
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', advFillInit); else advFillInit();
 document.addEventListener('input', aiFieldFillSync, true);
 document.addEventListener('change', aiFieldFillSync, true);
 function aiPlaceSummary(kind, x){

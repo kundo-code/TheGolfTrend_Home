@@ -4375,6 +4375,20 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-legacy{margin:8px 0;padding:10px 12px;border-radius:10px;background:#fff6dc;border:1px solid #e3c383;font-size:.8rem}
 .ai-legacy p{margin:4px 0 8px;color:#5a4208}
 .ai-sub-l{margin:14px 2px 0;font-size:.78rem;font-weight:700;color:var(--nm-text-soft,#667)}
+/* 카드 태그 ↔ 선호 스타일 카드 */
+.ctag-style-pal{margin:4px 0 10px;padding:10px 12px;border-radius:12px;background:rgba(201,150,43,.07);border:1px dashed rgba(201,150,43,.5)}
+.ctag-style-h{font-size:.82rem;font-weight:700;color:var(--nm-text,#0a1730);margin-bottom:6px}
+.ctag-style-h span{display:block;font-weight:400;font-size:.74rem;color:var(--nm-text-soft,#667);margin-top:2px}
+.ctag-style-g{display:flex;flex-wrap:wrap;align-items:center;gap:5px 6px;margin:5px 0}
+.ctag-style-gl{flex:0 0 auto;min-width:84px;font-size:.72rem;font-weight:700;color:var(--nm-text-soft,#667)}
+.ctag-style-chip{padding:5px 10px;border-radius:999px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font-size:.78rem;cursor:grab;box-shadow:none;width:auto;min-height:0}
+.ctag-style-chip:hover{border-color:#c9962b;background:#fffaf0}
+.ctag-style-chip.on{background:#f3ead2;border-color:#d9c08a;color:#8a6d2a;cursor:default}
+.ctag-link{flex:none;padding:2px 7px;border-radius:999px;border:1px solid #9bd3b1;background:#eaf7ef;color:#1d5b37;font-size:.68rem;font-weight:700;cursor:pointer;width:auto;min-height:0;box-shadow:none}
+.ctag-drop-hint{display:none}
+.card-tag-editor.ctag-style-dragging .card-tag-grid{min-height:46px;outline:2px dashed #c9962b;outline-offset:3px;border-radius:10px}
+.card-tag-editor.ctag-style-dragging .ctag-drop-hint{display:flex;align-items:center;justify-content:center;padding:8px;font-size:.78rem;color:#8a5a0a}
+.card-tag-grid.drop-target{background:rgba(201,150,43,.08)}
 /* 자동 판정 안내 */
 .ai-auto-banner{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#eaf7ef;border:1px solid #9bd3b1;color:#1d5b37;font-size:.8rem;line-height:1.6}
 /* 요금 항목별 AI 정보 · 추천 요금 항목 */
@@ -12472,6 +12486,22 @@ function cardTagEntries(p){
   return out;
 }
 function cardTagsOf(p){ return cardTagEntries(p).map(e=>e.plain); }
+// [추가] 카드 태그 ↔ 선호 스타일 연동 — 관리자가 선호 스타일 카드를 끌어다 놓아 만든 태그는 cardTagStyleN에 스타일 값을 함께 저장한다.
+// 직접 입력한 태그라도 문구가 선호 스타일 이름과 같으면 연동된 것으로 본다. AI 추천은 연동된 스타일을 '부합'으로 판정
+function styleTagText(v){ const o = STYLE_OPTIONS.find(x=>x.value===v); return o ? o.label.replace(/^[^\wㄱ-힣]+\s*/,'').trim() : String(v||''); }
+function cardTagStyles(p){
+  const out = [];
+  for (let n=1;n<=CARD_TAG_MAX;n++){
+    const t = p['cardTag'+n]; if (!cardTagFilled(t)) continue;
+    const sv = p['cardTagStyle'+n];
+    if (sv==='__none') continue;
+    if (sv && STYLE_OPTIONS.some(o=>o.value===sv)){ if (!out.includes(sv)) out.push(sv); continue; }
+    const plain = String(richToPlain(t)).trim();
+    const o = STYLE_OPTIONS.find(x=>styleTagText(x.value)===plain || x.value===plain);
+    if (o && !out.includes(o.value)) out.push(o.value);
+  }
+  return out;
+}
 // 태그 박스 색상 — 어두운 색이면 글자를 흰색으로 자동 전환(글자 색을 직접 지정한 부분은 그대로)
 // [추가] 요금 항목 대표 문구(pe.headline) — 서식 편집(HTML)과 박스 색상(pe.headlineBg). 예전 일반 텍스트 값도 그대로 지원
 function peHeadlineHTML(pe){
@@ -17577,6 +17607,10 @@ function advBasicHTML(p){
           </div>
         </div>
         <label>카드 태그 ${hint(`(상품 카드의 요금 위쪽에 노출, 최대 ${CARD_TAG_MAX}개 · 입력한 순서대로 표시 · ⠿를 끌어 순서 이동 · 태그를 클릭한 뒤 위 서식 도구로 꾸미고, 🎨로 태그 박스 색상 변경)`)}</label>
+        ${(()=>{ const linked = cardTagStyles(p); return `<div class="ctag-style-pal">
+          <div class="ctag-style-h">🎯 선호 스타일 카드 <span>끌어서 아래 태그 칸에 놓거나 눌러서 추가 — 상품 카드에 태그로 보이고, AI 골프여행 추천에서 이 스타일을 고른 고객에게 이 상품이 <b>부합</b>으로 반영됩니다 (${linked.length}개 연동)</span></div>
+          ${STYLE_GROUPS.map(g=>`<div class="ctag-style-g"><span class="ctag-style-gl">${g.label}</span>${g.items.map(o=>{ const on = linked.includes(o.value); return `<button type="button" class="ctag-style-chip${on?' on':''}" ${on?'disabled title="이미 카드 태그로 연동됨"':`draggable="true" title="끌어서 태그 칸에 놓거나 눌러서 추가" ondragstart="ctagStyleDragStart(event,'${escapeAttr(o.value)}')" ondragend="ctagDragEnd()" onclick="addStyleCardTag('${escapeAttr(o.value)}')"`}>${o.label}${on?' ✓':''}</button>`; }).join('')}</div>`).join('')}
+        </div>`; })()}
         <!-- [추가] 카드 태그 서식 편집 — 서식 툴바 하나를 태그 10개가 함께 쓰고(마지막으로 클릭한 태그에 적용),
              태그마다 박스 색상을 따로 지정한다. 편집 칸 자체가 실제 태그 모양이라 결과를 바로 확인할 수 있다 -->
         <div class="rtf-wrap card-tag-editor">
@@ -17595,9 +17629,12 @@ function advBasicHTML(p){
                 <label class="ctag-bg" role="button" tabindex="0" title="태그 박스 색상 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onclick="openColorPalette(this)" data-title="태그 박스 색상" data-value="${bg||'#e3f3e8'}" data-apply="setCardTagBg(${n},__C__)"><span>🎨</span></label>
                 ${bg?`<button type="button" class="ctag-bg-reset" title="박스 색상 기본값으로" onclick="setCardTagBg(${n},'')">기본</button>`:''}
                 <button type="button" class="ctag-del" title="이 태그 삭제" onclick="removeCardTag(${n})">✕</button>
+                ${(()=>{ const st = p['cardTagStyle'+n]; const auto = !st && cardTagFilled(p['cardTag'+n]) && STYLE_OPTIONS.find(o=>styleTagText(o.value)===String(richToPlain(p['cardTag'+n])).trim());
+                  const sv = st && st!=='__none' ? st : (auto ? auto.value : '');
+                  return sv ? `<button type="button" class="ctag-link" title="AI 골프여행 추천 '${escapeAttr(styleTagText(sv))}' 스타일과 연동됨 — 누르면 연동 해제(태그는 유지)" onclick="unlinkCardTagStyle(${n})">🔗 AI 연동</button>` : ''; })()}
               </div>`;
             }).join('');
-            return `<div class="card-tag-grid ctag-grid2">${cells}</div>
+            return `<div class="card-tag-grid ctag-grid2" ondragover="ctagGridOver(event)" ondragleave="this.classList.remove('drop-target')" ondrop="ctagGridDrop(event)">${cells}<div class="ctag-drop-hint">여기에 놓으면 카드 태그로 추가</div></div>
             <div class="ctag-add-row"><button type="button" class="apc-btn-sm" onclick="addCardTag()" ${filled+showNew>=CARD_TAG_MAX?'disabled':''}>+ 카드 태그 추가 (${filled}/${CARD_TAG_MAX})</button>${filled+showNew===0?'<span class="ctag-empty-hint">등록된 카드 태그가 없습니다</span>':''}</div>`;
           })()}
         </div>
@@ -18152,9 +18189,9 @@ function cardTagFilled(t){ const v=String(t==null?'':t); return !!(richToPlain(v
 function cardTagCount(p){ let c=0; for (let n=1;n<=CARD_TAG_MAX;n++) if (cardTagFilled(p['cardTag'+n])) c++; return c; }
 function cardTagCompact(p){
   const arr=[];
-  for (let n=1;n<=CARD_TAG_MAX;n++){ if (cardTagFilled(p['cardTag'+n])) arr.push({t:p['cardTag'+n], bg:p['cardTagBg'+n]||''}); }
-  for (let n=1;n<=CARD_TAG_MAX;n++){ delete p['cardTag'+n]; delete p['cardTagBg'+n]; }
-  arr.forEach((x,k)=>{ p['cardTag'+(k+1)]=x.t; if (x.bg) p['cardTagBg'+(k+1)]=x.bg; });
+  for (let n=1;n<=CARD_TAG_MAX;n++){ if (cardTagFilled(p['cardTag'+n])) arr.push({t:p['cardTag'+n], bg:p['cardTagBg'+n]||'', st:p['cardTagStyle'+n]||''}); }
+  for (let n=1;n<=CARD_TAG_MAX;n++){ delete p['cardTag'+n]; delete p['cardTagBg'+n]; delete p['cardTagStyle'+n]; }
+  arr.forEach((x,k)=>{ p['cardTag'+(k+1)]=x.t; if (x.bg) p['cardTagBg'+(k+1)]=x.bg; if (x.st) p['cardTagStyle'+(k+1)]=x.st; });
 }
 let _ctagPending = null; // 방금 "추가"로 연 빈 태그 칸이 있는 상품(catId|idx) — 입력을 시작하거나 다른 상품을 열면 해제
 function ctagKey(){ return currentAdv ? currentAdv.catId+'|'+currentAdv.idx : ''; }
@@ -18175,7 +18212,7 @@ function addCardTag(){
 }
 function removeCardTag(n){
   const p=getAdvProduct(); if (!p) return;
-  delete p['cardTag'+n]; delete p['cardTagBg'+n];
+  delete p['cardTag'+n]; delete p['cardTagBg'+n]; delete p['cardTagStyle'+n];
   if (n > cardTagCount(p)) _ctagPending = null; // 빈 새 칸을 지운 경우
   cardTagCompact(p);
   saveAdvChange(); renderAdvBody();
@@ -18189,31 +18226,62 @@ function ctagDragStart(e, n){
   const cell = e.target.closest('.ctag-cell');
   if (cell){ try{ e.dataTransfer.setDragImage(cell, 12, 12); }catch(_){} setTimeout(()=>cell.classList.add('dragging'),0); }
 }
+let _ctagStyleDrag = null;   // 끌고 있는 선호 스타일 값
+function ctagStyleDragStart(e, v){
+  _ctagStyleDrag = v; _ctagDragN = null;
+  e.dataTransfer.effectAllowed = 'copy';
+  try{ e.dataTransfer.setData('text/plain', 'style:'+v); }catch(_){}
+  document.querySelector('#advBody .card-tag-editor')?.classList.add('ctag-style-dragging');
+}
+function ctagGridOver(e){ if (_ctagStyleDrag==null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; e.currentTarget.classList.add('drop-target'); }
+function ctagGridDrop(e){ if (_ctagStyleDrag==null) return; e.preventDefault(); const v = _ctagStyleDrag; ctagDragEnd(); addStyleCardTag(v); }
 function ctagDragEnd(){
-  _ctagDragN = null;
+  _ctagDragN = null; _ctagStyleDrag = null;
+  document.querySelectorAll('.card-tag-editor.ctag-style-dragging,.card-tag-grid.drop-target').forEach(c=>c.classList.remove('ctag-style-dragging','drop-target'));
   document.querySelectorAll('.ctag-cell.dragging,.ctag-cell.drop-target').forEach(c=>c.classList.remove('dragging','drop-target'));
 }
 function ctagDragOver(e, n){
-  if (_ctagDragN==null) return;
-  e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+  if (_ctagDragN==null && _ctagStyleDrag==null) return;
+  e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = _ctagStyleDrag!=null ? 'copy' : 'move';
   document.querySelectorAll('.ctag-cell.drop-target').forEach(c=>{ if (+c.dataset.n!==n) c.classList.remove('drop-target'); });
   if (n!==_ctagDragN) e.currentTarget.classList.add('drop-target');
 }
 function ctagDrop(e, to){
-  e.preventDefault();
+  e.preventDefault(); e.stopPropagation();
+  if (_ctagStyleDrag!=null){ const v = _ctagStyleDrag; ctagDragEnd(); addStyleCardTag(v, to); return; }   // 놓은 칸 자리에 끼워 넣기
   const from = _ctagDragN; ctagDragEnd();
   if (from==null || from===to) return;
   moveCardTag(from, to);
 }
 function moveCardTag(from, to){
   const p=getAdvProduct(); if (!p) return;
-  const arr = Array.from({length:CARD_TAG_MAX},(_,k)=>({t:p['cardTag'+(k+1)]||'', bg:p['cardTagBg'+(k+1)]||''}));
+  const arr = Array.from({length:CARD_TAG_MAX},(_,k)=>({t:p['cardTag'+(k+1)]||'', bg:p['cardTagBg'+(k+1)]||'', st:p['cardTagStyle'+(k+1)]||''}));
   const it = arr.splice(from-1,1)[0]; arr.splice(to-1,0,it);
   arr.forEach((x,k)=>{
     const n=k+1;
     if (x.t) p['cardTag'+n]=x.t; else delete p['cardTag'+n];
     if (x.bg) p['cardTagBg'+n]=x.bg; else delete p['cardTagBg'+n];
+    if (x.st) p['cardTagStyle'+n]=x.st; else delete p['cardTagStyle'+n];
   });
+  saveAdvChange(); renderAdvBody();
+}
+// 선호 스타일 카드 → 카드 태그(끝 또는 at 자리에). 이미 있는 스타일은 다시 추가하지 않는다
+function addStyleCardTag(v, at){
+  const p=getAdvProduct(); if (!p || !STYLE_OPTIONS.some(o=>o.value===v)) return;
+  cardTagCompact(p);
+  if (cardTagStyles(p).includes(v)) return;
+  const cnt = cardTagCount(p);
+  if (cnt >= CARD_TAG_MAX){ alert(`카드 태그는 최대 ${CARD_TAG_MAX}개입니다. 다른 태그를 지운 뒤 추가해 주세요.`); return; }
+  const n = cnt+1;
+  p['cardTag'+n] = escapeHtmlText(styleTagText(v)); p['cardTagStyle'+n] = v;
+  _ctagPending = null;
+  if (at && at < n){ moveCardTag(n, at); return; }   // moveCardTag가 저장·다시 그리기
+  saveAdvChange(); renderAdvBody();
+}
+function unlinkCardTagStyle(n){
+  const p=getAdvProduct(); if (!p) return;
+  if (!confirm('이 태그의 AI 추천 연동을 해제할까요? (태그는 상품 카드에 그대로 남습니다)')) return;
+  p['cardTagStyle'+n] = '__none';   // 문구가 스타일 이름과 같아도 연동하지 않음 표시
   saveAdvChange(); renderAdvBody();
 }
 function setHeadlineShadow(i, on){
@@ -20537,7 +20605,12 @@ function aiScoreOne(catId, idx, p, cat, criteria, onlyPe){
   }
   // 스타일
   const haystack = cardTagsOf(p).concat([p.title||'']).concat((p.priceEntries||[]).map(pe=>richToPlain(pe.headline||'')+' '+(Array.isArray(pe.emphasis)?pe.emphasis.join(' '):(pe.emphasis||'')))).join(' ');
+  const tagStyles = cardTagStyles(p);
   (criteria.styles||[]).forEach(styleVal=>{
+    if (tagStyles.includes(styleVal)){   // 관리자가 상품 카드 태그로 지정한 스타일 — 가장 확실한 근거
+      maxScore += 15; score += 15; reasons.push(`'${styleVal}' 스타일 부합`);
+      why.push({ok:true, t:`'${styleVal}' — 상품 카드 태그로 지정된 스타일`}); return;
+    }
     const lodge = STYLE_LODGE[styleVal];
     if (lodge && p.lodgeLocation && p.lodgeLocation!=='none' && p.lodgeLocation!=='golftel'){ // 골프텔 or 외부숙소는 위치가 특정되지 않아 키워드로 판정
       maxScore += 20;

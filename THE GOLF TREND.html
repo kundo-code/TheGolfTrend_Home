@@ -10562,7 +10562,17 @@ const AI_PLACES_KEY='kundo_ai_places_v1';
 let aiPlaces={lodges:[], courses:[]};
 function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
-function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; return x; }
+function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x) aiCourseAutoLevel(x); return x; }
+// Slope → 난이도(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적). Slope를 찾지 못하면 ''
+function aiSlopeOf(rating){ const nums = String(rating||'').match(/\d+(?:\.\d+)?/g); if (!nums) return null; const sl = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop(); return sl==null ? null : sl; }
+function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? '쉬움' : (sl<135 ? '보통' : '도전적')); }
+// 난이도가 비어 있거나 자동 값(courseLevelAuto)이면 Course Rating · Slope로 다시 정한다. 관리자가 직접 고른 값은 그대로 둔다
+function aiCourseAutoLevel(x){
+  if (x.courseLevel && !x.courseLevelAuto) return;
+  const lv = aiSlopeLevel(x.rating);
+  if (lv){ x.courseLevel = lv; x.courseLevelAuto = true; }
+  else if (x.courseLevelAuto){ delete x.courseLevel; delete x.courseLevelAuto; }
+}
 try{ const v=JSON.parse(localStorage.getItem(AI_PLACES_KEY)||'null'); if (v) aiPlaces=aiPlacesNorm(v); }catch(e){}
 function saveAiPlaces(){try{localStorage.setItem(AI_PLACES_KEY,JSON.stringify(aiPlaces))}catch(e){alert('저장 공간 부족')}queueSiteStateSync();}
 
@@ -17865,7 +17875,7 @@ const AI_COURSE_FIELDS = [
   {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'레귤러(남성 화이트) 티 기준, 골프장·협회가 공개한 값만(백 티 값만 있으면 비워 두고 메모에). 국내 골프장은 위 🔍 검색에서 고르면 KGA 값이 자동 입력됩니다. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
   {k:'turf', label:'잔디 상태', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
   {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼'], help:'평탄: 대부분 평지 · 보통 · 큼: 오르막·내리막이 많아 카트 이동이 사실상 필수.'},
-  {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상).'},
+  {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상). Course Rating · Slope를 입력하면 이 기준으로 자동 선택됩니다(직접 고르면 그 값이 우선, \'미확인\'을 고르면 다시 자동).'},
   {k:'famous', label:'명문·대회 개최', type:'yn', help:'프로 투어(KPGA·KLPGA·JGTO·아시안투어·LPGA 등) 정규 대회 개최 이력이 있거나 공신력 있는 골프장 랭킹(국가별 100대 등)에 든 곳이면 \'예\'.'},
   {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통'], help:'우수: 최근 1년 안에 현장 확인 또는 고객 평가로 잔디·그린·시설 관리가 좋다고 확인됨. 근거가 없으면 미확인.'},
   {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','페어웨이 진입 불가','카트 없음(도보)'], help:'페어웨이 진입 불가: 카트 도로로만 이동. 평소 운영 기준(우천 등 예외 제외).'},
@@ -18022,7 +18032,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
   const k = fd.k, lab = `<span class="ai-info-lab">${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}${aiHelpHTML(fd)}${hint ? `<small class="ai-inh">${hint}</small>` : ''}`;
   const subArr = fd.sub && obj && Array.isArray(obj[fd.sub]) ? obj[fd.sub] : [];
   const filled = aiInfoFilled(v) || subArr.length>0;
-  const box = `class="ai-info-f${filled ? ' filled' : (hint ? ' has-auto' : '')}"`;
+  const box = `class="ai-info-f${filled ? ' filled' : (hint ? ' has-auto' : '')}" data-k="${k}"`;
   if (fd.type==='multi'){
     const arr = Array.isArray(v) ? v : [];
     return `<div ${box}>${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
@@ -18107,7 +18117,7 @@ function aiPlaceLinkHTML(p, kind){
           <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
           ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
-          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom)).map(fd=>aiFieldHTML(fd, x[fd.k], fd.k==='cat' ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', '', x)).join('')}</div>
+          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom)).map(fd=>aiFieldHTML(fd, x[fd.k], fd.k==='cat' ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x)).join('')}</div>
           <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
         </details>`;
       }).join('')}
@@ -18176,8 +18186,27 @@ function updateAiPlace(kind, id, k, v){
   if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete x[k]; else x[k] = typeof v==='string' ? v.slice(0,200) : v;
   const fd = aiPlaceFields(kind).find(f=>f.k===k);
   if (fd && fd.sub && v!=='y') delete x[fd.sub];   // '없음'·'미확인'이면 보조 체크(연습 시설 종류)도 비운다
+  if (kind==='course' && (k==='rating' || k==='courseLevel')){
+    if (k==='courseLevel') delete x.courseLevelAuto;   // 직접 고른 난이도가 우선('미확인'이면 아래에서 다시 자동)
+    aiCourseAutoLevel(x); aiLevelDomSync(x);
+  }
   x.updatedAt = new Date().toISOString();
   saveAiPlaces();
+}
+function aiLevelHint(x){
+  if (x.courseLevelAuto) return `🔄 자동: Slope ${aiSlopeOf(x.rating)} 기준`;
+  const lv = aiSlopeLevel(x.rating);
+  return (x.courseLevel && lv && lv!==x.courseLevel) ? `⚠ Slope ${aiSlopeOf(x.rating)} 기준은 '${lv}' — 직접 고른 값 사용 중('미확인'을 고르면 자동)` : '';
+}
+// 다시 그리지 않고(입력 중인 칸 유지) 난이도 칸만 갱신
+function aiLevelDomSync(x){
+  document.querySelectorAll(`#advBody details[data-ck="aiP-${x.id}"] .ai-info-f[data-k="courseLevel"]`).forEach(f=>{
+    const sel = f.querySelector('select'); if (sel) sel.value = x.courseLevel || '';
+    f.classList.toggle('filled', !!x.courseLevel); f.classList.remove('has-auto');
+    let h = f.querySelector('.ai-inh'); const t = aiLevelHint(x);
+    if (t && !h && sel){ h = document.createElement('small'); h.className = 'ai-inh'; sel.parentNode.insertBefore(h, sel); }
+    if (h){ h.textContent = t; if (!t) h.remove(); }
+  });
 }
 function updateAiPlaceMulti(kind, id, k, opt, on){
   const x = aiFindPlace(kind, id); if (!x) return;
@@ -18231,6 +18260,7 @@ function kgaApply(x, over){
   const vals = {holes:kgaHolesOpt(club.h), courseLength:`${tee[4].toLocaleString('en-US')}yd`, rating:`${tee[2].toFixed(1)} / ${tee[3]}`};
   let n = 0;
   Object.keys(vals).forEach(k=>{ if (!vals[k]) return; if (over && k!=='holes' ? true : !aiInfoFilled(x[k])){ if (x[k]!==vals[k]){ x[k] = vals[k]; n++; } } });
+  aiCourseAutoLevel(x);
   if (!x.name) x.name = club.g;
   x.updatedAt = new Date().toISOString();
   return n;
@@ -20532,13 +20562,7 @@ function aiMulti(list, get, ok, fmt){
   return unknown.length ? {v:null, t:`${t} — ${unknown.map(nm).join(', ')} 정보 미등록`} : {v:false, t};
 }
 // 난이도 — 입력값이 없으면 Slope Rating으로 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적)
-function aiCourseLevel(c){
-  if (c.courseLevel) return c.courseLevel;
-  const nums = String(c.rating||'').match(/\d+(?:\.\d+)?/g); if (!nums) return '';
-  const slope = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop();
-  if (slope==null) return '';
-  return slope<120 ? '쉬움' : (slope<135 ? '보통' : '도전적');
-}
+function aiCourseLevel(c){ return c.courseLevel || aiSlopeLevel(c.rating); }
 function aiInfoTest(key, F){
   const ai = F.ai || {}, L = F.lodges || [], C = F.courses || [];
   const by = k => (ai.__src && ai.__src[k]) ? ai.__src[k]+' 기준' : '관리자 입력', sfx = k => (ai.__src && ai.__src[k]) ? ` (${ai.__src[k]} 기준)` : '';

@@ -4375,6 +4375,11 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-legacy{margin:8px 0;padding:10px 12px;border-radius:10px;background:#fff6dc;border:1px solid #e3c383;font-size:.8rem}
 .ai-legacy p{margin:4px 0 8px;color:#5a4208}
 .ai-sub-l{margin:14px 2px 0;font-size:.78rem;font-weight:700;color:var(--nm-text-soft,#667)}
+/* 요금 항목별 AI 정보 · 추천 요금 항목 */
+.ai-inh{display:block;font-size:.72rem;font-weight:400;color:var(--nm-text-soft,#667)}
+.ai-cur-entry{margin:6px 0 2px;font-size:.84rem;color:#5a4208;background:#fff6dc;border:1px solid #ecd59a;border-radius:10px;padding:6px 10px;word-break:keep-all}
+.ai-cur-entry span{font-size:.74rem;color:rgba(90,66,8,.75)}
+.ai-cmp-t small{font-size:.74rem;color:rgba(10,23,48,.6)}
 /* 선호 스타일 분류 · 선택 안내(최대 개수 · 자동 교체) */
 .ai-style-g{margin:0 0 10px}.ai-style-g:last-child{margin-bottom:0}
 .ai-q-label em b{color:var(--gold-deep);font-style:normal}
@@ -17853,14 +17858,25 @@ function aiLegacyPlace(ai, map, fallbackName){
 // 해외/국내 전용 항목 — only가 없으면 공통. dom: 국내 여부
 function aiFieldShown(fd, dom){ return !fd.only || (fd.only==='domestic')===!!dom; }
 function aiScopeLabel(dom){ return dom ? '🇰🇷 국내 상품 기준' : '✈️ 해외 상품 기준'; }
+// 요금 항목마다 달라질 수 있는 AI 추천 정보 — 항목에서 입력하면 그 항목만 상품 공통값 대신 이 값을 쓴다
+const AI_PE_KEYS = ['mealsIncl','mealCount','packageType','paxOk','lodgeIds','courseIds','paxSurcharge','singleSurcharge','dealPeriod','localMandatory','noExtraPay'];
+function aiMergedInfo(p, pe){
+  const base = (p.aiInfo && typeof p.aiInfo==='object' && !Array.isArray(p.aiInfo)) ? p.aiInfo : {};
+  const own = pe && pe.aiInfo && typeof pe.aiInfo==='object' ? pe.aiInfo : null;
+  if (!own) return base;
+  const out = Object.assign({}, base);
+  AI_PE_KEYS.forEach(k=>{ if (aiInfoFilled(own[k])) out[k] = own[k]; });
+  return out;
+}
+function aiEntryLabel(p, i){ const pe = (p.priceEntries||[])[i]; const h = pe ? String(richToPlain(pe.headline||'')).trim() : ''; return h || `항목 ${String(i+1).padStart(2,'0')}`; }
 function aiInfoFilled(v){ return Array.isArray(v) ? v.length>0 : (v!==undefined && v!==null && String(v).trim()!==''); }
 function aiPlaceList(kind){ return kind==='lodge' ? aiPlaces.lodges : aiPlaces.courses; }
 function aiPlaceFields(kind){ return kind==='lodge' ? AI_LODGE_FIELDS : AI_COURSE_FIELDS; }
 function aiPlaceIdsKey(kind){ return kind==='lodge' ? 'lodgeIds' : 'courseIds'; }
 function aiFindPlace(kind, id){ return aiPlaceList(kind).find(x=>x.id===id) || null; }
 // 상품에 연결된 숙소·골프장(등록부) + 예전 직접 입력값
-function aiLinkedPlaces(p, kind){
-  const ai = (p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {};
+function aiLinkedPlaces(p, kind, aiArg){
+  const ai = aiArg || ((p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {});
   const ids = Array.isArray(ai[aiPlaceIdsKey(kind)]) ? ai[aiPlaceIdsKey(kind)] : [];
   const out = ids.map(id=>aiFindPlace(kind, id)).filter(Boolean);
   const legacy = aiLegacyPlace(ai, kind==='lodge' ? AI_LEGACY_LODGE : AI_LEGACY_COURSE, kind==='lodge' ? '이 상품에 직접 입력한 숙소' : '이 상품에 직접 입력한 골프장');
@@ -17875,8 +17891,8 @@ function aiPlaceUseCount(kind, id){
 function aiCatName(id){ const c = CATEGORIES.domestic.concat(CATEGORIES.overseas).find(x=>x.id===id); return c ? c.ko : ''; }
 function aiHelpHTML(fd){ return fd.help ? `<button type="button" class="ai-help-btn" aria-label="${escapeAttr(fd.label)} 판단 기준" onclick="this.closest('.ai-info-f').classList.toggle('show-help')">ⓘ</button></span><small class="ai-info-help">${escapeAttr(fd.help)}</small>` : '</span>'; }
 // 입력 칸 — save(k, valueExpr)는 저장 호출 문자열(상품: updateAiInfo / 등록부: updateAiPlace)
-function aiFieldHTML(fd, v, save, saveMulti, extraInput){
-  const k = fd.k, lab = `<span class="ai-info-lab">${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}${aiHelpHTML(fd)}`;
+function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint){
+  const k = fd.k, lab = `<span class="ai-info-lab">${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}${aiHelpHTML(fd)}${hint ? `<small class="ai-inh">${hint}</small>` : ''}`;
   if (fd.type==='multi'){
     const arr = Array.isArray(v) ? v : [];
     return `<div class="ai-info-f">${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
@@ -17946,7 +17962,7 @@ function advAiInfoHTML(p){
     <details class="adv-group" ${advDetailsAttrs('g-ai', false)}>
       <summary><span class="adv-g-title">🤖 AI 추천 정보</span><span class="adv-where">${aiScopeLabel(dom)} · AI 골프여행 추천의 선호 스타일·세부 조건 판정 (고객 화면에는 표시 안 됨)</span>${badge}</summary>
       <div class="adv-group-body">
-        <div class="pe-inh-banner"><div class="pe-inh-banner-text"><b>💡 숙소·골프장은 등록부에 한 번만 등록하고, 상품에서는 골라서 연결만 하세요.</b><br>${dom ? '이 상품은 <b>국내 상품</b>이라 공항 이동·한식당·공항 픽업·관광 송영처럼 해외에만 해당하는 항목은 숨기고, 장박 대신 <b>연박(2박 이상)</b>을 받습니다.' : '이 상품은 <b>해외 상품</b> 기준 항목으로 표시합니다.'}<br>등록부 정보를 고치면 연결된 모든 상품에 반영됩니다. 모든 항목은 선택 입력이며, 비워 둔 항목은 '미확인'으로 처리돼 감점되지 않습니다. 각 항목의 ⓘ를 누르면 판단 기준이 보입니다. 입력한 값은 추천 근거로 고객에게 그대로 안내되므로 확인된 정보만 넣어 주세요.</div></div>
+        <div class="pe-inh-banner"><div class="pe-inh-banner-text"><b>💡 숙소·골프장은 등록부에 한 번만 등록하고, 상품에서는 골라서 연결만 하세요.</b><br>${dom ? '이 상품은 <b>국내 상품</b>이라 공항 이동·한식당·공항 픽업·관광 송영처럼 해외에만 해당하는 항목은 숨기고, 장박 대신 <b>연박(2박 이상)</b>을 받습니다.' : '이 상품은 <b>해외 상품</b> 기준 항목으로 표시합니다.'}<br>등록부 정보를 고치면 연결된 모든 상품에 반영됩니다. 모든 항목은 선택 입력이며, 비워 둔 항목은 '미확인'으로 처리돼 감점되지 않습니다. 각 항목의 ⓘ를 누르면 판단 기준이 보입니다. <b>요금 항목마다 식사·상품 구성·인원·숙소가 다르면</b> 여기에는 공통값만 두고, 각 요금 항목의 "🤖 AI 추천 정보"에 그 항목 값을 입력하세요(추천은 항목별로 판정해 가장 잘 맞는 항목을 안내). 입력한 값은 추천 근거로 고객에게 그대로 안내되므로 확인된 정보만 넣어 주세요.</div></div>
         ${AI_INFO_SCHEMA.map(g=>{
           const n = g.fields.filter(fd=>shown(fd) && aiInfoFilled(ai[fd.k])).length + (g.place ? (g.place==='lodge' ? nL : nC) : 0);
           return `<details class="pe-labels" ${advDetailsAttrs('ai-'+g.key, false)}>
@@ -18800,8 +18816,46 @@ function priceEntryHTML(pe, i, popupCount, p){
         </div>
       </div>
     </details>
+    ${peAiInfoHTML(p, pe, i)}
     </div>
   </details>`;
+}
+// [추가] 요금 항목별 AI 추천 정보 — 식사·상품 구성·인원·숙소 등이 항목마다 다를 때 이 항목 값만 입력(비우면 상품 공통값)
+function peAiInfoHTML(p, pe, i){
+  const dom = currentAdv ? isDomesticCat(currentAdv.catId) : false;
+  const own = (pe.aiInfo && typeof pe.aiInfo==='object') ? pe.aiInfo : {}, base = (p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {};
+  const allFields = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields));
+  const defs = AI_PE_KEYS.filter(k=>k!=='lodgeIds' && k!=='courseIds').map(k=>allFields.find(fd=>fd.k===k)).filter(fd=>fd && aiFieldShown(fd, dom));
+  const n = AI_PE_KEYS.filter(k=>aiInfoFilled(own[k])).length;
+  const valTxt = (fd, v) => Array.isArray(v) ? v.join('·') : (fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : String(v));
+  const hint = fd => aiInfoFilled(base[fd.k]) ? `비우면 상품 공통값: ${escapeAttr(valTxt(fd, base[fd.k]))}` : '비우면 상품 공통값(미입력)';
+  const save = (k, expr) => `updatePeAi(${i},'${k}',${expr})`, saveMulti = (k, o) => `updatePeAiMulti(${i},'${k}','${escapeAttr(o)}',this.checked)`;
+  const placePick = kind => {
+    const ids = Array.isArray(base[aiPlaceIdsKey(kind)]) ? base[aiPlaceIdsKey(kind)] : [];
+    const places = ids.map(id=>aiFindPlace(kind, id)).filter(Boolean), mine = Array.isArray(own[aiPlaceIdsKey(kind)]) ? own[aiPlaceIdsKey(kind)] : [];
+    const word = kind==='lodge' ? '숙소' : '골프장';
+    if (places.length<2) return '';   // 상품에 연결된 곳이 2곳 이상일 때만 항목별로 고를 의미가 있다
+    return `<div class="ai-info-f"><span class="ai-info-lab">이 항목의 ${word}</span><small class="ai-inh">체크하지 않으면 상품에 연결된 ${word} 전부(${places.length}곳)</small><div class="ai-info-multi">${places.map(x=>`<label><input type="checkbox" ${mine.includes(x.id)?'checked':''} onchange="updatePeAiMulti(${i},'${aiPlaceIdsKey(kind)}','${x.id}',this.checked)">${escapeAttr(x.name||'(이름 없음)')}</label>`).join('')}</div></div>`;
+  };
+  return `<details class="pe-labels" ${advDetailsAttrs(`pe${i}-ai`, n>0)}>
+      <summary>🤖 AI 추천 정보 <span class="adv-where">이 항목만 다른 값 · 비우면 상품 공통값</span> ${n ? advBadge(`✓ ${n}`, 'ok') : advBadge('공통값 사용','')}</summary>
+      <p class="ai-info-note">식사·상품 구성·출발 인원·숙소처럼 이 요금 항목만 다른 내용을 입력하세요. AI 추천은 요금 항목마다 따로 판정해, 고객 조건에 가장 잘 맞는 항목을 "추천 요금 항목"으로 안내합니다.</p>
+      <div class="ai-info-grid">${defs.map(fd=>aiFieldHTML(fd, own[fd.k], save, saveMulti, '', hint(fd))).join('')}${placePick('lodge')}${placePick('course')}</div>
+    </details>`;
+}
+function peAiOf(p, i){ const pe = p.priceEntries[i]; if (!pe) return null; if (!pe.aiInfo || typeof pe.aiInfo!=='object' || Array.isArray(pe.aiInfo)) pe.aiInfo = {}; return pe.aiInfo; }
+function peAiTidy(p, i){ const pe = p.priceEntries[i]; if (pe && pe.aiInfo && !Object.keys(pe.aiInfo).length) delete pe.aiInfo; }
+function updatePeAi(i, k, v){
+  const p=getAdvProduct(); if (!p) return; const ai = peAiOf(p, i); if (!ai) return;
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0,200) : v;
+  peAiTidy(p, i); saveAdvChange();
+}
+function updatePeAiMulti(i, k, opt, on){
+  const p=getAdvProduct(); if (!p) return; const ai = peAiOf(p, i); if (!ai) return;
+  const arr = Array.isArray(ai[k]) ? ai[k].filter(x=>x!==opt) : [];
+  if (on) arr.push(opt);
+  if (arr.length) ai[k] = arr; else delete ai[k];
+  peAiTidy(p, i); saveAdvChange();
 }
 
 // ===== 레이블 옵션 상수 =====
@@ -19920,6 +19974,7 @@ const TK_PREF = [
   {key:'time', en:'Best Time',      ko:'편한 시간', opts:['오전','오후','상관없음']}
 ];
 const tkSel = {dest:'', depart:'', party:'', stay:'', room:'', style:[], topic:[], via:'', time:''};
+let tkAiEntry = '';   // AI 추천이 고른 요금 항목 이름(요금 항목이 여러 개인 상품) — 세부 요청에 함께 적는다
 let tkRegion = 'overseas';
 function tkChipHTML(group, value, label){
   const on = Array.isArray(tkSel[group]) ? tkSel[group].includes(value) : tkSel[group]===value;
@@ -20002,7 +20057,7 @@ function tkAiProduct(title){
   const ban = document.getElementById('tkAiBanner'); if (!ban) return;
   document.getElementById('tkAiTitle').textContent = title || ''; ban.hidden = !title;
 }
-function tkClearAi(){ tkAiProduct(''); }
+function tkClearAi(){ tkAiProduct(''); tkAiEntry = ''; }
 function tkToggleNote(){
   const ta = document.getElementById('tkNote'), btn = document.getElementById('tkMoreBtn'); if (!ta) return;
   ta.hidden = !ta.hidden; btn.setAttribute('aria-expanded', ta.hidden ? 'false' : 'true');
@@ -20012,7 +20067,7 @@ function tkToggleNote(){
 function tkDetails(fd){
   const lines = [];
   const prod = fd.get('recommendedProduct');
-  if (prod) lines.push(`[AI 추천] ${prod} 상품에 대해 상담을 원합니다.`);
+  if (prod) lines.push(`[AI 추천] ${prod}${tkAiEntry ? ` (추천 요금 항목: ${tkAiEntry})` : ''} 상품에 대해 상담을 원합니다.`);
   if (tkSel.topic.length) lines.push(`[문의 내용] ${tkSel.topic.join(', ')}`);
   const pref = [tkSel.via, tkSel.time].filter(Boolean).join(' · ');
   if (pref) lines.push(`[연락 선호] ${pref}`);
@@ -20068,8 +20123,9 @@ function aiMinutes(t){
   if (!h && !m){ const n = /(\d+(?:\.\d+)?)/.exec(s); return n ? Number(n[1])*60 : null; }
   return (h ? Number(h[1])*60 : 0) + (m ? Number(m[1]) : 0);
 }
-function aiProdFacts(p, catId){
-  const entries = (p.priceEntries||[]).filter(pe=>!pe.hidden);
+// pe를 주면 그 요금 항목 하나 기준(항목에서 비운 값은 상품 공통값을 그대로 씀), 없으면 노출 중인 모든 항목 기준
+function aiProdFacts(p, catId, onlyPe){
+  const entries = onlyPe ? [onlyPe] : (p.priceEntries||[]).filter(pe=>!pe.hidden);
   const eff = f => entries.length ? entries.map(pe=>peEff(p, pe, f)) : [PE_INHERIT[f].cm(p)];
   const flat = arr => [].concat(...arr.map(v=>Array.isArray(v) ? v : (v==null || v==='' ? [] : [v]))).map(String).filter(v=>v && v!=='none');
   const dom = isDomesticCat(catId);
@@ -20083,8 +20139,8 @@ function aiProdFacts(p, catId){
     perNight: (rMax && nm && Number(nm[1])) ? rMax / Number(nm[1]) : null, roundsTxt, meals: flat(eff('meals')).join(' '),
     minPeople: mp.length ? Math.min(...mp) : null, grade: productLabelProfile(p), emph: emph.join(' '),
     // 관리자 "AI 추천 정보"(p.aiInfo) · 상품 문구(태그·제목·숙박·대표 문구·강조) · 포함사항 · 티오프 시간
-    ai: (p.aiInfo && typeof p.aiInfo==='object' && !Array.isArray(p.aiInfo)) ? p.aiInfo : {},
-    lodges: aiLinkedPlaces(p, 'lodge'), courses: aiLinkedPlaces(p, 'course'),   // 등록부에서 연결한 숙소·골프장(+예전 직접 입력값)
+    ai: aiMergedInfo(p, onlyPe),
+    lodges: aiLinkedPlaces(p, 'lodge', aiMergedInfo(p, onlyPe)), courses: aiLinkedPlaces(p, 'course', aiMergedInfo(p, onlyPe)),   // 등록부에서 연결한 숙소·골프장(+예전 직접 입력값)
     hay: cardTagsOf(p).concat([p.title||'', p.stay||'']).concat(flat(eff('stay'))).concat(entries.map(pe=>richToPlain(pe.headline||''))).concat(emph).join(' '),
     inc: [p.commonIncluded].concat(entries.map(pe=>pe.included)).map(v=>richToPlain(v||'')).join(' '),
     nights: nm ? Number(nm[1]) : null,
@@ -20363,13 +20419,29 @@ function aiDepartMonths(){
   return out;
 }
 function aiDepartLabel(key){ const d = aiDepartMonths().find(x=>x.key===key); return d ? d.label : (key ? key.replace(/^(\d{4})-0?(\d+)$/, (a,yy,mm)=>`${mm}월`) : ''); }
+// 상품 하나에 요금 항목이 여러 개면(식사·인원·숙소·판매가가 서로 다른 구성) 항목마다 따로 판정해
+// 조건을 덜 어기고(fails) 적합도가 높은 항목을 고른다 — 같으면 판매가가 낮은 항목. 추천 카드에 그 항목 이름을 표시
 function aiScoreProduct(catId, idx, p, cat, criteria){
-  const price = (p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0;
+  const entries = (p.priceEntries||[]).map((pe,i)=>({pe,i})).filter(x=>!x.pe.hidden);
+  if (entries.length<=1){
+    const r = aiScoreOne(catId, idx, p, cat, criteria, entries[0] ? entries[0].pe : null);
+    if (entries[0]){ r.entryIdx = entries[0].i; r.entryCount = 1; }
+    return r;
+  }
+  const rs = entries.map(({pe,i})=>Object.assign(aiScoreOne(catId, idx, p, cat, criteria, pe), {entryIdx:i}));
+  rs.sort((a,b)=>(a.fails.length-b.fails.length) || (b.fit-a.fit) || ((a.price||Infinity)-(b.price||Infinity)));
+  const best = rs[0];
+  best.entryCount = rs.length;
+  best.entryLabel = aiEntryLabel(p, best.entryIdx);
+  return best;
+}
+function aiScoreOne(catId, idx, p, cat, criteria, onlyPe){
+  const price = onlyPe ? (Number(onlyPe.salePrice) || p.from || 0) : ((p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0);
   const nightsMatch = /([0-9]+)\s*박/.exec(p.nights||'');
   const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
   const bucket = nights<=2 ? 'short' : (nights<=4 ? 'mid' : 'long');
   const reasons=[], why=[], fails=[]; let score=0, maxScore=0;
-  const F = aiProdFacts(p, catId);
+  const F = aiProdFacts(p, catId, onlyPe);
   // 예산
   const bScore = aiBudgetScore(price, criteria.budget);
   score += bScore; maxScore += criteria.budget==='any' ? 12 : 30;
@@ -20600,7 +20672,7 @@ function aiCompareTableHTML(results){
     const posts = productFieldPosts(r.catId, r.idx).length;
     const move = [(!isDomesticCat(r.catId) && r.p.flightTime) ? '비행 '+r.p.flightTime : '', r.p.transferTime ? '이동 '+r.p.transferTime : ''].filter(Boolean).join(' · ');
     const period = productPeriodBadgeText(r.p, r.catId);
-    return `<tr><td>${i+1}</td><td class="ai-cmp-t">${esc(r.p.title||'')}</td><td>${esc(r.cat.ko)}</td><td>${r.p.nights?esc(r.p.nights):dash}</td><td>${r.p.rounds?esc(r.p.rounds):dash}</td>
+    return `<tr><td>${i+1}</td><td class="ai-cmp-t">${esc(r.p.title||'')}${r.entryCount>1 && r.entryLabel ? `<br><small>${esc(r.entryLabel)}</small>` : ''}</td><td>${esc(r.cat.ko)}</td><td>${r.p.nights?esc(r.p.nights):dash}</td><td>${r.p.rounds?esc(r.p.rounds):dash}</td>
       <td>${r.p.priceInquiry ? '별도 문의' : (r.price>0 ? fmtPrice(r.price)+'원~' : dash)}</td><td>${move?esc(move):dash}</td><td>${esc(period||'')}</td><td>${posts?posts+'건':dash}</td></tr>`;
   }).join('');
   return `<details class="ai-cmp"><summary>📊 추천 상품 한눈에 비교</summary>
@@ -20648,12 +20720,13 @@ function renderAiResults(results, criteria){
         <h4>${escapeAttr(r.p.title||'')}</h4>
         ${r.themeNote ? `<div class="ai-cur-note">${escapeAttr(r.themeNote)}</div>` : ''}
         <div class="ai-result-meta">${[r.p.nights, r.p.rounds, priceInquiryText(r.p) || (r.price>0 ? fmtPrice(r.price)+'원~' : '')].filter(Boolean).map(escapeAttr).join(' · ')}</div>
+        ${r.entryCount>1 && r.entryLabel ? `<div class="ai-cur-entry">🏷 추천 요금 항목: <b>${escapeAttr(r.entryLabel)}</b> <span>(요금 항목 ${r.entryCount}개 중 조건에 가장 잘 맞는 구성)</span></div>` : ''}
         ${r.reasons.length ? `<div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${escapeAttr(x)}</span>`).join('')}</div>` : ''}
         ${aiWhyHTML(r, main.length ? main : results, false)}
         <div class="ai-result-actions">
           <button type="button" class="ai-detail-btn" onclick="aiTrackPick('recommend_click', ${i});openProductDetail('${r.catId}',${r.idx})">상세보기</button>
           <button type="button" class="ai-detail-btn ai-call-btn" onclick="aiCallProduct(${i})">📞 전화문의</button>
-          <button type="button" class="ai-inquire-btn" onclick="aiTrackPick('recommend_inquiry', ${i});selectAiProduct('${r.catId}',${r.idx})">이 상품으로 상담 신청 →</button>
+          <button type="button" class="ai-inquire-btn" onclick="aiTrackPick('recommend_inquiry', ${i});selectAiProduct('${r.catId}',${r.idx},${i})">이 상품으로 상담 신청 →</button>
         </div>
       </div>
     </article>`;
@@ -20680,9 +20753,11 @@ function runAiRecommend(){
   if (_aiExposure || !pending) go();
   else Promise.race([pending, new Promise(r=>setTimeout(r, 800))]).then(go);
 }
-function selectAiProduct(catId, idx){
+function selectAiProduct(catId, idx, shownIdx){
   const p = getProducts(catId)[idx];
   if (!p) return;
+  const shown = (typeof shownIdx==='number' && _tgtAiShown && _tgtAiShown[shownIdx]) || null;
+  tkAiEntry = (shown && shown.p===p && shown.entryCount>1) ? (shown.entryLabel||'') : '';
   if (DEST_LABELS[catId]) tkPickDest(DEST_LABELS[catId]);
   // AI 추천에서 고른 스타일·출발 시기를 탑승권에 미리 채워 둔다
   const activeStyles = Array.from(document.querySelectorAll('#aiStyleChips .ai-chip.active')).map(b=>b.dataset.value);

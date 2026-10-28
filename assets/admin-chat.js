@@ -26,17 +26,39 @@
   function isMissing(error){ const m = String((error && (error.message||error.code)) || ''); return /42P01|PGRST205|PGRST202|does not exist|Could not find the table|schema cache/i.test(m); }
 
   // ── 알림(소리·탭 배지·제목) ───────────────────────────────
-  let audio = null;
-  function beep(){
-    if (!S.sound) return;
+  // 효과음: assets/sounds/chat-notify.mp3 (볼륨 70%). 새 상담 요청·새 고객 메시지가 오면 울린다. 켜기/끄기는 아래 "알림음" 체크
+  const SOUND_URL = 'assets/sounds/chat-notify.mp3', VOLUME = 0.7;
+  let sfx = null, audio = null;
+  function getSfx(){
+    if (!sfx){ sfx = new Audio(SOUND_URL); sfx.preload = 'auto'; sfx.volume = VOLUME; }
+    return sfx;
+  }
+  // 파일을 못 불러올 때를 대비한 짧은 기본음
+  function fallbackBeep(){
     try{
       audio = audio || new (window.AudioContext || window.webkitAudioContext)();
       const o = audio.createOscillator(), g = audio.createGain();
       o.type = 'sine'; o.frequency.value = 880; g.gain.setValueAtTime(.0001, audio.currentTime);
-      g.gain.exponentialRampToValueAtTime(.25, audio.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + .35);
+      g.gain.exponentialRampToValueAtTime(VOLUME * .35, audio.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + .35);
       o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + .38);
     }catch(e){}
   }
+  function beep(force){
+    if (!S.sound && !force) return;
+    try{
+      const a = getSfx(); a.volume = VOLUME; a.currentTime = 0;
+      const p = a.play();
+      if (p && p.then) p.then(()=>{ if (S.soundBlocked){ S.soundBlocked = false; paintSoundHint(); } }, err=>{
+        if (err && err.name === 'NotAllowedError'){ S.soundBlocked = true; paintSoundHint(); }   // 브라우저가 아직 소리를 막고 있음 — 화면을 한 번 누르면 풀린다
+        else fallbackBeep();
+      });
+    }catch(e){ fallbackBeep(); }
+  }
+  function paintSoundHint(){
+    const h = document.querySelector('.tca-soundhint'); if (h) h.hidden = !S.soundBlocked;
+  }
+  // 소리가 막혀 있었다면 관리자가 화면 어디든 한 번 누르는 순간 풀린다(브라우저 정책)
+  document.addEventListener('pointerdown', ()=>{ if (S.soundBlocked){ S.soundBlocked = false; paintSoundHint(); try{ getSfx().load(); }catch(e){} } }, {capture:true});
   function paintBadge(){
     const b = document.getElementById('chatTabBadge');
     if (b){ b.hidden = !(S.unreadSessions > 0); b.textContent = String(S.unreadSessions); }
@@ -86,7 +108,7 @@
   }
   function boot(){
     if (S.bgTimer) return;
-    bgTick(); ping();
+    getSfx(); bgTick(); ping();   // 알림음 파일을 미리 받아 둔다
     S.bgTimer = setInterval(()=>{ if (authed()) bgTick(); }, BG_MS);
     S.pingTimer = setInterval(()=>{ if (authed()) ping(); }, PING_MS);
     window.addEventListener('beforeunload', ()=>{ try{ const c = client(); if (c && authed()) c.rpc('tgt_chat_admin_ping', {p_online:false}); }catch(e){} });
@@ -149,10 +171,13 @@
     const bar = el('div','tca-bar');
     bar.innerHTML = `<label class="tca-sw"><input type="checkbox" class="tca-avail" ${S.avail?'checked':''}> 상담 대기 중</label>
       <span class="tca-hint">켜 두면 고객 화면에 "상담원 온라인"이 표시됩니다(이 화면이 열려 있는 동안).</span>
-      <label class="tca-sw"><input type="checkbox" class="tca-sound" ${S.sound?'checked':''}> 새 메시지 알림음</label>`;
+      <label class="tca-sw"><input type="checkbox" class="tca-sound" ${S.sound?'checked':''}> 🔔 새 상담·메시지 알림음 (볼륨 70%)</label>
+      <button type="button" class="tca-test apc-btn-sm">🔊 소리 들어보기</button>
+      <span class="tca-hint tca-soundhint" ${S.soundBlocked?'':'hidden'}>브라우저가 소리를 막고 있어요. 화면을 한 번 누르면 알림음이 울립니다.</span>`;
     wrap.appendChild(bar);
     $('.tca-avail', bar).addEventListener('change', e=>{ S.avail = e.target.checked; localStorage.setItem(AVAIL_KEY, S.avail?'1':'0'); ping(); });
     $('.tca-sound', bar).addEventListener('change', e=>{ S.sound = e.target.checked; localStorage.setItem(SOUND_KEY, S.sound?'1':'0'); if (S.sound) beep(); });
+    $('.tca-test', bar).addEventListener('click', ()=>beep(true));
     if (S.missing){
       const w = el('div','tca-warn'); w.innerHTML = '실시간 상담 데이터베이스가 아직 준비되지 않았어요.<br>Supabase → <b>SQL Editor</b>에서 <code>docs/sql/2026-10-28_live_chat.sql</code> 내용을 한 번 실행해 주세요. (자세한 순서: <code>docs/live-chat-setup.md</code>)';
       wrap.appendChild(w); root.appendChild(wrap); return;

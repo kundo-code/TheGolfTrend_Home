@@ -8801,9 +8801,21 @@ function copyLeadReceipt(btn){
 // 상담 신청 폼 제출 시 Supabase kundo_leads 테이블에 저장해 관리자 패널 "AI 리드" 탭에서 조회·상태관리·CSV 내보내기가 가능하도록 함.
 // 저장에 성공하면 true — 실패하면 false(접수 완료로 처리하지 않고 고객에게 다시 시도·전화·카카오톡·메일 접수를 안내한다).
 // 동의 기록 칸(2026-10-27_lead_consent.sql)이 아직 없는 환경에서는 접수를 막지 않고 동의 기록을 세부 요청 끝에 덧붙여 저장한다
+// 상담 신청은 항상 '방문자(anon)' 권한으로 저장한다 — 관리자 로그인 세션이 남아 있는 브라우저에서 접수하면 로그인(authenticated) 권한으로 요청이 나가는데,
+// 리드 저장 정책(RLS)은 방문자(anon)에게만 열려 있어 "접수 중 문제가 발생했습니다"로 실패했다. 세션을 저장·사용하지 않는 별도 클라이언트로 보낸다
+let _leadClient;
+function getLeadClient(){
+  if (_leadClient) return _leadClient;
+  if (typeof window.supabase==='undefined') return null;
+  try{ _leadClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:false, autoRefreshToken:false, detectSessionInUrl:false}}); }
+  catch(e){ _leadClient = null; }
+  return _leadClient;
+}
+let _leadLastError = '';   // 접수 실패 시 화면에 짧게 보여 줄 오류 코드(원인 파악용 — 개인정보 없음)
 async function insertLead(fd, receipt){
-  const client=getSupabaseClient();
-  if (!client) return false;
+  _leadLastError = '';
+  const client=getLeadClient() || getSupabaseClient();
+  if (!client){ _leadLastError = 'no-client'; return false; }
   const base = {
     name: fd.get('name')||'',
     phone: fd.get('phone')||'',
@@ -8824,9 +8836,9 @@ async function insertLead(fd, receipt){
       const note = `\n\n[접수번호 ${receipt} · 개인정보 수집·이용 동의 ${consentAt} (v${LEAD_CONSENT.version}) · 선택 동의 ${marketing?'동의':'미동의'}]`;
       ({ error } = await client.from(LEADS_TABLE).insert(Object.assign({}, base, {details:(base.details||'')+note})));
     }
-    if (error){ console.error('lead insert failed', error); return false; }
+    if (error){ console.error('lead insert failed', error); _leadLastError = [error.code, String(error.message||'').slice(0,90)].filter(Boolean).join(' · '); return false; }
     return true;
-  }catch(e){ console.error('lead insert failed', e); return false; }
+  }catch(e){ console.error('lead insert failed', e); _leadLastError = 'network · '+String((e&&e.message)||e).slice(0,60); return false; }
 }
 // 방문자 행동 기록(익명) — AI 추천 노출·클릭·상담 신청, 상품 상세 보기, 전화·카카오·채널 클릭을 tgt_site_events에 남긴다.
 // 이름·연락처 등 개인정보는 담지 않는다. 테이블이 아직 없거나 저장에 실패해도 사이트 동작에는 영향이 없고, 관리자 로그인 중에는 기록하지 않는다
@@ -21345,10 +21357,10 @@ ${fd.get('details')||'-'}
   const subject = `[THE GOLF TREND] 상담 신청 - ${fd.get('name')||''} ${fd.get('destination')||''}`;
   const mailto = `mailto:${SITE_CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   const label = btn.textContent; btn.disabled = true; btn.textContent = '접수 중...';
-  const ok = await Promise.race([insertLead(fd, receipt), new Promise(resolve=>setTimeout(()=>resolve(false), 12000))]);
+  const ok = await Promise.race([insertLead(fd, receipt), new Promise(resolve=>setTimeout(()=>{ if (!_leadLastError) _leadLastError = 'timeout(12초)'; resolve(false); }, 12000))]);
   btn.disabled = false; btn.textContent = label;
   if (!ok){
-    showLeadError(`접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주시거나 전화(<a href="tel:${SITE_CONTACT.phone}">${SITE_CONTACT.phone}</a>) · <a href="${escapeAttr(SITE_CONTACT.kakaoChat||SITE_CONTACT.kakaoChannel||'#')}" target="_blank" rel="noopener">카카오톡</a>으로 문의해 주세요. 작성하신 내용은 그대로 남아 있으며, <a href="${mailto}">메일로 접수하기</a>도 가능합니다.`);
+    showLeadError(`접수 중 문제가 발생했습니다. 잠시 후 다시 시도해 주시거나 전화(<a href="tel:${SITE_CONTACT.phone}">${SITE_CONTACT.phone}</a>) · <a href="${escapeAttr(SITE_CONTACT.kakaoChat||SITE_CONTACT.kakaoChannel||'#')}" target="_blank" rel="noopener">카카오톡</a>으로 문의해 주세요. 작성하신 내용은 그대로 남아 있으며, <a href="${mailto}">메일로 접수하기</a>도 가능합니다.${_leadLastError ? `<br><small style="opacity:.6">오류 코드: ${escapeAttr(_leadLastError)}</small>` : ''}`);
     return;
   }
   tgtTrack('inquiry_submit', {product_title:String(fd.get('recommendedProduct')||'').slice(0,200)||null, criteria:{source:fd.get('source')||'direct', destination:fd.get('destination')||null}});   // 개인정보 없이 문의 건수·출처만 기록

@@ -2298,6 +2298,14 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 /* [수정] 요금 항목의 출발 요일별 · 공휴일별 요금 입력 행 */
 .dp-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 .dp-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+.dp-row-multi{grid-template-columns:1fr auto;padding:8px 10px;border-radius:10px;background:rgba(10,23,48,.035)}
+.dp-row-multi .dp-days{grid-column:1/-1;display:flex;flex-direction:column;gap:5px}
+.dp-row-multi .dp-days-lab{font-size:.72rem;font-weight:700;color:var(--nm-text-soft)}
+.dp-row-multi .dp-days-lab em{font-style:normal;font-weight:500}
+.dp-row-multi .adv-chip{padding:5px 10px;font-size:.76rem}
+.pd-day-price-cell .d.multi{white-space:normal;line-height:1.5}
+.pd-day-price-cell .d .dd-part{white-space:nowrap}
+.pd-day-price-cell .d .dd-sep{color:rgba(10,23,48,.35);font-weight:400;white-space:pre-wrap}
 .dp-row input,.dp-row select{min-width:0}
 /* [수정] 공휴일 지정 요금 — 단일 날짜/기간 지정 유형 선택 + 종료일 입력이 추가되어 열이 더 많음 */
 .dd-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
@@ -6759,7 +6767,16 @@ function dpRenderSections(list, cellFn, valid, wrapFn, lead){
   return out;
 }
 // 특정일 지정 — 출발 요일 값("월" · "월~목" · "매일출발")에 해당 요일이 포함되는지
+// 출발 요일별 요금의 요일 값 — 하나('월', '월~화', '매일출발') 또는 여러 개를 쉼표로 이은 값('월,수'). 여러 개면 금액은 하나로 묶어 "월 출발 ㅣ 수 출발"로 표시한다
+function dpDayList(v){ return String(v||'').split(/[,，]/).map(x=>x.trim()).filter(Boolean); }
+function dpDayDisplayHTML(v){
+  const parts = dpDayList(v);
+  if (parts.length<=1) return `${depDayTokenHTML(v)} 출발`;
+  return parts.map(t=>`<span class="dd-part">${depDayTokenHTML(t)} 출발</span>`).join('<span class="dd-sep"> ㅣ </span>');
+}
 function dayValHasWeekday(dayVal, wd){
+  const parts = dpDayList(dayVal);
+  if (parts.length>1) return parts.some(x=>dayValHasWeekday(x, wd));
   dayVal = String(dayVal||'').trim();
   if (dayVal==='매일출발' || dayVal==='매일') return true;
   const m = dayVal.match(/^(.)~(.)$/);
@@ -6797,8 +6814,8 @@ function specificDatesHTML(dayVal, dd){
 }
 function dayPriceSectionsHTML(list, cls, dd){
   return dpRenderSections(list, d=>{
-    const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)은 요일 글자만 각자 색
-    return `<div class="pd-day-price-cell ${dcls}"><div class="d">${depDayTokenHTML(d.day)} 출발</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${specificDatesHTML(d.day, dd)}</div>`;
+    const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)·여러 요일은 요일 글자만 각자 색
+    return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${specificDatesHTML(d.day, dd)}</div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table dp-n${cells.length>=3?'m':cells.length}${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
 function holidaySectionsHTML(list, cls, lead){
@@ -17739,11 +17756,8 @@ function advBasicHTML(p){
             <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
             <div class="dp-list">
               ${(p.commonDayPrices||[]).map((d,di)=>dpItemWrap(-1,'day',di, dpIsMarker(d) ? dpMarkerRowHTML(d,-1,'day',di) : `
-              <div class="dp-row">
-                <select onchange="updateCommonDayPrice(${di},'day',this.value)">
-                  <option value="">요일 선택</option>
-                  ${DAY_OPTS.map(o=>`<option value="${o[0]}" ${d.day===o[0]?'selected':''}>${o[1]} 출발</option>`).join('')}
-                </select>
+              <div class="dp-row dp-row-multi">
+                ${dpDayChipsHTML(d, -1, di)}
                 <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">
                 <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
               </div>`)).join('')}
@@ -18870,7 +18884,7 @@ function peInhPreview(f, v){
     case 'airfare': return AIRFARE_TXT[v]||'';
     case 'stayDuration': return (v && v!=='none') ? v : '';
     case 'airPattern': case 'departureAirport': case 'departureDay': return (v||[]).filter(Boolean).join(', ');
-    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${d.day} ${fmtPrice(d.price)}원`).join(' / ');
+    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${dpDayList(d.day).join(' ㅣ ')} ${fmtPrice(d.price)}원`).join(' / ');
     case 'dayDates': return normDayDates(v).dates.map(fmtHolidayDate).join(', ');
     case 'holidayPrices': return (v||[]).filter(h=>h.date && h.price)
       .map(h=>`${(h.type==='range' && h.endDate) ? fmtHolidayDate(h.date)+'~'+fmtHolidayDate(h.endDate) : fmtHolidayDate(h.date)} ${fmtPrice(h.price)}원`).join(' / ');
@@ -19130,11 +19144,8 @@ function priceEntryHTML(pe, i, popupCount, p){
         ${peInhHintHTML(p,pe,i,'dayPrices',true)}
         <div class="dp-list">
           ${(pe.dayPrices||[]).map((d,di)=>dpItemWrap(i,'day',di, dpIsMarker(d) ? dpMarkerRowHTML(d,i,'day',di) : `
-          <div class="dp-row">
-            <select onchange="updateDayPrice(${i},${di},'day',this.value)">
-              <option value="">요일 선택</option>
-              ${DAY_OPTS.map(o=>`<option value="${o[0]}" ${d.day===o[0]?'selected':''}>${o[1]} 출발</option>`).join('')}
-            </select>
+          <div class="dp-row dp-row-multi">
+            ${dpDayChipsHTML(d, i, di)}
             <input type="number" value="${d.price||''}" placeholder="890000" oninput="updateDayPrice(${i},${di},'price',this.value,'number')">
             <button class="pee-del" onclick="removeDayPrice(${i},${di})">삭제</button>
           </div>`)).join('')}
@@ -19706,6 +19717,21 @@ function toggleDayDatesMerge(peIdx, w){
   saveAdvChange(); renderAdvBody();
 }
 // [수정] 출발 요일별 요금 — 판매가와 별도로 특정 요일(또는 요일 구간)에 대한 금액을 추가 안내
+// 요일 칩(복수 선택) — 요일을 여러 개 고르면 금액 하나로 "월 출발 ㅣ 수 출발"처럼 표시. '매일출발'은 다른 요일과 함께 고를 수 없다
+function dpDayChipsHTML(d, peIdx, di){
+  const on = dpDayList(d.day);
+  return `<div class="dp-days"><span class="dp-days-lab">출발 요일 <em>(여러 개 선택 가능${on.length?` · ${on.length}개`:''})</em></span><div class="adv-chip-group">${DAY_OPTS.map(o=>`<button type="button" class="adv-chip ${on.includes(o[0])?'active':''}" onclick="toggleDayPriceDay(${peIdx},${di},'${o[0]}')">${o[1]}</button>`).join('')}</div></div>`;
+}
+function toggleDayPriceDay(peIdx, di, val){
+  const p=getAdvProduct(); if (!p) return;
+  const list = peIdx<0 ? p.commonDayPrices : p.priceEntries[peIdx].dayPrices, d = list[di]; if (!d) return;
+  let cur = dpDayList(d.day);
+  if (cur.includes(val)) cur = cur.filter(x=>x!==val);
+  else cur = (val==='매일출발') ? [val] : cur.filter(x=>x!=='매일출발').concat(val);
+  const order = DAY_OPTS.map(o=>o[0]);
+  d.day = cur.sort((a,b)=>order.indexOf(a)-order.indexOf(b)).join(',');
+  saveAdvChange(); renderAdvBody();
+}
 function addDayPrice(peIdx){
   const p=getAdvProduct(); if (!p) return;
   p.priceEntries[peIdx].dayPrices.push({day:'', price:0});

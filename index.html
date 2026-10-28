@@ -1595,6 +1595,15 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 /* [수정] 탑바(203)·메뉴바(204)·웹 일반 모드 위젯(205)보다도 항상 위에 그려지도록 206으로 올림 —
    상품 상세(.pd-overlay)는 이 아이콘들을 계속 덮도록 207로 함께 올렸다 */
 .admin-fab,.mobile-call-fab,.tb-booking-fab{position:fixed;z-index:206}
+/* [추가] 실시간 상담 버튼 — 오른쪽 아이콘 묶음(전화·문의·관리자)과 별개로 왼쪽 아래에 둔다 */
+.tgt-chat-fab{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:208;display:flex;align-items:center;gap:8px;padding:0 18px 0 14px;height:52px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(135deg,#d8ab45,#b98a24);color:#fff;font-family:inherit;font-size:.95rem;font-weight:800;letter-spacing:.01em;cursor:pointer;box-shadow:0 8px 22px rgba(10,23,48,.32),inset 0 2px 4px rgba(255,255,255,.55);transition:transform .15s,box-shadow .15s}
+.tgt-chat-fab:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(10,23,48,.36),inset 0 2px 4px rgba(255,255,255,.55)}
+.tgt-chat-fab:active{transform:scale(.97)}
+.tgt-chat-fab .tgt-chat-ico{font-size:1.35rem;line-height:1}
+.tgt-chat-fab.is-open{display:none}
+.tgt-chat-badge{position:absolute;top:-6px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#e11d48;color:#fff;font-size:.74rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff}
+.tgt-chat-badge[hidden]{display:none}
+@media(max-width:780px){ .tgt-chat-fab{left:12px;bottom:calc(16px + env(safe-area-inset-bottom));height:48px;padding:0 14px 0 12px;font-size:.88rem} }
 /* [수정] 툴팁 말풍선이 뜨는 방향을 기존 "아이콘 위쪽"에서 "아이콘 왼쪽"으로 변경 — 세로로 쌓인
    아이콘들 사이에서 위쪽으로 뜨면 바로 위 아이콘과 겹쳐 보이는 문제가 있었는데, 옆(왼쪽)으로
    뜨게 하면 다른 아이콘의 영역을 침범하지 않는다. 세 아이콘 모두 동일한 애니메이션(왼쪽에서
@@ -6002,6 +6011,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
      무관하게 CSS만으로 두 레이아웃을 전환할 수 있어 실제 배치는 아래 미디어쿼리에서 결정한다 -->
 <a href="#booking" class="tb-booking-fab" aria-label="문의하기"><img class="fab-icon fab-img" src="assets/icons/icon-inquiry.png" alt="" width="256" height="256" draggable="false"></a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기"><span class="fab-icon">📞</span></button>
+<!-- [추가] 실시간 상담(채팅) — 처음 누를 때 assets/live-chat.js를 불러온다. DB: docs/sql/2026-10-28_live_chat.sql -->
+<button type="button" class="tgt-chat-fab" id="tgtChatFab" onclick="tgtChatOpen()" aria-label="실시간 상담 열기"><span class="tgt-chat-ico" aria-hidden="true">💬</span><span class="tgt-chat-lab">실시간 상담</span><span class="tgt-chat-badge" id="tgtChatBadge" hidden></span></button>
 <!-- ADMIN -->
 <!-- [수정][설정 버튼 컴포넌트] 이모지(⚙️)는 OS·브라우저마다 색·굵기가 달라 참고 이미지의 "선명한
      검은 톱니바퀴"를 재현할 수 없어, 직접 그린 8개 톱니 SVG로 교체 — 크기는 CSS(.admin-fab-icon)에서
@@ -6060,6 +6071,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
     <button data-tab="crm" onclick="switchTab('crm')">상담·예약</button>
+    <button data-tab="chat" onclick="switchTab('chat')">💬 실시간 상담 <span class="tgt-chat-badge" id="chatTabBadge" hidden style="position:static;display:inline-flex;margin-left:4px"></span></button>
     <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button class="admin-pwchange-toggle" id="adminPwChangeToggle" onclick="togglePwChangeForm()" style="display:none">비밀번호 변경</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
@@ -6169,6 +6181,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     </div>
     <!-- [추가] 상담·예약 — 기능 코드는 assets/admin-crm.js에 따로 두고 이 탭을 열 때만 불러온다(홈페이지 방문자 속도에 영향 없음) -->
     <div id="tabCrm" style="display:none"><div id="crmRoot"></div></div>
+    <div id="tabChat" style="display:none"><div id="chatAdminRoot"></div></div>
     <div id="tabLegal" style="display:none">
       <div id="adminLegal"></div>
     </div>
@@ -8860,6 +8873,7 @@ function tgtEvtProduct(catId, idx){
 let _tgtAuthed = null, _tgtQueue = [];
 function tgtAuthResolved(v){
   _tgtAuthed = !!v;
+  if (_tgtAuthed) { try{ tgtChatAdminBoot(); }catch(e){} }   // 관리자 로그인 중에는 새 상담 알림·상담원 온라인 표시를 켠다
   const q = _tgtQueue; _tgtQueue = [];
   if (!_tgtAuthed) q.forEach(x=>tgtSend(x.type, x.rows, x.page));
 }
@@ -8869,7 +8883,7 @@ function tgtAuthResolved(v){
     const client = (typeof window.supabase!=='undefined') ? getSupabaseClient() : null;
     if (!client || !client.auth){ if (++tries < 40) return setTimeout(start, 250); return tgtAuthResolved(false); }   // 10초 안에 라이브러리가 없으면 기록 자체가 불가
     try{
-      if (client.auth.onAuthStateChange) client.auth.onAuthStateChange((ev, sess)=>{ if (_tgtAuthed!==null) _tgtAuthed = !!sess; });
+      if (client.auth.onAuthStateChange) client.auth.onAuthStateChange((ev, sess)=>{ if (_tgtAuthed!==null) _tgtAuthed = !!sess; if (sess){ try{ tgtChatAdminBoot(); }catch(e){} } });
       Promise.resolve(client.auth.getSession()).then(r=>tgtAuthResolved(r && r.data && r.data.session), ()=>tgtAuthResolved(false));
     }catch(e){ tgtAuthResolved(false); }
   };
@@ -16687,12 +16701,39 @@ function switchTab(tab){
   activeAdminTab=tab;
   adminPosSave({tab});
   document.querySelectorAll('.admin-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads','tabNotices','tabCrm'].forEach(id=>{
+  ['tabImages','tabProducts','tabLinks','tabLegal','tabLeads','tabNotices','tabCrm','tabChat'].forEach(id=>{
     document.getElementById(id).style.display=(id==='tab'+tab[0].toUpperCase()+tab.slice(1))?'block':'none';
   });
   refreshCurrentAdminTab();
 }
 const TGT_CRM_VERSION='2026102703';
+// [추가] 실시간 상담(채팅) — 방문자 화면(assets/live-chat.js)은 상담 버튼을 처음 누를 때, 상담원 화면(assets/admin-chat.js)은 관리자 로그인 후 불러온다
+const TGT_CHAT_VERSION='2026102801';
+let _tgtChatLoading = null, _tgtChatAdminLoading = null;
+function tgtLoadScript(src){
+  return new Promise((resolve, reject)=>{ const sc = document.createElement('script'); sc.src = src; sc.onload = resolve; sc.onerror = ()=>reject(new Error('load failed: '+src)); document.head.appendChild(sc); });
+}
+function tgtLoadChat(){
+  if (window.TGT_CHAT) return Promise.resolve();
+  if (!_tgtChatLoading) _tgtChatLoading = tgtLoadScript('assets/live-chat.js?v='+TGT_CHAT_VERSION).catch(e=>{ _tgtChatLoading = null; throw e; });
+  return _tgtChatLoading;
+}
+function tgtChatOpen(){
+  tgtLoadChat().then(()=>window.TGT_CHAT.toggle()).catch(()=>alert('상담창을 불러오지 못했어요. 인터넷 연결을 확인하거나 전화('+SITE_CONTACT.phone+')·카카오톡으로 문의해 주세요.'));
+}
+function tgtLoadChatAdmin(){
+  if (window.TGT_CHAT_ADMIN) return Promise.resolve();
+  if (!_tgtChatAdminLoading) _tgtChatAdminLoading = tgtLoadScript('assets/admin-chat.js?v='+TGT_CHAT_VERSION).catch(e=>{ _tgtChatAdminLoading = null; throw e; });
+  return _tgtChatAdminLoading;
+}
+function tgtChatAdminBoot(){ tgtLoadChatAdmin().then(()=>window.TGT_CHAT_ADMIN.boot()).catch(()=>{}); }
+function tgtChatAdminOpen(){
+  const root = document.getElementById('chatAdminRoot'); if (!root) return;
+  root.innerHTML = '<div class="leads-empty">실시간 상담을 불러오는 중...</div>';
+  tgtLoadChatAdmin().then(()=>{ window.TGT_CHAT_ADMIN.boot(); window.TGT_CHAT_ADMIN.render(root); }).catch(()=>{ root.innerHTML = '<div class="leads-empty">실시간 상담 기능을 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.</div>'; });
+}
+// 이전 상담이 남아 있는 방문자는 조용히 새 답변을 확인한다(상담 버튼에 안 읽은 표시)
+try{ if (JSON.parse(localStorage.getItem('kundo_chat_v1')||'null')?.token) setTimeout(()=>{ tgtLoadChat().catch(()=>{}); }, 3500); }catch(e){}
 let _tgtCrmLoading = null;
 function tgtLoadCrm(){
   const root = document.getElementById('crmRoot'); if (!root) return;
@@ -16713,6 +16754,7 @@ function refreshCurrentAdminTab(){
   else if (activeAdminTab==='legal') renderAdminLegal();
   else if (activeAdminTab==='leads') fetchLeads();
   else if (activeAdminTab==='crm') tgtLoadCrm();
+  else if (activeAdminTab==='chat') tgtChatAdminOpen();
   else if (activeAdminTab==='notices') renderAdminNotices();
   if (activeAdminTab==='images') { renderAdminAbout(); }
 }

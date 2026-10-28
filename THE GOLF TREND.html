@@ -1841,10 +1841,12 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .dp-item-body > .pe-divider-row{margin:0}
 .dp-item-body > .dp-group-row{margin:0}
 .dp-list .pe-divider-row.dp-marker{margin:4px 0 8px}
-.dp-group-row{display:flex;align-items:center;gap:8px;margin:2px 0 8px}
+.dp-group-row{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px 8px;margin:2px 0 8px}
+.dp-group-ctl{grid-column:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+@media(max-width:560px){.dp-group-row{grid-template-columns:minmax(0,1fr)}.dp-group-ctl{grid-column:1}}
 .dp-group-lbl{flex-shrink:0;font-size:.72rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.06em}
 .dp-group-rtf{flex:1;min-width:0}
-.dp-box-ctl{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.dp-box-ctl{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}
 .dp-group-rtf .rtf-toolbar{display:none}
 .dp-group-rtf:focus-within .rtf-toolbar{display:flex}
 .dp-group-rtf .rtf-lh-sel,.dp-group-rtf .rtf-sub-btn,.dp-group-rtf .rtf-nosub-btn,.dp-group-rtf .rtf-btn[title="표 넣기"]{display:none}
@@ -2299,7 +2301,10 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .dp-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 .dp-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
 .dp-row-multi{grid-template-columns:1fr auto;padding:8px 10px;border-radius:10px;background:rgba(10,23,48,.035)}
-.dp-row-multi .dp-days{grid-column:1/-1;display:flex;flex-direction:column;gap:5px}
+.dp-row-multi .dp-days,.dp-row-multi .dp-period{grid-column:1/-1;display:flex;flex-direction:column;gap:5px}
+.dp-period-in{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dp-period-in input[type=date]{flex:1 1 130px;min-width:0;width:auto}
+.dp-period-in span{color:var(--nm-text-soft);font-weight:700}
 .dp-row-multi .dp-days-lab{font-size:.72rem;font-weight:700;color:var(--nm-text-soft)}
 .dp-row-multi .dp-days-lab em{font-style:normal;font-weight:500}
 .dp-row-multi .adv-chip{padding:5px 10px;font-size:.76rem}
@@ -6656,7 +6661,7 @@ function _peTextKey(v){
 function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+(x.box?'B'+(x.bg||'')+(x.shadow?'S':''):'')+String(x.title||'').trim() : null); }
 function _peDayKey(list){
   const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
-  return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price) : ''); }).filter(Boolean).join('|');
+  return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price)+(d.start||d.end ? '~'+(d.start||'')+'~'+(d.end||'') : '') : ''); }).filter(Boolean).join('|');
 }
 // 특정일 지정 — 날짜 목록(정렬) 자체가 비교 키
 // 값 형태: {dates:['YYYY-MM-DD',..], sep:'none'|'br'|'line'(요일 묶음 사이 줄 나눔/구분선), merge:'화수'(바로 다음 요일과 한 묶음으로 합칠 요일들)}
@@ -6801,9 +6806,15 @@ function ddGroupOf(merge){
   return m;
 }
 // 지정일 중 이 요일 값에 해당하는 날짜를 묶음(요일별 줄 나눔/구분선 설정)에 따라 HTML로
-function specificDatesHTML(dayVal, dd){
+// 요일별 요금에 기간(start~end, 둘 다 선택)이 있으면 그 기간에 속한 날짜만 이 요금 칸 아래에 안내한다. 기간이 없으면 해당 요일의 모든 지정일
+function dpInPeriod(d, x){
+  if (!d || (!d.start && !d.end)) return true;
+  const k = `${x.y}-${String(x.m).padStart(2,'0')}-${String(x.d).padStart(2,'0')}`;
+  return (!d.start || k>=d.start) && (!d.end || k<=d.end);
+}
+function specificDatesHTML(dayVal, dd, item){
   dd = normDayDates(dd);
-  const hit = dd.dates.map(dateYMD).filter(x=>x && dayValHasWeekday(dayVal, new Date(x.y,x.m-1,x.d).getDay()))
+  const hit = dd.dates.map(dateYMD).filter(x=>x && dayValHasWeekday(dayVal, new Date(x.y,x.m-1,x.d).getDay()) && dpInPeriod(item, x))
     .sort((a,b)=>(a.y-b.y)||(a.m-b.m)||(a.d-b.d));
   if (!hit.length) return dd.dates.length ? '<div class="dt dt-empty"></div>' : ''; // 다른 칸에만 지정일이 있어도 두 칸 높이를 맞추도록 빈 칸 유지
   if (dd.sep==='none') return `<div class="dt">${escapeAttr(datesJoinText(hit))}</div>`;
@@ -6815,7 +6826,7 @@ function specificDatesHTML(dayVal, dd){
 function dayPriceSectionsHTML(list, cls, dd){
   return dpRenderSections(list, d=>{
     const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)·여러 요일은 요일 글자만 각자 색
-    return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${specificDatesHTML(d.day, dd)}</div>`;
+    return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${specificDatesHTML(d.day, dd, d)}</div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table dp-n${cells.length>=3?'m':cells.length}${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
 function holidaySectionsHTML(list, cls, lead){
@@ -18884,7 +18895,7 @@ function peInhPreview(f, v){
     case 'airfare': return AIRFARE_TXT[v]||'';
     case 'stayDuration': return (v && v!=='none') ? v : '';
     case 'airPattern': case 'departureAirport': case 'departureDay': return (v||[]).filter(Boolean).join(', ');
-    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${dpDayList(d.day).join(' ㅣ ')} ${fmtPrice(d.price)}원`).join(' / ');
+    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${dpDayList(d.day).join(' ㅣ ')}${d.start||d.end?` (${d.start||''}~${d.end||''})`:''} ${fmtPrice(d.price)}원`).join(' / ');
     case 'dayDates': return normDayDates(v).dates.map(fmtHolidayDate).join(', ');
     case 'holidayPrices': return (v||[]).filter(h=>h.date && h.price)
       .map(h=>`${(h.type==='range' && h.endDate) ? fmtHolidayDate(h.date)+'~'+fmtHolidayDate(h.endDate) : fmtHolidayDate(h.date)} ${fmtPrice(h.price)}원`).join(' / ');
@@ -19563,8 +19574,8 @@ function dpMarkerRowHTML(m, peIdx, kind, i){
     <div class="rtf-wrap dp-group-rtf">${rtfToolbarHTML()}
       <div class="ind-line"><div class="rtf-editable dp-title-edit" style="padding-left:calc(14px + ${ind*1.5}em);${boxSt||(m.box?'background:rgba(221,179,103,.2);':'')}" contenteditable="true" data-placeholder="부제목 — 눌러서 입력하면 서식 도구가 나타납니다 (예: 주중 출발 / 주말 출발)" oninput="updateDpGroupTitle(${peIdx},'${kind}',${i},this.innerHTML==='<br>'?'':this.innerHTML)" onkeydown="if(event.key==='Enter')event.preventDefault()" onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${plainToRichInit(m.title||'')}</div>${indSel}</div>
     </div>
-    ${boxCtl}
-    <button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div>`;
+    <div class="dp-group-ctl">${boxCtl}
+    <button type="button" class="pee-del" onclick="removeDpItem(${peIdx},'${kind}',${i})">삭제</button></div></div>`;
 }
 function dpListOf(p, peIdx, kind){
   if (peIdx<0) return kind==='hol' ? p.commonHolidayPrices : p.commonDayPrices;
@@ -19720,7 +19731,10 @@ function toggleDayDatesMerge(peIdx, w){
 // 요일 칩(복수 선택) — 요일을 여러 개 고르면 금액 하나로 "월 출발 ㅣ 수 출발"처럼 표시. '매일출발'은 다른 요일과 함께 고를 수 없다
 function dpDayChipsHTML(d, peIdx, di){
   const on = dpDayList(d.day);
-  return `<div class="dp-days"><span class="dp-days-lab">출발 요일 <em>(여러 개 선택 가능${on.length?` · ${on.length}개`:''})</em></span><div class="adv-chip-group">${DAY_OPTS.map(o=>`<button type="button" class="adv-chip ${on.includes(o[0])?'active':''}" onclick="toggleDayPriceDay(${peIdx},${di},'${o[0]}')">${o[1]}</button>`).join('')}</div></div>`;
+  const upd = f => peIdx<0 ? `updateCommonDayPrice(${di},'${f}',this.value)` : `updateDayPrice(${peIdx},${di},'${f}',this.value)`;
+  return `<div class="dp-days"><span class="dp-days-lab">출발 요일 <em>(여러 개 선택 가능${on.length?` · ${on.length}개`:''})</em></span><div class="adv-chip-group">${DAY_OPTS.map(o=>`<button type="button" class="adv-chip ${on.includes(o[0])?'active':''}" onclick="toggleDayPriceDay(${peIdx},${di},'${o[0]}')">${o[1]}</button>`).join('')}</div></div>
+    <div class="dp-period"><span class="dp-days-lab">적용 기간 <em>(선택 · 비우면 전체 기간 · 특정일 지정의 날짜가 이 기간에 속하면 이 요금 아래에 노출)</em></span>
+      <div class="dp-period-in"><input type="date" value="${escapeAttr(d.start||'')}" aria-label="기간 시작일" onchange="${upd('start')}"><span>~</span><input type="date" value="${escapeAttr(d.end||'')}" aria-label="기간 종료일" onchange="${upd('end')}"></div></div>`;
 }
 function toggleDayPriceDay(peIdx, di, val){
   const p=getAdvProduct(); if (!p) return;

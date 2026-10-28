@@ -42,7 +42,7 @@
 3. **Edit code** → 기존 내용을 모두 지우고 저장소의 `docs/worker/collector-worker.js` 내용을 붙여 넣기 → **Deploy**
 4. Worker 화면의 **Settings → Variables and Secrets → Add**
    - `YOUTUBE_API_KEY` — 유형 **Secret**, 값: 2단계에서 복사한 키
-   - `ALLOWED_ORIGINS` — 유형 **Text**, 값: `https://kundo-code.github.io` (다른 사이트가 이 서버와 API 키를 쓰지 못하게 막음. 도메인을 추가하면 쉼표로 이어서 입력)
+   - `ALLOWED_ORIGINS` — 유형 **Text**, 값: `https://thegolftrend.co.kr,https://www.thegolftrend.co.kr,https://kundo-code.github.io` (다른 사이트가 이 서버와 API 키를 쓰지 못하게 막음. 도메인을 추가하면 쉼표로 이어서 입력. 커스텀 도메인으로 옮긴 뒤 `kundo-code.github.io`는 지워도 됩니다)
 5. Worker 주소(예: `https://golftrend-collector.○○○.workers.dev`)를 복사
 
 확인: 브라우저 주소창에 `https://golftrend-collector.○○○.workers.dev/?mode=ping` 을 열어 `{"ok":true,"youtube":true}` 가 보이면 정상입니다.

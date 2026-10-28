@@ -279,6 +279,6 @@ Copyright © 2024 (주)더골프트렌드. All rights reserved.
 
 **THE GOLF TREND** · "Curating Golf, Connecting People"
 
-[홈페이지](#) · [카카오채널](http://pf.kakao.com/_SSxgFG) · [네이버 블로그](https://blog.naver.com/thegolftrend)
+[홈페이지](https://thegolftrend.co.kr) · [카카오채널](http://pf.kakao.com/_SSxgFG) · [네이버 블로그](https://blog.naver.com/thegolftrend)
 
 </div>

@@ -1042,6 +1042,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
 .pd-day-price-cell .dt{margin-top:4px;font-size:.78rem;font-weight:600;line-height:1.35;color:rgba(10,23,48,.55);word-break:keep-all}
 .pd-day-price-cell .dt-grp > div{padding:2px 0}
+.pd-day-price-cell .dt .sd-wk{color:#000}.pd-day-price-cell .dt .sd-sat{color:#1877F2}.pd-day-price-cell .dt .sd-sun{color:#DC2626}
 .pd-day-price-cell .dt-line > div + div{border-top:1px dashed rgba(10,23,48,.22);margin-top:2px;padding-top:4px}
 /* [수정] 요일별 요금이 1~2칸일 때는 글자를 125%로 키우고(금액 숫자·원·요일·지정일 모두), 지정일은 2칸이면 요금 위쪽(점선 아래)에,
    1칸이면 오른쪽 영역에 배치한다. 3칸 이상은 지금처럼 칸 폭에 맞추고 금액 숫자만 한 단계 키운다 */
@@ -6798,6 +6799,13 @@ function datesJoinText(hit){
   hit.forEach(x=>{ const k=x.y+'-'+x.m; let g=groups[groups.length-1]; if (!g || g.k!==k){ g={k, m:x.m, ds:[]}; groups.push(g); } if (g.ds.indexOf(x.d)<0) g.ds.push(x.d); });
   return groups.map(g=>(groups.length>1 ? g.m+'월 ' : '') + g.ds.map(d=>d+'일').join(', ')).join(' · ');
 }
+// 지정일 목록 → "7(월), 14(월)" — 날짜마다 요일을 함께 쓰고, 평일(월~금)은 검정·토는 파랑·일은 빨강. 여러 달에 걸치면 "10월 16(금), 23(금) · 11월 6(금)"
+function datesJoinHTML(hit){
+  const groups = [];
+  hit.forEach(x=>{ const k=x.y+'-'+x.m; let g=groups[groups.length-1]; if (!g || g.k!==k){ g={k, m:x.m, ds:[]}; groups.push(g); } if (!g.ds.some(z=>z.d===x.d)) g.ds.push(x); });
+  const one = x=>{ const wd = WEEKDAY_KO[new Date(x.y,x.m-1,x.d).getDay()]; return `<span class="sd-d ${wd==='토'?'sd-sat':(wd==='일'?'sd-sun':'sd-wk')}">${x.d}(${wd})</span>`; };
+  return groups.map(g=>(groups.length>1 ? g.m+'월 ' : '') + g.ds.map(one).join(', ')).join(' · ');
+}
 const DD_ORDER = ['월','화','수','목','금','토','일'];
 // 요일 → 묶음 번호 — 기본은 요일마다 하나의 묶음, merge에 든 요일은 바로 다음 요일과 같은 묶음(예: merge "화수" → 화·수·목)
 function ddGroupOf(merge){
@@ -6817,11 +6825,11 @@ function specificDatesHTML(dayVal, dd, item){
   const hit = dd.dates.map(dateYMD).filter(x=>x && dayValHasWeekday(dayVal, new Date(x.y,x.m-1,x.d).getDay()) && dpInPeriod(item, x))
     .sort((a,b)=>(a.y-b.y)||(a.m-b.m)||(a.d-b.d));
   if (!hit.length) return dd.dates.length ? '<div class="dt dt-empty"></div>' : ''; // 다른 칸에만 지정일이 있어도 두 칸 높이를 맞추도록 빈 칸 유지
-  if (dd.sep==='none') return `<div class="dt">${escapeAttr(datesJoinText(hit))}</div>`;
+  if (dd.sep==='none') return `<div class="dt">${datesJoinHTML(hit)}</div>`;
   const gm = ddGroupOf(dd.merge), byG = {};
   hit.forEach(x=>{ const g=gm[WEEKDAY_KO[new Date(x.y,x.m-1,x.d).getDay()]]; (byG[g]=byG[g]||[]).push(x); });
-  const rows = Object.keys(byG).map(Number).sort((a,b)=>a-b).map(g=>datesJoinText(byG[g]));
-  return `<div class="dt dt-grp${dd.sep==='line'?' dt-line':''}">${rows.map(t=>`<div>${escapeAttr(t)}</div>`).join('')}</div>`;
+  const rows = Object.keys(byG).map(Number).sort((a,b)=>a-b).map(g=>datesJoinHTML(byG[g]));
+  return `<div class="dt dt-grp${dd.sep==='line'?' dt-line':''}">${rows.map(t=>`<div>${t}</div>`).join('')}</div>`;
 }
 function dayPriceSectionsHTML(list, cls, dd){
   return dpRenderSections(list, d=>{

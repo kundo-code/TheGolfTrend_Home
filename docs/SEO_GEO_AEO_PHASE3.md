@@ -102,7 +102,7 @@ grep -n "Phase 3" index.html
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://kundo-code.github.io/TheGolfTrend_Home/</loc>
+    <loc>https://thegolftrend.co.kr/</loc>
     <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -116,27 +116,27 @@ grep -n "Phase 3" index.html
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/</loc><priority>1.0</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/japan/</loc><priority>0.9</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/japan/shizuoka/</loc><priority>0.8</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/japan/fukuoka/</loc><priority>0.8</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/china/</loc><priority>0.8</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/malaysia/</loc><priority>0.8</priority></url>
+  <url><loc>https://thegolftrend.co.kr/</loc><priority>1.0</priority></url>
+  <url><loc>https://thegolftrend.co.kr/japan/</loc><priority>0.9</priority></url>
+  <url><loc>https://thegolftrend.co.kr/japan/shizuoka/</loc><priority>0.8</priority></url>
+  <url><loc>https://thegolftrend.co.kr/japan/fukuoka/</loc><priority>0.8</priority></url>
+  <url><loc>https://thegolftrend.co.kr/china/</loc><priority>0.8</priority></url>
+  <url><loc>https://thegolftrend.co.kr/malaysia/</loc><priority>0.8</priority></url>
   <url>
-    <loc>https://kundo-code.github.io/TheGolfTrend_Home/japan/shizuoka/kawana-hotel-fuji/</loc>
+    <loc>https://thegolftrend.co.kr/japan/shizuoka/kawana-hotel-fuji/</loc>
     <priority>0.7</priority>
     <image:image>
-      <image:loc>https://kundo-code.github.io/TheGolfTrend_Home/assets/og-image.jpg</image:loc>
+      <image:loc>https://thegolftrend.co.kr/assets/og-image.jpg</image:loc>
       <image:caption>일본 시즈오카 카와나 호텔 후지 코스 골프여행</image:caption>
     </image:image>
   </url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/golf-courses/</loc><priority>0.6</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/packages/</loc><priority>0.6</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/guides/</loc><priority>0.5</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/compare/</loc><priority>0.5</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/faq/</loc><priority>0.5</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/reviews/</loc><priority>0.5</priority></url>
-  <url><loc>https://kundo-code.github.io/TheGolfTrend_Home/company/</loc><priority>0.4</priority></url>
+  <url><loc>https://thegolftrend.co.kr/golf-courses/</loc><priority>0.6</priority></url>
+  <url><loc>https://thegolftrend.co.kr/packages/</loc><priority>0.6</priority></url>
+  <url><loc>https://thegolftrend.co.kr/guides/</loc><priority>0.5</priority></url>
+  <url><loc>https://thegolftrend.co.kr/compare/</loc><priority>0.5</priority></url>
+  <url><loc>https://thegolftrend.co.kr/faq/</loc><priority>0.5</priority></url>
+  <url><loc>https://thegolftrend.co.kr/reviews/</loc><priority>0.5</priority></url>
+  <url><loc>https://thegolftrend.co.kr/company/</loc><priority>0.4</priority></url>
 </urlset>
 ```
 
@@ -152,7 +152,7 @@ Allow: /
 # Disallow: /admin        ← 관리자 기능이 별도 경로/서브도메인으로 분리되면 주석 해제
 # Disallow: /admin/*
 
-Sitemap: https://kundo-code.github.io/TheGolfTrend_Home/sitemap.xml
+Sitemap: https://thegolftrend.co.kr/sitemap.xml
 ```
 
 지금은 관리자 패널이 별도 URL이 아니라 같은 페이지 안의 로그인 게이트라서 막을 경로가 없습니다. `aria-hidden` 처리(2번 A등급)로 닫혀 있을 때 텍스트 노출은 줄였지만, 완전히 분리된 라우트가 생기기 전까지는 robots.txt로 원천 차단할 방법이 없다는 점은 참고해주세요.
@@ -174,7 +174,7 @@ Sitemap: https://kundo-code.github.io/TheGolfTrend_Home/sitemap.xml
 
 ## 9. Google Search Console 연결 체크리스트
 
-- [ ] search.google.com/search-console 에서 속성 추가 (URL 접두어: `https://kundo-code.github.io/TheGolfTrend_Home/`)
+- [ ] search.google.com/search-console 에서 속성 추가 (URL 접두어: `https://thegolftrend.co.kr/`)
 - [ ] 소유권 확인 — HTML 태그 방식 사용 시 `<head>`에 `<meta name="google-site-verification" content="...">` 한 줄만 추가하면 됨 (이번 패치엔 실제 인증 코드가 없어 넣지 않았습니다 — 발급받으신 코드를 알려주시면 바로 추가해드릴 수 있습니다)
 - [ ] 사이트맵 제출: `sitemap.xml` 등록
 - [ ] URL 검사 도구로 색인 요청

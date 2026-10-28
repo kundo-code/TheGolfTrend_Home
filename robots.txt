@@ -9,4 +9,4 @@ Allow: /
 # Disallow: /admin
 # Disallow: /admin/*
 
-Sitemap: https://kundo-code.github.io/TheGolfTrend_Home/sitemap.xml
+Sitemap: https://thegolftrend.co.kr/sitemap.xml

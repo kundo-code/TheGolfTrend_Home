@@ -2086,6 +2086,16 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .adv-editor-overlay .card-label-grid .popup-toggle .pt-lbl{font-size:10px}
 .adv-editor-overlay .card-label-grid .media-btn.media-btn{min-height:0;padding:3px 8px;font-size:10px}
 .adv-editor-overlay .card-label-grid .media-slot > div{margin-top:5px!important}
+/* 카드에 노출 중인 레이블 = 초록 테두리·옅은 초록 바탕·'✓ 카드 노출 중' 배지 / 노출 안 함 = 점선·흐린 이미지 */
+.adv-editor-overlay .card-label-grid .media-slot.cl-slot{position:relative}
+.adv-editor-overlay .card-label-grid .media-slot.cl-on{border:2px solid #16a34a;background:#effcf3;box-shadow:inset 0 0 0 1px rgba(22,163,74,.18)}
+.adv-editor-overlay .card-label-grid .media-slot.cl-off{border:1px dashed rgba(10,23,48,.22);background:transparent}
+.card-label-grid .cl-off .media-preview{opacity:.4;filter:grayscale(.85)}
+.card-label-grid .cl-off .cl-meta{color:#8a94a6}
+.card-label-grid .cl-on .cl-meta{color:#065f46}
+.card-label-grid .cl-badge{position:absolute;top:-9px;left:8px;padding:1px 8px;border-radius:999px;background:#16a34a;color:#fff;font-size:10px;font-weight:800;line-height:1.5;letter-spacing:0;box-shadow:0 1px 3px rgba(22,163,74,.35)}
+.card-label-grid .cl-on .pt-lbl{color:#065f46;font-weight:800}
+.card-label-grid .cl-off .pt-lbl{color:#8a94a6}
 .card-label-grid .cl-meta{font-size:10px;font-weight:700;color:var(--gold-deep);margin:0 0 4px;line-height:1.3}
 .adv-editor-overlay .card-label-grid .file-hint{display:none!important}
 .adv-editor-overlay .card-label-grid .adv-chip-group{gap:3px}
@@ -19848,7 +19858,8 @@ function removeTitleMedia(){
 const CARD_LABEL_CORNERS = [['tl','좌상단'],['tr','우상단'],['bl','좌하단'],['br','우하단']];
 function cardLabelItemHTML(label, i){
   const metaTxt = cardLabelMetaText(label);
-  return `<div class="media-slot">
+  return `<div class="media-slot cl-slot ${label.active?'cl-on':'cl-off'}">
+    ${label.active?'<span class="cl-badge">✓ 카드 노출 중</span>':''}
     <img src="${escapeAttr(label.url)}" class="media-preview">
     ${metaTxt?`<div class="cl-meta">${escapeAttr(metaTxt)}</div>`:''}
     <div class="media-controls">

@@ -16903,9 +16903,9 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102901';
+const TGT_CRM_VERSION='2026102902';
 // [추가] 실시간 상담(채팅) — 방문자 화면(assets/live-chat.js)은 상담 버튼을 처음 누를 때, 상담원 화면(assets/admin-chat.js)은 관리자 로그인 후 불러온다
-const TGT_CHAT_VERSION='2026102902';
+const TGT_CHAT_VERSION='2026102903';
 let _tgtChatLoading = null, _tgtChatAdminLoading = null;
 function tgtLoadScript(src){
   return new Promise((resolve, reject)=>{ const sc = document.createElement('script'); sc.src = src; sc.onload = resolve; sc.onerror = ()=>reject(new Error('load failed: '+src)); document.head.appendChild(sc); });
@@ -16923,6 +16923,45 @@ function tgtChatOpen(){
   }
   tgtChatOpenVisitor();
 }
+// [추가] 모바일 가상 키보드가 실시간 상담 입력창을 가리지 않게 한다.
+// 안드로이드(크롬·삼성 인터넷 — 갤럭시 천지인처럼 높은 키보드 포함)는 키보드가 화면을 줄이지 않고 위에 덮어서, 화면 아래에 붙은 상담창의
+// 입력칸이 가려진다. 키보드가 올라오면 실제로 보이는 영역(visualViewport)에 맞춰 상담창의 위치·높이를 직접 맞추고, 내려가면 원래대로 돌린다.
+// 아이폰(사파리)은 입력칸을 스스로 키보드 위로 올려 주므로 건드리지 않는다
+const tgtKbFit = (()=>{
+  const vv = window.visualViewport;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints > 1);
+  const els = new Set(); let raf = 0;
+  function clear(el){
+    if (!el.classList.contains('kb-fit')) return;
+    el.style.top = el.style.bottom = el.style.height = el.style.maxHeight = '';
+    el.classList.remove('kb-fit');
+  }
+  function apply(){
+    raf = 0;
+    els.forEach(el=>{
+      if (!el.isConnected || !el.classList.contains('open') || window.innerWidth > 560 || (vv.scale && vv.scale > 1.05)){ clear(el); return; }
+      const covered = window.innerHeight - (vv.height + vv.offsetTop);   // 키보드가 덮고 있는 높이
+      if (covered > 80){
+        const first = !el.classList.contains('kb-fit');
+        el.classList.add('kb-fit');
+        el.style.top = vv.offsetTop + 'px'; el.style.bottom = 'auto'; el.style.height = vv.height + 'px'; el.style.maxHeight = vv.height + 'px';
+        if (first){ const box = el.querySelector('.tc-body, .tca-msgs'); if (box) box.scrollTop = box.scrollHeight; }
+      } else clear(el);
+    });
+  }
+  const sched = ()=>{ if (!raf) raf = requestAnimationFrame(apply); };
+  if (vv && !isIOS){ vv.addEventListener('resize', sched); vv.addEventListener('scroll', sched); window.addEventListener('orientationchange', ()=>setTimeout(sched, 300)); }
+  return {
+    attach(el){
+      if (!vv || isIOS || !el || els.has(el)) return;
+      els.add(el);
+      el.addEventListener('focusin', ()=>{ sched(); setTimeout(sched, 350); });   // 키보드가 다 올라온 뒤 한 번 더 맞춤
+      el.addEventListener('focusout', ()=>setTimeout(sched, 350));
+      sched();
+    },
+    update: sched,
+  };
+})();
 function tgtChatOpenVisitor(){
   tgtLoadChat().then(()=>window.TGT_CHAT.toggle()).catch(()=>alert('상담창을 불러오지 못했어요. 인터넷 연결을 확인하거나 전화('+SITE_CONTACT.phone+')·카카오톡으로 문의해 주세요.'));
 }
@@ -16952,16 +16991,21 @@ function tgtChatAdminOpen(){
 // 이전 상담이 남아 있는 방문자는 조용히 새 답변을 확인한다(상담 버튼에 안 읽은 표시)
 try{ if (JSON.parse(localStorage.getItem('kundo_chat_v1')||'null')?.token) setTimeout(()=>{ tgtLoadChat().catch(()=>{}); }, 3500); }catch(e){}
 let _tgtCrmLoading = null;
-function tgtLoadCrm(){
-  const root = document.getElementById('crmRoot'); if (!root) return;
-  if (window.TGT_CRM){ window.TGT_CRM.render(root); return; }
-  root.innerHTML = '<div class="leads-empty">상담·예약 기능을 불러오는 중...</div>';
+// 상담·예약 모듈 불러오기(한 번만) — 상담·예약 탭과 실시간 상담 채팅창의 빠른 기록이 함께 쓴다
+function tgtEnsureCrm(){
+  if (window.TGT_CRM) return Promise.resolve();
   if (!_tgtCrmLoading) _tgtCrmLoading = new Promise((resolve, reject)=>{
     const sc = document.createElement('script');
     sc.src = 'assets/admin-crm.js?v=' + TGT_CRM_VERSION; sc.onload = resolve; sc.onerror = reject;
     document.head.appendChild(sc);
   });
-  _tgtCrmLoading.then(()=>{ if (window.TGT_CRM && activeAdminTab==='crm') window.TGT_CRM.render(root); })
+  return _tgtCrmLoading;
+}
+function tgtLoadCrm(){
+  const root = document.getElementById('crmRoot'); if (!root) return;
+  if (window.TGT_CRM){ window.TGT_CRM.render(root); return; }
+  root.innerHTML = '<div class="leads-empty">상담·예약 기능을 불러오는 중...</div>';
+  tgtEnsureCrm().then(()=>{ if (window.TGT_CRM && activeAdminTab==='crm') window.TGT_CRM.render(root); })
     .catch(()=>{ _tgtCrmLoading = null; root.innerHTML = '<div class="leads-empty">상담·예약 기능 파일을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 열어주세요.</div>'; });
 }
 function refreshCurrentAdminTab(){

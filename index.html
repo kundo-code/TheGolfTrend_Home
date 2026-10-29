@@ -4747,7 +4747,9 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 .product.has-cp:not(.expanded) .product-divider-cp1,
 .product.has-cp:not(.expanded) .product-divider-cp2,
 .product.has-cp:not(.expanded) .product-checkpoint2{display:none}
-.product-expand{display:flex;align-items:center;justify-content:center;align-self:center;margin:0 0 12px;padding:6px 18px;border-radius:100px;
+/* [수정] 펼쳐보기/접기 버튼은 같은 줄의 카드 높이가 달라도 항상 요금 위 구분선 바로 위(아래 정렬)에 놓는다 — 남는 높이는 버튼 위쪽으로 모은다 */
+.product-expand + .product-foot{margin-top:0}
+.product-expand{display:flex;align-items:center;justify-content:center;align-self:center;margin:auto 0 12px;padding:6px 18px;border-radius:100px;
   border:1.5px solid rgba(221,179,103,.55);background:rgba(221,179,103,.14);color:var(--gold-deep);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
 .product-expand .pe-close{display:none}
 .product.expanded .product-expand .pe-open{display:none}

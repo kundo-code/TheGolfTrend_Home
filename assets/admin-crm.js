@@ -39,7 +39,7 @@
   const RESULTS = ['예약확정','예약진행중','보류','미예약','단순문의','예약취소'];
   const RESULT_CLS = {'예약확정':'ok','예약진행중':'go','보류':'hold','미예약':'no','단순문의':'info','예약취소':'no'};
   const REASONS = ['가격','일정 불일치','인원 미달','소인원 추가요금','원하는 상품 없음','타사 예약','연락 두절','기타'];
-  const CHANNELS = ['전화','카카오톡','문자','홈페이지','방문','기타'];
+  const CHANNELS = ['전화','카카오톡','문자','홈페이지','방문','기타','실시간 채팅'];
   const GROUP_TYPES = ['일반','가족·부부','친목','동호회','기업','기타'];
   const FLEX = ['가능','어려움','미확인'];
   const JOIN_PREF = ['합류 가능','단독 희망','미확인'];
@@ -433,7 +433,7 @@
     const prefs = prefOptions();
     const custom = (f.preferences||[]).filter(p=>!prefs.includes(p));
     const parse = state.lastParse;
-    const mode = state.editId ? `✏️ 상담 수정 중 (#${state.editId})` : (state.parentId ? `↪ 후속 상담 (최초 상담 #${state.parentId}의 최초 문의일 유지)` : (state.leadId ? `🌐 홈페이지 문의(리드 #${state.leadId})에서 시작한 상담` : ''));
+    const mode = state.editId ? `✏️ 상담 수정 중 (#${state.editId})` : (state.parentId ? `↪ 후속 상담 (최초 상담 #${state.parentId}의 최초 문의일 유지)` : (state.leadId ? `🌐 홈페이지 문의(리드 #${state.leadId})에서 시작한 상담` : (state.chatId ? '💬 실시간 채팅 상담에서 시작한 기록' : '')));
     return `<div class="crm-card">
       ${mode?`<div class="crm-mode">${mode}</div>`:''}
       <h5>🤖 AI 상담 메모 <span class="crm-note" style="font-weight:500">— 통화 직후 한 줄로 말하거나 입력하면 아래 항목이 자동으로 채워집니다. 확인 후 저장하세요.</span></h5>
@@ -478,7 +478,7 @@
       </details>
       ${state.flash ? state.flash : ''}
       <div class="crm-actions">
-        ${state.editId || state.parentId || state.leadId ? `<button type="button" class="crm-btn" onclick="TGT_CRM.resetForm()">취소</button>` : `<button type="button" class="crm-btn" onclick="TGT_CRM.resetForm()">비우기</button>`}
+        ${state.editId || state.parentId || state.leadId || state.chatId ? `<button type="button" class="crm-btn" onclick="TGT_CRM.resetForm()">취소</button>` : `<button type="button" class="crm-btn" onclick="TGT_CRM.resetForm()">비우기</button>`}
         <button type="button" class="crm-btn primary" ${state.saving?'disabled':''} onclick="TGT_CRM.save()">${state.saving?'저장 중...':(state.editId?'수정 저장':'저장')}</button>
       </div>
     </div>`;
@@ -541,7 +541,7 @@
     try{ _rec.start(); }catch(e){ _rec = null; state.recording = false; renderBody(); }
   }
   function resetForm(){
-    state.form = emptyForm(); state.editId = null; state.parentId = null; state.leadId = null; state.lastParse = null; state.flash = '';
+    state.form = emptyForm(); state.editId = null; state.parentId = null; state.leadId = null; state.chatId = null; state.lastParse = null; state.flash = '';
     clearDraft(); renderBody();
   }
 
@@ -618,12 +618,14 @@
         if (f.first_inquiry_at) row.first_inquiry_at = f.first_inquiry_at;   // 리드 접수 시각 / 최초 상담의 최초 문의일 승계
         const { data, error } = await client.from(TABLES.consultations).insert(row).select().single();
         if (error) throw error; saved = data;
+        // 실시간 채팅에서 시작한 기록이면 채팅 상담에 CRM 번호를 남긴다(2단계 SQL 전이면 조용히 건너뜀)
+        if (state.chatId){ try{ await client.from('tgt_chat_sessions').update({crm_consultation_id:saved.id}).eq('id', state.chatId); }catch(e){} }
       }
       await syncLeadStatus(saved.lead_id, saved.result);
       const i = state.list.findIndex(x=>x.id===saved.id);
       if (i>=0) state.list[i] = saved; else if (state.listLoaded) state.list.unshift(saved);
       const wasEdit = !!state.editId;
-      state.form = emptyForm(); state.editId = null; state.parentId = null; state.leadId = null; state.lastParse = null; clearDraft();
+      state.form = emptyForm(); state.editId = null; state.parentId = null; state.leadId = null; state.chatId = null; state.lastParse = null; clearDraft();
       state.flash = `<div class="crm-banner ok" style="margin-top:12px">✅ ${wasEdit?'수정했습니다':'저장했습니다'} — #${saved.id} ${esc(saved.product_title||saved.destination||'')} · ${esc(saved.result)}${saved.lead_id?' · AI 리드 상태도 함께 갱신':''}</div>`;
     }catch(e){
       state.flash = `<div class="crm-banner err" style="margin-top:12px">저장 실패: ${esc(errText(e))}</div>`;
@@ -737,7 +739,7 @@
   }
   function edit(id){
     const c = state.list.find(x=>x.id===id); if (!c) return;
-    state.form = rowToForm(c); state.editId = id; state.parentId = null; state.leadId = null; state.lastParse = null; state.flash = '';
+    state.form = rowToForm(c); state.editId = id; state.parentId = null; state.leadId = null; state.chatId = null; state.lastParse = null; state.flash = '';
     go('quick');
   }
   // 후속 상담 — 상품·취향·인원 등은 이어받고 결과·메모는 새로 입력. 최초 문의일은 최초 상담 것을 그대로 쓴다
@@ -746,7 +748,7 @@
     const root = c.parent_id ? (state.list.find(x=>x.id===c.parent_id) || c) : c;
     const f = rowToForm(c); f.result = ''; f.unbooked_reason = ''; f.memo = ''; f.ai_memo = ''; f.channel = '전화';
     f.first_inquiry_at = root.first_inquiry_at || c.first_inquiry_at;
-    state.form = f; state.editId = null; state.parentId = root.id; state.leadId = null; state.lastParse = null; state.flash = '';
+    state.form = f; state.editId = null; state.parentId = root.id; state.leadId = null; state.chatId = null; state.lastParse = null; state.flash = '';
     go('quick');
   }
   async function history(id){
@@ -794,6 +796,28 @@
     f.first_inquiry_at = lead.created_at || null;   // 최초 문의일 = 홈페이지 문의 접수 시각
     state.form = f; state.editId = null; state.parentId = null; state.leadId = leadId; state.lastParse = null;
     state.flash = `<div class="crm-banner ok" style="margin-top:12px">🌐 홈페이지 문의 내용을 채웠습니다 — 통화 결과(상담 결과)와 취향을 확인하고 저장하세요.</div>`;
+    go('quick');
+  }
+
+  // 실시간 채팅 → 상담 기록: 고객 정보·상담원 메모·대화를 빠른 기록 폼에 채운다. 상담 결과·취향·상품은 상담원이 확인하고 저장
+  async function fromChat(c){
+    if (!c || !c.id) return;
+    await loadList();
+    const existing = c.crm_id ? state.list.find(x=>x.id===Number(c.crm_id)) : null;
+    if (existing){
+      followUp(existing.parent_id || existing.id);
+      const f2 = ensureForm(); f2.channel = '실시간 채팅'; f2.ai_memo = c.visitor_text || ''; f2.memo = [f2.memo, c.memo, c.transcript ? '[채팅 대화]\n' + c.transcript : ''].filter(Boolean).join('\n').slice(0, 4000);
+      state.chatId = c.id;
+      state.flash = `<div class="crm-banner ok" style="margin-top:12px">이 채팅은 이미 상담 #${existing.id}로 기록되어 있어 후속 상담으로 이어서 기록합니다.</div>`; renderBody(); return;
+    }
+    const f = emptyForm();
+    f.channel = '실시간 채팅';
+    f.customer_name = c.name || ''; f.customer_phone = c.phone || '';
+    f.memo = [c.gender ? `성별: ${c.gender}` : '', c.region ? `출발지역: ${c.region}` : '', c.memo ? `상담원 메모: ${c.memo}` : '', c.transcript ? '[채팅 대화]\n' + c.transcript : ''].filter(Boolean).join('\n').slice(0, 4000);
+    f.ai_memo = c.visitor_text || '';
+    f.first_inquiry_at = c.created_at || null;
+    state.form = f; state.editId = null; state.parentId = null; state.leadId = null; state.chatId = c.id; state.lastParse = null;
+    state.flash = `<div class="crm-banner ok" style="margin-top:12px">💬 실시간 채팅 내용을 채웠습니다 — 상품·고객 취향·상담 결과를 확인하고 저장하세요. (고객 메시지는 아래 메모 칸에 있어 "자동 분류"로 취향·일정을 채울 수 있어요)</div>`;
     go('quick');
   }
 
@@ -2356,7 +2380,7 @@
   window.TGT_CRM = {
     render, go, recheck,
     pick, set:setField, addPref, memoInput, applyMemo, mic, resetForm, save,
-    filter, edit, followUp, history, remove, reloadList, fromLead,
+    filter, edit, followUp, history, remove, reloadList, fromLead, fromChat,
     impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
     statFilter, statSeason, reloadStats,
     newRule, editRule, rfSet, saveRule, deleteRule, verifyRule, cancelRule:()=>{ state.ops.ruleForm = null; renderBody(); }, opsView:v=>{ state.ops.view = v; renderBody(); },

@@ -1,6 +1,7 @@
 /* THE GOLF TREND — 실시간 상담 채팅(방문자 화면)
  * index.html의 상담 버튼(#tgtChatFab)을 처음 누를 때(또는 이전 상담이 남아 있을 때) 불러온다 — 일반 방문자의 첫 화면 속도에는 영향이 없다.
  * DB: docs/sql/2026-10-28_live_chat.sql (tgt_chat_* 테이블·함수). 방문자는 상담 시작 때 받은 비밀 토큰으로 자기 상담만 읽고 쓴다.
+ * 2단계(docs/sql/2026-10-29_live_chat_v2.sql): 시작 전 성별·출발지역(시/도 → 시/군/구) 수집, 답변 대기 경과 표시
  * 이 파일이 쓰는 index.html 전역: getLeadClient/getSupabaseClient, LEAD_CONSENT, SITE_CONTACT, getLegalUrl, openKakaoChat
  */
 (function(){
@@ -8,9 +9,16 @@
   if (window.TGT_CHAT) return;
 
   const KEY = 'kundo_chat_v1', PROF_KEY = 'kundo_chat_profile_v1';
-  const CONSENT_VERSION = 'chat-2026-10-28';
+  const CONSENT_VERSION = 'chat-2026-10-29';   // 성별·출발지역 추가
+  // 상담 업무시간: 관리자 패널 💬 실시간 상담 → ⚙️ 설정에서 바꾼다(index.html getChatHours/chatInHours). 아래는 그 함수가 없을 때의 기본값
   const HOURS = {days:[1,2,3,4,5], start:9, end:18, label:'평일 09:00–18:00'};   // 한국 시간
+  function hoursLabel(){ try{ return chatHoursLabel(); }catch(e){ return HOURS.label; } }
+  function offNotice(){ try{ return chatOffHoursNotice(); }catch(e){ return '지금은 상담 업무시간('+HOURS.label+')이 아니에요. 남겨 주신 메시지는 다음 업무일에 확인 후 상담을 진행해 드립니다.'; } }
   const POLL_OPEN = 2500, POLL_IDLE = 15000;
+
+  // 출발지역 — 시/도를 고르면 그 지역의 시/군/구만 고른다. 목록은 index.html의 KR_REGIONS(상담 신청서와 공용)
+  const REGIONS = (typeof KR_REGIONS !== 'undefined' && KR_REGIONS) || {};
+  function sigunguOf(sido){ const v = REGIONS[sido]; return v ? v.split(' ') : []; }
 
   // ── 저장된 상담 ─────────────────────────────────────────────
   function load(){ try{ const v = JSON.parse(localStorage.getItem(KEY)||'null'); return (v && v.token) ? v : null; }catch(e){ return null; } }
@@ -27,7 +35,7 @@
     try{ return (typeof getLeadClient==='function' && getLeadClient()) || (typeof getSupabaseClient==='function' && getSupabaseClient()) || null; }catch(e){ return null; }
   }
   function kstNow(){ const d = new Date(Date.now() + 9*3600000); return {day:d.getUTCDay(), h:d.getUTCHours() + d.getUTCMinutes()/60}; }
-  function inHours(){ const n = kstNow(); return HOURS.days.includes(n.day) && n.h >= HOURS.start && n.h < HOURS.end; }
+  function inHours(){ try{ return chatInHours(); }catch(e){} const n = kstNow(); return HOURS.days.includes(n.day) && n.h >= HOURS.start && n.h < HOURS.end; }
   function hhmm(t){ const d = t ? new Date(t) : new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
   function contact(){ return (typeof SITE_CONTACT!=='undefined' && SITE_CONTACT) || {phone:'010-9405-6842', kakaoChat:'http://pf.kakao.com/_SSxgFG/chat'}; }
   function errText(e){ return String((e && (e.message || e.details)) || e || ''); }
@@ -61,7 +69,7 @@
 .tc-form{background:#fff;border:1px solid #dde3ee;border-radius:14px;padding:14px;margin:0 0 12px}
 .tc-form h4{margin:0 0 4px;font-size:.98rem}
 .tc-form p.tc-note{margin:0 0 10px;font-size:.8rem;color:#667385;line-height:1.5}
-.tc-form label.tc-f{display:block;margin:0 0 9px;font-size:.78rem;font-weight:700;color:#3a4658}
+.tc-form .tc-f{display:block;margin:0 0 9px;font-size:.78rem;font-weight:700;color:#3a4658}
 .tc-form input[type=text],.tc-form input[type=tel]{display:block;width:100%;margin-top:4px;padding:11px 12px;border:1px solid #c7cfdc;border-radius:10px;font-size:16px;font-family:inherit;color:#1b2536;background:#fff}
 .tc-form input:focus,.tc-in textarea:focus{outline:none;border-color:#c9962b;box-shadow:0 0 0 3px rgba(201,150,43,.2)}
 .tc-ck{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:.8rem;line-height:1.45;color:#2a3546}
@@ -70,6 +78,15 @@
 .tc-more{margin:2px 0 8px 26px;font-size:.76rem;color:#667385;line-height:1.5}
 .tc-more summary{cursor:pointer;color:#7a5410;font-weight:700}
 .tc-more dl{margin:6px 0 0}.tc-more dt{font-weight:800;margin-top:4px}.tc-more dd{margin:0}
+.tc-form select{display:block;width:100%;margin-top:4px;padding:11px 12px;border:1px solid #c7cfdc;border-radius:10px;font-size:16px;font-family:inherit;color:#1b2536;background:#fff}
+.tc-form select:focus{outline:none;border-color:#c9962b;box-shadow:0 0 0 3px rgba(201,150,43,.2)}
+.tc-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tc-seg{display:flex;gap:8px;margin-top:4px}
+.tc-seg label{flex:1;position:relative;cursor:pointer}
+.tc-seg input{position:absolute;opacity:0;pointer-events:none}
+.tc-seg span{display:block;text-align:center;padding:10px 0;border:1px solid #c7cfdc;border-radius:10px;font-size:.92rem;font-weight:700;color:#3a4658;background:#fff}
+.tc-seg input:checked + span{border-color:#c9962b;background:#fff6e0;color:#7a5410;box-shadow:inset 0 0 0 1px #c9962b}
+.tc-seg input:focus-visible + span{box-shadow:0 0 0 3px rgba(201,150,43,.3)}
 .tc-err{color:#c0392b;font-size:.8rem;margin:6px 0 0;min-height:1em}
 .tc-go{width:100%;margin-top:6px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#d8ab45,#b98a24);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;font-family:inherit}
 .tc-go:disabled{opacity:.6;cursor:default}
@@ -167,10 +184,16 @@
   }
 
   // ── 화면 상태 ───────────────────────────────────────────────
+  function waitText(){
+    if (S.status !== '대기' || S.waitSec == null || !S.token) return '';
+    const m = Math.floor(S.waitSec / 60);
+    return m < 1 ? ' · 방금 연결 요청' : ` · 답변 대기 ${m}분째`;
+  }
   function statusLine(){
-    if (S.agentOnline){ dotEl.className='tc-dot on'; subEl.textContent = '상담원 온라인 · 바로 답변드려요'; }
-    else if (inHours()){ dotEl.className='tc-dot wait'; subEl.textContent = '상담 가능 시간 · 순서대로 답변드려요'; }
-    else { dotEl.className='tc-dot'; subEl.textContent = '운영시간 외 ('+HOURS.label+') · 메시지를 남겨 주세요'; }
+    if (S.agentOnline && waitText()){ dotEl.className='tc-dot on'; subEl.textContent = '상담원 온라인' + waitText(); }
+    else if (S.agentOnline){ dotEl.className='tc-dot on'; subEl.textContent = '상담원 온라인 · 바로 답변드려요'; }
+    else if (inHours()){ dotEl.className='tc-dot wait'; subEl.textContent = '상담 가능 시간 · 순서대로 답변드려요' + waitText(); }
+    else { dotEl.className='tc-dot'; subEl.textContent = '상담 업무시간 외 ('+hoursLabel()+') · 메시지를 남겨 주세요'; }
   }
   function render(){
     if (!root) return;
@@ -178,7 +201,7 @@
     statusLine();
     const started = !!S.token;
     footEl.style.display = started ? '' : 'none';
-    botSay('안녕하세요, THE GOLF TREND입니다 ⛳\n궁금한 점을 남겨 주시면 상담원이 답변드려요.' + (inHours() ? '' : '\n\n지금은 운영시간('+HOURS.label+')이 아니에요. 메시지는 저장되어 운영시간에 순서대로 답변드립니다.'));
+    botSay('안녕하세요, THE GOLF TREND입니다 ⛳\n궁금한 점을 남겨 주시면 상담원이 답변드려요.' + (inHours() ? '' : '\n\n' + offNotice()));
     if (!started){ renderForm(); return; }
     renderChips();
     S.lastId = 0; save();
@@ -195,12 +218,17 @@
     const privacy = (()=>{ try{ return getLegalUrl('privacy'); }catch(e){ return ''; } })();
     f.innerHTML = `
       <h4>상담 시작하기</h4>
-      <p class="tc-note">상담을 위해 이름과 연락처가 필요해요. 대화가 끊겨도 연락드릴 수 있어요.</p>
+      <p class="tc-note">상담을 위해 아래 정보가 필요해요. 대화가 끊겨도 연락드릴 수 있어요.</p>
       <label class="tc-f">이름<input type="text" name="name" maxlength="40" autocomplete="name" placeholder="홍길동"></label>
       <label class="tc-f">연락처<input type="tel" name="phone" maxlength="30" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000"></label>
+      <div class="tc-f" role="radiogroup" aria-label="성별">성별<div class="tc-seg"><label><input type="radio" name="gender" value="남"><span>남</span></label><label><input type="radio" name="gender" value="여"><span>여</span></label></div></div>
+      <div class="tc-f">출발지역<div class="tc-row2">
+        <select name="sido" aria-label="출발지역 시/도"><option value="">시/도 선택</option>${Object.keys(REGIONS).map(k=>`<option>${esc(k)}</option>`).join('')}</select>
+        <select name="sigungu" aria-label="출발지역 시/군/구" disabled><option value="">시/군/구 선택</option></select>
+      </div></div>
       <label class="tc-ck"><input type="checkbox" name="consent"><span><b class="req">[필수]</b> 개인정보 수집·이용에 동의합니다.</span></label>
       <details class="tc-more"><summary>내용 보기</summary><dl>
-        <dt>수집 항목</dt><dd>이름, 연락처, 상담 대화 내용</dd>
+        <dt>수집 항목</dt><dd>이름, 연락처, 성별, 출발지역(시/도·시/군/구), 상담 대화 내용</dd>
         <dt>이용 목적</dt><dd>실시간 상담 응대 및 문의 안내</dd>
         <dt>보유 기간</dt><dd>${esc(C.retention || '상담 종료 후 1년')}</dd>
         <dt>동의 거부</dt><dd>동의를 거부할 수 있으며, 거부하시면 실시간 채팅 상담이 제한됩니다(전화·카카오톡 상담은 이용 가능).</dd>
@@ -210,6 +238,16 @@
       <div class="tc-err" role="alert"></div>
       <button type="submit" class="tc-go">상담 시작</button>`;
     f.elements['name'].value = prof.name || ''; f.elements['phone'].value = prof.phone || '';
+    const sidoEl = f.elements['sido'], sggEl = f.elements['sigungu'];
+    const fillSgg = (keep)=>{
+      const list = sigunguOf(sidoEl.value);
+      sggEl.innerHTML = `<option value="">${sidoEl.value && !list.length ? '시/군/구 없음' : '시/군/구 선택'}</option>` + list.map(x=>`<option>${esc(x)}</option>`).join('');
+      sggEl.disabled = !list.length;
+      if (keep && list.includes(keep)) sggEl.value = keep;
+    };
+    sidoEl.addEventListener('change', ()=>fillSgg(''));
+    if (prof.sido && REGIONS[prof.sido] !== undefined){ sidoEl.value = prof.sido; fillSgg(prof.sigungu); }
+    if (prof.gender){ const g = f.querySelector(`input[name=gender][value="${prof.gender==='여'?'여':'남'}"]`); if (g) g.checked = true; }
     f.addEventListener('submit', e=>{ e.preventDefault(); start(f); });
     bodyEl.appendChild(f); bodyEl.scrollTop = 0;   // 처음 화면은 인사말부터 보이게
   }
@@ -226,16 +264,26 @@
     err.textContent = '';
     if (!name){ err.textContent = '이름을 입력해 주세요.'; E['name'].focus(); return; }
     if (digits.length < 8 || digits.length > 15){ err.textContent = '연락처를 정확히 입력해 주세요. (숫자 8자리 이상)'; E['phone'].focus(); return; }
+    const gEl = f.querySelector('input[name=gender]:checked'), gender = gEl ? gEl.value : '';
+    const sido = E['sido'].value, sigungu = E['sigungu'].value;
+    if (!gender){ err.textContent = '성별을 선택해 주세요.'; return; }
+    if (!sido){ err.textContent = '출발지역(시/도)을 선택해 주세요.'; E['sido'].focus(); return; }
+    if (sigunguOf(sido).length && !sigungu){ err.textContent = '출발지역(시/군/구)을 선택해 주세요.'; E['sigungu'].focus(); return; }
     if (!E['consent'].checked){ err.textContent = '개인정보 수집·이용에 동의해 주셔야 채팅 상담을 시작할 수 있어요.'; return; }
     const c = client(); if (!c){ unavailable(); return; }
     const btn = $('.tc-go', f); btn.disabled = true; btn.textContent = '연결 중...';
     try{
-      const { data, error } = await c.rpc('tgt_chat_start', {p_name:name, p_phone:phone, p_consent_version:CONSENT_VERSION, p_marketing:!!E['mk'].checked, p_page:(location.pathname + location.hash).slice(0,300)});
+      const args = {p_name:name, p_phone:phone, p_consent_version:CONSENT_VERSION, p_marketing:!!E['mk'].checked, p_page:(location.pathname + location.hash).slice(0,300)};
+      let { data, error } = await c.rpc('tgt_chat_start', Object.assign({p_gender:gender, p_region_sido:sido, p_region_sigungu:sigungu||null}, args));
+      // 2단계 SQL을 아직 실행하지 않은 경우: 성별·지역 없이 시작하고 첫 메시지로 남긴다
+      let legacy = false;
+      if (error && /PGRST202|Could not find the function|42883/i.test(errText(error))){ ({ data, error } = await c.rpc('tgt_chat_start', args)); legacy = !error; }
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
       if (!row || !row.token) throw new Error('no-token');
-      try{ localStorage.setItem(PROF_KEY, JSON.stringify({name, phone})); }catch(e){}
+      try{ localStorage.setItem(PROF_KEY, JSON.stringify({name, phone, gender, sido, sigungu})); }catch(e){}
       S.token = row.token; S.lastId = 0; S.startedAt = Date.now(); save();
+      if (legacy){ try{ await c.rpc('tgt_chat_send', {p_token:row.token, p_body:`[고객 정보] 성별: ${gender} · 출발지역: ${sido}${sigungu?' '+sigungu:''}`}); }catch(e){} }
       render();
     }catch(e){
       console.error('chat start failed', e);
@@ -261,7 +309,7 @@
       if (f) botSay(f.say, f);
       if (!S.agentOnline && Date.now() - S.lastWaitNote > 10*60*1000){
         S.lastWaitNote = Date.now();
-        botSay(inHours() ? '메시지를 전달했어요. 상담원이 확인하는 대로 답변드릴게요.' : '메시지를 남겨 주셨어요. 지금은 운영시간('+HOURS.label+')이 아니라 운영시간에 순서대로 답변드릴게요. 급하시면 전화·카카오톡도 이용해 주세요.');
+        botSay(inHours() ? '메시지를 전달했어요. 상담원이 확인하는 대로 답변드릴게요.' : offNotice() + ' 급하시면 전화·카카오톡도 이용해 주세요.');
       }
     }catch(e){
       console.error('chat send failed', e);
@@ -283,6 +331,7 @@
       if (error) throw error;
       if (data && data.error==='invalid'){ expire(); return; }
       S.status = data.status; S.agentOnline = !!data.agent_online;
+      S.waitSec = (typeof data.wait_sec === 'number') ? data.wait_sec : null;
       if (root) statusLine();
       (data.messages||[]).forEach(m=>{
         if (m.id > S.lastId) S.lastId = m.id;
@@ -302,6 +351,8 @@
   function stopPoll(){ if (S.timer){ clearTimeout(S.timer); S.timer = null; } }
   function badge(){
     const b = document.getElementById('tgtChatBadge'); if (!b) return;
+    if (window.TGT_CHAT_ADMIN && window.TGT_CHAT_ADMIN.active && window.TGT_CHAT_ADMIN.active()) return;   // 관리자 로그인 중에는 상담원 알림 숫자를 표시
+
     b.hidden = !(S.unread > 0 && !S.open); b.textContent = S.unread > 9 ? '9+' : String(S.unread);
   }
 
@@ -322,7 +373,30 @@
   }
   function toggle(){ S.open ? close() : open(); }
 
-  window.TGT_CHAT = {open, close, toggle, pollOnce};
+  // 상담 신청서(탑승권)에서 바로 연결: 신청서의 이름·연락처·성별·출발지역·동의로 상담을 시작하고(시작 화면 생략)
+  // 신청 내용을 첫 메시지로 보낸 뒤 상담 창을 연다. 이미 진행 중인 상담이 있으면 그 상담에 이어서 보낸다
+  async function startFromLead(info){
+    const c = client(); if (!c || !info) return false;
+    try{
+      if (!S.token){
+        const args = {p_name:info.name, p_phone:info.phone, p_consent_version:info.consentVersion || 'lead', p_marketing:!!info.marketing, p_page:(location.pathname + '#booking').slice(0,300)};
+        let { data, error } = await c.rpc('tgt_chat_start', Object.assign({p_gender:info.gender||null, p_region_sido:info.sido||null, p_region_sigungu:info.sigungu||null}, args));
+        let legacy = false;
+        if (error && /PGRST202|Could not find the function|42883/i.test(errText(error))){ ({ data, error } = await c.rpc('tgt_chat_start', args)); legacy = !error; }
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row || !row.token) throw new Error('no-token');
+        S.token = row.token; S.lastId = 0; S.startedAt = Date.now(); save();
+        if (legacy && (info.gender || info.sido)){ try{ await c.rpc('tgt_chat_send', {p_token:S.token, p_body:`[고객 정보] 성별: ${info.gender||'-'} · 출발지역: ${[info.sido, info.sigungu].filter(Boolean).join(' ')||'-'}`}); }catch(e){} }
+      }
+      try{ localStorage.setItem(PROF_KEY, JSON.stringify({name:info.name, phone:info.phone, gender:info.gender, sido:info.sido, sigungu:info.sigungu})); }catch(e){}
+      if (info.summary){ const { error } = await c.rpc('tgt_chat_send', {p_token:S.token, p_body:info.summary}); if (error && /invalid_token/.test(errText(error))){ S.token=''; save(); return startFromLead(info); } }
+      if (S.open) render(); else open();
+      return true;
+    }catch(e){ console.error('chat start from lead failed', e); return false; }
+  }
+
+  window.TGT_CHAT = {open, close, toggle, pollOnce, startFromLead};
   // 이전 상담이 남아 있으면 조용히 새 답변을 확인해 버튼에 안 읽은 표시를 단다
   if (S.token){ loop(); setTimeout(pollOnce, 800); }
 })();

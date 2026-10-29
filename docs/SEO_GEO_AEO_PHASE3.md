@@ -66,7 +66,7 @@
 | 내비 메뉴 aria-expanded | `<button id="navMenuBtn">` + 새 `toggleNavMenu()` 함수 |
 | 푸터 내부 링크 href | `<footer>` 국내 권역/해외 국가 `<ul>` |
 | sitemap.xml / robots.txt | 저장소 루트 |
-| 브랜드 이미지 자산 | `assets/logo.png`, `assets/og-image.jpg`, `assets/favicon-*.png`, `assets/apple-touch-icon.png`, `assets/icon-512.png`, `favicon.ico` (base64로 내장돼 있던 로고와 일본 골프장 사진을 실제 정적 파일로 추출해 OG 이미지·파비콘으로 사용) |
+| 브랜드 이미지 자산 | `assets/logo.png`, `assets/og-thumbnail.jpg`(링크 미리보기 1200×630), `assets/favicon-*.png`, `favicon.ico`, `assets/apple-touch-icon.png`(아이폰 홈 화면 아이콘), `assets/icon-192.png`·`icon-512.png`·`icon-maskable-512.png` + `manifest.webmanifest`(안드로이드 홈 화면 아이콘) (base64로 내장돼 있던 로고와 일본 골프장 사진을 실제 정적 파일로 추출해 OG 이미지·파비콘으로 사용) |
 
 ---
 

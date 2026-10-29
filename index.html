@@ -1603,6 +1603,11 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .tgt-chat-fab.is-open{display:none}
 .tgt-chat-badge{position:absolute;top:-6px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#e11d48;color:#fff;font-size:.74rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff}
 .tgt-chat-badge[hidden]{display:none}
+/* [추가] 관리자 로그인 중: 상담 버튼이 상담원용으로 바뀌고, 답변을 기다리는 상담이 있으면 숫자와 함께 깜박여 알린다 */
+.tgt-chat-fab.is-agent{background:linear-gradient(135deg,#0f2347,#1d3a6e)}
+.tgt-chat-fab.is-alert{animation:tgtFabPulse 1.6s ease-in-out infinite}
+@keyframes tgtFabPulse{0%,100%{box-shadow:0 8px 22px rgba(10,23,48,.32),0 0 0 0 rgba(225,29,72,.55)}50%{box-shadow:0 8px 22px rgba(10,23,48,.32),0 0 0 10px rgba(225,29,72,0)}}
+@media (prefers-reduced-motion:reduce){.tgt-chat-fab.is-alert{animation:none}}
 @media(max-width:780px){ .tgt-chat-fab{left:12px;bottom:calc(16px + env(safe-area-inset-bottom));height:48px;padding:0 14px 0 12px;font-size:.88rem} }
 /* [수정] 툴팁 말풍선이 뜨는 방향을 기존 "아이콘 위쪽"에서 "아이콘 왼쪽"으로 변경 — 세로로 쌓인
    아이콘들 사이에서 위쪽으로 뜨면 바로 위 아이콘과 겹쳐 보이는 문제가 있었는데, 옆(왼쪽)으로
@@ -6071,7 +6076,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     <button data-tab="legal" onclick="switchTab('legal')">법적고지 및 이용안내</button>
     <button data-tab="leads" onclick="switchTab('leads')">AI 리드</button>
     <button data-tab="crm" onclick="switchTab('crm')">상담·예약</button>
-    <button data-tab="chat" onclick="switchTab('chat')">💬 실시간 상담 <span class="tgt-chat-badge" id="chatTabBadge" hidden style="position:static;display:inline-flex;margin-left:4px"></span></button>
+    <button data-tab="chat" onclick="switchTab('chat')">💬 실시간 상담 <span class="tgt-chat-badge" id="chatTabBadge" hidden style="position:static;margin-left:4px"></span></button>
     <button data-tab="notices" onclick="switchTab('notices')">전체 공지</button>
     <button class="admin-pwchange-toggle" id="adminPwChangeToggle" onclick="togglePwChangeForm()" style="display:none">비밀번호 변경</button>
     <button class="admin-logout" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">로그아웃</button>
@@ -6204,8 +6209,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   </div>
 
   <div class="admin-foot">
-    <button class="reset-btn" onclick="resetAllOverrides()">전체 초기화</button>
-    <button class="reset-btn" onclick="openProductResetModal()">상품 초기화</button>
+    <button class="reset-btn" onclick="tgtPinGate('reset_all','전체 초기화',resetAllOverrides)">전체 초기화</button>
+    <button class="reset-btn" onclick="tgtPinGate('reset_products','상품 초기화',openProductResetModal)">상품 초기화</button>
     <button class="apply-btn" onclick="toggleAdmin()">완료</button>
   </div>
   </div>
@@ -16706,9 +16711,9 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102703';
+const TGT_CRM_VERSION='2026102901';
 // [추가] 실시간 상담(채팅) — 방문자 화면(assets/live-chat.js)은 상담 버튼을 처음 누를 때, 상담원 화면(assets/admin-chat.js)은 관리자 로그인 후 불러온다
-const TGT_CHAT_VERSION='2026102802';
+const TGT_CHAT_VERSION='2026102901';
 let _tgtChatLoading = null, _tgtChatAdminLoading = null;
 function tgtLoadScript(src){
   return new Promise((resolve, reject)=>{ const sc = document.createElement('script'); sc.src = src; sc.onload = resolve; sc.onerror = ()=>reject(new Error('load failed: '+src)); document.head.appendChild(sc); });
@@ -16719,7 +16724,27 @@ function tgtLoadChat(){
   return _tgtChatLoading;
 }
 function tgtChatOpen(){
+  // 관리자 로그인 중에는 같은 버튼이 상담원 창(목록·대화·답변)을 연다 — 관리자 패널로 가지 않고 바로 응대
+  if (adminSession || _tgtAuthed===true){
+    tgtLoadChatAdmin().then(()=>{ window.TGT_CHAT_ADMIN.boot(); window.TGT_CHAT_ADMIN.toggleFloat(); }).catch(()=>alert('상담원 창을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.'));
+    return;
+  }
+  tgtChatOpenVisitor();
+}
+function tgtChatOpenVisitor(){
   tgtLoadChat().then(()=>window.TGT_CHAT.toggle()).catch(()=>alert('상담창을 불러오지 못했어요. 인터넷 연결을 확인하거나 전화('+SITE_CONTACT.phone+')·카카오톡으로 문의해 주세요.'));
+}
+// [추가] 2중 관리자 비밀번호(숫자 4자리) — 개인정보 내보내기·전체 초기화·상품 초기화 전에 확인(assets/admin-pin.js)
+let _tgtPinLoading = null;
+function tgtLoadPin(){
+  if (window.TGT_PIN) return Promise.resolve();
+  if (!_tgtPinLoading) _tgtPinLoading = tgtLoadScript('assets/admin-pin.js?v='+TGT_CHAT_VERSION).catch(e=>{ _tgtPinLoading = null; throw e; });
+  return _tgtPinLoading;
+}
+function tgtPinGate(action, title, fn){
+  tgtLoadPin().then(()=>window.TGT_PIN.require(action, title, {allowWithoutDb:true, desc:title+'을(를) 진행하려면 2중 관리자 비밀번호(숫자 4자리)를 입력하세요.'}))
+    .then(ok=>{ if (ok) fn(); })
+    .catch(()=>alert('2중 비밀번호 확인 기능을 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.'));
 }
 function tgtLoadChatAdmin(){
   if (window.TGT_CHAT_ADMIN) return Promise.resolve();

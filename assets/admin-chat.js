@@ -231,6 +231,7 @@
 .tca-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 12px;border-radius:12px;background:var(--nm-surface-light,#f4f7fb);border:1px solid rgba(10,23,48,.1)}
 .tca-sw{display:inline-flex;align-items:center;gap:7px;font-weight:700;cursor:pointer}
 .tca-sw input{width:18px;height:18px}
+.tca-sw input[type=time]{width:auto;height:auto;min-width:110px;font-size:.85rem}
 .tca-hint{font-size:.76rem;color:var(--nm-text-soft,#667385)}
 .tca-warn{padding:12px 14px;border-radius:12px;background:#fff4e5;border:1px solid #f0c987;line-height:1.6}
 .tca-wrap{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:10px;min-height:460px}
@@ -668,7 +669,18 @@
   // ── 설정 ───────────────────────────────────────────────────
   function settingsHTML(){
     setTimeout(()=>{ const box = S.root && $('#tcaPinBox', S.root); if (box && !box.dataset.done){ box.dataset.done = '1'; loadPin().then(()=>window.TGT_PIN.manage(box)).catch(()=>{ box.textContent = '2중 비밀번호 기능을 불러오지 못했어요.'; }); } }, 0);
-    return `<div class="tcs-card"><h4>👤 상담원 표시 이름</h4>
+    let hours = '';
+    try{
+      const h = getChatHours(), WD = [1,2,3,4,5,6,0], KO = ['일','월','화','수','목','금','토'];
+      hours = `<div class="tcs-card"><h4>🕘 상담 업무시간 (한국 시간)</h4>
+        <div class="tcc-note" style="margin-bottom:8px">업무시간에는 상담 신청서(탑승권)를 접수하면 실시간 상담 창이 바로 열립니다. 업무시간이 아니면 "다음 업무일에 확인 후 상담"을 안내하고, 고객 상담 창·홈페이지 안내 문구(현재: <b>${esc(chatHoursLabel())}</b>)에도 함께 반영됩니다.</div>
+        <div class="tcc-filters" data-hours="1">${WD.map(d=>`<label class="tca-sw" style="font-size:.82rem"><input type="checkbox" data-hday="${d}" ${h.days.includes(d)?'checked':''}> ${KO[d]}</label>`).join('')}</div>
+        <div class="tcc-filters" style="margin-top:8px"><label class="tca-sw" style="font-size:.82rem">시작 <input type="time" data-hstart="1" value="${esc(h.start)}" step="600" style="padding:6px 8px;border:1px solid #c7cfdc;border-radius:8px;font-family:inherit"></label>
+          <label class="tca-sw" style="font-size:.82rem">종료 <input type="time" data-hend="1" value="${esc(h.end)}" step="600" style="padding:6px 8px;border:1px solid #c7cfdc;border-radius:8px;font-family:inherit"></label>
+          <button type="button" class="tca-mini pri" data-act="hours">저장</button><span class="tca-hint" data-hmsg="1"></span></div>
+        <div class="tcc-note" style="margin-top:6px">지금은 <b>${chatInHours() ? '업무시간' : '업무시간 외'}</b>입니다. 저장하면 모든 방문자 화면에 바로 반영됩니다(관리자 로그인 상태에서 저장).</div></div>`;
+    }catch(e){}
+    return hours + `<div class="tcs-card"><h4>👤 상담원 표시 이름</h4>
         <div class="tcc-note" style="margin-bottom:8px">여러 상담원이 함께 응대할 때 목록·대화에 표시되는 이름입니다(고객 화면에는 "상담원"으로만 보입니다).</div>
         ${S.v2 ? `<div class="tcc-filters"><input type="search" data-myname="1" maxlength="20" value="${esc(S.myName)}" placeholder="예: 김상담" style="max-width:220px"><button type="button" class="tca-mini pri" data-act="myname">저장</button></div>` : '<div class="tca-hint">2단계 SQL 실행 후 사용할 수 있어요.</div>'}
       </div>
@@ -753,6 +765,17 @@
         case 'xlsx': doExport('xlsx'); break;
         case 'csv': doExport('csv'); break;
         case 'sreload': S.stats.data = null; loadStats(); break;
+        case 'hours': {
+          const days = [...container.querySelectorAll('input[data-hday]')].filter(i=>i.checked).map(i=>Number(i.dataset.hday));
+          const st = (container.querySelector('input[data-hstart]')||{}).value, en = (container.querySelector('input[data-hend]')||{}).value;
+          const msg = container.querySelector('[data-hmsg]');
+          if (!/^\d{2}:\d{2}$/.test(st||'') || !/^\d{2}:\d{2}$/.test(en||'')){ if (msg) msg.textContent = '시작·종료 시각을 입력해 주세요.'; break; }
+          if (st >= en){ if (msg) msg.textContent = '종료 시각은 시작 시각보다 늦어야 해요.'; break; }
+          if (!days.length && !confirm('업무 요일을 하나도 고르지 않았어요. 항상 "업무시간 외"로 안내할까요?')) break;
+          try{ tgtSaveChatHours({days, start:st, end:en}); render(); const m2 = S.root && S.root.querySelector('[data-hmsg]'); if (m2) m2.textContent = '✅ 저장했습니다 — ' + chatHoursLabel(); }
+          catch(e){ if (msg) msg.textContent = '저장 실패: ' + errText(e); }
+          break;
+        }
         case 'myname': {
           const inp = container.querySelector('input[data-myname]'); if (!inp) break;
           const { data, error } = await client().rpc('tgt_chat_admin_set_name', {p_name: inp.value});

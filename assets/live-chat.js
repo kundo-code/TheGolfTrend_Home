@@ -10,29 +10,14 @@
 
   const KEY = 'kundo_chat_v1', PROF_KEY = 'kundo_chat_profile_v1';
   const CONSENT_VERSION = 'chat-2026-10-29';   // 성별·출발지역 추가
+  // 상담 업무시간: 관리자 패널 💬 실시간 상담 → ⚙️ 설정에서 바꾼다(index.html getChatHours/chatInHours). 아래는 그 함수가 없을 때의 기본값
   const HOURS = {days:[1,2,3,4,5], start:9, end:18, label:'평일 09:00–18:00'};   // 한국 시간
+  function hoursLabel(){ try{ return chatHoursLabel(); }catch(e){ return HOURS.label; } }
+  function offNotice(){ try{ return chatOffHoursNotice(); }catch(e){ return '지금은 상담 업무시간('+HOURS.label+')이 아니에요. 남겨 주신 메시지는 다음 업무일에 확인 후 상담을 진행해 드립니다.'; } }
   const POLL_OPEN = 2500, POLL_IDLE = 15000;
 
-  // 출발지역 — 시/도를 고르면 그 지역의 시/군/구만 고른다(2026년 기준 행정구역, 인천은 2026-07 개편 반영). 세종은 시/군/구 없음
-  const REGIONS = {
-    '서울특별시':'강남구 강동구 강북구 강서구 관악구 광진구 구로구 금천구 노원구 도봉구 동대문구 동작구 마포구 서대문구 서초구 성동구 성북구 송파구 양천구 영등포구 용산구 은평구 종로구 중구 중랑구',
-    '부산광역시':'강서구 금정구 기장군 남구 동구 동래구 부산진구 북구 사상구 사하구 서구 수영구 연제구 영도구 중구 해운대구',
-    '대구광역시':'군위군 남구 달서구 달성군 동구 북구 서구 수성구 중구',
-    '인천광역시':'강화군 검단구 계양구 남동구 미추홀구 부평구 서구 연수구 영종구 옹진군 제물포구',
-    '광주광역시':'광산구 남구 동구 북구 서구',
-    '대전광역시':'대덕구 동구 서구 유성구 중구',
-    '울산광역시':'남구 동구 북구 울주군 중구',
-    '세종특별자치시':'',
-    '제주특별자치도':'서귀포시 제주시',
-    '경기도':'가평군 고양시 과천시 광명시 광주시 구리시 군포시 김포시 남양주시 동두천시 부천시 성남시 수원시 시흥시 안산시 안성시 안양시 양주시 양평군 여주시 연천군 오산시 용인시 의왕시 의정부시 이천시 파주시 평택시 포천시 하남시 화성시',
-    '강원도':'강릉시 고성군 동해시 삼척시 속초시 양구군 양양군 영월군 원주시 인제군 정선군 철원군 춘천시 태백시 평창군 홍천군 화천군 횡성군',
-    '충청북도':'괴산군 단양군 보은군 영동군 옥천군 음성군 제천시 증평군 진천군 청주시 충주시',
-    '충청남도':'계룡시 공주시 금산군 논산시 당진시 보령시 부여군 서산시 서천군 아산시 예산군 천안시 청양군 태안군 홍성군',
-    '전라북도':'고창군 군산시 김제시 남원시 무주군 부안군 순창군 완주군 익산시 임실군 장수군 전주시 정읍시 진안군',
-    '전라남도':'강진군 고흥군 곡성군 광양시 구례군 나주시 담양군 목포시 무안군 보성군 순천시 신안군 여수시 영광군 영암군 완도군 장성군 장흥군 진도군 함평군 해남군 화순군',
-    '경상북도':'경산시 경주시 고령군 구미시 김천시 문경시 봉화군 상주시 성주군 안동시 영덕군 영양군 영주시 영천시 예천군 울릉군 울진군 의성군 청도군 청송군 칠곡군 포항시',
-    '경상남도':'거제시 거창군 고성군 김해시 남해군 밀양시 사천시 산청군 양산시 의령군 진주시 창녕군 창원시 통영시 하동군 함안군 함양군 합천군',
-  };
+  // 출발지역 — 시/도를 고르면 그 지역의 시/군/구만 고른다. 목록은 index.html의 KR_REGIONS(상담 신청서와 공용)
+  const REGIONS = (typeof KR_REGIONS !== 'undefined' && KR_REGIONS) || {};
   function sigunguOf(sido){ const v = REGIONS[sido]; return v ? v.split(' ') : []; }
 
   // ── 저장된 상담 ─────────────────────────────────────────────
@@ -50,7 +35,7 @@
     try{ return (typeof getLeadClient==='function' && getLeadClient()) || (typeof getSupabaseClient==='function' && getSupabaseClient()) || null; }catch(e){ return null; }
   }
   function kstNow(){ const d = new Date(Date.now() + 9*3600000); return {day:d.getUTCDay(), h:d.getUTCHours() + d.getUTCMinutes()/60}; }
-  function inHours(){ const n = kstNow(); return HOURS.days.includes(n.day) && n.h >= HOURS.start && n.h < HOURS.end; }
+  function inHours(){ try{ return chatInHours(); }catch(e){} const n = kstNow(); return HOURS.days.includes(n.day) && n.h >= HOURS.start && n.h < HOURS.end; }
   function hhmm(t){ const d = t ? new Date(t) : new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
   function contact(){ return (typeof SITE_CONTACT!=='undefined' && SITE_CONTACT) || {phone:'010-9405-6842', kakaoChat:'http://pf.kakao.com/_SSxgFG/chat'}; }
   function errText(e){ return String((e && (e.message || e.details)) || e || ''); }
@@ -208,7 +193,7 @@
     if (S.agentOnline && waitText()){ dotEl.className='tc-dot on'; subEl.textContent = '상담원 온라인' + waitText(); }
     else if (S.agentOnline){ dotEl.className='tc-dot on'; subEl.textContent = '상담원 온라인 · 바로 답변드려요'; }
     else if (inHours()){ dotEl.className='tc-dot wait'; subEl.textContent = '상담 가능 시간 · 순서대로 답변드려요' + waitText(); }
-    else { dotEl.className='tc-dot'; subEl.textContent = '운영시간 외 ('+HOURS.label+') · 메시지를 남겨 주세요'; }
+    else { dotEl.className='tc-dot'; subEl.textContent = '상담 업무시간 외 ('+hoursLabel()+') · 메시지를 남겨 주세요'; }
   }
   function render(){
     if (!root) return;
@@ -216,7 +201,7 @@
     statusLine();
     const started = !!S.token;
     footEl.style.display = started ? '' : 'none';
-    botSay('안녕하세요, THE GOLF TREND입니다 ⛳\n궁금한 점을 남겨 주시면 상담원이 답변드려요.' + (inHours() ? '' : '\n\n지금은 운영시간('+HOURS.label+')이 아니에요. 메시지는 저장되어 운영시간에 순서대로 답변드립니다.'));
+    botSay('안녕하세요, THE GOLF TREND입니다 ⛳\n궁금한 점을 남겨 주시면 상담원이 답변드려요.' + (inHours() ? '' : '\n\n' + offNotice()));
     if (!started){ renderForm(); return; }
     renderChips();
     S.lastId = 0; save();
@@ -324,7 +309,7 @@
       if (f) botSay(f.say, f);
       if (!S.agentOnline && Date.now() - S.lastWaitNote > 10*60*1000){
         S.lastWaitNote = Date.now();
-        botSay(inHours() ? '메시지를 전달했어요. 상담원이 확인하는 대로 답변드릴게요.' : '메시지를 남겨 주셨어요. 지금은 운영시간('+HOURS.label+')이 아니라 운영시간에 순서대로 답변드릴게요. 급하시면 전화·카카오톡도 이용해 주세요.');
+        botSay(inHours() ? '메시지를 전달했어요. 상담원이 확인하는 대로 답변드릴게요.' : offNotice() + ' 급하시면 전화·카카오톡도 이용해 주세요.');
       }
     }catch(e){
       console.error('chat send failed', e);
@@ -388,7 +373,30 @@
   }
   function toggle(){ S.open ? close() : open(); }
 
-  window.TGT_CHAT = {open, close, toggle, pollOnce};
+  // 상담 신청서(탑승권)에서 바로 연결: 신청서의 이름·연락처·성별·출발지역·동의로 상담을 시작하고(시작 화면 생략)
+  // 신청 내용을 첫 메시지로 보낸 뒤 상담 창을 연다. 이미 진행 중인 상담이 있으면 그 상담에 이어서 보낸다
+  async function startFromLead(info){
+    const c = client(); if (!c || !info) return false;
+    try{
+      if (!S.token){
+        const args = {p_name:info.name, p_phone:info.phone, p_consent_version:info.consentVersion || 'lead', p_marketing:!!info.marketing, p_page:(location.pathname + '#booking').slice(0,300)};
+        let { data, error } = await c.rpc('tgt_chat_start', Object.assign({p_gender:info.gender||null, p_region_sido:info.sido||null, p_region_sigungu:info.sigungu||null}, args));
+        let legacy = false;
+        if (error && /PGRST202|Could not find the function|42883/i.test(errText(error))){ ({ data, error } = await c.rpc('tgt_chat_start', args)); legacy = !error; }
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row || !row.token) throw new Error('no-token');
+        S.token = row.token; S.lastId = 0; S.startedAt = Date.now(); save();
+        if (legacy && (info.gender || info.sido)){ try{ await c.rpc('tgt_chat_send', {p_token:S.token, p_body:`[고객 정보] 성별: ${info.gender||'-'} · 출발지역: ${[info.sido, info.sigungu].filter(Boolean).join(' ')||'-'}`}); }catch(e){} }
+      }
+      try{ localStorage.setItem(PROF_KEY, JSON.stringify({name:info.name, phone:info.phone, gender:info.gender, sido:info.sido, sigungu:info.sigungu})); }catch(e){}
+      if (info.summary){ const { error } = await c.rpc('tgt_chat_send', {p_token:S.token, p_body:info.summary}); if (error && /invalid_token/.test(errText(error))){ S.token=''; save(); return startFromLead(info); } }
+      if (S.open) render(); else open();
+      return true;
+    }catch(e){ console.error('chat start from lead failed', e); return false; }
+  }
+
+  window.TGT_CHAT = {open, close, toggle, pollOnce, startFromLead};
   // 이전 상담이 남아 있으면 조용히 새 답변을 확인해 버튼에 안 읽은 표시를 단다
   if (S.token){ loop(); setTimeout(pollOnce, 800); }
 })();

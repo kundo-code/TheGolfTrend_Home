@@ -50,6 +50,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://zjanojlayndtgmzohpyb.supabase.co" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<!-- 여행 이야기 썸네일(네이버 블로그·유튜브) 호스트에 미리 연결해 첫 이미지 표시를 앞당긴다 -->
+<link rel="dns-prefetch" href="https://blogthumb.pstatic.net"><link rel="dns-prefetch" href="https://postfiles.pstatic.net"><link rel="dns-prefetch" href="https://i.ytimg.com">
 <!-- [수정][성능] 두 폰트 스타일시트를 일반 rel=stylesheet로 두면 다운로드가 끝날 때까지 첫 렌더링을
      막는다(Lighthouse 렌더링 차단 리소스로 측정, 각 230ms). media="print"로 불러오면 브라우저가
      렌더링을 막지 않고 백그라운드에서 받아오고, onload에서 media를 all로 바꿔 받아온 즉시 적용한다
@@ -3719,6 +3721,11 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .succ-receipt{display:inline-flex;flex-wrap:wrap;justify-content:center;max-width:100%;box-sizing:border-box;align-items:center;gap:6px 10px;margin:14px 0 4px;padding:10px 16px;border-radius:12px;background:rgba(184,138,46,.12);border:1px dashed rgba(184,138,46,.6);color:rgba(10,23,48,.85);font-size:.88rem}
 .succ-receipt b{white-space:nowrap;font-size:1.05rem;letter-spacing:.06em;color:#0a1730}
 .succ-copy{white-space:nowrap;padding:4px 12px;border-radius:999px;border:1px solid rgba(184,138,46,.7);background:#fff;color:#8a5a0a;font-size:.8rem;font-weight:700;cursor:pointer}
+.succ-live{margin:14px auto 0;max-width:460px;padding:14px 16px;border-radius:14px;font-size:.92rem;line-height:1.6;word-break:keep-all;text-align:center}
+.succ-live[hidden]{display:none}
+.succ-live.on{background:#ecfdf3;border:1px solid #86d6a8;color:#14532d}
+.succ-live.off{background:#fff7e6;border:1px solid #f1d39a;color:#6b4508}
+.succ-live button{margin-top:10px;padding:10px 18px;border-radius:999px;border:none;background:#0f2347;color:#fff;font:inherit;font-weight:700;cursor:pointer}
 .succ-hint{margin-top:10px;font-size:.88rem;color:rgba(10,23,48,.66)}
 .succ-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
 .succ-btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:12px;font-size:.95rem;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap}
@@ -3780,6 +3787,17 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .tk-in:focus{outline:none;border-color:#c9962b;box-shadow:0 0 0 3px rgba(201,150,43,.18)}
 .tk-in::placeholder{color:var(--nm-placeholder)}
 .tk-bottom .tk-grid-2{margin-bottom:16px}
+/* [추가] 신청자 성별·출발지역 — 성별은 탑승권 선택 칩과 같은 모양, 출발지역은 시/도 → 시/군/구 선택 */
+.tk-gender{display:flex;gap:8px}
+.tk-gender label{flex:1;position:relative;cursor:pointer}
+.tk-gender input{position:absolute;opacity:0;pointer-events:none}
+.tk-gender span{display:block;text-align:center;padding:11px 0;border-radius:12px;border:1px solid rgba(10,23,48,.22);background:#fff;color:#0a1730;font-size:.95rem;transition:background .15s,border-color .15s}
+.tk-gender label:hover span{border-color:#c9962b;background:#fffaf0}
+.tk-gender input:checked + span{background:linear-gradient(135deg,#f6e3b5,#e2b865);border-color:#c9962b;color:#3b2a06;font-weight:700}
+.tk-gender input:focus-visible + span{outline:2px solid #0a1730;outline-offset:2px}
+.tk-region{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tk-region select{padding:12px 10px;min-width:0}
+.tk-region select:disabled{background:#f3f4f6;color:rgba(10,23,48,.45)}
 .tk-more{margin:2px 0 16px}
 .tk-more-btn{border:none;background:none;padding:2px 0;font:inherit;font-size:.88rem;font-weight:600;color:#8a5a0a;cursor:pointer}
 .tk-more-btn em{font-style:normal;font-weight:400;color:rgba(10,23,48,.5)}
@@ -3811,6 +3829,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .tk-q span{font-size:1.2rem;line-height:1}
 .tk-q.kakao{background:#FEE500;border-color:#FEE500;color:#391B1B}
 .tk-q:hover{filter:brightness(1.08)}
+/* [수정] 빠른 상담은 전화 버튼 하나로 — 상품카드 섹션 "📅 캘린더" 버튼(.cv-close)과 같은 크림 골드 버튼을 가로 전체 폭으로 */
+.tk-stub .tk-call{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;box-sizing:border-box;padding:13px 16px;font-size:1rem;font-weight:700;font-family:inherit}
 .tk-stub-tel{margin-top:12px;font-size:.74rem;color:rgba(255,255,255,.55)}
 @media(max-width:900px){
   .tk-wrap{grid-template-columns:1fr;gap:18px}
@@ -5881,6 +5901,12 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
                 <label class="tk-field"><span class="tk-lab"><span class="en">Name</span><b>이름</b></span><input type="text" name="name" class="tk-in" placeholder="홍길동" maxlength="30" autocomplete="name" required></label>
                 <label class="tk-field"><span class="tk-lab"><span class="en">Contact</span><b>연락처</b></span><input type="tel" name="phone" class="tk-in" placeholder="010-0000-0000" maxlength="20" inputmode="tel" pattern="[0-9+\-\s]{9,20}" autocomplete="tel" required></label>
               </div>
+              <div class="tk-grid tk-grid-2 tk-who">
+                <div class="tk-field"><span class="tk-lab"><span class="en">Gender</span><b>성별</b></span>
+                  <div class="tk-gender" role="radiogroup" aria-label="성별"><label><input type="radio" name="gender" value="남" required><span>남</span></label><label><input type="radio" name="gender" value="여"><span>여</span></label></div></div>
+                <div class="tk-field"><span class="tk-lab"><span class="en">From</span><b>출발지역</b></span>
+                  <div class="tk-region"><select name="regionSido" id="tkSido" class="tk-in" aria-label="출발지역 시/도" required><option value="">시/도 선택</option></select><select name="regionSigungu" id="tkSigungu" class="tk-in" aria-label="출발지역 시/군/구" disabled><option value="">시/군/구 선택</option></select></div></div>
+              </div>
               <div class="tk-grid tk-grid-2" id="tkContactPref"></div>
               <div class="tk-more">
                 <button type="button" class="tk-more-btn" id="tkMoreBtn" aria-expanded="false" onclick="tkToggleNote()">＋ 전하고 싶은 말이 더 있어요 <em>(선택)</em></button>
@@ -5901,6 +5927,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
         </form>
         <div class="success tk-success" id="successMsg"><div class="tk-stripe" aria-hidden="true"></div><div class="tk-body"><div class="big">⛳</div><h3>탑승권이 발급되었습니다</h3><p>담당 플래너가 24시간 이내 연락드립니다.</p>
           <div class="succ-receipt">접수번호 <b id="leadReceiptNo"></b><button type="button" class="succ-copy" onclick="copyLeadReceipt(this)">복사</button></div>
+          <div class="succ-live" id="leadSuccLive" hidden></div>
           <p class="succ-hint">더 빠른 상담을 원하시면 카카오톡 채널에 접수번호를 남겨 주세요.</p>
           <div class="succ-actions">
             <a class="succ-btn kakao" id="leadSuccKakao" target="_blank" rel="noopener" hidden>💬 카카오톡 채널로 상담하기</a>
@@ -5918,16 +5945,12 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
         </div>
         <div class="tk-stub-bot">
           <div class="tk-stub-more">빠른 상담이 필요하신가요?</div>
-          <div class="tk-quick">
-            <button type="button" class="tk-q kakao" onclick="openKakaoChat()" aria-label="카카오톡 상담"><span>💬</span>카카오톡</button>
-            <a class="tk-q band" id="tkBandLink" target="_blank" rel="noopener" aria-label="밴드 가입"><span>👥</span>밴드</a>
-            <button type="button" class="tk-q call" onclick="callHotline()" aria-label="전화 상담"><span>📞</span>전화</button>
-          </div>
-          <div class="tk-stub-tel">평일 09:00–18:00 · 010-9405-6842</div>
+          <button type="button" class="cv-close tk-call" onclick="callHotline()" aria-label="전화 상담">📞 전화 상담</button>
+          <div class="tk-stub-tel"><span data-chat-hours>평일 09:00–18:00</span> · 010-9405-6842</div>
         </div>
       </aside>
     </div>
-    <p class="form-note">상담 문의 <b>010-9405-6842</b> · 평일 09:00–18:00 · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>thegolftrend@gmail.com</b></p>
+    <p class="form-note">상담 문의 <b>010-9405-6842</b> · <span data-chat-hours>평일 09:00–18:00</span> · <a href="http://pf.kakao.com/_SSxgFG/chat" target="_blank" rel="noopener">카카오톡 <b>@thegolftrend</b></a> · <b>thegolftrend@gmail.com</b></p>
   </div>
 </section>
 </main>
@@ -5970,7 +5993,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   <div class="foot-company">
     <div class="fc-line"><b>(주)더골프트렌드</b> · 대표: 오선영 · 개인정보 보호 책임자: 맹군도 · 사업자번호: 707-81-03126 · 계좌번호: (주)더골프트렌드 | <b style="color:#000;font-weight:700">제주은행 700-100-433860</b> · 통신판매업: 제 2024-서울송파-0795호</div>
     <div class="fc-line">주소: 서울특별시 송파구 충민로 66, 가든파이브라이프 7층 리빙관 7074호 · 고객센터: <b>707-7500-5981</b></div>
-    <div class="fc-line">관광사업등록번호: <b>제2023-6호</b> (종합여행업)</div>
+    <div class="fc-line">SGI서울보증(인허가보증보험) : 여행업자 영업보증금 보증(증서발행번호 <b>제 100-000-2026 0097 7612호</b>) · 관광사업등록번호: <b>제2023-6호</b> (종합여행업)</div>
   </div>
 
   <!-- 하단부: 보증보험 안내 & 저작권 -->
@@ -6155,6 +6178,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
           </div>
         </details>
       </div>
+      <div class="admin-section"><h4 class="admin-h4-lg">⚡ 이미지 로딩 최적화 (요금표 포스터 · 여행 이야기)</h4><div id="adminImgOptimize"></div></div>
     </div>
     <div id="tabProducts" style="display:none">
       <div class="admin-info-box"><b>💡</b> 편집할 여행지를 먼저 선택하세요. 기본 정보는 자동 저장됩니다. <b>"고급 편집"</b> 버튼으로 미디어·요금표·레이블·연락처를 관리할 수 있습니다.</div>
@@ -7900,14 +7924,14 @@ async function handleChannelPostImageUpload(url, inputEl){
   const file=inputEl.files[0]; if(!file) return;
   if(file.size>10*1024*1024){alert('이미지는 10MB 이하로 업로드해주세요.'); inputEl.value=''; return;}
   try{
-    const publicUrl = await uploadToStorage(file, 'channel');
-    setChannelPostOverride(url, { image: publicUrl });
+    const publicUrl = (await uploadOptimized(file, 'channel', IMG_SIZE.card)).url;
+    setChannelPostOverride(url, { image: publicUrl, thumb: '' });
     renderBlog(); renderAdminChannels();
   }catch(e){ alert('업로드 실패: '+(e.message||e)); }
   inputEl.value='';
 }
 function clearChannelPostImage(url){
-  setChannelPostOverride(url, { image: '' });
+  setChannelPostOverride(url, { image: '', thumb: '' });
   renderBlog(); renderAdminChannels();
 }
 // [Phase] 자동 수집된 특정 글/영상을 삭제하지 않고 "여행 이야기" 화면에서만 숨긴다 — RSS
@@ -7980,6 +8004,7 @@ function buildAutoPosts(entries){
         title1: ov.title1 || item.title || (ch.label||ch.handle),
         title2: ov.title2 || '',
         image: ov.image || item.thumbnail || '',
+        thumb: (ov.image && ov.thumb) || '',
         description: '',
         fallbackCat: ch.type==='youtube' ? 'japan' : 'gangwon',
         isAuto: true,
@@ -8644,10 +8669,52 @@ async function uploadToStorage(file, prefix){
   if (!client) throw new Error('Supabase 클라이언트를 불러오지 못했습니다 (인터넷 연결을 확인하세요).');
   if (!adminSession) throw new Error('로그인이 필요합니다. 관리자 패널에서 먼저 로그인해주세요.');
   const path = storagePath(prefix, file);
-  const { error } = await client.storage.from(MEDIA_BUCKET).upload(path, file, {cacheControl:'3600', upsert:false});
+  // 경로가 매번 새로 만들어지므로(덮어쓰기 없음) 브라우저·CDN이 1년 동안 캐시해도 안전 — 재방문 시 이미지가 바로 뜬다
+  const { error } = await client.storage.from(MEDIA_BUCKET).upload(path, file, {cacheControl:'31536000', upsert:false});
   if (error) throw error;
   const { data } = client.storage.from(MEDIA_BUCKET).getPublicUrl(path);
   return data.publicUrl;
+}
+
+// [추가] 이미지 로딩 최적화 — 화면에 필요한 크기로 줄이고 WebP(지원하지 않는 브라우저는 JPEG)로 압축한다.
+// 원본보다 커지거나 줄일 필요가 없으면 원본을 그대로 쓴다. GIF(움직이는 이미지)·SVG는 건드리지 않는다
+let _webpOk = null;
+function canWebp(){
+  if (_webpOk===null){ try{ const c = document.createElement('canvas'); c.width = c.height = 1; _webpOk = c.toDataURL('image/webp').indexOf('data:image/webp')===0; }catch(e){ _webpOk = false; } }
+  return _webpOk;
+}
+async function tgtShrinkImage(src, maxW, maxH, quality){
+  if (!src || /gif|svg/i.test(src.type||'')) return {blob:src, changed:false};
+  let img, w0, h0, revoke = null;
+  try{ img = await createImageBitmap(src); w0 = img.width; h0 = img.height; }
+  catch(e){
+    const u = URL.createObjectURL(src); revoke = u;
+    img = await new Promise((ok, fail)=>{ const im = new Image(); im.onload = ()=>ok(im); im.onerror = fail; im.src = u; });
+    w0 = img.naturalWidth; h0 = img.naturalHeight;
+  }
+  try{
+    const scale = Math.min(1, maxW / w0, maxH / h0), w = Math.max(1, Math.round(w0*scale)), h = Math.max(1, Math.round(h0*scale));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    const type = canWebp() ? 'image/webp' : 'image/jpeg';
+    if (type === 'image/jpeg'){ ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise(r=>c.toBlob(r, type, quality || 0.82));
+    if (!blob || (blob.size >= (src.size||Infinity))) return {blob:src, w:w0, h:h0, changed:false};
+    return {blob, w, h, w0, h0, changed:true};
+  }finally{ if (revoke) URL.revokeObjectURL(revoke); try{ img.close && img.close(); }catch(e){} }
+}
+// 업로드용 크기 규칙: 여행 이야기·블로그 카드 이미지 1200px, 요금 포스터는 확대 보기용 2400px + 캐러셀용(높이 1000px) 축소본
+const IMG_SIZE = {card:[1200, 1200, 0.82], posterFull:[2400, 3600, 0.88], posterThumb:[1400, 1000, 0.8]};
+async function uploadOptimized(file, prefix, size){
+  try{ const r = await tgtShrinkImage(file, size[0], size[1], size[2]); return {url: await uploadToStorage(r.changed ? r.blob : file, prefix), w:r.w, h:r.h}; }
+  catch(e){ if (e && /로그인|Supabase/.test(e.message||'')) throw e; return {url: await uploadToStorage(file, prefix)}; }
+}
+async function uploadPoster(file){
+  const full = await uploadOptimized(file, 'products', IMG_SIZE.posterFull);
+  let thumb = '';
+  try{ const r = await tgtShrinkImage(file, IMG_SIZE.posterThumb[0], IMG_SIZE.posterThumb[1], IMG_SIZE.posterThumb[2]); if (r.changed) thumb = await uploadToStorage(r.blob, 'products'); }catch(e){}
+  return {url:full.url, thumb, w:full.w||null, h:full.h||null};
 }
 
 // ── 사이트 콘텐츠(어떤 이미지/문구를 쓸지 등) 동기화 ─────────────────
@@ -8667,7 +8734,7 @@ function collectSiteState(){
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides, calHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
     collectorEndpoint: collectorEndpointOverride,
-    aiPlaces,
+    aiPlaces, chatHours: chatHoursOverride,
   };
 }
 function applySiteState(state){
@@ -8700,6 +8767,7 @@ function applySiteState(state){
   if (state.collectorEndpoint !== undefined){ collectorEndpointOverride = state.collectorEndpoint; try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){} }
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
+  if (state.chatHours && typeof state.chatHours==='object'){ chatHoursOverride = state.chatHours; try{ localStorage.setItem(CHAT_HOURS_KEY, JSON.stringify(chatHoursOverride)); }catch(e){} try{ renderChatHoursLabels(); }catch(e){} }
   // 등록부가 없는 예전 상태(이 기능 이전에 저장된 데이터)를 받으면 이 기기의 등록부를 유지하고, 다음 저장 때 함께 올린다
   if (state.aiPlaces && typeof state.aiPlaces==='object'){ aiPlaces = aiPlacesNorm(state.aiPlaces); try{ localStorage.setItem(AI_PLACES_KEY, JSON.stringify(aiPlaces)); }catch(e){} }
   try{
@@ -8765,12 +8833,84 @@ async function pullSiteState(){
   }catch(e){ console.error('site state pull failed', e); return false; }
 }
 
+// ── 출발지역(시/도 → 시/군/구) — 상담 신청서와 실시간 상담 창이 함께 쓴다(2026년 기준, 인천은 2026-07 개편 반영) ──
+const KR_REGIONS = {
+  '서울특별시':'강남구 강동구 강북구 강서구 관악구 광진구 구로구 금천구 노원구 도봉구 동대문구 동작구 마포구 서대문구 서초구 성동구 성북구 송파구 양천구 영등포구 용산구 은평구 종로구 중구 중랑구',
+  '부산광역시':'강서구 금정구 기장군 남구 동구 동래구 부산진구 북구 사상구 사하구 서구 수영구 연제구 영도구 중구 해운대구',
+  '대구광역시':'군위군 남구 달서구 달성군 동구 북구 서구 수성구 중구',
+  '인천광역시':'강화군 검단구 계양구 남동구 미추홀구 부평구 서구 연수구 영종구 옹진군 제물포구',
+  '광주광역시':'광산구 남구 동구 북구 서구',
+  '대전광역시':'대덕구 동구 서구 유성구 중구',
+  '울산광역시':'남구 동구 북구 울주군 중구',
+  '세종특별자치시':'',
+  '제주특별자치도':'서귀포시 제주시',
+  '경기도':'가평군 고양시 과천시 광명시 광주시 구리시 군포시 김포시 남양주시 동두천시 부천시 성남시 수원시 시흥시 안산시 안성시 안양시 양주시 양평군 여주시 연천군 오산시 용인시 의왕시 의정부시 이천시 파주시 평택시 포천시 하남시 화성시',
+  '강원도':'강릉시 고성군 동해시 삼척시 속초시 양구군 양양군 영월군 원주시 인제군 정선군 철원군 춘천시 태백시 평창군 홍천군 화천군 횡성군',
+  '충청북도':'괴산군 단양군 보은군 영동군 옥천군 음성군 제천시 증평군 진천군 청주시 충주시',
+  '충청남도':'계룡시 공주시 금산군 논산시 당진시 보령시 부여군 서산시 서천군 아산시 예산군 천안시 청양군 태안군 홍성군',
+  '전라북도':'고창군 군산시 김제시 남원시 무주군 부안군 순창군 완주군 익산시 임실군 장수군 전주시 정읍시 진안군',
+  '전라남도':'강진군 고흥군 곡성군 광양시 구례군 나주시 담양군 목포시 무안군 보성군 순천시 신안군 여수시 영광군 영암군 완도군 장성군 장흥군 진도군 함평군 해남군 화순군',
+  '경상북도':'경산시 경주시 고령군 구미시 김천시 문경시 봉화군 상주시 성주군 안동시 영덕군 영양군 영주시 영천시 예천군 울릉군 울진군 의성군 청도군 청송군 칠곡군 포항시',
+  '경상남도':'거제시 거창군 고성군 김해시 남해군 밀양시 사천시 산청군 양산시 의령군 진주시 창녕군 창원시 통영시 하동군 함안군 함양군 합천군',
+};
+function krSigungu(sido){ const v = KR_REGIONS[sido]; return v ? v.split(' ') : []; }
+
+// ── 상담 업무시간(한국 시간) — 관리자 패널 💬 실시간 상담 → ⚙️ 설정에서 바꾸면 모든 기기에 공유된다(사이트 상태) ──
+// 업무시간에는 상담 신청서 접수 후 실시간 상담 창이 바로 열리고, 그 외 시간에는 다음 업무일에 확인 후 연락드린다고 안내한다
+const CHAT_HOURS_KEY = 'kundo_chat_hours_v1';
+const CHAT_HOURS_DEFAULT = {days:[1,2,3,4,5], start:'09:00', end:'18:00'};
+const KO_WD = ['일','월','화','수','목','금','토'];
+let chatHoursOverride = null;
+try{ chatHoursOverride = JSON.parse(localStorage.getItem(CHAT_HOURS_KEY)||'null'); }catch(e){}
+function getChatHours(){
+  const h = chatHoursOverride && typeof chatHoursOverride==='object' ? chatHoursOverride : {};
+  const okT = t => /^([01]\d|2[0-3]):[0-5]\d$/.test(String(t||''));
+  const days = Array.isArray(h.days) ? h.days.map(Number).filter(d=>d>=0 && d<=6) : CHAT_HOURS_DEFAULT.days;
+  return {days, start: okT(h.start) ? h.start : CHAT_HOURS_DEFAULT.start, end: okT(h.end) ? h.end : CHAT_HOURS_DEFAULT.end};
+}
+function _hm(t){ const [a,b] = String(t).split(':').map(Number); return a*60 + b; }
+function tgtKst(d){ const k = new Date((d ? d.getTime() : Date.now()) + 9*3600000); return {y:k.getUTCFullYear(), m:k.getUTCMonth()+1, d:k.getUTCDate(), wd:k.getUTCDay(), min:k.getUTCHours()*60 + k.getUTCMinutes()}; }
+function chatInHours(d){
+  const h = getChatHours(), k = tgtKst(d);
+  return h.days.includes(k.wd) && k.min >= _hm(h.start) && k.min < _hm(h.end);
+}
+function chatHoursLabel(){
+  const h = getChatHours(), ds = h.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)), key = ds.join(',');
+  const dl = !ds.length ? '휴무' : key==='1,2,3,4,5' ? '평일' : key==='1,2,3,4,5,6,0' ? '매일' : key==='1,2,3,4,5,6' ? '월–토' : key==='6,0' ? '주말' : ds.map(x=>KO_WD[x]).join('·');
+  return ds.length ? `${dl} ${h.start}–${h.end}` : '상담 업무시간 준비 중';
+}
+// 다음 업무 시작 시각 안내(예: "내일(10/30 목) 09:00", "10/31(금) 09:00")
+function chatNextOpenText(d){
+  const h = getChatHours(); if (!h.days.length) return '';
+  const now = d || new Date(), k0 = tgtKst(now);
+  for (let i = 0; i < 8; i++){
+    const k = tgtKst(new Date(now.getTime() + i*86400000));
+    if (!h.days.includes(k.wd)) continue;
+    if (i===0 && k0.min >= _hm(h.start)) continue;
+    const day = i===0 ? '오늘' : (i===1 ? `내일(${k.m}/${k.d} ${KO_WD[k.wd]})` : `${k.m}/${k.d}(${KO_WD[k.wd]})`);
+    return `${day} ${h.start}`;
+  }
+  return '';
+}
+function chatOffHoursNotice(){
+  const next = chatNextOpenText();
+  return `지금은 상담 업무시간(${chatHoursLabel()})이 아니에요. 남겨 주신 내용은 ${next ? `다음 업무일 ${next} 이후` : '다음 업무일'}에 담당 플래너가 확인한 뒤 상담을 진행해 드립니다.`;
+}
+function renderChatHoursLabels(){ document.querySelectorAll('[data-chat-hours]').forEach(el=>{ el.textContent = chatHoursLabel(); }); }
+// 관리자 저장(⚙️ 설정) — 이 기기에 저장하고 모든 방문자에게 공유
+function tgtSaveChatHours(cfg){
+  chatHoursOverride = {days:(cfg.days||[]).map(Number), start:cfg.start, end:cfg.end};
+  try{ localStorage.setItem(CHAT_HOURS_KEY, JSON.stringify(chatHoursOverride)); }catch(e){}
+  renderChatHoursLabels(); queueSiteStateSync();
+  return getChatHours();
+}
+
 // ── AI 리드(문의) 관리 ─────────────────────────────────────────
 // 상담 신청 — 개인정보 수집·이용 동의 문구(버전을 올리면 저장되는 동의 기록의 버전도 함께 바뀐다). 보유 기간 등은 운영 기준에 맞게 이곳에서 고친다
 const LEAD_CONSENT = {
-  version:'2026-10-27',
-  items:'이름, 연락처, 희망 여행지·출발일·인원·숙박 타입·체류 기간·선호 스타일·세부 요청(직접 입력한 내용)',
-  purpose:'골프 여행 상담·견적 안내 및 문의 응대',
+  version:'2026-10-29',   // 성별·출발지역 추가, 상담 업무시간에는 실시간 채팅 상담으로 바로 연결
+  items:'이름, 연락처, 성별, 출발지역(시/도·시/군/구), 희망 여행지·출발일·인원·숙박 타입·체류 기간·선호 스타일·세부 요청(직접 입력한 내용), 실시간 채팅 상담 대화 내용',
+  purpose:'골프 여행 상담·견적 안내 및 문의 응대(상담 업무시간에는 실시간 채팅 상담 연결)',
   retention:'상담 종료 후 1년(관계 법령에 따라 보존이 필요한 경우 해당 기간)',
   refusal:'동의를 거부할 수 있으며, 거부하시면 온라인 상담 신청이 제한됩니다(전화·카카오톡 상담은 이용 가능).',
   marketing:{
@@ -13805,7 +13945,7 @@ function closePostArchive(){
 // 캡처 단계 — 선택창이 열려 있으면 Esc는 선택창만 닫고(선택창 쪽 처리), 전체 보기 창은 그대로 둔다
 document.addEventListener('keydown', e=>{ if (e.key==='Escape' && !document.getElementById('postChooser')) closePostArchive(); }, true);
 function postCardHTML(b){
-  const bg = b.image || getImage(b.fallbackCat) || '';
+  const bg = b.thumb || b.image || getImage(b.fallbackCat) || '';   // 축소본(이미지 최적화)이 있으면 먼저
   const title = b.title1 || b.title || `${b.tag||'블로그'} 새 글 보러가기`;
   const subtitle = b.title2 || '';
   const desc = b.description || (b.title ? '' : '최신 골프 여행 후기와 소식을 블로그에서 만나보세요');
@@ -14269,7 +14409,7 @@ function renderAdminBlog(){
   if (!c) return;
   const list = getBlogList();
   c.innerHTML = list.map((b,i)=>{
-    const imgSrc = b.image || getImage(b.fallbackCat) || '';
+    const imgSrc = b.thumb || b.image || getImage(b.fallbackCat) || '';
     return `
     <div class="admin-blog-card">
       <!-- 썸네일 + 이미지 업로드 -->
@@ -14346,9 +14486,9 @@ async function handleBlogImageUpload(idx, inputEl){
   const file=inputEl.files[0]; if(!file) return;
   if(file.size>10*1024*1024){alert('이미지는 10MB 이하로 업로드해주세요.'); inputEl.value=''; return;}
   try{
-    const url = await uploadToStorage(file, 'blog');
+    const url = (await uploadOptimized(file, 'blog', IMG_SIZE.card)).url;
     const list = getBlogList();
-    list[idx].image = url;
+    list[idx].image = url; list[idx].thumb = '';
     saveBlogList(list);
     renderBlog(); renderAdminBlog();
   }catch(e){alert('업로드 실패: '+(e.message||e));}
@@ -16172,13 +16312,13 @@ const PKG_NUDGE_MS = 600;       // 이전/다음 버튼·도트 클릭 시 한 �
 const PKG_HOVER_FADE_MS = 1000; // 카드에 마우스를 올렸을 때 반투명→선명 페이드인 전환 시간(ms) — 값이 클수록 더 천천히 선명해짐 (기본값 1000)
 document.documentElement.style.setProperty('--pkg-hover-fade-ms', PKG_HOVER_FADE_MS+'ms');
 const pkgImgDims = {}; // url -> {w,h} 캐시 (이미지 높이 평균 계산용)
-function pkgLoadImgDims(url){
+function pkgLoadImgDims(url, src){
   return new Promise(resolve=>{
     if(!url || pkgImgDims[url]){ resolve(pkgImgDims[url]); return; }
     const img = new Image();
     img.onload = ()=>{ pkgImgDims[url] = {w:img.naturalWidth||1, h:img.naturalHeight||1}; resolve(pkgImgDims[url]); };
     img.onerror = ()=>{ pkgImgDims[url] = {w:1, h:1}; resolve(pkgImgDims[url]); };
-    img.src = url;
+    img.src = src || url;   // 축소본이 있으면 그것으로 비율만 잰다(원본을 통째로 받지 않음)
   });
 }
 
@@ -16187,7 +16327,7 @@ function getPkgManualList(type){ return pkgPosters[type]||[]; }
 // 홈 화면 캐러셀/라이트박스용 — 관리자 업로드 포스터 + 상품별 "요금 포스터"를 합친 목록
 // (상품별 항목은 catId/idx를 가지고 있어 라이트박스에서 "자세히→"로 해당 상품 상세로 이동 가능)
 function getPkgList(type){
-  const manual = getPkgManualList(type).map(p=>({url:p.url, label:p.label||'', catId:null, idx:null}));
+  const manual = getPkgManualList(type).map(p=>({url:p.url, thumb:p.thumb||'', w:p.w||null, h:p.h||null, label:p.label||'', catId:null, idx:null}));
   const cats = CATEGORIES[type]||[];
   const fromProducts=[];
   // [메모리/성능 안정화] 캐러셀 rAF 루프·리사이즈 이벤트 등에서 반복 호출되므로, 매번 getProducts()로
@@ -16196,7 +16336,7 @@ function getPkgList(type){
     const list = productOverrides[cat.id];
     if (list) list.forEach((p,idx)=>{
       if (p && p.pkgPoster && p.pkgPoster.url && isProductVisible(p)){
-        fromProducts.push({url:p.pkgPoster.url, label:p.title||'', catId:cat.id, idx});
+        fromProducts.push({url:p.pkgPoster.url, thumb:p.pkgPoster.thumb||'', w:p.pkgPoster.w||null, h:p.pkgPoster.h||null, label:p.title||'', catId:cat.id, idx});
       }
     });
   });
@@ -16228,7 +16368,7 @@ function renderPkgGroup(type){
       <div class="pkg-empty-slot"><span class="pkg-empty-icon">⛳</span><span class="pkg-empty-text">상품 준비중</span></div>
     </div>` : `
     <div class="pkg-card" data-idx="${origIdx}" onclick="openPkgLightbox('${type}',${origIdx})">
-      <img src="${escapeAttr(p.url)}" alt="${escapeAttr(p.label || (type==='domestic'?'국내 골프 패키지 요금표':'해외 골프 패키지 요금표'))}" class="pkg-img" loading="lazy" decoding="async">
+      <img src="${escapeAttr(p.thumb || p.url)}" alt="${escapeAttr(p.label || (type==='domestic'?'국내 골프 패키지 요금표':'해외 골프 패키지 요금표'))}" class="pkg-img" loading="lazy" decoding="async">
       ${p.label?`<div class="pkg-label">${escapeAttr(p.label)}</div>`:''}
       <div class="pkg-zoom-hint">🔍</div>
     </div>`;
@@ -16248,6 +16388,56 @@ function renderPkgGroup(type){
   pkgStartAuto(type);
 }
 
+// [추가] 이미 올린 이미지 최적화 — 요금 포스터·여행 이야기(직접 올린 이미지)·블로그 카드 이미지의 화면용 축소본을 만들어 둔다.
+// 원본 파일과 주소는 그대로 두고(확대 보기·되돌리기용) 축소본 주소(thumb)만 더하므로 기존 데이터가 지워지지 않는다
+function imgOptTargets(){
+  const out = [];
+  Object.keys(productOverrides||{}).forEach(catId=>(productOverrides[catId]||[]).forEach((p,idx)=>{
+    if (p && p.pkgPoster && p.pkgPoster.url && !p.pkgPoster.thumb) out.push({kind:'poster', label:`요금 포스터 · ${p.title||catId}`, url:p.pkgPoster.url, apply:(t, d)=>{ const pp = (productOverrides[catId]||[])[idx]; if (pp && pp.pkgPoster && pp.pkgPoster.url===p.pkgPoster.url){ pp.pkgPoster.thumb = t; if (d){ pp.pkgPoster.w = d.w; pp.pkgPoster.h = d.h; } } }});
+  }));
+  ['domestic','overseas'].forEach(type=>(pkgPosters[type]||[]).forEach(pp=>{
+    if (pp && pp.url && !pp.thumb) out.push({kind:'poster', label:'요금 포스터(직접 등록)', url:pp.url, apply:(t, d)=>{ pp.thumb = t; if (d){ pp.w = d.w; pp.h = d.h; } }});
+  }));
+  Object.entries(getChannelPostOverrides()||{}).forEach(([link, ov])=>{
+    if (ov && ov.image && !ov.thumb && /\/storage\/v1\/object\/public\//.test(ov.image)) out.push({kind:'card', label:'여행 이야기 이미지', url:ov.image, apply:t=>{ setChannelPostOverride(link, {thumb:t}); }});
+  });
+  const bl = blogOverride || [];
+  bl.forEach((b,i)=>{ if (b && b.image && !b.thumb && /\/storage\/v1\/object\/public\//.test(b.image)) out.push({kind:'card', label:`블로그 카드 ${i+1}`, url:b.image, apply:t=>{ const l = getBlogList(); if (l[i] && l[i].image===b.image){ l[i].thumb = t; saveBlogList(l); } }}); });
+  return out;
+}
+function renderAdminImgOptimize(msg){
+  const box = document.getElementById('adminImgOptimize'); if (!box) return;
+  const n = imgOptTargets().length;
+  box.innerHTML = `<div class="file-hint" style="margin:0 0 10px;line-height:1.6">새로 올리는 이미지는 자동으로 화면 크기에 맞게 줄여(WebP) 저장합니다.
+    이전에 올린 요금 포스터·여행 이야기 이미지는 아래 버튼으로 한 번만 축소본을 만들어 주세요. <b>원본은 그대로 남고</b> 화면에는 가벼운 축소본이 먼저 보입니다.</div>
+    <button type="button" class="file-btn" id="imgOptBtn" onclick="runImgOptimize()" ${n?'':'disabled'}>⚡ 기존 이미지 최적화 (${n}개)</button>
+    <div class="file-hint" id="imgOptMsg" style="margin-top:8px">${msg||''}</div>`;
+}
+async function runImgOptimize(){
+  if (!adminSession){ alert('관리자 로그인 후 이용해 주세요.'); return; }
+  const list = imgOptTargets(); if (!list.length) return;
+  const btn = document.getElementById('imgOptBtn'), msg = document.getElementById('imgOptMsg');
+  if (btn) btn.disabled = true;
+  let ok = 0, skip = 0, fail = 0, saved = 0;
+  for (let i = 0; i < list.length; i++){
+    const t = list[i];
+    if (msg) msg.textContent = `${i+1} / ${list.length} · ${t.label} 처리 중...`;
+    try{
+      const res = await fetch(t.url, {mode:'cors'}); if (!res.ok) throw new Error('HTTP '+res.status);
+      const blob = await res.blob();
+      const sz = t.kind==='poster' ? IMG_SIZE.posterThumb : IMG_SIZE.card;
+      const r = await tgtShrinkImage(blob, sz[0], sz[1], sz[2]);
+      if (!r.changed){ t.apply(t.url, {w:r.w, h:r.h}); skip++; continue; }   // 이미 충분히 작음 — 원본을 그대로 축소본으로 표시
+      const url = await uploadToStorage(r.blob, t.kind==='poster' ? 'products' : 'channel');
+      t.apply(url, {w:r.w0||r.w, h:r.h0||r.h}); ok++; saved += Math.max(0, blob.size - r.blob.size);
+    }catch(e){ console.warn('image optimize failed', t.url, e); fail++; }
+  }
+  saveProducts();
+  try{ localStorage.setItem(PKG_KEY, JSON.stringify(pkgPosters)); }catch(e){}
+  queueSiteStateSync();
+  renderPkgAll(); renderBlog();
+  renderAdminImgOptimize(`✅ 완료 — 축소본 ${ok}개 생성${skip?` · 이미 작은 이미지 ${skip}개`:''}${fail?` · 실패 ${fail}개(다시 눌러 재시도)`:''} · 화면에서 줄어든 용량 약 ${(saved/1048576).toFixed(1)}MB`);
+}
 function renderPkgAll(){
   renderPkgGroup('domestic');
   renderPkgGroup('overseas');
@@ -16278,9 +16468,11 @@ function pkgMeasure(type){
   // [Phase 3] 국내/해외 모두 같은 화면 기준 목표 높이를 쓰므로 별도 동기화 없이도 카드 높이가 자연히 통일됨
   const targetH = pkgTargetHeight();
 
-  const missing = list.map(p=>p.url).filter(u=>u && !pkgImgDims[u]);
+  // 업로드 때 저장한 크기(w·h)가 있으면 이미지를 받기 전에 바로 배치한다
+  list.forEach(p=>{ if (p.url && !pkgImgDims[p.url] && p.w > 0 && p.h > 0) pkgImgDims[p.url] = {w:p.w, h:p.h}; });
+  const missing = list.filter(p=>p.url && !pkgImgDims[p.url]);
   if(missing.length){
-    Promise.all(missing.map(pkgLoadImgDims)).then(()=>pkgMeasure(type));
+    Promise.all(missing.map(p=>pkgLoadImgDims(p.url, p.thumb))).then(()=>pkgMeasure(type));
   }
   const DEFAULT_RATIO = 3/4; // 원본 비율을 아직 모를 때(로딩 전)의 기본 세로형 비율
   const widths = list.map(p=>{
@@ -16713,7 +16905,7 @@ function switchTab(tab){
 }
 const TGT_CRM_VERSION='2026102901';
 // [추가] 실시간 상담(채팅) — 방문자 화면(assets/live-chat.js)은 상담 버튼을 처음 누를 때, 상담원 화면(assets/admin-chat.js)은 관리자 로그인 후 불러온다
-const TGT_CHAT_VERSION='2026102901';
+const TGT_CHAT_VERSION='2026102902';
 let _tgtChatLoading = null, _tgtChatAdminLoading = null;
 function tgtLoadScript(src){
   return new Promise((resolve, reject)=>{ const sc = document.createElement('script'); sc.src = src; sc.onload = resolve; sc.onerror = ()=>reject(new Error('load failed: '+src)); document.head.appendChild(sc); });
@@ -16773,7 +16965,7 @@ function tgtLoadCrm(){
     .catch(()=>{ _tgtCrmLoading = null; root.innerHTML = '<div class="leads-empty">상담·예약 기능 파일을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 열어주세요.</div>'; });
 }
 function refreshCurrentAdminTab(){
-  if (activeAdminTab==='images'){ renderAdminImages(); renderAdminIdentity(); renderAdminTheme(); renderAdminSeasonTheme(); }
+  if (activeAdminTab==='images'){ renderAdminImages(); renderAdminIdentity(); renderAdminTheme(); renderAdminSeasonTheme(); renderAdminImgOptimize(); }
   else if (activeAdminTab==='products'){renderProductCatSelect();renderProductAdmin()}
   else if (activeAdminTab==='links') renderAdminLinks();
   else if (activeAdminTab==='legal') renderAdminLegal();
@@ -19935,7 +20127,7 @@ function advMediaHTML(p){
     <!-- [Phase 3 상품등록 개선] 요금 포스터 — 업로드 시 국내/해외 패키지 요금표 섹션에 자동 노출 -->
     <label>요금 포스터 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(${isDomestic?'국내':'해외'} 골프 패키지 요금표에 자동 노출)</span></label>
     <div class="media-slot">
-      ${p.pkgPoster&&p.pkgPoster.url?`<img src="${escapeAttr(p.pkgPoster.url)}" class="media-preview">`:`<div style="color:rgba(247,245,240,.5);padding:20px 0">요금 포스터를 업로드하면 홈페이지 ${isDomestic?'국내':'해외'} 골프 패키지 요금표 섹션에 자동으로 노출됩니다</div>`}
+      ${p.pkgPoster&&p.pkgPoster.url?`<img src="${escapeAttr(p.pkgPoster.thumb||p.pkgPoster.url)}" class="media-preview">`:`<div style="color:rgba(247,245,240,.5);padding:20px 0">요금 포스터를 업로드하면 홈페이지 ${isDomestic?'국내':'해외'} 골프 패키지 요금표 섹션에 자동으로 노출됩니다</div>`}
       <div class="media-controls">
         <label class="media-btn">이미지 업로드<input type="file" accept="image/*" onchange="handlePkgPosterUpload(this)"></label>
         ${p.pkgPoster&&p.pkgPoster.url?`<button class="media-btn danger" onclick="removePkgPoster()">제거</button>`:''}
@@ -20186,9 +20378,9 @@ async function handlePkgPosterUpload(inputEl){
   const file=inputEl.files[0]; if (!file) return;
   if (file.size>10*1024*1024){alert('이미지 크기는 10MB 이하로 업로드해주세요.');return}
   try{
-    const url=await uploadToStorage(file, 'products');
+    const poster=await uploadPoster(file);   // 확대 보기용(최대 2400px) + 캐러셀용 축소본 — 홈 요금표가 빨리 뜨도록
     const p=getAdvProduct(); if (!p) return;
-    p.pkgPoster={url};
+    p.pkgPoster=poster;
     saveAdvChange();renderAdvBody();
   }catch(e){alert('업로드 실패: '+(e.message||e))}
   inputEl.value='';
@@ -20597,6 +20789,8 @@ function tkToggleNote(){
 // 선택한 문의 내용·연락 선호·AI 추천 상품·남긴 말을 하나의 "세부 요청"으로 묶어 저장한다(관리자 리드·CRM에서 그대로 읽힌다)
 function tkDetails(fd){
   const lines = [];
+  const who = [fd.get('gender') ? `성별: ${fd.get('gender')}` : '', tkRegionText(fd) ? `출발지역: ${tkRegionText(fd)}` : ''].filter(Boolean).join(' · ');
+  if (who) lines.push(`[신청자] ${who}`);
   const prod = fd.get('recommendedProduct');
   if (prod) lines.push(`[AI 추천] ${prod}${tkAiEntry ? ` (추천 요금 항목: ${tkAiEntry})` : ''} 상품에 대해 상담을 원합니다.`);
   if (tkSel.topic.length) lines.push(`[문의 내용] ${tkSel.topic.join(', ')}`);
@@ -20607,6 +20801,17 @@ function tkDetails(fd){
   return lines.join('\n');
 }
 function tkBandUrl(){ return getLinkUrl('band_b2c') || getLinkUrl('band_main') || ''; }
+function tkRegionText(fd){ return [fd.get('regionSido'), fd.get('regionSigungu')].filter(Boolean).join(' '); }
+// 출발지역 선택 — 시/도를 고르면 그 지역의 시/군/구만 보여 준다(실시간 상담 창과 같은 목록 KR_REGIONS)
+function tkInitRegion(){
+  const sido = document.getElementById('tkSido'), sgg = document.getElementById('tkSigungu'); if (!sido || !sgg) return;
+  sido.insertAdjacentHTML('beforeend', Object.keys(KR_REGIONS).map(k=>`<option>${k}</option>`).join(''));
+  sido.addEventListener('change', ()=>{
+    const list = krSigungu(sido.value);
+    sgg.innerHTML = `<option value="">${sido.value && !list.length ? '시/군/구 없음' : '시/군/구 선택'}</option>` + list.map(x=>`<option>${x}</option>`).join('');
+    sgg.disabled = !list.length; sgg.required = list.length > 0;
+  });
+}
 (function tkInit(){
   tkRender();
   const form = document.getElementById('bookingForm'); if (!form) return;
@@ -20616,8 +20821,7 @@ function tkBandUrl(){ return getLinkUrl('band_b2c') || getLinkUrl('band_main') |
     const seg = e.target.closest && e.target.closest('.tk-seg button');
     if (seg) tkSetRegion(seg.dataset.region);
   });
-  const band = document.getElementById('tkBandLink');
-  if (band){ band.href = tkBandUrl() || '#'; band.addEventListener('click', ()=>{ band.href = tkBandUrl() || '#'; }); }
+  tkInitRegion(); renderChatHoursLabels();
 })();
 function aiBudgetScore(price, pref){
   if (pref==='any') return 12;
@@ -21399,6 +21603,10 @@ document.getElementById('bookingForm').addEventListener('submit', async e=>{
   if (errEl) errEl.hidden = true;
   const consent = form.querySelector('[name=consentPrivacy]');
   if (!consent || !consent.checked){ showLeadError('개인정보 수집·이용에 동의해 주셔야 상담을 신청할 수 있습니다.'); if (consent) consent.focus(); return; }
+  if (!form.querySelector('[name=gender]:checked')){ showLeadError('성별을 선택해 주세요.'); return; }
+  const sidoEl = form.querySelector('[name=regionSido]'), sggEl = form.querySelector('[name=regionSigungu]');
+  if (!sidoEl.value){ showLeadError('출발지역(시/도)을 선택해 주세요.'); sidoEl.focus(); return; }
+  if (krSigungu(sidoEl.value).length && !sggEl.value){ showLeadError('출발지역(시/군/구)을 선택해 주세요.'); sggEl.focus(); return; }
   const fd=new FormData(form);
   fd.set('details', tkDetails(fd));
   const receipt = newReceiptNo();
@@ -21408,6 +21616,8 @@ document.getElementById('bookingForm').addEventListener('submit', async e=>{
 ▪ 접수번호: ${receipt}
 ▪ 이름: ${fd.get('name')||'-'}
 ▪ 연락처: ${fd.get('phone')||'-'}
+▪ 성별: ${fd.get('gender')||'-'}
+▪ 출발지역: ${tkRegionText(fd)||'-'}
 ▪ 희망 여행지: ${fd.get('destination')||'-'}
 ▪ 출발일: ${fd.get('departureDate')||'-'}
 ▪ 인원(팀수): ${fd.get('partySize')||'-'}
@@ -21432,7 +21642,34 @@ ${fd.get('details')||'-'}
   }
   tgtTrack('inquiry_submit', {product_title:String(fd.get('recommendedProduct')||'').slice(0,200)||null, criteria:{source:fd.get('source')||'direct', destination:fd.get('destination')||null}});   // 개인정보 없이 문의 건수·출처만 기록
   showLeadSuccess(receipt);
+  leadToLiveChat(fd, receipt);
 });
+// [추가] 상담 신청 → 실시간 상담 연결. 상담 업무시간이면 신청서에 입력한 이름·연락처·성별·출발지역으로 실시간 상담을 바로 시작하고
+// (채팅 시작 화면을 다시 거치지 않음) 신청 내용을 첫 메시지로 남긴 뒤 상담 창을 연다. 업무시간이 아니면 다음 업무일 안내만 보여 준다
+async function leadToLiveChat(fd, receipt){
+  const box = document.getElementById('leadSuccLive'); if (!box) return;
+  if (!chatInHours()){
+    box.className = 'succ-live off'; box.hidden = false;
+    box.innerHTML = `🌙 ${escapeAttr(chatOffHoursNotice())}<br><small>접수번호 <b>${escapeAttr(receipt)}</b>로 확인해 연락드릴게요.</small>`;
+    return;
+  }
+  const lines = [`[상담 신청서 접수번호 ${receipt}]`];
+  [['희망 여행지','destination'],['출발일','departureDate'],['인원','partySize'],['숙박 타입','roomType'],['체류 기간','stayDuration']].forEach(([l,k])=>{ const v = fd.get(k); if (v) lines.push(`${l}: ${v}`); });
+  const st = fd.getAll('style').join(', '); if (st) lines.push(`선호 스타일: ${st}`);
+  const det = String(fd.get('details')||'').split('\n').filter(x=>!/^\[신청자\]/.test(x)).join('\n').trim(); if (det) lines.push(det);
+  const info = {name:String(fd.get('name')||'').trim(), phone:String(fd.get('phone')||'').trim(), gender:fd.get('gender')||'', sido:fd.get('regionSido')||'', sigungu:fd.get('regionSigungu')||'',
+    marketing:!!fd.get('consentMarketing'), consentVersion:'lead-'+LEAD_CONSENT.version, summary:lines.join('\n').slice(0,1900)};
+  box.className = 'succ-live on'; box.hidden = false; box.innerHTML = '💬 담당 플래너와 실시간 상담을 연결하고 있어요...';
+  try{
+    await tgtLoadChat();
+    const ok = await window.TGT_CHAT.startFromLead(info);
+    if (!ok) throw new Error('start failed');
+    box.innerHTML = '💬 <b>실시간 상담 창이 열렸어요.</b> 신청하신 내용이 상담원에게 전달되었으니 바로 이어서 상담하세요.<br><button type="button" onclick="tgtLoadChat().then(()=>TGT_CHAT.open())">실시간 상담 이어가기</button>';
+  }catch(e){
+    box.className = 'succ-live off';
+    box.innerHTML = `실시간 상담 연결이 잠시 원활하지 않아요. 접수번호 <b>${escapeAttr(receipt)}</b>로 담당 플래너가 곧 연락드릴게요.`;
+  }
+}
 // [Phase 3 접근성 강화] 메뉴 버튼의 aria-expanded를 실제 열림 상태와 동기화
 function toggleNavMenu(){
   const menu = document.getElementById('navMenu');

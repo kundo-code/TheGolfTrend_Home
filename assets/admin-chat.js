@@ -21,7 +21,7 @@
   const S = {sessions:[], sel:null, msgs:[], lastId:0, waiting:0, prevMap:null, missing:false, error:'', v2:null,
     avail: localStorage.getItem(AVAIL_KEY) !== '0', sound: localStorage.getItem(SOUND_KEY) !== '0', push: localStorage.getItem(PUSH_KEY) === '1',
     root:null, view:'chat', bgTimer:null, uiTimer:null, pingTimer:null, busy:false, baseTitle:document.title, sending:false, loadedList:false,
-    uid:null, myName:'', floatOpen:false, floatRoot:null,
+    uid:null, myName:'', floatOpen:false, floatRoot:null, threadTab:'chat', reveal:{},
     cust:{period:'90', status:'', gender:'', sido:'', q:'', rows:[], loaded:false, loading:false, error:'', withMsgs:false},
     stats:{period:'30', data:null, loading:false, error:''}};
 
@@ -255,6 +255,23 @@
 .tca-btns button,.tca-mini{padding:6px 11px;border-radius:9px;border:1px solid rgba(10,23,48,.18);background:#fff;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;color:#1f2937}
 .tca-btns button.danger{color:#c0392b}
 .tca-btns button.pri,.tca-mini.pri{background:#0f2347;border-color:#0f2347;color:#fff}
+.tca-cust{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:6px;align-items:stretch;margin-top:2px}
+.tca-cust .c{background:#fff;border:1px solid #dbe4f0;border-radius:10px;padding:6px 9px;min-width:0}
+.tca-cust .c span{display:block;font-size:.7rem;font-weight:700;color:#64748b}
+.tca-cust .c b{display:block;font-size:.95rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tca-cust .c b.none{color:#94a3b8;font-weight:600}
+.tca-cust .c a{color:#1d4ed8;text-decoration:none}
+.tca-reveal{align-self:center;padding:6px 9px;border-radius:9px;border:1px solid #cbd5e1;background:#fff;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.tca-ttabs{width:100%;display:flex;gap:6px;margin-top:4px}
+.tca-ttabs button{flex:1;padding:8px 10px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;font-size:.84rem;font-weight:800;color:#475569;cursor:pointer;font-family:inherit}
+.tca-ttabs button.on{background:#0f2347;border-color:#0f2347;color:#fff}
+.tca-ttabs em{font-style:normal;font-size:.7rem;font-weight:700;padding:1px 6px;border-radius:999px;background:#dcfce7;color:#166534;margin-left:4px}
+.tca-rec{flex:1;min-height:260px;max-height:62vh;overflow:auto;padding:12px;background:#f4f6fa}
+.tca-memo-card{background:#fff;border:1px solid #e2e8f0;border-left:5px solid #0f2347;border-radius:14px;padding:10px 12px}
+.tca-memo-card .h{font-size:.98rem;font-weight:800;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.tca-rec-host .crm-card{margin-top:12px}
+.tca-th{container-type:inline-size}
+@container (max-width:560px){ .tca-rec .crm-grid2{grid-template-columns:1fr} .tca-cust{grid-template-columns:1fr 1fr} .tca-reveal{grid-column:1 / -1} }
 .tca-assign{width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.78rem}
 .tca-memo{width:100%;display:flex;gap:6px;align-items:flex-start}
 .tca-memo textarea{flex:1;min-width:0;min-height:38px;max-height:120px;resize:vertical;padding:7px 9px;border:1px solid #c7cfdc;border-radius:9px;font-size:.82rem;font-family:inherit;line-height:1.4}
@@ -351,7 +368,6 @@
   function threadHTML(compact){
     const s = S.sessions.find(x=>x.id===S.sel);
     if (!s) return `<div class="tca-empty">${compact ? '' : '왼쪽에서 상담을 선택하세요.'}</div>`;
-    const info = [s.gender ? `성별 ${s.gender}` : '', region(s) ? `출발지역 ${region(s)}` : ''].filter(Boolean).join(' · ');
     let assign = '';
     if (S.v2){
       const mine = s.assigned_to && s.assigned_to === S.uid;
@@ -359,12 +375,24 @@
         ${mine ? '<button type="button" class="tca-mini" data-act="release">담당 해제</button>' : `<button type="button" class="tca-mini pri" data-act="take">${s.assigned_to ? '담당 가져오기' : '내가 맡기'}</button>`}
         ${waitChip(s)}${s.first_response_at ? `<span class="tca-hint">첫 답변 ${Math.max(0, Math.round((new Date(s.first_response_at) - new Date(s.created_at))/60000))}분</span>` : ''}</div>`;
     }
-    const memo = (!compact && S.v2) ? `<div class="tca-memo"><textarea data-memo="${esc(s.id)}" maxlength="2000" placeholder="상담원 메모(고객에게 보이지 않음)">${esc(s.memo||'')}</textarea><button type="button" class="tca-mini" data-act="memo" data-id="${esc(s.id)}">메모 저장</button></div>` : '';
-    const crm = (!compact && S.v2) ? `<button type="button" data-act="crm" class="pri">${s.crm_consultation_id ? `📝 CRM #${esc(s.crm_consultation_id)} 후속 기록` : '📝 CRM 상담 기록'}</button>` : '';
-    const head = `<div class="tca-th-h"><button type="button" class="tca-back tca-mini" data-act="back"${compact?' style="display:inline-block"':''}>‹ 목록</button><b>${esc(maskName(s.name))}</b><a href="tel:${esc(String(s.phone).replace(/[^0-9+]/g,''))}" title="전화 걸기">📞 ${esc(maskPhone(s.phone))}</a>
-      <div class="tca-btns">${compact ? `<button type="button" data-act="panel">패널에서 보기</button>` : crm}<button type="button" data-act="close">${s.status==='종료'?'종료됨':'상담 종료'}</button>${compact ? '' : '<button type="button" data-act="del" class="danger">삭제</button>'}</div>
-      ${info ? `<div class="tca-meta">${esc(info)}</div>` : ''}${assign}${memo}
-      ${compact ? '' : `<div class="tca-meta">시작 ${esc(fullTime(s.created_at))} · 방문 페이지 ${esc(s.page||'-')}<br>개인정보 수집·이용 동의 ${esc(fullTime(s.consent_at))} (${esc(s.consent_version||'-')}) · 선택 동의(소식 안내) ${s.marketing_opt_in?'동의':'미동의'}</div>`}</div>`;
+    // 채팅창 맨 위: 고객이 상담 시작 때 입력한 정보(이름·연락처는 기본으로 일부 가리고, 👁로 잠깐 펼쳐 볼 수 있음)
+    const open = !!S.reveal[s.id];
+    const cell = (k, v, extra) => `<div class="c"><span>${k}</span><b${v ? '' : ' class="none"'}>${v ? (extra || esc(v)) : '미확인'}</b></div>`;
+    const ph = open ? s.phone : maskPhone(s.phone);
+    const cust = `<div class="tca-cust">${cell('고객명', open ? s.name : maskName(s.name))}${cell('연락처', ph, `<a href="tel:${esc(String(s.phone).replace(/[^0-9+]/g,''))}" title="전화 걸기">📞 ${esc(ph)}</a>`)}${cell('성별', s.gender)}${cell('출발지역', region(s))}
+      <button type="button" class="tca-reveal" data-act="reveal" title="이름·연락처 전체 보기/가리기">${open ? '🙈 가리기' : '👁 전체 보기'}</button></div>`;
+    const tab = compact ? 'chat' : S.threadTab;
+    const tabs = compact ? '' : `<div class="tca-ttabs"><button type="button" data-act="ttab" data-t="chat" class="${tab==='chat'?'on':''}">💬 대화</button><button type="button" data-act="ttab" data-t="rec" class="${tab==='rec'?'on':''}">📝 상담 기록 · 메모${s.crm_consultation_id ? ` <em>#${esc(s.crm_consultation_id)} 저장됨</em>` : ''}</button></div>`;
+    const head = `<div class="tca-th-h"><button type="button" class="tca-back tca-mini" data-act="back"${compact?' style="display:inline-block"':''}>‹ 목록</button><span class="tca-chip ${statusCls(s)}">${esc(s.status)}</span>
+      <div class="tca-btns">${compact ? `<button type="button" data-act="panel">패널에서 보기</button>` : ''}<button type="button" data-act="close">${s.status==='종료'?'종료됨':'상담 종료'}</button>${compact ? '' : '<button type="button" data-act="del" class="danger">삭제</button>'}</div>
+      ${cust}${assign}${tabs}</div>`;
+    if (tab === 'rec'){
+      // 📝 상담 기록 · 메모 — 간단 메모(고객 정보 목록·엑셀에 표시) + 상담·예약의 빠른 기록 항목(그룹별)
+      const memo = S.v2 ? `<section class="tca-memo-card"><div class="h">🗒 상담원 메모 <span class="tca-hint">고객에게 보이지 않음 · 👥 고객 정보 목록과 엑셀에 함께 표시</span></div>
+        <div class="tca-memo"><textarea data-memo="${esc(s.id)}" maxlength="2000" placeholder="간단 메모 (예: 10월 일본 · 부부 · 재문의 예정)">${esc(s.memo||'')}</textarea><button type="button" class="tca-mini" data-act="memo" data-id="${esc(s.id)}">메모 저장</button></div></section>` : '';
+      return `${head}<div class="tca-rec">${memo}<div class="tca-rec-host" data-crm-host="${esc(s.id)}"><div class="tca-empty">상담 기록 양식을 불러오는 중...</div></div>
+        <div class="tca-meta" style="margin-top:10px">시작 ${esc(fullTime(s.created_at))} · 방문 페이지 ${esc(s.page||'-')}<br>개인정보 수집·이용 동의 ${esc(fullTime(s.consent_at))} (${esc(s.consent_version||'-')}) · 선택 동의(소식 안내) ${s.marketing_opt_in?'동의':'미동의'}</div></div>`;
+    }
     const msgs = S.msgs.map(m=>{
       const k = m.sender==='visitor' ? 'v' : (m.sender==='admin' ? 'a' : 's');
       const who = m.sender==='admin' ? (m.agent_name ? `상담원 ${m.agent_name}` : '상담원') : '고객';
@@ -372,6 +400,19 @@
     }).join('');
     return `${head}<div class="tca-msgs">${msgs}</div>
       <div class="tca-rep"><textarea rows="2" maxlength="2000" data-reply="1" placeholder="답변을 입력하세요 (Enter 전송 · Shift+Enter 줄바꿈)"></textarea><button type="button" data-act="send">보내기</button></div>`;
+  }
+  // 상담 기록 양식(admin-crm.js)을 채팅창 안에 띄운다 — 이미 띄운 양식은 다시 그릴 때 그대로 옮겨 붙여 입력 중인 내용·커서를 지킨다
+  function mountRec(container){
+    const host = container && container.querySelector('[data-crm-host]'); if (!host || host.dataset.mounted === host.dataset.crmHost) return;
+    const s = S.sessions.find(x=>x.id===host.dataset.crmHost); if (!s) return;
+    const visitor = S.sel === s.id ? S.msgs.filter(m=>m.sender==='visitor').map(m=>m.body).filter(b=>!/^\[고객 정보\]/.test(b)) : [];
+    const payload = {id:s.id, name:s.name, phone:s.phone, created_at:s.created_at, gender:s.gender||'', region:region(s), memo:s.memo||'', crm_id:s.crm_consultation_id||null,
+      visitor_text: visitor.join(', ').slice(0, 2000),
+      onSaved: saved=>{ [S.sessions, S.cust.rows].forEach(l=>{ const r = l.find(x=>x.id===s.id); if (r) r.crm_consultation_id = saved.id; }); S._sig = ''; renderAll(); }};
+    host.dataset.mounted = host.dataset.crmHost;
+    const load = (typeof tgtEnsureCrm === 'function') ? tgtEnsureCrm() : Promise.reject(new Error('no crm'));
+    load.then(()=>{ if (host.isConnected) window.TGT_CRM.mountChat(host, payload); })
+      .catch(()=>{ host.dataset.mounted = ''; host.innerHTML = '<div class="tca-warn">상담 기록 양식을 불러오지 못했어요. 새로고침 후 다시 열어 주세요.</div>'; });
   }
 
   // 다시 그려도 입력 중인 답변·메모가 지워지지 않게
@@ -385,7 +426,17 @@
     const box = container.querySelector('.tca-msgs'), atBottom = !box || (box.scrollHeight - box.scrollTop - box.clientHeight < 40), top = box ? box.scrollTop : 0;
     const scrolls = ['.tca-list', '.tcc-tbl-wrap'].map(q=>{ const x = container.querySelector(q); return x ? [q, x.scrollTop, x.scrollLeft] : null; }).filter(Boolean);
     const pinBox = container.querySelector('#tcaPinBox');
+    const recHost = container.querySelector('[data-crm-host][data-mounted]'), recFocus = recHost && recHost.contains(document.activeElement) ? document.activeElement : null;
+    let recCaret = null; try{ if (recFocus && 'selectionStart' in recFocus) recCaret = [recFocus.selectionStart, recFocus.selectionEnd]; }catch(e){}
+    const recScroll = recHost ? recHost.closest('.tca-rec') : null, recTop = recScroll ? recScroll.scrollTop : 0;
     paint();
+    const nRec = container.querySelector('[data-crm-host]');
+    if (recHost && nRec && nRec.dataset.crmHost === recHost.dataset.crmHost){
+      nRec.replaceWith(recHost);
+      const sc = recHost.closest('.tca-rec'); if (sc) sc.scrollTop = recTop;
+      if (recFocus && recHost.contains(recFocus)){ recFocus.focus({preventScroll:true}); if (recCaret) try{ recFocus.setSelectionRange(recCaret[0], recCaret[1]); }catch(e){} }
+    }
+    mountRec(container);
     scrolls.forEach(([q, t, l])=>{ const x = container.querySelector(q); if (x){ x.scrollTop = t; x.scrollLeft = l; } });
     const nPin = container.querySelector('#tcaPinBox'); if (pinBox && nPin && pinBox.dataset.done) nPin.replaceWith(pinBox);   // 2중 비밀번호 입력 중인 내용 유지
     container.querySelectorAll('textarea[data-reply],textarea[data-memo],input[data-cmemo],input[type=search]').forEach(t=>{
@@ -695,6 +746,7 @@
     style();
     const r = el('div'); r.id = 'tgtChatAgent'; r.setAttribute('role','dialog'); r.setAttribute('aria-label','실시간 상담 — 상담원 창');
     document.body.appendChild(r); wire(r); S.floatRoot = r;
+    try{ tgtKbFit.attach(r); }catch(e){}   // 안드로이드 가상 키보드가 답변 입력창을 가리지 않게(index.html)
     document.addEventListener('keydown', e=>{ if (e.key==='Escape' && S.floatOpen && !document.querySelector('.tpn-ov')) closeFloat(); });
     return r;
   }
@@ -747,14 +799,15 @@
       switch (act){
         case 'view': S.view = t.dataset.v; render(); if (S.view === 'chat') startUi(); break;
         case 'sel': select(t.dataset.id); break;
-        case 'back': S.sel = null; S.msgs = []; renderAll(); break;
+        case 'back': S.sel = null; S.msgs = []; S.reveal = {}; renderAll(); break;
         case 'send': reply(container); break;
         case 'close': if (s) closeSession(s); break;
         case 'del': if (s) delSession(s); break;
         case 'take': if (s) assign(s, true); break;
         case 'release': if (s) assign(s, false); break;
         case 'memo': { const ta = container.querySelector(`textarea[data-memo="${CSS_ESC(t.dataset.id)}"]`); if (ta && await saveMemo(t.dataset.id, ta.value, t)){ ta.dataset.dirty = ''; t.textContent = '저장됨 ✓'; setTimeout(()=>{ t.textContent = '메모 저장'; }, 1500); } break; }
-        case 'crm': if (s) toCrm(s); break;
+        case 'ttab': S.threadTab = t.dataset.t === 'rec' ? 'rec' : 'chat'; renderAll(); break;
+        case 'reveal': if (s){ S.reveal[s.id] = !S.reveal[s.id]; renderAll(); } break;
         case 'test': beep(true); break;
         case 'panel': openInPanel(S.sel); break;
         case 'visitor': closeFloat(); if (typeof tgtChatOpenVisitor === 'function') tgtChatOpenVisitor(); break;
@@ -807,6 +860,7 @@
   function CSS_ESC(v){ return (window.CSS && CSS.escape) ? CSS.escape(v) : String(v).replace(/"/g,'\\"'); }
 
   async function select(id){
+    if (S.sel !== id) S.reveal = {};
     S.sel = id; S.msgs = []; S.lastId = 0;
     if (!S.sessions.some(x=>x.id===id)){ await loadSessions(); }
     renderAll();
@@ -867,20 +921,6 @@
     if (error){ alert('삭제하지 못했어요: ' + error.message); return; }
     S.sel = null; S.msgs = []; S.cust.rows = S.cust.rows.filter(r=>r.id!==s.id); await loadSessions(); renderAll();
   }
-  // 채팅 → CRM 상담 기록: 상담·예약 탭의 "빠른 기록"에 고객 정보·대화를 채워 연다(상담 결과·취향은 상담원이 고르고 저장)
-  async function toCrm(s){
-    if (S.sel === s.id && !S.msgs.length) await loadThread(true);
-    const visitor = S.msgs.filter(m=>m.sender==='visitor').map(m=>m.body);
-    const payload = {id:s.id, name:s.name, phone:s.phone, created_at:s.created_at, gender:s.gender||'', region:region(s), memo:s.memo||'', crm_id:s.crm_consultation_id||null,
-      transcript: S.msgs.filter(m=>m.sender!=='system').map(m=>`[${hhmm(m.created_at)} ${m.sender==='visitor'?'고객':'상담원'}] ${m.body}`).join('\n'), visitor_text: visitor.join(', ')};
-    try{
-      if (typeof switchTab === 'function') switchTab('crm');
-      for (let i = 0; i < 60 && !(window.TGT_CRM && window.TGT_CRM.fromChat); i++) await new Promise(r=>setTimeout(r, 150));
-      if (!window.TGT_CRM || !window.TGT_CRM.fromChat) throw new Error('CRM 화면을 불러오지 못했어요');
-      await window.TGT_CRM.fromChat(payload);
-    }catch(e){ alert(errText(e)); }
-  }
-
   // 상담 화면(패널 탭·상담원 창)이 열려 있는 동안 더 자주 새로 고침
   function startUi(){
     if (S.uiTimer) return;

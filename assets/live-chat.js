@@ -118,6 +118,7 @@
         <div class="tc-tools"><span>Enter 전송 · Shift+Enter 줄바꿈</span><button type="button" class="tc-new">새 상담 시작</button></div>
       </div>`;
     document.body.appendChild(root);
+    try{ tgtKbFit.attach(root); }catch(e){}   // 안드로이드 가상 키보드가 입력창을 가리지 않게(index.html)
     bodyEl = $('.tc-body', root); subEl = $('.tc-status', root); dotEl = $('.tc-dot', root);
     inputEl = $('textarea', root); sendBtn = $('.tc-send', root); menuEl = $('.tc-menu', root); footEl = $('.tc-foot', root);
     $('.tc-x', root).addEventListener('click', close);

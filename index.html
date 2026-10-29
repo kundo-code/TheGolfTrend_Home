@@ -3811,12 +3811,35 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .tk-success{background:#fff;border-radius:24px;filter:drop-shadow(0 14px 28px rgba(0,0,0,.38));padding:0}
 .tk-success .tk-body{padding:34px 28px 40px}
 .tk-success h3{color:#0a1730}
-.tk-stub{position:relative;overflow:hidden;border-radius:24px;padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between;gap:22px;color:#fff;text-align:center;
+.tk-stub{position:relative;overflow:hidden;border-radius:24px;padding:0 28px;display:flex;flex-direction:column;justify-content:space-between;gap:0;color:#fff;text-align:center;
   background:radial-gradient(circle at 85% 10%,rgba(221,179,103,.18) 0 90px,transparent 91px),radial-gradient(circle at 10% 90%,rgba(255,255,255,.07) 0 120px,transparent 121px),linear-gradient(165deg,#132a55,#0a1730 62%,#0e2145);
   border:1px solid rgba(221,179,103,.35);filter:drop-shadow(0 14px 28px rgba(0,0,0,.38));
   -webkit-mask:radial-gradient(circle 15px at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;
   mask:radial-gradient(circle 15px at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat}
 .tk-stub-top{font-size:.7rem;letter-spacing:.2em;color:rgba(255,255,255,.6)}
+/* [수정] 오른쪽 어두운 영역 — 왼쪽 신청서의 "신청자 정보" 위 점선과 같은 높이(--tk-cut, JS가 측정)에 점선을 긋고(좌우 절취 홈도 같은 높이),
+   위쪽(점선 위)에는 GOLF PACKAGE 안내를 위·점선 사이 가운데에, 아래쪽에는 출·입국 신고 가이드와 빠른 상담을 "신청자 정보" 글자 시작 높이부터 둔다 */
+.tk-stub-upper{position:relative;padding:26px 0 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.tk-stub-lower{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:22px;padding:30px 0 26px}
+.tk-stub-cut{display:none;position:absolute;left:22px;right:22px;top:var(--tk-cut,50%);border-top:2px dashed rgba(255,255,255,.3);pointer-events:none}
+.tk-stub.has-cut .tk-stub-cut{display:block}
+.tk-stub.has-cut{
+  -webkit-mask:radial-gradient(circle 15px at 0 var(--tk-cut),#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% var(--tk-cut),#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 15px at 0 var(--tk-cut),#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 15px at 100% var(--tk-cut),#0000 97%,#000) right/51% 100% no-repeat}
+.tk-stub.has-cut .tk-stub-upper{height:var(--tk-cut);box-sizing:border-box;padding:0}
+.tk-stub.has-cut .tk-stub-top{position:absolute;top:26px;left:0;right:0}
+/* 출·입국 신고 가이드(연계 채널에서 이곳으로 옮김) */
+.tk-stub-ee{text-align:left}
+.tk-stub-ee[hidden]{display:none}
+.tk-stub-ee h4{margin:0 0 10px;font-size:1.02rem;font-weight:800;color:#fff;line-height:1.3}
+.tk-ee-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tk-ee-grid.one{grid-template-columns:1fr}
+.tk-ee-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;position:relative}
+.tk-ee-item:hover{background:rgba(255,255,255,.16);border-color:rgba(227,195,131,.7)}
+.tk-ee-ico{flex:none;width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.92);overflow:hidden;font-size:.95rem}
+.tk-ee-ico img{width:100%;height:100%;object-fit:contain}
+.tk-ee-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-ee-visa{flex:none;font-size:.62rem;font-weight:800;padding:1px 6px;border-radius:999px;background:#e5654a;color:#fff}
 .tk-flag{width:64px;height:64px;color:#e3c383;margin:0 auto 8px}
 .tk-stub-brand{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2rem;letter-spacing:.08em;color:#fff;line-height:1.1}
 .tk-stub-sub{margin-top:4px;font-size:.9rem;color:rgba(255,255,255,.72)}
@@ -3834,7 +3857,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .tk-stub-tel{margin-top:12px;font-size:.74rem;color:rgba(255,255,255,.55)}
 @media(max-width:900px){
   .tk-wrap{grid-template-columns:1fr;gap:18px}
-  .tk-stub{gap:16px}
+  .tk-stub{gap:0}
+  .tk-stub-upper{padding:26px 0 14px}
   .tk-steps{display:none}
 }
 @media(max-width:560px){
@@ -5907,7 +5931,6 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
                 <div class="tk-field"><span class="tk-lab"><span class="en">From</span><b>출발지역</b></span>
                   <div class="tk-region"><select name="regionSido" id="tkSido" class="tk-in" aria-label="출발지역 시/도" required><option value="">시/도 선택</option></select><select name="regionSigungu" id="tkSigungu" class="tk-in" aria-label="출발지역 시/군/구" disabled><option value="">시/군/구 선택</option></select></div></div>
               </div>
-              <div class="tk-grid tk-grid-2" id="tkContactPref"></div>
               <div class="tk-more">
                 <button type="button" class="tk-more-btn" id="tkMoreBtn" aria-expanded="false" onclick="tkToggleNote()">＋ 전하고 싶은 말이 더 있어요 <em>(선택)</em></button>
                 <textarea name="extraNote" id="tkNote" class="tk-in" rows="3" maxlength="1000" placeholder="예: 부모님 모시고 가요, 캐디 동반 선호 등" hidden></textarea>
@@ -5935,7 +5958,9 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
           </div></div><div class="tk-stripe tk-stripe-b" aria-hidden="true"></div>
         </div>
       </div>
-      <aside class="tk-stub" aria-label="빠른 상담 안내">
+      <aside class="tk-stub" id="tkStub" aria-label="빠른 상담 안내">
+        <div class="tk-stub-cut" aria-hidden="true"></div>
+        <div class="tk-stub-upper">
         <div class="tk-stub-top">WWW.THEGOLFTREND.COM</div>
         <div class="tk-stub-mid">
           <svg class="tk-flag" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 6v52" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M22 8l26 9-26 10z" fill="currentColor"/><ellipse cx="22" cy="58" rx="16" ry="4" fill="currentColor" opacity=".45"/></svg>
@@ -5943,10 +5968,14 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
           <div class="tk-stub-sub">골프 패키지 상담 탑승권</div>
           <ol class="tk-steps"><li><b>1</b> 원하는 조건을 눌러 고르고</li><li><b>2</b> 연락처를 남기면</li><li><b>3</b> 24시간 이내 플래너가 연락드려요</li></ol>
         </div>
+        </div>
+        <div class="tk-stub-lower">
+        <div class="tk-stub-ee" id="tkStubEe" hidden></div>
         <div class="tk-stub-bot">
           <div class="tk-stub-more">빠른 상담이 필요하신가요?</div>
           <button type="button" class="cv-close tk-call" onclick="callHotline()" aria-label="전화 상담">📞 전화 상담</button>
           <div class="tk-stub-tel"><span data-chat-hours>평일 09:00–18:00</span> · 010-9405-6842</div>
+        </div>
         </div>
       </aside>
     </div>
@@ -5991,9 +6020,9 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 
   <!-- 중단부: 사업자 정보 -->
   <div class="foot-company">
-    <div class="fc-line"><b>(주)더골프트렌드</b> · 대표: 오선영 · 개인정보 보호 책임자: 맹군도 · 사업자번호: 707-81-03126 · 계좌번호: (주)더골프트렌드 | <b style="color:#000;font-weight:700">제주은행 700-100-433860</b> · 통신판매업: 제 2024-서울송파-0795호</div>
-    <div class="fc-line">주소: 서울특별시 송파구 충민로 66, 가든파이브라이프 7층 리빙관 7074호 · 고객센터: <b>707-7500-5981</b></div>
+    <div class="fc-line"><b>(주)더골프트렌드</b> · 대표: 오선영 · 개인정보 보호 책임자: 맹군도 · 사업자번호: 707-81-03126 · 통신판매업: 제 2024-서울송파-0795호 · 계좌번호: (주)더골프트렌드 | <b style="color:#000;font-weight:700">제주은행 700-100-433860</b></div>
     <div class="fc-line">SGI서울보증(인허가보증보험) : 여행업자 영업보증금 보증(증서발행번호 <b>제 100-000-2026 0097 7612호</b>) · 관광사업등록번호: <b>제2023-6호</b> (종합여행업)</div>
+    <div class="fc-line">주소: 서울특별시 송파구 충민로 66, 가든파이브라이프 7층 리빙관 7074호 · 고객센터: <b>707-7500-5981</b></div>
   </div>
 
   <!-- 하단부: 보증보험 안내 & 저작권 -->
@@ -14525,17 +14554,32 @@ function entryExitIconEl(it){
   if (it.iconUrl) return `<span class="lico lico-img"><img src="${escapeAttr(it.iconUrl)}" alt="" loading="lazy" decoding="async"/>${badge}</span>`;
   return `<span class="lico ee-icon-fallback">🛂${badge}</span>`;
 }
-function renderEntryExitGroup(){
-  const active = entryExitList.filter(it=>it.name && it.url);
-  if (!active.length) return '';
-  return `<div class="link-group ee-group">
-    <h4>출·입국 신고 가이드</h4>
-    <div class="ee-grid${active.length===1?' ee-1':''}">
-    ${active.map(it=>`<a class="link-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener">
-      ${entryExitIconEl(it)}<span class="lname">${escapeAttr(it.name)}</span><span class="larr">→</span></a>`).join('')}
-    </div>
-  </div>`;
+// [이동] 출·입국 신고 가이드는 연계 채널 섹션이 아니라 예약 문의 탑승권 오른쪽 어두운 영역("빠른 상담이 필요하신가요?" 위)에 표시한다.
+// 등록·수정은 그대로 관리자 패널의 "출입국신고서 작성 안내"에서 하며, 등록한 국가·아이콘·URL·비자 표시는 모두 그대로 쓴다
+function renderEntryExitStub(){
+  const box = document.getElementById('tkStubEe'); if (!box) return;
+  const active = (entryExitList||[]).filter(it=>it.name && it.url);
+  if (!active.length){ box.hidden = true; box.innerHTML = ''; tkLayoutStub(); return; }
+  box.hidden = false;
+  box.innerHTML = `<h4>출·입국 신고 가이드</h4><div class="tk-ee-grid${active.length===1?' one':''}">${active.map(it=>`<a class="tk-ee-item" href="${escapeAttr(it.url)}" target="_blank" rel="noopener" title="${escapeAttr(it.name)} 출·입국 신고서 작성 안내">
+    <span class="tk-ee-ico">${it.iconUrl ? `<img src="${escapeAttr(it.iconUrl)}" alt="" loading="lazy" decoding="async">` : '🛂'}</span><span class="tk-ee-name">${escapeAttr(it.name)}</span>${it.visaRequired ? '<span class="tk-ee-visa">비자</span>' : ''}</a>`).join('')}</div>`;
+  tkLayoutStub();
 }
+// 탑승권 왼쪽 "신청자 정보" 위 점선의 높이를 재어 오른쪽 어두운 영역의 점선·절취 홈을 같은 높이에 맞춘다(넓은 화면에서만)
+function tkLayoutStub(){
+  const stub = document.getElementById('tkStub'), bottom = document.querySelector('.tk-bottom'); if (!stub) return;
+  if (window.innerWidth <= 900 || !bottom || bottom.offsetParent === null){ stub.classList.remove('has-cut'); stub.style.removeProperty('--tk-cut'); return; }
+  const y = Math.round(bottom.getBoundingClientRect().top - stub.getBoundingClientRect().top);
+  if (y < 120){ stub.classList.remove('has-cut'); stub.style.removeProperty('--tk-cut'); return; }
+  stub.style.setProperty('--tk-cut', y + 'px'); stub.classList.add('has-cut');
+}
+(function tkStubWatch(){
+  let t = 0; const run = ()=>{ cancelAnimationFrame(t); t = requestAnimationFrame(tkLayoutStub); };
+  window.addEventListener('resize', run); window.addEventListener('load', run);
+  try{ if (document.fonts && document.fonts.ready) document.fonts.ready.then(run); }catch(e){}
+  const hook = ()=>{ const m = document.querySelector('.tk-main'); if (!m) return; if (window.ResizeObserver){ const ro = new ResizeObserver(run); ro.observe(m); const top = m.querySelector('.tk-top'); if (top) ro.observe(top); } run(); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook();
+})();
 
 // LINKS (main section)
 function renderLinks(){
@@ -14573,7 +14617,8 @@ function renderLinks(){
       ${snsRow ? `<div class="link-row">${snsRow}</div>` : ''}
     </div>`;
   const groupHTML = bandHTML + blogSnsHTML;
-  c.innerHTML = groupHTML + renderEntryExitGroup();
+  c.innerHTML = groupHTML;
+  renderEntryExitStub();
   if (!c.innerHTML.trim()){
     c.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:rgba(247,245,240,.5)">
       아직 등록된 연계 채널이 없습니다. 관리자 패널 → 브랜드 링크에서 URL을 등록해주세요.</div>`;
@@ -16903,9 +16948,9 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026102902';
+const TGT_CRM_VERSION='2026102903';
 // [추가] 실시간 상담(채팅) — 방문자 화면(assets/live-chat.js)은 상담 버튼을 처음 누를 때, 상담원 화면(assets/admin-chat.js)은 관리자 로그인 후 불러온다
-const TGT_CHAT_VERSION='2026102903';
+const TGT_CHAT_VERSION='2026102904';
 let _tgtChatLoading = null, _tgtChatAdminLoading = null;
 function tgtLoadScript(src){
   return new Promise((resolve, reject)=>{ const sc = document.createElement('script'); sc.src = src; sc.onload = resolve; sc.onerror = ()=>reject(new Error('load failed: '+src)); document.head.appendChild(sc); });
@@ -20736,11 +20781,7 @@ const TK_Q = [
   {key:'style',  en:'Travel Style',ko:'여행 스타일', multi:true, hidden:'style', note:'최대 3개'},
   {key:'topic',  en:'Inquiry',     ko:'문의 내용',  multi:true, opts:['견적·일정 안내','2인 출발 가능 여부','단체·동호회 문의','골프장·코스 추천','항공 포함/별도 문의','기타 상담'], note:'복수 선택'}
 ];
-const TK_PREF = [
-  {key:'via',  en:'Contact Method', ko:'연락 방법', opts:['전화','카카오톡','문자']},
-  {key:'time', en:'Best Time',      ko:'편한 시간', opts:['오전','오후','상관없음']}
-];
-const tkSel = {dest:'', depart:'', party:'', stay:'', room:'', style:[], topic:[], via:'', time:''};
+const tkSel = {dest:'', depart:'', party:'', stay:'', room:'', style:[], topic:[]};
 let tkAiEntry = '';   // AI 추천이 고른 요금 항목 이름(요금 항목이 여러 개인 상품) — 세부 요청에 함께 적는다
 let tkRegion = 'overseas';
 function tkChipHTML(group, value, label){
@@ -20769,8 +20810,6 @@ function tkRender(){
   // 인원·체류 기간은 한 줄에 둘씩
   const half = [...host.querySelectorAll('.tkq')].filter(el=>TK_Q.find(q=>q.key===el.dataset.q).half);
   if (half.length===2){ const wrap = document.createElement('div'); wrap.className = 'tk-grid tk-grid-2'; half[0].before(wrap); half.forEach(el=>wrap.appendChild(el)); }
-  const pref = document.getElementById('tkContactPref');
-  if (pref) pref.innerHTML = TK_PREF.map(q=>`<div class="tkq"><div class="tk-lab"><span class="en">${q.en}</span><b>${q.ko}</b><em>선택</em></div><div class="tk-chips">${q.opts.map(o=>tkChipHTML(q.key,o)).join('')}</div></div>`).join('');
   tkSync();
 }
 // 눌러서 고른 값을 폼의 숨은 입력칸으로 옮긴다(접수 시 FormData가 그대로 읽는다)
@@ -20838,8 +20877,6 @@ function tkDetails(fd){
   const prod = fd.get('recommendedProduct');
   if (prod) lines.push(`[AI 추천] ${prod}${tkAiEntry ? ` (추천 요금 항목: ${tkAiEntry})` : ''} 상품에 대해 상담을 원합니다.`);
   if (tkSel.topic.length) lines.push(`[문의 내용] ${tkSel.topic.join(', ')}`);
-  const pref = [tkSel.via, tkSel.time].filter(Boolean).join(' · ');
-  if (pref) lines.push(`[연락 선호] ${pref}`);
   const note = String(fd.get('extraNote')||'').trim();
   if (note) lines.push(note);
   return lines.join('\n');

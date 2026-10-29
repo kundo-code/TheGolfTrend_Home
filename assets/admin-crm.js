@@ -197,6 +197,8 @@
       .crm-field > label .req{color:#C0262D;margin-left:3px}
       .crm-field select,.crm-field input[type=text],.crm-field input[type=number],.crm-field input[type=date],.crm-field input[type=month],.crm-field input[type=tel],.crm-field textarea{width:100%;padding:9px 11px;border:none;border-radius:10px;background:var(--nm-white,#fff);box-shadow:var(--nm-shadow-inset);font-size:.86rem;font-family:inherit;box-sizing:border-box}
       .crm-chips{display:flex;flex-wrap:wrap;gap:6px}
+      .crm-subg{margin:2px 0 10px}.crm-subg:last-of-type{margin-bottom:8px}
+      .crm-subl{font-size:.8rem;font-weight:800;color:#64748b;margin:0 0 6px}
       .crm-chip{border:1px solid #dbe1ea;background:#f4f6f9;border-radius:100px;padding:7px 12px;font-size:.8rem;font-weight:600;cursor:pointer;color:#64748b;transition:background .12s,border-color .12s,color .12s}
       .crm-chip:hover{border-color:#94a3b8;color:#334155;background:#fff}
       .crm-chip.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff;font-weight:800;box-shadow:0 2px 6px rgba(29,78,216,.35)}
@@ -450,10 +452,21 @@
     });
     return html;
   }
+  const chipBtn = (field, value, label, on, multi, cls) => `<button type="button" class="crm-chip ${cls||''} ${on?'on':''}" aria-pressed="${on?'true':'false'}" onclick="TGT_CRM.pick('${field}', ${JSON.stringify(value).replace(/"/g,'&quot;')}, ${multi?'true':'false'})">${esc(label)}</button>`;
   const chipGroup = (field, opts, selected, multi, clsFn) => `<div class="crm-chips">${opts.map(o=>{
       const on = multi ? (selected||[]).includes(o) : selected===o;
-      return `<button type="button" class="crm-chip ${clsFn?clsFn(o):''} ${on?'on':''}" onclick="TGT_CRM.pick('${field}', ${JSON.stringify(o).replace(/"/g,'&quot;')}, ${multi?'true':'false'})">${esc(o)}</button>`;
+      return chipBtn(field, o, o, on, multi, clsFn ? clsFn(o) : '');
     }).join('')}</div>`;
+  // 고객 핵심 취향 — 홈페이지 상담 신청서의 "선호 스타일"과 같은 그룹·아이콘·이름(STYLE_GROUPS)으로 나눠 보여 준다. 저장되는 값(value)은 그대로
+  function prefChipsHTML(selected){
+    selected = selected || [];
+    const groups = (typeof STYLE_GROUPS!=='undefined' ? STYLE_GROUPS : []).map(g=>({label:g.label, items:g.items.map(o=>({value:o.value, label:o.label}))}));
+    groups.push({label:'🗣 상담에서 자주 나오는 말', items:EXTRA_PREFS.map(v=>({value:v, label:v}))});
+    const known = new Set(groups.reduce((a,g)=>a.concat(g.items.map(i=>i.value)), []));
+    const custom = selected.filter(v=>!known.has(v));
+    if (custom.length) groups.push({label:'✏️ 직접 입력', items:custom.map(v=>({value:v, label:v}))});
+    return groups.map(g=>`<div class="crm-subg"><div class="crm-subl">${esc(g.label)}</div><div class="crm-chips">${g.items.map(i=>chipBtn('preferences', i.value, i.label, selected.includes(i.value), true)).join('')}</div></div>`).join('');
+  }
   function prefOptions(){ return EXTRA_PREFS.concat((typeof STYLE_OPTIONS!=='undefined' ? STYLE_OPTIONS : []).map(o=>o.value)); }
 
   function quickHTML(){
@@ -463,8 +476,6 @@
     const fld = (label, inner, val, o) => { o = o || {}; return `<div class="crm-field ${has(val)?'is-filled':''}"><label>${label}${o.req?'<span class="req">*</span>':''}${o.note?` <span class="crm-note" style="font-weight:500">${o.note}</span>`:''}</label>${inner}</div>`; };
     // 그룹: 색 띠 + "입력한 개수/전체"
     const grp = (key, icon, title, vals, body) => { const n = vals.filter(has).length; return `<section class="crm-grp g-${key}"><div class="crm-grp-h"><span>${icon} ${title}</span><span class="crm-grp-n ${n?'on':''}">${n}/${vals.length} 입력</span></div>${body}</section>`; };
-    const prefs = prefOptions();
-    const custom = (f.preferences||[]).filter(p=>!prefs.includes(p));
     const parse = state.lastParse;
     const mode = state.editId ? `✏️ 상담 수정 중 (#${state.editId})` : (state.parentId ? `↪ 후속 상담 (최초 상담 #${state.parentId}의 최초 문의일 유지)` : (state.leadId ? `🌐 홈페이지 문의(리드 #${state.leadId})에서 시작한 상담` : (state.chatId ? '💬 실시간 채팅 상담에서 시작한 기록' : '')));
     return `<div class="crm-card">
@@ -479,12 +490,10 @@
       </div>
       <div class="crm-parse" id="crmParse">${parse ? (parse.hits.length ? parse.hits.map(h=>`<span class="pc">${esc(h)}</span>`).join('') : '<span class="pc miss">인식된 항목이 없습니다 — 아래에서 직접 선택하세요</span>') : ''}</div>
 
-      ${grp('req','✅','필수 3가지 — 상품 · 취향 · 결과', [f.product, f.preferences, f.result], `
-        ${fld('상담 상품', `<select onchange="TGT_CRM.set('product', this.value)">${productOptionsHTML(f.product)}</select>`, f.product, {req:true})}
-        ${fld('고객 핵심 취향', `${chipGroup('preferences', prefs.concat(custom), f.preferences, true)}
-          <input type="text" data-nofill="1" placeholder="직접 입력 후 Enter (예: 바다 보이는 코스)" onkeydown="if(event.key==='Enter'){event.preventDefault();TGT_CRM.addPref(this.value);this.value='';}">`, f.preferences, {req:true, note:'(복수 선택)'})}
-        ${fld('상담 결과', chipGroup('result', RESULTS, f.result, false, o=>'r-'+RESULT_CLS[o]), f.result, {req:true})}
-        ${(f.result==='보류'||f.result==='미예약') ? fld('미예약·보류 사유', chipGroup('unbooked_reason', REASONS, f.unbooked_reason, false), f.unbooked_reason) : ''}`)}
+      ${grp('cust','👤','고객 · 상담 경로', [f.customer_name, f.customer_phone, f.channel], `<div class="crm-grid2">
+        ${fld('고객명', `<input type="text" value="${esc(f.customer_name)}" oninput="TGT_CRM.set('customer_name', this.value, true)">`, f.customer_name, {note:'(선택)'})}
+        ${fld('연락처', `<input type="tel" value="${esc(f.customer_phone)}" placeholder="010-0000-0000" oninput="TGT_CRM.set('customer_phone', this.value, true)">`, f.customer_phone, {note:'(예약 자동 연결용)'})}</div>
+        ${fld('상담 경로', chipGroup('channel', CHANNELS, f.channel, false), f.channel)}`)}
       ${grp('date','📅','희망 일정', [f.preferred_departure_month, f.preferred_departure_date, f.date_flexibility], `<div class="crm-grid2">
         ${fld('희망 출발 월', `<input type="month" value="${esc(f.preferred_departure_month)}" onchange="TGT_CRM.set('preferred_departure_month', this.value)">`, f.preferred_departure_month)}
         ${fld('희망 출발일', `<input type="date" value="${esc(f.preferred_departure_date)}" onchange="TGT_CRM.set('preferred_departure_date', this.value)">`, f.preferred_departure_date)}</div>
@@ -498,10 +507,12 @@
       ${grp('budget','💰','예산 · 취향 메모', [f.budget_man, f.preference_note], `<div class="crm-grid2">
         ${fld('예산 (1인, 만원)', `<input type="number" min="0" step="1" value="${esc(f.budget_man)}" placeholder="예: 120" oninput="TGT_CRM.set('budget_man', this.value, true)">`, f.budget_man)}
         ${fld('취향 메모', `<input type="text" value="${esc(f.preference_note)}" placeholder="예: 그린 관리 좋은 곳, 바다 전망" oninput="TGT_CRM.set('preference_note', this.value, true)">`, f.preference_note)}</div>`)}
-      ${grp('cust','👤','고객 · 상담 경로', [f.customer_name, f.customer_phone, f.channel], `<div class="crm-grid2">
-        ${fld('고객명', `<input type="text" value="${esc(f.customer_name)}" oninput="TGT_CRM.set('customer_name', this.value, true)">`, f.customer_name, {note:'(선택)'})}
-        ${fld('연락처', `<input type="tel" value="${esc(f.customer_phone)}" placeholder="010-0000-0000" oninput="TGT_CRM.set('customer_phone', this.value, true)">`, f.customer_phone, {note:'(예약 자동 연결용)'})}</div>
-        ${fld('상담 경로', chipGroup('channel', CHANNELS, f.channel, false), f.channel)}`)}
+      ${grp('req','✅','필수 3가지 — 상품 · 취향 · 결과', [f.product, f.preferences, f.result], `
+        ${fld('상담 상품', `<select onchange="TGT_CRM.set('product', this.value)">${productOptionsHTML(f.product)}</select>`, f.product, {req:true})}
+        ${fld('고객 핵심 취향', `${prefChipsHTML(f.preferences)}
+          <input type="text" data-nofill="1" placeholder="직접 입력 후 Enter (예: 바다 보이는 코스)" onkeydown="if(event.key==='Enter'){event.preventDefault();TGT_CRM.addPref(this.value);this.value='';}">`, f.preferences, {req:true, note:'(복수 선택 · ${(f.preferences||[]).length}개)'})}
+        ${fld('상담 결과', chipGroup('result', RESULTS, f.result, false, o=>'r-'+RESULT_CLS[o]), f.result, {req:true})}
+        ${(f.result==='보류'||f.result==='미예약') ? fld('미예약·보류 사유', chipGroup('unbooked_reason', REASONS, f.unbooked_reason, false), f.unbooked_reason) : ''}`)}
       ${grp('memo','📝','상담 메모', [f.memo], fld('상담 메모', `<textarea rows="${chat?4:2}" oninput="TGT_CRM.set('memo', this.value, true)">${esc(f.memo)}</textarea>`, f.memo))}
       ${state.flash ? state.flash : ''}
       <div class="crm-actions">

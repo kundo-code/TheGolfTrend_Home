@@ -1710,6 +1710,19 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-body::-webkit-scrollbar-thumb{background:rgba(221,179,103,.35);border-radius:5px}
 .admin-body::-webkit-scrollbar-thumb:hover{background:rgba(221,179,103,.6)}
 .admin-section{margin-bottom:22px}
+/* [추가] 제목 줄을 눌러 접고 펼치는 관리자 그룹(브랜드 링크·법적고지) — 제목 줄 전체가 눌리는 넓은 바, 화살표는 오른쪽 끝 */
+.admin-fold{margin-bottom:10px;border-radius:var(--nm-r-md);background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm)}
+.admin-fold>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 16px;font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.95rem;font-weight:700;letter-spacing:.06em}
+.admin-fold>summary::-webkit-details-marker{display:none}
+.admin-fold>summary::after{content:'▾';margin-left:auto;font-size:.95rem;transition:transform .2s}
+.admin-fold[open]>summary::after{transform:rotate(180deg)}
+.admin-fold[open]>summary{border-bottom:1px solid rgba(32,43,58,.1)}
+.admin-fold>.admin-fold-body{padding:14px 16px 16px}
+.admin-fold>summary .file-hint{letter-spacing:normal;font-family:'Noto Sans KR',sans-serif;font-weight:400}
+.admin-fold>.admin-fold-body.legal-admin-item{box-shadow:none;background:transparent;margin:0;padding:14px 16px 16px;border-radius:0}
+.admin-fold>summary .lai-badge,.admin-fold>summary .lai-test{font-family:'Noto Sans KR',sans-serif;letter-spacing:normal}
+.admin-fold-st{margin-left:auto;margin-right:4px;font-family:'Noto Sans KR',sans-serif;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#e5e9f1;color:#64748b;letter-spacing:normal}
+.admin-fold-st.on{background:#dcfce7;color:#166534}
 .admin-section h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;color:var(--nm-blue-deep);font-size:.82rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
 /* [수정] 이미지 탭 주요 섹션 제목(헤드라인 배너/사이트 아이덴티티/시즌 테마/회사소개 카드 이미지/블로그 대표 이미지) 크기를
    기본 제목(.82rem)의 1.5배(1.23rem)로 통일한 뒤, 다시 90%로 축소(1.107rem)하고 볼드는 제거(기본 600 유지)
@@ -4734,7 +4747,9 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 .product.has-cp:not(.expanded) .product-divider-cp1,
 .product.has-cp:not(.expanded) .product-divider-cp2,
 .product.has-cp:not(.expanded) .product-checkpoint2{display:none}
-.product-expand{display:flex;align-items:center;justify-content:center;align-self:center;margin:0 0 12px;padding:6px 18px;border-radius:100px;
+/* [수정] 펼쳐보기/접기 버튼은 같은 줄의 카드 높이가 달라도 항상 요금 위 구분선 바로 위(아래 정렬)에 놓는다 — 남는 높이는 버튼 위쪽으로 모은다 */
+.product-expand + .product-foot{margin-top:0}
+.product-expand{display:flex;align-items:center;justify-content:center;align-self:center;margin:auto 0 12px;padding:6px 18px;border-radius:100px;
   border:1.5px solid rgba(221,179,103,.55);background:rgba(221,179,103,.14);color:var(--gold-deep);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
 .product-expand .pe-close{display:none}
 .product.expanded .product-expand .pe-open{display:none}
@@ -6227,10 +6242,11 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     </div>
     <div id="tabLinks" style="display:none">
       <div class="admin-info-box"><b>💡</b> URL을 입력하면 홈페이지에 해당 채널 버튼이 활성화되고, 비워두면 감춰집니다. <b>리틀리(Litt.ly) 국내·해외는 SNS 그룹에 포함</b>되어 있습니다. 자동 저장됩니다.</div>
-      <div class="admin-section"><h4>네이버 밴드</h4><div id="adminBand"></div></div>
-      <div class="admin-section"><h4>블로그</h4><div id="adminBlogLinks"></div></div>
-      <div class="admin-section"><h4>SNS</h4><div id="adminSNS"></div></div>
-      <div class="admin-section"><h4>출입국신고서 작성 안내 <span class="file-hint" style="display:inline;margin:0">국가별 이름·아이콘·URL 등록 · 비자 필요 국가는 체크박스로 표시</span></h4><div id="adminEntryExit"></div></div>
+      <!-- 제목을 눌러 펼치고 접는 그룹(기본 접힘). 입력한 내용·링크는 접어도 그대로 유지된다 -->
+      <details class="admin-fold" data-fold="band"><summary>네이버 밴드</summary><div class="admin-fold-body"><div id="adminBand"></div></div></details>
+      <details class="admin-fold" data-fold="blog"><summary>블로그</summary><div class="admin-fold-body"><div id="adminBlogLinks"></div></div></details>
+      <details class="admin-fold" data-fold="sns"><summary>SNS</summary><div class="admin-fold-body"><div id="adminSNS"></div></div></details>
+      <details class="admin-fold" data-fold="entryexit"><summary>출입국신고서 작성 안내 <span class="file-hint" style="display:inline;margin:0">국가별 이름·아이콘·URL 등록 · 비자 필요 국가는 체크박스로 표시</span></summary><div class="admin-fold-body"><div id="adminEntryExit"></div></div></details>
     </div>
     <div id="tabLeads" style="display:none">
       <div class="admin-info-box"><b>💡</b> AI 추천에서 시작된 문의는 <b>✨ AI 추천</b> 표시와 함께 추천 상품명이 함께 표시됩니다. 상태를 바꾸면 즉시 저장됩니다.</div>
@@ -10771,6 +10787,7 @@ const ICON_DATA = {
   'icon-tistory':'assets/icons/icon-tistory.png',
   'icon-tiktok':'assets/icons/icon-tiktok.png',
   'icon-youtube':'assets/icons/icon-youtube.png',
+  'icon-kakao':'assets/icons/icon-kakao.png', // 카카오톡 채널
 };
 
 // LINK definitions — pre-populated from (주)더골프트렌드 공식 채널
@@ -10795,6 +10812,7 @@ const LINK_DEFS = {
   sns: {
     label:'SNS',
     items:[
+      {key:'sns_kakao',     name:'카카오톡 채널', img:'icon-kakao',     defaultUrl:SITE_CONTACT.kakaoChannel||'http://pf.kakao.com/_SSxgFG'},
       {key:'sns_youtube',   name:'유튜브',       img:'icon-youtube',   defaultUrl:''},
       {key:'sns_facebook',  name:'페이스북',      img:'icon-facebook',  defaultUrl:''},
       {key:'sns_instagram', name:'인스타그램',    img:'icon-instagram', defaultUrl:''},
@@ -16125,7 +16143,7 @@ function getLegalUrl(key){
 function setLegalUrl(key, url){
   legalOverrides[key] = url;
   try{ localStorage.setItem(LEGAL_KEY, JSON.stringify(legalOverrides)); }catch(e){ alert('저장 공간 부족'); }
-  renderFooterLegal();
+  renderFooterLegal(); legalFoldStatus(key);
   queueSiteStateSync();
 }
 function getLegalContent(key){
@@ -16134,7 +16152,7 @@ function getLegalContent(key){
 function setLegalContent(key, text){
   legalContentOverrides[key] = text;
   try{ localStorage.setItem(LEGAL_CONTENT_KEY, JSON.stringify(legalContentOverrides)); }catch(e){ alert('저장 공간 부족'); }
-  renderFooterLegal();
+  renderFooterLegal(); legalFoldStatus(key);
   queueSiteStateSync();
 }
 function renderFooterLegal(){
@@ -16162,6 +16180,16 @@ function openLegalModal(key){
 function closeLegalModal(){
   document.getElementById('legalModalOverlay').classList.remove('show');
 }
+// 법적고지·이용안내 항목은 제목만 보이게 접어 두고, 펼친 항목은 다시 그려도 그대로 펼쳐 둔다
+const legalFoldOpen = new Set();
+function legalFoldToggle(key, open){ if (open) legalFoldOpen.add(key); else legalFoldOpen.delete(key); }
+// 입력하는 동안 제목 줄의 상태 표시(내용 팝업 / 외부 URL / 미입력)를 바로 갱신
+function legalFoldStatus(key){
+  const st = document.querySelector(`#adminLegal details[data-legal="${key}"] .admin-fold-st`); if (!st) return;
+  const url = getLegalUrl(key), content = getLegalContent(key);
+  st.className = 'admin-fold-st' + ((url||content) ? ' on' : '');
+  st.textContent = content ? '내용 팝업' : (url ? '외부 URL' : '미입력(숨김)');
+}
 function renderAdminLegal(){
   const c = document.getElementById('adminLegal'); if(!c) return;
   c.innerHTML =
@@ -16173,14 +16201,17 @@ function renderAdminLegal(){
   LEGAL_DEFAULT.map(l => {
     const url = getLegalUrl(l.key);
     const content = getLegalContent(l.key);
+    const shown = !!(url || content);
     return `
-    <div class="legal-admin-item">
-      <div class="lai-label${l.hi?' hi':''}">
+    <details class="admin-fold" data-legal="${l.key}" ${legalFoldOpen.has(l.key)?'open':''} ontoggle="legalFoldToggle('${l.key}',this.open)">
+      <summary>
         ${l.hi?'<span class="lai-badge">강조</span>':''}
-        <span>${escapeAttr(l.label)}</span>
-        ${content?`<a onclick="openLegalModal('${l.key}')" role="button" class="lai-test">🔗 미리보기</a>`
-          :url?`<a href="${escapeAttr(url)}" target="_blank" rel="noopener" class="lai-test">🔗 확인</a>`:''}
-      </div>
+        <span class="${l.hi?'lai-hi':''}">${escapeAttr(l.label)}</span>
+        ${content?`<a onclick="event.preventDefault();event.stopPropagation();openLegalModal('${l.key}')" role="button" class="lai-test">🔗 미리보기</a>`
+          :url?`<a href="${escapeAttr(url)}" target="_blank" rel="noopener" class="lai-test" onclick="event.stopPropagation()">🔗 확인</a>`:''}
+        <span class="admin-fold-st ${shown?'on':''}">${shown?(content?'내용 팝업':'외부 URL'):'미입력(숨김)'}</span>
+      </summary>
+      <div class="admin-fold-body legal-admin-item">
       <div>
         <span class="lai-field-label">외부 URL (선택)</span>
         <input type="url" class="lai-input"
@@ -16194,7 +16225,8 @@ function renderAdminLegal(){
           placeholder="여기에 ${escapeAttr(l.label)} 전문을 붙여넣으세요..."
           oninput="setLegalContent('${l.key}',this.value)">${escapeAttr(content)}</textarea>
       </div>
-    </div>`;
+      </div>
+    </details>`;
   }).join('') +
   `<div style="margin-top:14px;padding:12px 14px;background:rgba(221,179,103,.08);border-radius:8px;font-size:.78rem;color:var(--nm-text-soft)">
     현재 노출 중: ${LEGAL_DEFAULT.filter(l=>getLegalUrl(l.key)||getLegalContent(l.key)).length} / ${LEGAL_DEFAULT.length}개

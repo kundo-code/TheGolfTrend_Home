@@ -4492,6 +4492,13 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .adv-body input.adv-filled,.adv-body select.adv-filled,.adv-body textarea.adv-filled{box-shadow:inset 4px 0 0 #16a34a,var(--nm-shadow-inset);font-weight:700;color:#064e3b}
 .adv-body input.adv-filled:focus,.adv-body select.adv-filled:focus,.adv-body textarea.adv-filled:focus{box-shadow:inset 4px 0 0 #16a34a,var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .adv-body .rtf-editable.adv-filled{box-shadow:inset 4px 0 0 #16a34a}
+/* [수정] 이미지 갤러리 사진 위 "사진 설명" 입력칸은 어두운 반투명 바 위에 흰 글씨 — 위의 입력됨(.adv-filled) 표시(초록 글씨·안쪽 그림자)가 덮어써서 글자가 어둡게 보이던 것을 바로잡는다.
+   입력 여부는 초록 테두리 대신 얇은 초록 윗줄로 구분한다 */
+.adv-body .gallery-thumb input.g-cap,.adv-body .gallery-thumb input.g-cap.adv-filled,.adv-body .gallery-thumb input.g-cap.adv-empty{
+  color:#fff;font-weight:600;background:rgba(10,23,48,.86)!important;box-shadow:none;outline:none;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.adv-body .gallery-thumb input.g-cap.adv-filled{border-top:2px solid #4ade80}
+.adv-body .gallery-thumb input.g-cap::placeholder{color:rgba(255,255,255,.72);font-weight:500}
+.adv-body .gallery-thumb input.g-cap:focus,.adv-body .gallery-thumb input.g-cap.adv-filled:focus,.adv-body .gallery-thumb input.g-cap.adv-empty:focus{background:rgba(10,23,48,.96)!important;box-shadow:inset 0 0 0 2px #60a5fa}
 .adv-body label.adv-lab-filled{color:#065f46}
 .adv-body label.adv-lab-filled::before{content:'✓';display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-right:5px;border-radius:50%;background:#16a34a;color:#fff;font-size:.62rem;font-weight:800;vertical-align:1px;letter-spacing:0}
 .ai-link-box{margin:10px 0 6px;padding:12px;border-radius:12px;background:rgba(10,23,48,.03);border:1px dashed rgba(10,23,48,.18)}
@@ -18077,8 +18084,8 @@ function advBasicHTML(p){
           <div class="adv-collapsible-body">
             <div class="grid-2">
               <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
-              <div class="full"><div class="mw-label-row"><label>⛳ 호텔⇔골프장</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
               <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'🚌 공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+              <div class="full"><div class="mw-label-row"><label>⛳ 호텔⇔골프장</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
             </div>
           </div>
         </details>

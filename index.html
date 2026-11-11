@@ -4472,6 +4472,9 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-info-f{padding:8px 10px 9px;border-radius:12px;border:1px dashed rgba(10,23,48,.16);background:rgba(255,255,255,.45);transition:background .15s,border-color .15s}
 .ai-info-f:not(.filled) select,.ai-info-f:not(.filled) input[type=text],.ai-info-f:not(.filled) input[type=number]{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
 .ai-info-f select option{color:#0a1730}
+.ai-info-f textarea{width:100%;box-sizing:border-box;min-height:64px;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font-size:.86rem;font-family:inherit;line-height:1.5;resize:vertical}
+.ai-info-f:not(.filled) textarea{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
+.ai-info-f.filled textarea{border-color:#16a34a;color:#064e3b;font-weight:600;background:#fff}
 .ai-info-f.has-auto{border-color:rgba(37,99,235,.35);background:rgba(239,246,255,.7)}
 .ai-info-f.filled{border:1px solid rgba(22,163,74,.45);background:#effcf3;box-shadow:inset 4px 0 0 #16a34a}
 .adv-body .ai-info-f.filled>.ai-info-lab,.ai-info-f.filled>.ai-info-lab{color:#065f46}
@@ -18425,7 +18428,14 @@ const AI_INFO_SCHEMA = [
     {k:'private', label:'프라이빗(단독 진행)', type:'yn', help:'다른 팀과 합류 없이 일행만 진행하면 \'예\'.'},
     {k:'optionalTour', label:'선택 관광', type:'yn', yes:'있음', no:'없음', help:'원하는 사람만 추가하는 관광이 있으면 \'있음\'.'},
     {k:'localMandatory', label:'현지 필수 지불금', type:'text', ph:'없으면 비워 두세요', help:'현지에서 반드시 내야 하는 비용(캐디팁·리조트피 등).'},
-    {k:'noExtraPay', label:'현지 추가 지불 없음', type:'yn', help:'현지 필수 지불 없이 요금에 모두 포함이면 \'예\'.'}]}
+    {k:'noExtraPay', label:'현지 추가 지불 없음', type:'yn', help:'현지 필수 지불 없이 요금에 모두 포함이면 \'예\'.'}]},
+  {key:'rec', label:'⑥ 추천 대상·장단점·규정', note:'여기에 입력한 값은 상품 상세 정적 페이지(/golf/…)의 \'한눈에 보기\'와 \'자주 묻는 질문\'에 그대로 표시됩니다(검색엔진·AI 검색용, 매일 새벽 자동 반영). 비워 두면 표시하지 않고, 입력하지 않은 내용은 만들어 넣지 않습니다. 기존 상품 카드·자세히 보기 화면에는 영향이 없습니다.', fields:[
+    {k:'audience', label:'추천 대상', type:'multi', opts:['초보','2인 플레이','4인 플레이','5인 플레이','동호회·모임','부부·가족','비즈니스','단체'], help:'이 상품이 잘 맞는 고객을 체크(여러 개 가능). 단체는 8인 이상.'},
+    {k:'ageGroups', label:'추천 연령대', type:'multi', opts:['30·40대','50대','60대 이상'], help:'이 상품이 잘 맞는 연령대를 체크(여러 개 가능).'},
+    {k:'pros', label:'장점', type:'area', rows:3, max:600, ph:'한 줄에 하나씩 입력\n예: 호텔에서 골프장까지 3분', help:'한 줄에 장점 하나씩. 실제로 확인된 내용만 적어 주세요.'},
+    {k:'cons', label:'유의할 점', type:'area', rows:3, max:600, ph:'한 줄에 하나씩 입력\n예: 겨울철 이른 아침 서리 지연 가능', help:'한 줄에 하나씩. 고객이 미리 알아야 할 점.'},
+    {k:'rainCancel', label:'우천·취소 규정 요약', type:'area', rows:3, max:400, ph:'예: 우천 시 그린피 현지 규정에 따름 / 출발 7일 전까지 취소 시 전액 환불', help:'우천·취소 규정을 짧게 요약(전체 규정은 \'예약·취소 안내\'에 그대로 있습니다).'},
+    {k:'cartCaddie', label:'카트·캐디 방식', type:'select', opts:['카트·캐디 모두 포함','카트 포함 · 캐디피 별도','캐디 포함 · 카트비 별도','카트·캐디 모두 별도(현장 결제)','노캐디(셀프) · 카트 포함','노캐디(셀프) · 카트 별도','요금 항목별로 다름'], help:'요금에 카트·캐디가 포함인지, 현장에서 따로 내는지 선택. 포함·불포함 사항과 같게 선택해 주세요.'}]}
 ];
 // 예전(상품별 직접 입력) 숙소·골프장 항목 — 등록부로 옮기기 전까지는 그대로 판정에 쓴다
 const AI_LEGACY_LODGE = {lodgeName:'name', lodgeType:'lodgeType', lodgeStar:'lodgeStar', lodgeStarSrc:'lodgeStarSrc', roomSize:'roomSize', bedType:'bedType', roomTypes:'roomTypes', breakfast:'breakfast', golfDistance:'golfDistance', airportMin:'airportMin', elevator:'elevator', shuttle:'shuttle', localFood:'nearFood', cityTour:'nearCity', famousSpot:'nearSpot', mall:'nearMall', market:'nearMarket', spa:'nearSpa', koreanFood:'nearKorean', shopDistance:'memo'};
@@ -18557,6 +18567,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
     return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}</div>`;
   }
+  if (fd.type==='area') return `<div ${box}>${lab}<textarea rows="${fd.rows||3}" maxlength="${fd.max||400}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}">${escapeAttr(v||'')}</textarea></div>`;
   if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
   return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
 }
@@ -18582,7 +18593,7 @@ function aiLenUnit(sel){
 // 입력·선택할 때마다 칸의 입력됨(.filled) 표시를 다시 판정
 function aiFieldFillSync(e){
   const f = e.target && e.target.closest && e.target.closest('.ai-info-f'); if (!f) return;
-  const any = [...f.querySelectorAll('input,select')].some(el=>{
+  const any = [...f.querySelectorAll('input,select,textarea')].some(el=>{
     if (el.hasAttribute('data-nofill')) return false;
     if (el.type==='checkbox') return el.checked;
     return String(el.value||'').trim()!=='';
@@ -18722,9 +18733,10 @@ function aiInfoOf(p){ if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArr
 function updateAiInfo(k, v){
   const p=getAdvProduct(); if (!p) return;
   const ai = aiInfoOf(p);
-  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0,200) : v;
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0, aiFieldMax(k)) : v;
   saveAdvChange();
 }
+function aiFieldMax(k){ const f = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields)).find(x=>x.k===k); return (f && f.max) || 200; }
 function updateAiInfoMulti(k, opt, on){
   const p=getAdvProduct(); if (!p) return;
   const ai = aiInfoOf(p);

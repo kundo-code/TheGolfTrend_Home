@@ -59,6 +59,20 @@ NODE_PATH=scripts/node_modules node scripts/build-seo-pages.js
 - 구글 서치콘솔 "URL 검사"에 상품 페이지 주소를 넣어 "색인 생성 가능"인지, 구조화 데이터(제품)가 인식되는지 봅니다.
 - 구조화 데이터 검사: <https://search.google.com/test/rich-results>
 
+## 관리자에서 추가로 입력하는 항목 (고급편집 › 🤖 AI 추천 정보 › ⑥ 추천 대상·장단점·규정)
+| 항목 | 입력 방식 | 정적 페이지 표시 위치 |
+|---|---|---|
+| 추천 대상 | 체크(초보 / 2인 플레이 / 4인 플레이 / 5인 플레이 / 동호회·모임 / 부부·가족 / 비즈니스 / 단체) | 한눈에 보기 · FAQ "어떤 분께 추천하나요?" |
+| 추천 연령대 | 체크(30·40대 / 50대 / 60대 이상) | 한눈에 보기 · 같은 FAQ |
+| 장점 | 한 줄에 하나씩 | "장점과 유의할 점" 섹션 · FAQ |
+| 유의할 점 | 한 줄에 하나씩 | 같은 섹션 · FAQ |
+| 우천·취소 규정 요약 | 짧은 글 | "우천·취소 규정 요약" 섹션 · FAQ "우천·취소 시에는 어떻게 되나요?" |
+| 카트·캐디 방식 | 선택 | 한눈에 보기 · FAQ "카트와 캐디는 어떻게 되나요?" |
+
+- 저장 위치: 기존 상품 `aiInfo`에 새 키(`audience`, `ageGroups`, `pros`, `cons`, `rainCancel`, `cartCaddie`)로만 추가됩니다. 기존 값·구조는 바뀌지 않으며, 비워 두면 키가 저장되지 않습니다.
+- 입력한 값만 표시합니다(비어 있으면 그 줄·질문을 만들지 않음). 기존 홈페이지의 상품 카드·자세히 보기 화면에는 표시되지 않고, 다음 자동 실행(매일 새벽 4시, 또는 "Run workflow") 때 정적 페이지에 반영됩니다.
+- 글자 수: 장점·유의할 점 각 600자, 우천·취소 400자까지.
+
 ## 수집 경로(2단계)
 - **robots.txt**: OAI-SearchBot·GPTBot·ChatGPT-User(OpenAI), PerplexityBot·Perplexity-User, ClaudeBot·Claude-SearchBot·Claude-User(Anthropic), Googlebot, Bingbot을 이름으로 명시해 허용합니다. 기존 "전체 허용" 정책은 그대로입니다. 특정 크롤러를 막고 싶으면 해당 이름의 `Allow: /`를 `Disallow: /`로 바꾸면 됩니다.
 - **llms.txt**: 생성기가 `golf/`와 함께 자동으로 다시 만듭니다. 손으로 고치지 마세요(다음 실행 때 덮어씁니다).
@@ -72,4 +86,4 @@ NODE_PATH=scripts/node_modules node scripts/build-seo-pages.js
 5. 시험: `node scripts/indexnow.js --dry-run --base <이전커밋> --head <최근커밋>` — 알릴 주소만 보여 주고 전송하지 않습니다.
 
 ## 다음 단계
-관리자 상품 고급편집에 입력 항목(추천 대상·장단점·우천/취소 요약 등)을 더하는 안과, AI 유입 집계(4단계)는 아직 포함되지 않았습니다.
+AI 유입 집계(4단계)는 아직 포함되지 않았습니다.

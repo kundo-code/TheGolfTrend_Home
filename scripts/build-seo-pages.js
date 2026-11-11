@@ -279,6 +279,42 @@ function descOf(p) {
   return clip(`${p.title} — ${bits.join(' · ')}. ${p.catKo} 골프 패키지 상담·예약 THE GOLF TREND.`, 150);
 }
 
+// 자주 묻는 질문 — 등록된 값으로 답할 수 있는 질문만 만든다(값이 없으면 그 질문은 만들지 않는다). 화면에 보이는 문장 그대로 FAQPage 구조화 데이터에 넣는다.
+// 등록값은 자유 입력이라 "항목: 값" 형태로 그대로 옮긴다(문장으로 풀어 쓰면 값의 뜻을 바꿀 수 있음). 이모지·보이지 않는 문자만 걷어 낸다.
+const tidy = s => String(s == null ? '' : s).replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}​-‍️➣➢]/gu, '').replace(/\s+/g, ' ').replace(/\s+([,.)])/g, '$1').trim();
+function faqFor(p, data) {
+  const qa = [];
+  const add = (q, a) => { a = tidy(a); if (a) qa.push([q, a]); };
+  const kv = pairs => pairs.filter(([, v]) => tidy(v)).map(([k, v]) => `${k}: ${tidy(v).replace(/[.。]$/, '')}.`).join(' ');
+  const lo = lowestPrice(p);
+  // 1) 요금
+  if (p.priceInquiry) add('요금은 얼마인가요?', `이 상품의 요금은 "${tidy(p.priceInquiry)}"로 등록되어 있습니다. 상담 시 안내해 드립니다.`);
+  else if (lo > 0) add('요금은 얼마인가요?', `이 페이지에 등록된 요금 중 가장 낮은 금액은 ${won(lo)}${p.fromLabel ? ' ~부터' : ''}입니다. 출발 요일·시기·구성에 따라 달라지므로 아래 요금 안내를 확인해 주세요.`);
+  // 2) 출발 인원 (예: 2인 출발)
+  const pax = p.aiFacts.paxOk || [];
+  if (pax.length) {
+    add('2인 출발이 가능한가요?', [pax.includes('2인') ? '네, 2인 출발이 가능합니다.' : '2인 출발은 등록되어 있지 않아 상담 시 확인이 필요합니다.', `등록된 출발 가능 인원: ${pax.join(', ')}.`, p.minPeople ? `최소 출발 인원은 ${p.minPeople}명 이상으로 등록되어 있습니다.` : ''].filter(Boolean).join(' '));
+  } else if (p.minPeople) {
+    add('2인 출발이 가능한가요?', [`등록된 최소 출발 인원은 ${p.minPeople}명 이상입니다.`, p.minPeople <= 2 ? '2인 출발이 가능합니다.' : '2인 출발은 상담 시 확인해 주세요.'].join(' '));
+  }
+  // 3) 일정·구성
+  add('일정과 구성은 어떻게 되나요?', kv([['일정', p.nightsCount], ['골프 라운드', p.rounds], ['숙박', p.stay], ['숙소 위치', p.lodge], ['식사', p.meals]]));
+  // 4) 출발 시기 (기간 칸은 관리자가 날짜·일정 등 자유롭게 적으므로 "등록된 기간"으로 그대로 옮김)
+  add('언제 출발할 수 있나요?', kv([['출발 요일', p.departureDay.join(', ')], ['등록된 기간', p.periodText], ['추천 판매 시기', p.monthsTag]]));
+  // 5) 항공
+  add('항공권이 포함되어 있나요?', kv([['항공', p.airfare], ['출발 공항', p.departAirports.join(', ')], ['도착 공항', p.arrAirport], ['비행 시간', p.flightTime]]));
+  // 6) 이동
+  add('이동 시간은 얼마나 걸리나요?', kv([[`${p.transferLabel} 이동`, p.transferTime], ['호텔→골프장 이동', p.hotelToGolfTime]]));
+  // 7) 포함·불포함 (공통 항목이 없으면 요금 항목별로)
+  const listAns = (common, key) => common.length ? common.map(tidy).filter(Boolean).join(' / ')
+    : p.entries.filter(e => e[key].length).map(e => `${tidy(e.headline) || '요금 항목'}: ${e[key].map(tidy).filter(Boolean).join(' / ')}`).join(' // ');
+  add('포함 사항은 무엇인가요?', listAns(p.included, 'included'));
+  add('불포함 사항은 무엇인가요?', listAns(p.notIncluded, 'notIncluded'));
+  // 8) 상담
+  add('예약·상담은 어떻게 하나요?', [data.contact.phone && `전화 ${data.contact.phone}`, data.contact.kakaoChat && (data.contact.phone ? '또는 카카오톡 상담으로' : '카카오톡 상담으로'), '문의하실 수 있습니다. 요금·일정은 변동될 수 있어 상담 시 최종 확인이 필요합니다.'].filter(Boolean).join(' '));
+  return qa;
+}
+
 function productPage(p, data, stateDate) {
   const code = codeOf(p.uid), pagePath = urlProduct(p.catId, code), url = ORIGIN + pagePath;
   const rows = [];
@@ -326,6 +362,8 @@ function productPage(p, data, stateDate) {
   const gallery = p.images.length ? `<h2>사진</h2><div class="gallery">${p.images.slice(0, 12).map((img, i, arr) => `<figure><img src="${esc(img.url)}" alt="${esc(alt(img, i))}" loading="lazy" decoding="async" width="640" height="400">${img.caption && (i === 0 || arr[i - 1].caption !== img.caption) ? `<figcaption>${esc(img.caption)}</figcaption>` : ''}</figure>`).join('')}</div>` : '';
   const hero = p.images[0] ? `<img class="hero" src="${esc(p.images[0].url)}" alt="${esc(alt(p.images[0], 0))}" fetchpriority="high" decoding="async">` : '';
 
+  const faq = faqFor(p, data);
+  const faqHtml = faq.length ? `<h2>자주 묻는 질문</h2><div class="card faq">${faq.map(([q, a]) => `<h3>${esc(q)}</h3><p class="l">${esc(a)}</p>`).join('')}</div>` : '';
   const body = `<h1>${esc(p.title)}</h1>
 <p class="lead">${[p.catKo, p.monthsTag && `추천 시기 ${p.monthsTag}`].filter(Boolean).map(esc).join(' · ')}</p>
 ${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}
@@ -336,6 +374,7 @@ ${cta(p, data)}
 ${(p.entries.length || p.commonDayPrices.length || p.commonHolidayPrices.length) ? `<h2>요금 안내</h2><div class="card">${entryHtml}${(!p.entries.length) ? priceTables(p.commonDayPrices, p.commonHolidayPrices, p.commonDates) : ''}</div>` : ''}
 ${places(p.courses, '골프장 정보')}${places(p.lodges, '숙소 정보')}
 ${textBlock('포함 사항', p.included)}${textBlock('불포함 사항', p.notIncluded)}${textBlock('참고 사항', p.notes)}${textBlock('유의 사항', precautions)}${textBlock('예약·취소 안내', p.booking)}
+${faqHtml}
 ${gallery}
 ${cta(p, data)}`;
 
@@ -353,7 +392,7 @@ ${cta(p, data)}`;
     ...(props.length ? { additionalProperty: props } : {}), ...(offers ? { offers } : {}) };
 
   const crumbs = [{ name: '홈', path: '/' }, { name: regionName(p.region), path: `/golf/${p.region}/` }, { name: p.catKo, path: `/golf/${p.catId}/` }, { name: titleFull(p), path: pagePath }];
-  return { path: pagePath, html: layout({ title: `${titleFull(p)} | ${p.catKo} 골프여행 패키지 - THE GOLF TREND`, description: descOf(p), canonicalPath: pagePath, ogImage: image, jsonLd: product, body, crumbs, data, stateDate }) };
+  return { path: pagePath, html: layout({ title: `${titleFull(p)} | ${p.catKo} 골프여행 패키지 - THE GOLF TREND`, description: descOf(p), canonicalPath: pagePath, ogImage: image, jsonLd: faq.length ? [product, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }] : product, body, crumbs, data, stateDate }) };
 }
 
 function listItems(ps) {

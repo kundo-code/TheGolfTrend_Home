@@ -85,5 +85,7 @@ NODE_PATH=scripts/node_modules node scripts/build-seo-pages.js
 4. 워크플로 파일(`.github/workflows/build-seo-pages.yml`)을 `docs/workflows/build-seo-pages.yml` 내용으로 **한 번 더 교체**해야 "IndexNow 알림" 단계와 `llms.txt` 커밋이 자동으로 동작합니다(위 "자동 실행 켜기"와 같은 방법으로, 기존 파일을 열어 내용을 바꾼 뒤 커밋).
 5. 시험: `node scripts/indexnow.js --dry-run --base <이전커밋> --head <최근커밋>` — 알릴 주소만 보여 주고 전송하지 않습니다.
 
-## 다음 단계
-AI 유입 집계(4단계)는 아직 포함되지 않았습니다.
+## 측정(4단계)
+- **관리자 › 상담·예약 › 📊 통계 › 🤖 AI 검색 유입**: 방문 기록(`tgt_site_events`의 `page_view`)의 유입 도메인·광고 태그(utm_source)로 ChatGPT·Perplexity·Gemini·Claude·Copilot에서 온 방문을 따로 셉니다. 새로 쌓는 데이터는 없고, 기존 기록을 읽어 분류만 합니다(이름·연락처·IP 없음). 기간·권역 필터를 따르고, AI 유입 방문 수·상품 상세 본 방문·상담 행동·AI 서비스별 표·최근 30일 추이·AI 유입 방문이 본 상품을 보여 줍니다.
+- 한계: 현재 방문 기록은 **홈페이지 첫 화면**(index.html)에서만 남습니다. 검색·AI 답변에서 상품 정적 페이지(`/golf/…`)로 바로 들어온 방문은 기록되지 않습니다. 앱·브라우저 설정으로 유입 정보가 전달되지 않으면 "직접 방문"으로 잡힙니다.
+- **월 1회 AI 노출 점검표**: `docs/ai-visibility-monthly-checklist.md` (핵심 질문 20개, 확인할 AI 목록, 기록 양식).

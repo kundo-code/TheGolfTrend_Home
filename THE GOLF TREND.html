@@ -1518,6 +1518,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-grid p{color:rgba(10,23,48,.6);font-size:.9rem;margin-top:14px;max-width:320px}
 .foot-grid h4{color:var(--pine-deep);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.95rem;font-weight:500;margin-bottom:18px}
 .foot-grid ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.dest-seo-link{margin-top:6px;font-size:.84rem}.dest-seo-link a{color:var(--gold-deep);font-weight:700;text-decoration:underline}.dest-seo-link span{color:rgba(10,23,48,.5)}
 .foot-grid a{color:rgba(10,23,48,.6);font-size:.9rem;transition:color .2s;cursor:pointer}
 .foot-grid a:hover{color:var(--gold-deep)}
 .foot-socials{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
@@ -5291,6 +5292,41 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   #adminPanel .admin-h4-lg,.adv-editor-overlay .admin-h4-lg{font-size:14px}
   #adminPanel .admin-close,.adv-editor-overlay .adv-close,.admin-side-toggle{font-size:18px}
 }
+
+/* ═══ [모바일 고급편집 개선] 상품 고급 편집 모달 — 좁은 화면에서 편집하기 쉽게 ═══
+   · 카드 태그: 2열 → 1열, 입력란 최소 폭 확보(세로로 한 글자씩 꺾이던 문제), 부가 버튼(기본·AI 연동)은 다음 줄로
+   · 상단 고정 영역(빠른 이동·서식 도구·안내문)을 한 줄씩으로 압축해 입력 영역을 넓힘
+   · 100vh → 100dvh (iOS 주소창/하단바에 완료 버튼이 가려지던 문제) */
+@media(max-width:640px){
+  .adv-editor-overlay{-webkit-overflow-scrolling:touch}
+  .adv-editor{margin:8px;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px)}
+  .adv-head{padding:8px 14px}
+  .adv-tabs{padding:6px 10px}
+  .adv-body{padding:14px 12px}
+  .adv-sticky-head{top:-14px;margin:-14px -12px 12px}
+  .adv-foot{padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));gap:8px}
+  .adv-foot button{flex:1 1 0;min-height:44px}
+  /* 빠른 이동: 한 줄 가로 스크롤 */
+  .adv-quicknav{flex-wrap:nowrap;overflow-x:auto;gap:5px;padding:6px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .adv-quicknav::-webkit-scrollbar{display:none}
+  .adv-quicknav button{flex:0 0 auto;padding:6px 10px;font-size:12px}
+  .adv-qn-sp{flex:0 0 4px}
+  /* 서식 도구: 한 줄 가로 스크롤 + 오른쪽 끝이 더 있음을 알리는 그라데이션 */
+  .rtf-global .rtf-toolbar{padding:4px 12px;gap:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 22px),transparent)}
+  .rtf-global .rtf-toolbar > *{flex-shrink:0}
+  .rtf-global-hint{padding:0 12px 4px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .adv-titlebar{padding:5px 12px}
+  /* 카드 태그 칸 */
+  .ctag-grid2{grid-template-columns:minmax(0,1fr);gap:6px}
+  .ctag-cell{flex-wrap:wrap;row-gap:4px;border-radius:18px}
+  .rtf-editable.ctag-edit{flex:1 1 130px;min-width:130px;min-height:0;padding:8px 14px;word-break:keep-all;overflow-wrap:anywhere}
+  .ctag-grip{width:22px;font-size:1.1rem;padding:6px 0}
+  .ctag-del{width:32px;height:32px;font-size:.85rem}
+  .adv-body label.ctag-bg,label.ctag-bg{width:32px;height:32px}
+  .ctag-bg-reset{height:28px;padding:0 10px}
+  .ctag-link{padding:5px 10px;font-size:11px}
+  .ctag-add-row{padding:0 4px 10px}
+}
 </style>
 <!-- [Phase 3 SEO/GEO 강화] Schema.org JSON-LD (Organization/TravelAgency, WebSite, WebPage, BreadcrumbList)
      footer(.foot-company)에 실제로 노출되는 회사 정보와 동일한 값만 사용 — 화면에 없는 내용은 넣지 않음.
@@ -5666,6 +5702,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
         <span class="tag">Destinations</span>
         <h2>권역별·국가별 <em>골프 여행지</em></h2>
         <p>가고 싶은 지역을 먼저 고르세요. 상품은 시즌·요일·티오프 타임에 따라 요금이 변동되며, 표시된 금액은 최저가 기준입니다.</p>
+        <!-- 검색엔진·AI가 따라갈 수 있는 상품별 페이지(scripts/build-seo-pages.js가 자동 생성) 입구 -->
+        <p class="dest-seo-link"><a href="/golf/">골프 패키지 전체 목록 보기 →</a> <span>(국내·해외 상품별 요금·일정·포함 사항)</span></p>
       </div>
     </div>
     <!-- [수정] 국내/해외 여행지를 탭 전환이 아닌, 해외 → 국내 순서로 구분선과 간격을 두고 항상 함께 노출 -->
@@ -6038,6 +6076,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     <div><h4>Support</h4><ul>
       <li><a href="#booking">티타임 상담</a></li><li><a href="#blog">여행 이야기</a></li>
       <li><a href="#links">연계 채널</a></li><li><a href="#about">회사 소개</a></li>
+      <li><a href="/golf/">골프 패키지 전체 목록</a></li><li><a href="/golf/overseas/">해외 골프 패키지</a></li><li><a href="/golf/domestic/">국내 골프 패키지</a></li>
     </ul></div>
   </div>
 

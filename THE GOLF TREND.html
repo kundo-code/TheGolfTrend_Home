@@ -259,6 +259,26 @@ header{padding-top:var(--topbar-h,108px)}
 .spotlight h3{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.44rem + 2pt);font-weight:500;color:#fff;margin-bottom:4px}
 .spot-meta{display:flex;gap:16px;font-size:.94rem;color:rgba(247,245,240,.8);margin-bottom:10px;flex-wrap:wrap}
 /* [수정] EDITOR'S PICK 태그를 이미지 위 오버레이가 아닌, 요금/자세히→ 바로 위(하단 좌측 정렬)로 이동 */
+/* [추가] EDITOR'S PICK 히어로 카드 — 🚘 교통 · ✈️ 비행 · 이동 정보, 구분선 아래 AI 추천 정보 › 장점 */
+.spot-move{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.88rem;color:rgba(247,245,240,.8);margin-bottom:10px}
+.spot-move:empty{display:none}
+.spot-move .meta-value-plain b{color:#fff;font-weight:700}
+.spot-pros{margin-bottom:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
+.spot-pros:empty{display:none}
+.spot-pros .card-pros{font-size:.88rem;color:rgba(247,245,240,.88)}
+.card-pros{list-style:none;margin:0;padding:0;line-height:1.5}
+.card-pros li{position:relative;padding-left:15px;word-break:keep-all;overflow-wrap:anywhere}
+.card-pros li::before{content:'✓';position:absolute;left:0;top:0;color:var(--gold);font-weight:700}
+.product .card-pros{font-size:.78rem;color:rgba(10,23,48,.78);margin-bottom:12px}
+.product .card-pros li::before{color:#16a34a}
+.product .card-pros-div{margin-top:-4px}
+/* EDITOR'S PICK 팝업 카드 */
+.popup-meta{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:.8rem;color:rgba(247,245,240,.8);margin:0 0 12px;line-height:1.4}
+.popup-price-inquiry{font-size:1.1rem;color:var(--gold);font-weight:700}
+.popup-move{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:rgba(247,245,240,.8);margin:0 0 12px}
+.popup-move .meta-value-plain b{color:#fff;font-weight:700}
+.popup-pros{padding-top:12px;border-top:1px solid rgba(255,255,255,.15)}
+.popup-pros .card-pros{font-size:.82rem;color:rgba(247,245,240,.88)}
 .spot-tag-row{margin-bottom:8px;text-align:left}
 .spot-tag-row .badge{display:inline-block;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,.2)}
 .spot-cta{display:flex;justify-content:space-between;align-items:baseline;padding-top:10px;border-top:1px solid rgba(255,255,255,.15)}
@@ -5585,6 +5605,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
               <div class="spot-visual" id="spotVisual0a"></div>
               <h3 id="spotTitle0a">카와나 후지 코스</h3>
               <div class="spot-meta" id="spotMeta0a"></div>
+              <div class="spot-move" id="spotMove0a"></div>
+              <div class="spot-pros" id="spotPros0a"></div>
               <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice0a">1,890,000<small><span class="price-unit">원</span> ~부터</small></span>
@@ -5595,6 +5617,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
               <div class="spot-visual" id="spotVisual0b"></div>
               <h3 id="spotTitle0b"></h3>
               <div class="spot-meta" id="spotMeta0b"></div>
+              <div class="spot-move" id="spotMove0b"></div>
+              <div class="spot-pros" id="spotPros0b"></div>
               <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice0b"></span>
@@ -5610,6 +5634,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
               <div class="spot-visual" id="spotVisual1a"></div>
               <h3 id="spotTitle1a">바나힐스 GC</h3>
               <div class="spot-meta" id="spotMeta1a"></div>
+              <div class="spot-move" id="spotMove1a"></div>
+              <div class="spot-pros" id="spotPros1a"></div>
               <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice1a">1,290,000<small><span class="price-unit">원</span> ~부터</small></span>
@@ -5620,6 +5646,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
               <div class="spot-visual" id="spotVisual1b"></div>
               <h3 id="spotTitle1b"></h3>
               <div class="spot-meta" id="spotMeta1b"></div>
+              <div class="spot-move" id="spotMove1b"></div>
+              <div class="spot-pros" id="spotPros1b"></div>
               <div class="spot-tag-row"><span class="badge">EDITOR'S PICK</span></div>
               <div class="spot-cta">
                 <span class="price" id="spotPrice1b"></span>
@@ -12813,6 +12841,38 @@ function toggleDestAll(regionKey){
   },100);
 }
 
+// [추가] 상품 카드·EDITOR'S PICK 히어로·팝업 공통 — "🚘 교통 · ✈️ 비행 · 이동 정보"(비행시간·공항→호텔(국내: 숙소→골프장)·호텔→골프장)
+// 관리자가 입력한 값만 노출하고 비어 있으면 줄을 만들지 않는다. full은 상품 카드의 "한 줄로" 설정(메타 영역 전체 폭)
+function cardMoveList(p, catId){
+  const mw = p.metaWide || {};
+  const transferLabel = isDomesticCat(catId) ? '숙소→골프장' : '공항→호텔';
+  return [
+    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <span class="meta-value meta-value-plain">비행시간 <b>${escapeAttr(p.flightTime)}</b></span>`}] : []),
+    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <span class="meta-value meta-value-plain">${transferLabel} <b>${escapeAttr(p.transferTime)}</b></span>`}] : []),
+    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <span class="meta-value meta-value-plain">호텔→골프장 <b>${escapeAttr(p.hotelToGolfTime)}</b></span>`}] : []),
+  ];
+}
+// [추가] 고급편집 › 🤖 AI 추천 정보 › ⑥ "장점"에 입력한 값(한 줄에 하나씩) — 비어 있으면 빈 문자열
+function cardProsLines(p){
+  const t = (p && p.aiInfo && typeof p.aiInfo==='object') ? String(p.aiInfo.pros||'') : '';
+  return t.split(/\n/).map(x=>x.trim()).filter(Boolean);
+}
+function cardProsListHTML(p){
+  const ls = cardProsLines(p);
+  return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${escapeAttr(l)}</li>`).join('')}</ul>` : '';
+}
+// 기본 정보(박수·라운드·숙박·식사·항공) 한 줄 — 히어로 카드와 팝업 카드가 같은 값을 쓴다
+function spotBasicMeta(p){
+  const firstPe = (p.priceEntries && p.priceEntries.find(pe=>!pe.hidden)) || null;
+  const airfare = firstPe ? peEff(p, firstPe, 'airfare') : _peCommonAirfare(p);
+  return [
+    p.nights?`🗓 ${p.nights}`:'',
+    p.rounds?`⛳ ${p.rounds}`:'',
+    p.stay?`🏨 ${p.stay}`:'',
+    p.meals?`🍽 ${p.meals}`:'',
+    (airfare && airfare!=='none')?`✈️ <span class="${airfare==='excluded'?'airfare-excluded':'airfare-normal'}">${AIRFARE_TXT[airfare]||airfare}</span>`:''
+  ].filter(Boolean);
+}
 // 상품 카드/스팟라이트 공통: 관리자가 입력한 "카드 표시 최저가(from)"만 그대로 노출한다.
 // 요금표 항목(항목1/2...)의 판매가는 상세페이지 요금표에만 쓰이며, 카드 노출가에는 영향을 주지 않는다.
 function getDisplayPrice(p){
@@ -12976,12 +13036,8 @@ function productCardHTML(p, catId, idx){
   ];
   // [수정] 항공 포함 여부는 제목 아래 박스 줄(최소 인원 옆)로 옮겨 여기서는 빼고,
   // 순서를 비행시간 → 공항→호텔(국내: 숙소→골프장) → 호텔→골프장으로 변경
-  const metaGroup2 = [
-    // [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트는 볼드 해제하고, 입력한 값만 볼드 처리
-    ...(p.flightTime ? [{full: !!mw.flightTime, html: `🛫 <span class="meta-value meta-value-plain">비행시간 <b>${escapeAttr(p.flightTime)}</b></span>`}] : []),
-    ...(p.transferTime ? [{full: !!mw.transferTime, html: `🚌 <span class="meta-value meta-value-plain">${transferLabel} <b>${escapeAttr(p.transferTime)}</b></span>`}] : []),
-    ...(p.hotelToGolfTime ? [{full: !!mw.hotelToGolf, html: `⛳ <span class="meta-value meta-value-plain">호텔→골프장 <b>${escapeAttr(p.hotelToGolfTime)}</b></span>`}] : []),
-  ];
+  // [수정] "비행시간"·"공항→호텔"·"호텔→골프장"은 라벨 텍스트는 볼드 해제하고, 입력한 값만 볼드 처리(cardMoveList — 히어로·팝업 카드와 공통)
+  const metaGroup2 = cardMoveList(p, catId);
   // [수정] 박수·체류일 박스 — 식사 정보와 비행시간 정보 사이, 구분선 바로 아래 한 줄로(박스 색상 동일)
   const stayBoxes = [
     p.nightsCount ? `<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>` : '',
@@ -12993,7 +13049,7 @@ function productCardHTML(p, catId, idx){
     ...metaGroup1,
     ...((stayBoxes || metaGroup2.length) ? [{full:true, divider:true, html:''}] : []),
     ...(stayBoxes ? [{full:true, boxes:true, html:stayBoxes}] : []),
-    ...metaGroup2.map(it=>({...it, fold:true})), // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보)는 기본으로 접는다
+    ...metaGroup2, // [수정] 🚘 교통 · ✈️ 비행 · 이동 정보는 펼쳐보기 전에도 보이도록 접지 않는다
   ];
   let metaCol = 0;
   const metaHTML = metaItems.map((item,i)=>{
@@ -13009,7 +13065,7 @@ function productCardHTML(p, catId, idx){
   // [Phase] "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 쌓아서 노출
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
-  const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || metaGroup2.length || cardTags.length);
+  const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
   const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isRecommended?' data-label-recommend="1"':'') + (lblProfile.isSuggested?' data-label-suggest="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'') + (lblProfile.isPriceUp?' data-label-price="up"':'') + (lblProfile.isPriceDown?' data-label-price="down"':'');
   return `<article class="product${hasCp?' has-cp':''}"${lblAttrs} onclick="productCardClick(event,'${catId}',${idx},this)">
@@ -13032,6 +13088,7 @@ function productCardHTML(p, catId, idx){
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
+    ${cardProsListHTML(p) ? `<div class="product-divider card-pros-div"></div>${cardProsListHTML(p)}` : ''}
     ${cpTopHTML}
     ${cardTags.length?`<div class="product-tag-row card-fold">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     ${cp2HTML}
@@ -13591,18 +13648,12 @@ function renderSpotlightSlot(slot, layer, entry){
   visualEl.innerHTML = `<div class="sv-clip"><div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}</div>${prepOverlayHTML(p)}${spotLabelOverlay.html}`;
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
-  // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째, 숨김 제외)의 레이블에서 가져온다
-  // [수정] 요금 항목에서 비워둔 경우 공통값을 상속하므로 실제 적용값(peEff)을 사용
-  const firstPe = (p.priceEntries && p.priceEntries.find(pe=>!pe.hidden)) || null;
-  const airfare = firstPe ? peEff(p, firstPe, 'airfare') : _peCommonAirfare(p);
-  const meta=[
-    p.nights?`🗓 ${p.nights}`:'',
-    p.rounds?`⛳ ${p.rounds}`:'',
-    p.stay?`🏨 ${p.stay}`:'',
-    p.meals?`🍽 ${p.meals}`:'',
-    (airfare && airfare!=='none')?`✈️ <span class="${airfare==='excluded'?'airfare-excluded':'airfare-normal'}">${AIRFARE_TXT[airfare]||airfare}</span>`:''
-  ].filter(Boolean);
+  // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째, 숨김 제외)의 레이블에서 가져온다 — spotBasicMeta(팝업 카드와 공통)
+  const meta=spotBasicMeta(p);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
+  // [추가] 🚘 교통 · ✈️ 비행 · 이동 정보 + 구분선 아래 "AI 추천 정보 › 장점" — 입력한 값이 있을 때만
+  document.getElementById('spotMove'+sfx).innerHTML=cardMoveList(p, entry.catId).map(m=>`<span>${m.html}</span>`).join('');
+  document.getElementById('spotPros'+sfx).innerHTML=cardProsListHTML(p);
   const displayPrice=getDisplayPrice(p);
   document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
@@ -22037,9 +22088,20 @@ function showEditorsPickPopup(){
 function epSlideCardHTML(item, active){
   const { cat, product:p, idx } = item;
   const pe = (p.priceEntries||[]).find(pe=>!pe.hidden);
+  // [수정] 금액 — ① "금액 대신 문구로 표시"를 켰으면 그 문구(상품 카드·스팟라이트와 같은 규칙) ② 요금 항목에 판매가가 있으면 그 금액
+  // ③ 항목에 판매가가 없으면 고급편집 › 가격·태그의 "카드 표시 최저가"(+ ~부터 설정)
   const sale = pe ? (Number(pe.salePrice)||0) : 0;
   const saleSym = pe ? (CURRENCY_SYMBOL[pe.saleCurrency||'KRW']||'원') : '원';
   const saleFrom = pe && pe.saleFromLabel!==false ? ' ~부터' : '';
+  const fromPrice = Number(getDisplayPrice(p))||0;
+  const priceHTML = priceInquiryText(p) ? `<div class="popup-price popup-price-inquiry">${priceInquiryHTML(p)}</div>`
+    : (sale ? `<div class="popup-price"><b>${fmtPrice(sale)}</b><span>${saleSym}${saleFrom}</span></div>`
+    : (fromPrice>0 ? `<div class="popup-price"><b>${fmtPrice(fromPrice)}</b><span>원${p.fromLabel!==false?' ~부터':''}</span></div>` : ''));
+  // [수정] 대표 문구 — 요금 항목에 없으면 기본 정보(박수·라운드·숙박·식사·항공)를 노출
+  const headline = pe ? richToPlain(pe.headline||'') : '';
+  const basicMeta = headline ? [] : spotBasicMeta(p);
+  const moveItems = cardMoveList(p, cat.id);
+  const prosHTML = cardProsListHTML(p);
   const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);
@@ -22054,8 +22116,11 @@ function epSlideCardHTML(item, active){
     <div class="popup-body">
       <div class="popup-cat">${cat.ko} · ${cat.en}</div>
       <h3 class="popup-title">${escapeAttr(p.title)}</h3>
-      ${pe && richToPlain(pe.headline||'')?`<p class="popup-headline">${escapeAttr(richToPlain(pe.headline))}</p>`:''}
-      ${sale?`<div class="popup-price"><b>${fmtPrice(sale)}</b><span>${saleSym}${saleFrom}</span></div>`:''}
+      ${headline?`<p class="popup-headline">${escapeAttr(headline)}</p>`:''}
+      ${basicMeta.length?`<div class="popup-meta">${basicMeta.map(m=>`<span>${m}</span>`).join('')}</div>`:''}
+      ${priceHTML}
+      ${moveItems.length?`<div class="popup-move">${moveItems.map(m=>`<span>${m.html}</span>`).join('')}</div>`:''}
+      ${prosHTML?`<div class="popup-pros">${prosHTML}</div>`:''}
     </div>
   </div>`;
 }

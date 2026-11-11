@@ -9,4 +9,33 @@ Allow: /
 # Disallow: /admin
 # Disallow: /admin/*
 
+# ── 검색엔진·AI 검색 크롤러 명시적 허용 ──────────────────────────────
+# 위 기본 정책과 같은 "전체 허용"이며, AI 검색(ChatGPT·Perplexity·Claude·Copilot·Google)이
+# 상품 페이지(/golf/)를 읽고 인용할 수 있도록 이름을 밝혀 둡니다.
+# 크롤러마다 규칙이 따로 있으면 그 크롤러는 위 "User-agent: *" 대신 자기 이름의 규칙만 따릅니다.
+
+# OpenAI — 검색 노출(OAI-SearchBot)·학습(GPTBot)·사용자가 대화 중 요청한 조회(ChatGPT-User)
+User-agent: OAI-SearchBot
+User-agent: GPTBot
+User-agent: ChatGPT-User
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+Allow: /
+
+# Anthropic(Claude)
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+Allow: /
+
+# Google · Bing(Microsoft Copilot·ChatGPT 검색이 참고)
+User-agent: Googlebot
+User-agent: Bingbot
+Allow: /
+
+# 사이트맵(상품·목록 페이지 전체)과 AI용 사이트 요약(llms.txt)
 Sitemap: https://thegolftrend.co.kr/sitemap.xml
+# llms.txt: https://thegolftrend.co.kr/llms.txt

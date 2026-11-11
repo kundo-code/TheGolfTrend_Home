@@ -1651,6 +1651,7 @@
       ${countryBucketRows.length ? table(['국가·지역'].concat(BUCKETS), countryBucketRows.map(k=>[esc(k)].concat(BUCKETS.map(bk=>fmtN(T.filter(t=>countryKey(t)===k && partyBucket(t.party)===bk).length))))) : '<div class="crm-empty">자료가 없습니다.</div>'}
       <p class="crm-note">문의 건수와 인원, 예약 건수와 인원은 따로 집계합니다. 인원 미기록 문의는 "미확인"으로 둡니다.</p></div>
     ${visitorHTML(D)}
+    ${aiReferralHTML(D)}
     ${advisorHTML(D)}`;
   }
   // 홈페이지 방문자 반응(익명) — 관심 지표일 뿐 상담·예약 실적에는 넣지 않는다
@@ -1759,6 +1760,48 @@
       <div class="st-sm-l">상품별 반응</div>
       ${pRows.length ? table(['상품','상세 본 방문','정독 50% / 90%','추천 노출','추천 클릭률','상담 이동','전화 / 카톡(상세)'], pRows.map(r=>[esc(r.title), fmtN(r.detail.size), `${fmtN(r.d50+r.d90)} / ${fmtN(r.d90)}`, fmtN(r.rv), r.rv ? pct(r.rc, r.rv) : '—', fmtN(r.ri), `${fmtN(r.call)} / ${fmtN(r.kakao)}`])) : '<div class="crm-empty">상품 기록이 아직 없습니다.</div>'}
       <p class="crm-note">방문은 브라우저 탭 단위입니다. 같은 사람이 다른 날 다시 오면 다른 방문으로 셉니다. 비율은 방문 수가 적으면 크게 흔들리므로 방문 ${VISIT_MIN}회 이상부터 판단에 쓰세요.</p></div>`;
+  }
+
+  // ══ AI 검색 유입 — 방문 기록(page_view)의 유입 도메인(ref)·광고 태그(utm)로 ChatGPT·Perplexity·Gemini 등에서 온 방문을 따로 센다 ══
+  // 새로 쌓는 데이터는 없다. 기존 방문 기록을 읽어 분류만 한다(이름·연락처·IP 없음). 기간·권역 필터를 따른다
+  const AI_ENGINES = [
+    {key:'chatgpt', label:'ChatGPT', hosts:['chatgpt.com','chat.openai.com'], utm:/chatgpt|openai/i},
+    {key:'perplexity', label:'Perplexity', hosts:['perplexity.ai'], utm:/perplexity/i},
+    {key:'gemini', label:'Gemini', hosts:['gemini.google.com','bard.google.com'], utm:/gemini|bard/i},
+    {key:'claude', label:'Claude', hosts:['claude.ai'], utm:/claude/i},
+    {key:'copilot', label:'Copilot', hosts:['copilot.microsoft.com'], utm:/copilot/i}];
+  function aiEngineOf(e){
+    const c = crit(e), ref = String(c.ref||'').toLowerCase(), us = String((c.utm && c.utm.source)||'');
+    return AI_ENGINES.find(g=>g.hosts.some(h=>ref===h || ref.endsWith('.'+h)) || (us && g.utm.test(us))) || null;
+  }
+  function aiReferralHTML(D){
+    const ev = eventsInScope(D), pv = ev.filter(e=>e.event_type==='page_view');
+    const head = `<h5>🤖 AI 검색 유입 <span class="crm-note" style="font-weight:500">— ChatGPT·Perplexity·Gemini 등 AI 답변의 링크로 들어온 방문 · 익명 기록 · 기간·권역 필터 적용</span></h5>`;
+    if (!pv.length) return `<div class="crm-card">${head}<div class="crm-empty">방문 기록이 아직 없습니다(위 "홈페이지 방문 행동"과 같은 기록을 씁니다).</div></div>`;
+    const V = visitStats(ev), total = new Set(pv.map(e=>e.session_id)).size;
+    const pct = (a, b) => b ? `${Math.round(a/b*100)}%` : '—';
+    const rows = pv.map(e=>({e, g:aiEngineOf(e)})).filter(x=>x.g);
+    const aiS = new Set(rows.map(x=>x.e.session_id));
+    const detS = [...aiS].filter(x=>V.detail.has(x)), actS = [...aiS].filter(x=>V.action.has(x)), subS = [...aiS].filter(x=>V.submit.has(x));
+    const per = AI_ENGINES.map(g=>{ const ss = new Set(rows.filter(x=>x.g===g).map(x=>x.e.session_id)); return {g, n:ss.size, d:[...ss].filter(x=>V.detail.has(x)).length, a:[...ss].filter(x=>V.action.has(x)).length}; }).filter(r=>r.n).sort((a,b)=>b.n-a.n);
+    // 최근 30일 일별
+    const days = []; for (let i=29;i>=0;i--) days.push(new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul'}).format(new Date(Date.now()-i*86400000)));
+    const byDay = {}; rows.forEach(x=>{ const k = dayKeyKst(x.e.created_at); if (k) (byDay[k] = byDay[k] || new Set()).add(x.e.session_id); });
+    // AI로 들어온 방문이 본 상품(같은 탭에서 연 상품 상세)
+    const byP = {}; ev.filter(e=>e.event_type==='product_view' && aiS.has(e.session_id) && (e.product_uid || e.product_title)).forEach(e=>{ const k = e.product_uid || e.product_title; (byP[k] = byP[k] || {title:e.product_title||k, s:new Set()}).s.add(e.session_id); });
+    const pRows = Object.values(byP).map(x=>({label:x.title, value:x.s.size})).sort((a,b)=>b.value-a.value).slice(0, 8);
+    return `<div class="crm-card">${head}
+      <div class="st-tiles">
+        ${tile('AI 유입 방문', fmtN(aiS.size)+'회', `전체 방문 ${fmtN(total)}회 중 ${pct(aiS.size, total)}`)}
+        ${tile('상품 상세 본 방문', fmtN(detS.length)+'회', aiS.size ? `AI 유입의 ${pct(detS.length, aiS.size)}` : '—')}
+        ${tile('상담 행동(전화·카톡·신청)', fmtN(actS.length)+'회', aiS.size ? `AI 유입의 ${pct(actS.length, aiS.size)}` : '—')}
+        ${tile('상담 신청 제출', fmtN(subS.length)+'회', '같은 방문 기준')}
+      </div>
+      ${aiS.size ? `<div class="st-sm-l">AI 서비스별</div>${table(['AI 서비스','방문','상품 상세 본 방문','상담 행동','상담 행동 비율'], per.map(r=>[esc(r.g.label), fmtN(r.n), fmtN(r.d), fmtN(r.a), pct(r.a, r.n)]))}
+      <div class="st-sm-l">최근 30일 일별 AI 유입 방문</div>${dayBars(days, days.map(d=>(byDay[d]||new Set()).size))}
+      <div class="st-sm-l">AI로 들어온 방문이 본 상품</div>${pRows.length ? barList(pRows, '회') : '<div class="crm-empty">상품 상세를 본 기록이 아직 없습니다.</div>'}`
+      : `<div class="crm-empty">이 기간에는 AI 서비스에서 들어온 방문이 없습니다. AI 답변에 사이트가 인용되고 방문자가 링크를 눌러야 기록되므로, 처음에는 0이어도 정상입니다.</div>`}
+      <p class="crm-note">유입 도메인(chatgpt.com · perplexity.ai · gemini.google.com · claude.ai · copilot.microsoft.com 등)과 주소의 광고 태그(utm_source)로 구분합니다. 앱·브라우저 설정에 따라 유입 정보가 전달되지 않으면 "직접 방문"으로 잡혀 실제보다 적게 보일 수 있습니다. 현재는 <b>홈페이지 첫 화면으로 들어온 방문만 기록</b>하며, 검색 결과의 상품 정적 페이지(/golf/…) 방문은 기록하지 않습니다.</p></div>`;
   }
 
   // ══ 경영 진단·제안 — 통계 지표를 근거로 부족한 상품·보완할 조건을 제안(규칙 기반, 근거 숫자 표시) ══════

@@ -13,6 +13,7 @@
 | `/golf/<국가·권역>/` (예: `/golf/japan/`) | 국가·권역별 상품 목록 |
 | `/golf/<국가·권역>/<상품코드>/` | 상품 1개 — 한눈에 보기, 요금(요일별·공휴일), 골프장·숙소 정보, 포함·불포함·참고, 예약·취소 안내, 사진, 상담 버튼 |
 | `sitemap.xml` | 위 모든 페이지 + 홈 (자동 갱신) |
+| `llms.txt` | AI가 사이트를 빨리 파악하도록 돕는 요약 — 회사·상담 정보와 국가별 상품 목록(링크·일정·가격). 등록된 값만 쓰며 자동 갱신 |
 
 - **상품코드**는 상품 고유번호(uid) 기반이라 상품명을 바꿔도 주소가 바뀌지 않습니다. (예: `p-mvm8ojp62o4pit`)
 - 각 페이지에는 title·description·canonical·OG 이미지와 **Product / AggregateOffer / BreadcrumbList** 구조화 데이터(JSON-LD)가 들어 있고, 구조화 데이터의 내용은 같은 페이지에 보이는 내용과 같습니다.
@@ -42,6 +43,7 @@ Claude의 GitHub 연결은 워크플로 파일을 올릴 권한이 없어서, �
 ## 구조
 - `scripts/build-seo-pages.js` — 생성기. 홈페이지(index.html)를 헤드리스 브라우저로 열어 홈페이지의 함수(`getProducts`·`isProductVisible`·`aiMergedInfo` 등)로 "지금 보이는 상품"을 그대로 뽑아 HTML을 만듭니다. 그래서 관리자 입력값·기본 상품·노출 기간 규칙이 홈페이지와 항상 같습니다.
 - 자동 실행 설정 파일 — `docs/workflows/build-seo-pages.yml`(견본). **GitHub 저장소의 `.github/workflows/build-seo-pages.yml` 위치에 한 번만 직접 만들어 주세요**(아래 "자동 실행 켜기"). 매일/수동 실행하고 결과(`golf/`, `sitemap.xml`)를 `main`에 커밋합니다.
+- `scripts/indexnow.js` — 바뀐 페이지를 IndexNow로 알리는 스크립트(키 파일이 있을 때만 동작).
 - 안전장치: 상품이 갑자기 절반 넘게 줄어들면(데이터를 일부만 받은 경우) 기존 페이지를 지우지 않고 중단합니다.
 
 ## 내 컴퓨터/세션에서 직접 만들어 보기
@@ -56,5 +58,17 @@ NODE_PATH=scripts/node_modules node scripts/build-seo-pages.js
 - 구글 서치콘솔 "URL 검사"에 상품 페이지 주소를 넣어 "색인 생성 가능"인지, 구조화 데이터(제품)가 인식되는지 봅니다.
 - 구조화 데이터 검사: <https://search.google.com/test/rich-results>
 
-## 다음 단계(2단계 이후)
-`robots.txt`의 AI 크롤러 명시 허용, `llms.txt`, IndexNow, 상품별 FAQ·"한눈에 보기" 보강, AI 유입 집계는 이 PR에 포함되지 않았습니다.
+## 수집 경로(2단계)
+- **robots.txt**: OAI-SearchBot·GPTBot·ChatGPT-User(OpenAI), PerplexityBot·Perplexity-User, ClaudeBot·Claude-SearchBot·Claude-User(Anthropic), Googlebot, Bingbot을 이름으로 명시해 허용합니다. 기존 "전체 허용" 정책은 그대로입니다. 특정 크롤러를 막고 싶으면 해당 이름의 `Allow: /`를 `Disallow: /`로 바꾸면 됩니다.
+- **llms.txt**: 생성기가 `golf/`와 함께 자동으로 다시 만듭니다. 손으로 고치지 마세요(다음 실행 때 덮어씁니다).
+- **IndexNow**: 상품이 바뀐 날, 정적 페이지를 올린 직후 `scripts/indexnow.js`가 "내용이 진짜 바뀐 페이지"만 Bing 등에 알립니다("등록 정보 기준일"만 바뀐 페이지는 제외). 키 파일이 없으면 아무것도 하지 않습니다.
+
+### IndexNow 켜는 방법 (한 번만)
+1. <https://www.bing.com/webmasters> → 사이트 `thegolftrend.co.kr` 선택 → 왼쪽 **IndexNow** → **키 생성**(또는 "API 키 가져오기"). 키는 영문·숫자·하이픈 8~128자입니다.
+2. 그 키 문자열을 Claude에게 알려 주세요. 저장소 맨 위에 `<키>.txt`(파일 안에도 같은 키 한 줄)를 만들어 드립니다. 키는 비밀번호가 아니라 누구나 볼 수 있는 공개 파일입니다.
+3. 파일이 사이트에 올라가면 `https://thegolftrend.co.kr/<키>.txt`가 열리는지 확인합니다.
+4. 워크플로 파일(`.github/workflows/build-seo-pages.yml`)을 `docs/workflows/build-seo-pages.yml` 내용으로 **한 번 더 교체**해야 "IndexNow 알림" 단계와 `llms.txt` 커밋이 자동으로 동작합니다(위 "자동 실행 켜기"와 같은 방법으로, 기존 파일을 열어 내용을 바꾼 뒤 커밋).
+5. 시험: `node scripts/indexnow.js --dry-run --base <이전커밋> --head <최근커밋>` — 알릴 주소만 보여 주고 전송하지 않습니다.
+
+## 다음 단계(3단계 이후)
+상품별 FAQ·"한눈에 보기" 보강, AI 유입 집계는 아직 포함되지 않았습니다.

@@ -9,7 +9,7 @@
  *   (getProducts·isProductVisible 등)로 "지금 홈페이지에 보이는 상품"을 그대로 뽑는다. 상품 데이터는 Supabase에서 받아 주입한다.
  *   → 관리자 입력값·기본 상품·노출 기간(만료 상품 숨김) 규칙이 홈페이지와 항상 같다.
  *
- * 만드는 것:  golf/index.html(전체) · golf/overseas/ · golf/domestic/ · golf/<국가·권역>/ · golf/<국가·권역>/<상품코드>/ · sitemap.xml
+ * 만드는 것:  golf/index.html(전체) · golf/overseas/ · golf/domestic/ · golf/<국가·권역>/ · golf/<국가·권역>/<상품코드>/ · sitemap.xml · llms.txt
  * 원칙:  등록된 값만 쓴다. 비어 있는 항목은 줄 자체를 만들지 않는다(숫자·가격·시기를 만들어 내지 않음).
  *        구조화 데이터(JSON-LD)는 같은 페이지에 보이는 내용과 1:1로 맞춘다.
  *
@@ -407,6 +407,41 @@ ${urls.map(u => `  <url><loc>${esc(u.loc)}</loc><lastmod>${u.lastmod}</lastmod><
 `;
 }
 
+// llms.txt — AI가 사이트 구조와 주요 페이지를 빨리 파악하도록 돕는 요약(회사 소개 + 국가별 상품 목록). 화면에 등록된 값만 사용한다.
+function llmsTxt(data, stateDate) {
+  const all = data.products;
+  const by = r => all.filter(p => p.region === r);
+  const seg = data.company.join(' · ').split(' · ').map(x => x.trim()).filter(x => x && !/계좌번호|책임자|보증보험|보증금|증서/.test(x));
+  const line = p => {
+    const meta = [p.nightsCount, p.rounds, p.lodge, p.airfare].filter(Boolean).join(' · ');
+    const price = priceText(p);
+    const extra = [meta, price].filter(Boolean).join(' · ');
+    return `- [${titleFull(p).replace(/[\[\]]/g, m => m === '[' ? '(' : ')')}](${ORIGIN}${urlProduct(p.catId, codeOf(p.uid))})${extra ? ': ' + extra : ''}`;
+  };
+  const out = [];
+  out.push('# THE GOLF TREND (더골프트렌드)', '');
+  out.push(`> (주)더골프트렌드가 상담·예약을 받는 국내·해외 골프여행 패키지 ${all.length}개의 안내입니다. 상품마다 일정·요금·포함 사항·골프장과 숙소 정보를 확인할 수 있습니다. 요금·일정은 변동될 수 있으니 상담 시 최종 확인이 필요합니다. (등록 정보 기준일 ${stateDate})`, '');
+  out.push('## 회사·상담', '');
+  seg.forEach(x => out.push(`- ${x}`));
+  if (data.contact.phone) out.push(`- 전화 상담: ${data.contact.phone}`);
+  if (data.contact.kakaoChat) out.push(`- 카카오톡 상담: ${data.contact.kakaoChat}`);
+  out.push('', '## 주요 페이지', '');
+  out.push(`- [홈페이지](${ORIGIN}/): 회사 소개와 상담 안내`);
+  out.push(`- [골프 패키지 전체 목록](${ORIGIN}/golf/): 국내·해외 상품 ${all.length}개`);
+  ['overseas', 'domestic'].forEach(r => { if (by(r).length) out.push(`- [${regionName(r)}](${ORIGIN}/golf/${r}/): ${by(r).length}개`); });
+  ['overseas', 'domestic'].forEach(r => {
+    if (!by(r).length) return;
+    out.push('', `## ${regionName(r)}`);
+    data.cats[r].filter(c => by(r).some(p => p.catId === c.id)).forEach(c => {
+      const ps = by(r).filter(p => p.catId === c.id);
+      out.push('', `### [${c.ko}](${ORIGIN}/golf/${c.id}/) (${ps.length}개)`, '');
+      ps.forEach(p => out.push(line(p)));
+    });
+  });
+  out.push('');
+  return out.join('\n');
+}
+
 (async () => {
   const state = await loadSiteState();
   const stateDate = kstDate(state.updated_at || new Date().toISOString());
@@ -419,6 +454,7 @@ ${urls.map(u => `  <url><loc>${esc(u.loc)}</loc><lastmod>${u.lastmod}</lastmod><
   fs.rmSync(OUT, { recursive: true, force: true });
   pages.forEach(p => { const f = path.join(ROOT, p.path, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, p.html); });
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap(pages, stateDate));
+  fs.writeFileSync(path.join(ROOT, 'llms.txt'), llmsTxt(data, stateDate));
   const cnt = { overseas: data.products.filter(p => p.region === 'overseas').length, domestic: data.products.filter(p => p.region === 'domestic').length };
   console.log(`상품 ${data.products.length}개(해외 ${cnt.overseas} · 국내 ${cnt.domestic}) → 페이지 ${pages.length}개, 기준일 ${stateDate}`);
 })().catch(e => { console.error('생성 실패:', e.message); process.exit(1); });

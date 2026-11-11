@@ -24,6 +24,16 @@
 - **비어 있는 항목은 줄 자체를 만들지 않습니다**(값을 만들어 내지 않음).
 - "등록 정보 기준일"은 관리자가 마지막으로 저장한 날짜입니다.
 
+## 자동 실행 켜기 (한 번만)
+Claude의 GitHub 연결은 워크플로 파일을 올릴 권한이 없어서, 아래 순서로 직접 만들어 주세요(2분).
+1. GitHub 저장소 `kundo-code/TheGolfTrend_Home` → **Add file ▾ → Create new file** (이 PR을 병합한 뒤 `main` 브랜치에서)
+2. 파일 이름 칸에 `.github/workflows/build-seo-pages.yml` 입력 (`/`를 치면 폴더가 만들어집니다)
+3. 저장소의 `docs/workflows/build-seo-pages.yml` 내용을 전부 복사해 붙여 넣기
+4. **Commit changes…** → `main`에 바로 커밋
+5. **Actions** 탭 → 왼쪽 "상품 정적 페이지 생성" → **Run workflow**로 한 번 실행해 초록색 체크가 뜨는지 확인
+   - 처음 실행이 권한 오류(`Permission denied` / `403`)로 실패하면: 저장소 **Settings → Actions → General → Workflow permissions**에서 **Read and write permissions**를 선택하고 저장한 뒤 다시 실행하세요.
+이 설정을 하지 않으면 페이지는 이 PR을 병합한 시점의 상품 정보로 고정되고(자동으로 갱신되지 않음), 직접 갱신하려면 위 "내 컴퓨터/세션에서 직접 만들어 보기"를 실행해야 합니다.
+
 ## 언제 갱신되나
 - **매일 새벽 4시(한국 시간)** 자동 실행 + 수동 실행. 상품 정보가 바뀐 날만 커밋됩니다(바뀐 게 없으면 아무 일도 없음).
 - 지금 바로 반영하고 싶을 때: GitHub 저장소 → **Actions** → "상품 정적 페이지 생성" → **Run workflow**. (1~3분 뒤 사이트에 반영)
@@ -31,7 +41,7 @@
 
 ## 구조
 - `scripts/build-seo-pages.js` — 생성기. 홈페이지(index.html)를 헤드리스 브라우저로 열어 홈페이지의 함수(`getProducts`·`isProductVisible`·`aiMergedInfo` 등)로 "지금 보이는 상품"을 그대로 뽑아 HTML을 만듭니다. 그래서 관리자 입력값·기본 상품·노출 기간 규칙이 홈페이지와 항상 같습니다.
-- `.github/workflows/build-seo-pages.yml` — 매일/수동 실행. 결과(`golf/`, `sitemap.xml`)를 `main`에 커밋.
+- 자동 실행 설정 파일 — `docs/workflows/build-seo-pages.yml`(견본). **GitHub 저장소의 `.github/workflows/build-seo-pages.yml` 위치에 한 번만 직접 만들어 주세요**(아래 "자동 실행 켜기"). 매일/수동 실행하고 결과(`golf/`, `sitemap.xml`)를 `main`에 커밋합니다.
 - 안전장치: 상품이 갑자기 절반 넘게 줄어들면(데이터를 일부만 받은 경우) 기존 페이지를 지우지 않고 중단합니다.
 
 ## 내 컴퓨터/세션에서 직접 만들어 보기

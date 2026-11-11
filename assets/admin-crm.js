@@ -1801,7 +1801,7 @@
       <div class="st-sm-l">최근 30일 일별 AI 유입 방문</div>${dayBars(days, days.map(d=>(byDay[d]||new Set()).size))}
       <div class="st-sm-l">AI로 들어온 방문이 본 상품</div>${pRows.length ? barList(pRows, '회') : '<div class="crm-empty">상품 상세를 본 기록이 아직 없습니다.</div>'}`
       : `<div class="crm-empty">이 기간에는 AI 서비스에서 들어온 방문이 없습니다. AI 답변에 사이트가 인용되고 방문자가 링크를 눌러야 기록되므로, 처음에는 0이어도 정상입니다.</div>`}
-      <p class="crm-note">유입 도메인(chatgpt.com · perplexity.ai · gemini.google.com · claude.ai · copilot.microsoft.com 등)과 주소의 광고 태그(utm_source)로 구분합니다. 앱·브라우저 설정에 따라 유입 정보가 전달되지 않으면 "직접 방문"으로 잡혀 실제보다 적게 보일 수 있습니다. 현재는 <b>홈페이지 첫 화면으로 들어온 방문만 기록</b>하며, 검색 결과의 상품 정적 페이지(/golf/…) 방문은 기록하지 않습니다.</p></div>`;
+      <p class="crm-note">유입 도메인(chatgpt.com · perplexity.ai · gemini.google.com · claude.ai · copilot.microsoft.com 등)과 주소의 광고 태그(utm_source)로 구분합니다. 앱·브라우저 설정에 따라 유입 정보가 전달되지 않으면 "직접 방문"으로 잡혀 실제보다 적게 보일 수 있습니다. 홈페이지 첫 화면과 상품 정적 페이지(/golf/…)로 들어온 방문을 모두 기록합니다(정적 페이지는 방문과 상품 상세 조회까지만 기록하며, 전화·카카오톡 버튼 클릭은 아직 기록하지 않습니다).</p></div>`;
   }
 
   // ══ 경영 진단·제안 — 통계 지표를 근거로 부족한 상품·보완할 조건을 제안(규칙 기반, 근거 숫자 표시) ══════

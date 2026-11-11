@@ -58,5 +58,25 @@ footer.site{background:var(--navy);color:#cbd5e1;font-size:.82rem;padding:22px 2
 <p>주소: 서울특별시 송파구 충민로 66, 가든파이브라이프 7층 리빙관 7074호 · 고객센터: 707-7500-5981</p>
 <p>등록 정보 기준일 2026-11-11 · 요금·일정은 변동될 수 있으니 상담 시 최종 확인해 주세요.</p>
 </div></footer>
+<script>
+(function(){try{
+var U="https://zjanojlayndtgmzohpyb.supabase.co/rest/v1/tgt_site_events",K="sb_publishable_MWfeu2Gllb2YmqKEVl8jFw_57SbCMmr",P=null;
+if(navigator.webdriver||/bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit/i.test(navigator.userAgent||''))return;
+for(var i=0;i<localStorage.length;i++){var n=localStorage.key(i);if(/^sb-.+-auth-token$/.test(n)&&localStorage.getItem(n))return;}
+var sid=sessionStorage.getItem('tgt_sid');
+if(!sid){sid=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);sessionStorage.setItem('tgt_sid',sid);}
+sid=sid.slice(0,64);
+var path=location.pathname.slice(0,200);
+function send(type,row){fetch(U,{method:'POST',keepalive:true,headers:{apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify([Object.assign({session_id:sid,event_type:type,page:path},row)])}).catch(function(){});}
+setTimeout(function(){try{
+if(!sessionStorage.getItem('tgt_pv')){sessionStorage.setItem('tgt_pv','1');
+var ref='direct';try{if(document.referrer){var h=new URL(document.referrer).hostname.replace(/^www\./,'');ref=h===location.hostname.replace(/^www\./,'')?'internal':h;}}catch(e){}
+var q=new URLSearchParams(location.search),utm={};['utm_source','utm_medium','utm_campaign'].forEach(function(k){var v=q.get(k);if(v)utm[k.slice(4)]=v.slice(0,40);});
+var c={ref:ref.slice(0,80),device:window.matchMedia&&window.matchMedia('(max-width:780px)').matches?'mobile':'desktop',landing:'static'};if(Object.keys(utm).length)c.utm=utm;
+send('page_view',{criteria:c});}
+if(P){var f='tgt_pw_'+P.product_uid;if(!sessionStorage.getItem(f)){sessionStorage.setItem(f,'1');send('product_view',Object.assign({criteria:{from:'static'}},P));}}
+}catch(e){}},1500);
+}catch(e){}})();
+</script>
 </body>
 </html>

@@ -215,7 +215,35 @@ ul.list{list-style:none;margin:0;padding:0}ul.list li{background:#fff;border:1px
 footer.site{background:var(--navy);color:#cbd5e1;font-size:.82rem;padding:22px 20px}footer.site .in{max-width:1000px;margin:0 auto}footer.site p{margin:3px 0}
 @media(max-width:600px){h1{font-size:1.35rem}table.facts th{width:96px}header.site nav{margin-left:0}}`;
 
-function layout({ title, description, canonicalPath, ogImage, jsonLd, body, crumbs, data, stateDate }) {
+// 방문 기록(익명) — 홈페이지(index.html)와 같은 방식으로 tgt_site_events에 남긴다: 유입 도메인·기기·광고 태그(utm)·페이지 경로(상품 페이지면 상품 조회 1건).
+// 이름·연락처·IP·쿠키 없음(탭 단위 세션 ID만 sessionStorage에 저장). 관리자 로그인 중·검색 로봇·자동화 브라우저는 기록하지 않고, 저장에 실패해도 페이지 동작에는 영향이 없다.
+// 상품 정적 페이지로 들어온 AI·검색 유입이 관리자 통계("AI 검색 유입")에 잡히게 하려는 목적. 홈페이지와 같은 탭 플래그(tgt_sid·tgt_pv)를 써서 한 탭의 방문을 두 번 세지 않는다
+function trackScript(track) {
+  const url = readConst('SUPABASE_URL') + '/rest/v1/tgt_site_events', key = readConst('SUPABASE_ANON_KEY');
+  const prod = track ? JSON.stringify({ product_uid: track.uid, product_title: String(track.title || '').slice(0, 200), product_cat: track.cat, travel_region: track.region }) : 'null';
+  return `<script>
+(function(){try{
+var U=${JSON.stringify(url)},K=${JSON.stringify(key)},P=${prod};
+if(navigator.webdriver||/bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit/i.test(navigator.userAgent||''))return;
+for(var i=0;i<localStorage.length;i++){var n=localStorage.key(i);if(/^sb-.+-auth-token$/.test(n)&&localStorage.getItem(n))return;}
+var sid=sessionStorage.getItem('tgt_sid');
+if(!sid){sid=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);sessionStorage.setItem('tgt_sid',sid);}
+sid=sid.slice(0,64);
+var path=location.pathname.slice(0,200);
+function send(type,row){fetch(U,{method:'POST',keepalive:true,headers:{apikey:K,Authorization:'Bearer '+K,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify([Object.assign({session_id:sid,event_type:type,page:path},row)])}).catch(function(){});}
+setTimeout(function(){try{
+if(!sessionStorage.getItem('tgt_pv')){sessionStorage.setItem('tgt_pv','1');
+var ref='direct';try{if(document.referrer){var h=new URL(document.referrer).hostname.replace(/^www\\./,'');ref=h===location.hostname.replace(/^www\\./,'')?'internal':h;}}catch(e){}
+var q=new URLSearchParams(location.search),utm={};['utm_source','utm_medium','utm_campaign'].forEach(function(k){var v=q.get(k);if(v)utm[k.slice(4)]=v.slice(0,40);});
+var c={ref:ref.slice(0,80),device:window.matchMedia&&window.matchMedia('(max-width:780px)').matches?'mobile':'desktop',landing:'static'};if(Object.keys(utm).length)c.utm=utm;
+send('page_view',{criteria:c});}
+if(P){var f='tgt_pw_'+P.product_uid;if(!sessionStorage.getItem(f)){sessionStorage.setItem(f,'1');send('product_view',Object.assign({criteria:{from:'static'}},P));}}
+}catch(e){}},1500);
+}catch(e){}})();
+</script>`;
+}
+
+function layout({ title, description, canonicalPath, ogImage, jsonLd, body, crumbs, data, stateDate, track }) {
   const canonical = ORIGIN + canonicalPath;
   const crumbHtml = crumbs.map((c, i) => i === crumbs.length - 1 ? `<span aria-current="page">${esc(c.name)}</span>` : `<a href="${esc(c.path)}">${esc(c.name)}</a>`).join(' › ');
   const ld = [].concat(jsonLd || [], { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: abs(c.path) })) });
@@ -255,6 +283,7 @@ ${body}
 ${data.company.map(l => `<p>${esc(l)}</p>`).join('\n')}
 <p>등록 정보 기준일 ${esc(stateDate)} · 요금·일정은 변동될 수 있으니 상담 시 최종 확인해 주세요.</p>
 </div></footer>
+${trackScript(track)}
 </body>
 </html>
 `;
@@ -404,7 +433,7 @@ ${cta(p, data)}`;
     ...(props.length ? { additionalProperty: props } : {}), ...(offers ? { offers } : {}) };
 
   const crumbs = [{ name: '홈', path: '/' }, { name: regionName(p.region), path: `/golf/${p.region}/` }, { name: p.catKo, path: `/golf/${p.catId}/` }, { name: titleFull(p), path: pagePath }];
-  return { path: pagePath, html: layout({ title: `${titleFull(p)} | ${p.catKo} 골프여행 패키지 - THE GOLF TREND`, description: descOf(p), canonicalPath: pagePath, ogImage: image, jsonLd: faq.length ? [product, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }] : product, body, crumbs, data, stateDate }) };
+  return { path: pagePath, html: layout({ title: `${titleFull(p)} | ${p.catKo} 골프여행 패키지 - THE GOLF TREND`, description: descOf(p), canonicalPath: pagePath, ogImage: image, track: { uid: p.uid, title: p.title, cat: p.catId, region: p.region }, jsonLd: faq.length ? [product, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }] : product, body, crumbs, data, stateDate }) };
 }
 
 function listItems(ps) {

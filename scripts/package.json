@@ -1,0 +1,8 @@
+{
+  "name": "tgt-seo-pages",
+  "private": true,
+  "description": "상품별 정적 페이지 생성(scripts/build-seo-pages.js) — GitHub Actions에서 사용",
+  "dependencies": {
+    "playwright": "^1.49.1"
+  }
+}

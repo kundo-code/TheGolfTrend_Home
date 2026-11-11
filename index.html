@@ -1518,6 +1518,7 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .foot-grid p{color:rgba(10,23,48,.6);font-size:.9rem;margin-top:14px;max-width:320px}
 .foot-grid h4{color:var(--pine-deep);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:.95rem;font-weight:500;margin-bottom:18px}
 .foot-grid ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.dest-seo-link{margin-top:6px;font-size:.84rem}.dest-seo-link a{color:var(--gold-deep);font-weight:700;text-decoration:underline}.dest-seo-link span{color:rgba(10,23,48,.5)}
 .foot-grid a{color:rgba(10,23,48,.6);font-size:.9rem;transition:color .2s;cursor:pointer}
 .foot-grid a:hover{color:var(--gold-deep)}
 .foot-socials{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
@@ -4492,6 +4493,13 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .adv-body input.adv-filled,.adv-body select.adv-filled,.adv-body textarea.adv-filled{box-shadow:inset 4px 0 0 #16a34a,var(--nm-shadow-inset);font-weight:700;color:#064e3b}
 .adv-body input.adv-filled:focus,.adv-body select.adv-filled:focus,.adv-body textarea.adv-filled:focus{box-shadow:inset 4px 0 0 #16a34a,var(--nm-shadow-inset),0 0 0 2px var(--nm-blue)}
 .adv-body .rtf-editable.adv-filled{box-shadow:inset 4px 0 0 #16a34a}
+/* [수정] 이미지 갤러리 사진 위 "사진 설명" 입력칸은 어두운 반투명 바 위에 흰 글씨 — 위의 입력됨(.adv-filled) 표시(초록 글씨·안쪽 그림자)가 덮어써서 글자가 어둡게 보이던 것을 바로잡는다.
+   입력 여부는 초록 테두리 대신 얇은 초록 윗줄로 구분한다 */
+.adv-body .gallery-thumb input.g-cap,.adv-body .gallery-thumb input.g-cap.adv-filled,.adv-body .gallery-thumb input.g-cap.adv-empty{
+  color:#fff;font-weight:600;background:rgba(10,23,48,.86)!important;box-shadow:none;outline:none;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.adv-body .gallery-thumb input.g-cap.adv-filled{border-top:2px solid #4ade80}
+.adv-body .gallery-thumb input.g-cap::placeholder{color:rgba(255,255,255,.72);font-weight:500}
+.adv-body .gallery-thumb input.g-cap:focus,.adv-body .gallery-thumb input.g-cap.adv-filled:focus,.adv-body .gallery-thumb input.g-cap.adv-empty:focus{background:rgba(10,23,48,.96)!important;box-shadow:inset 0 0 0 2px #60a5fa}
 .adv-body label.adv-lab-filled{color:#065f46}
 .adv-body label.adv-lab-filled::before{content:'✓';display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-right:5px;border-radius:50%;background:#16a34a;color:#fff;font-size:.62rem;font-weight:800;vertical-align:1px;letter-spacing:0}
 .ai-link-box{margin:10px 0 6px;padding:12px;border-radius:12px;background:rgba(10,23,48,.03);border:1px dashed rgba(10,23,48,.18)}
@@ -5694,6 +5702,8 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
         <span class="tag">Destinations</span>
         <h2>권역별·국가별 <em>골프 여행지</em></h2>
         <p>가고 싶은 지역을 먼저 고르세요. 상품은 시즌·요일·티오프 타임에 따라 요금이 변동되며, 표시된 금액은 최저가 기준입니다.</p>
+        <!-- 검색엔진·AI가 따라갈 수 있는 상품별 페이지(scripts/build-seo-pages.js가 자동 생성) 입구 -->
+        <p class="dest-seo-link"><a href="/golf/">골프 패키지 전체 목록 보기 →</a> <span>(국내·해외 상품별 요금·일정·포함 사항)</span></p>
       </div>
     </div>
     <!-- [수정] 국내/해외 여행지를 탭 전환이 아닌, 해외 → 국내 순서로 구분선과 간격을 두고 항상 함께 노출 -->
@@ -6066,6 +6076,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     <div><h4>Support</h4><ul>
       <li><a href="#booking">티타임 상담</a></li><li><a href="#blog">여행 이야기</a></li>
       <li><a href="#links">연계 채널</a></li><li><a href="#about">회사 소개</a></li>
+      <li><a href="/golf/">골프 패키지 전체 목록</a></li><li><a href="/golf/overseas/">해외 골프 패키지</a></li><li><a href="/golf/domestic/">국내 골프 패키지</a></li>
     </ul></div>
   </div>
 
@@ -18112,8 +18123,8 @@ function advBasicHTML(p){
           <div class="adv-collapsible-body">
             <div class="grid-2">
               <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
-              <div class="full"><div class="mw-label-row"><label>⛳ 호텔⇔골프장</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
               <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'🚌 공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+              <div class="full"><div class="mw-label-row"><label>⛳ 호텔⇔골프장</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
             </div>
           </div>
         </details>

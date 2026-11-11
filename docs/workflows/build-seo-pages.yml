@@ -1,0 +1,63 @@
+# 검색엔진·AI 검색용 상품 정적 페이지 자동 생성
+# - 매일 새벽 4시(한국 시간)와 수동 실행("Run workflow") 때 Supabase의 상품 데이터를 읽어 golf/ 페이지와 sitemap.xml을 다시 만든다.
+# - 바뀐 내용이 있을 때만 커밋·푸시하므로, 상품을 고치지 않은 날은 아무 일도 일어나지 않는다.
+# - 만드는 방법: scripts/build-seo-pages.js (설명: docs/seo-static-pages.md)
+name: 상품 정적 페이지 생성
+
+on:
+  schedule:
+    - cron: '0 19 * * *'   # UTC 19:00 = 한국 시간 04:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: seo-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 생성기 설치(Playwright)
+        run: |
+          cd scripts
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: 상품 페이지·사이트맵 생성
+        run: NODE_PATH=scripts/node_modules node scripts/build-seo-pages.js
+
+      - name: 바뀐 내용이 있으면 커밋
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add golf sitemap.xml
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "변경 없음 — 커밋하지 않습니다."
+          else
+            git commit -m "상품 정적 페이지 자동 갱신"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # GitHub Pages가 이 푸시로 자동 배포되지 않는 설정일 때를 대비해 배포를 직접 요청(실패해도 무시)
+      - name: Pages 배포 요청
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

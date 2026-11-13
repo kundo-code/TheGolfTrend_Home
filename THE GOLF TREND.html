@@ -1180,6 +1180,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-departure-day-label .dd-value{color:#000}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
+/* 요금 항목이 없는 상품의 통합 요금표 — 요일별·공휴일 요금표는 예전 "출발 요일별 요금" 섹션과 같은 폭·간격으로(카드 안쪽 여백만큼 바깥으로 넓혀 왼쪽으로 쏠리지 않게) */
+.pd-price-entry.pd-price-merged .pd-day-price-table,.pd-price-entry.pd-price-merged .pd-holiday-price-row{margin-left:-13px;margin-right:-13px}
 .pd-pe-specific-dates{margin-top:6px;display:flex;flex-wrap:wrap}
 .pd-pe-specific-dates .dd-value{font-weight:600;line-height:1.5}
 .pd-pe-specific-dates .sd-sat{color:#1877F2}.pd-pe-specific-dates .sd-sun{color:#DC2626}.pd-pe-specific-dates .sd-wk{color:#000}
@@ -15577,7 +15579,7 @@ function renderProductDetail(p,cat,idx){
         html += `<div class="pd-slot">
       <div class="pd-section-title">💳 요금표</div>
       <div class="pd-price-entries">
-        <div class="pd-price-entry layout-card">
+        <div class="pd-price-entry layout-card pd-price-merged">
           <div class="prices">
             ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">원${p.fromLabel!==false?' ~부터':''}</span></span>${priceDiscountPct(p.fromOriginal, fbFrom) ? `<span class="price-original">${fmtPrice(p.fromOriginal)}원${p.fromLabel!==false?' ~부터':''}</span><span class="discount">${priceDiscountPct(p.fromOriginal, fbFrom)}% ↓</span>` : ''}` : '')}
           </div>

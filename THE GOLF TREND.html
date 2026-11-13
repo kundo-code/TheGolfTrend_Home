@@ -1056,6 +1056,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry:not(.pd-price-merged) .prices .price-original,.pd-price-entry:not(.pd-price-merged) .prices .discount{order:1}
 .pd-price-entry:not(.pd-price-merged) .prices .price-sale{order:2;flex:0 0 100%;text-align:right}
 .pd-price-entry:not(.pd-price-merged) .prices .price-sale{font-size:calc(2.184rem + 1.5pt)} /* 아래쪽 금액 +1.5pt */
+/* [수정] 관리자에서 "별도 문의"를 켠 상품은 요금 항목에 판매가가 없을 때 그 문구를 금액 자리에 노출(상품 카드와 같은 글꼴·굵기) */
+.pd-price-entry:not(.pd-price-merged) .prices .price-sale.price-inquiry{font-family:'Pretendard','Noto Sans KR',sans-serif;font-weight:800;letter-spacing:.01em;font-size:1.5rem}
 .pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.184rem;font-weight:500;color:var(--pine-deep)}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.9rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
@@ -15799,7 +15801,7 @@ function renderProductDetail(p,cat,idx){
             ${peHeadlineHTML(pe)}
             ${blk('badges')}
             <div class="prices">
-              ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:''}
+              ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:(priceInquiryText(p)?`<span class="price-sale price-inquiry">${priceInquiryHTML(p)}</span>`:'')}
               ${orig&&orig>sale?`<span class="price-original">${fmtPrice(orig)}${origSym}${origFrom}</span>`:''}
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
             </div>

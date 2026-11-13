@@ -1049,14 +1049,19 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .emph.special{background:rgba(255,107,74,.12);color:#D9502E;border:1px solid rgba(255,107,74,.35)}
 .pd-price-entry .pe-headline{display:block;box-sizing:border-box;width:100%;margin-top:3px;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);font-weight:600;font-size:calc(.98rem + 1pt);line-height:1.35;overflow-wrap:anywhere;box-shadow:0 2px 6px rgba(10,23,48,.1),0 1px 2px rgba(10,23,48,.06),inset 0 -1px 0 rgba(10,23,48,.035)} /* 대표 문구 — 연한 색상 박스(박스 가로폭 전체)에 그림자 음영으로 가독성↑, 글자 +1pt, 살짝 아래로 */
 .pd-price-entry .pe-headline.no-shade{box-shadow:none}
+/* [수정] 요금 항목 카드: 정가·할인율은 위 줄, 금액(원 포함)은 그 아래 카드 맨 오른쪽에 정렬하고 글자가 중간에서 줄바꿈되지 않게 한다(요금 항목이 없을 때 보이는 통합 요금표 맨 위 금액은 기존 그대로) */
 .pd-price-entry .prices{display:flex;align-items:baseline;gap:10px;margin-top:2px}
+.pd-price-entry:not(.pd-price-merged) .prices{flex-wrap:wrap;justify-content:flex-end;gap:2px 10px}
+.pd-price-entry:not(.pd-price-merged) .prices > span{white-space:nowrap}
+.pd-price-entry:not(.pd-price-merged) .prices .price-original,.pd-price-entry:not(.pd-price-merged) .prices .discount{order:1}
+.pd-price-entry:not(.pd-price-merged) .prices .price-sale{order:2;flex:0 0 100%;text-align:right}
 .pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.184rem;font-weight:500;color:var(--pine-deep)}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.9rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
 .pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
 .pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
 /* [수정] "2인 이상" 배지 오른쪽에 "항공 포함 여부"·"체류일" 배지를 함께 두기 위해, 오른쪽 정렬은
    개별 배지가 아니라 이 배지들을 담는 래퍼(.pd-pe-badges)에 준다 */
-.pd-pe-badges{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pd-pe-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap} /* [수정] 박수·인원·항공 배지는 요금 항목 제목(○박○일 일정-출발) 바로 아래에 왼쪽부터 */
 .pd-price-entry .min-people,.pd-price-entry .pe-flag-badge{font-size:.72rem;color:var(--gold-deep);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px}
 /* [수정] 요금 항목별 라운드·숙박·식사 — 금액·최소 인원(.prices) 바로 아래 구분선을 두고 노출 */
 .pd-pe-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px;font-size:.82rem;color:rgba(10,23,48,.72)}
@@ -15791,11 +15796,11 @@ function renderProductDetail(p,cat,idx){
           return dividerHTML + `<div class="pd-price-entry layout-${pe.layout||'card'}" ${clickAttr}>
             ${emphArr.length?`<span class="emph-group">${emphArr.map(t=>`<span class="emph ${emphCls(t)}">${escapeAttr(t)}</span>`).join('')}</span>`:''}
             ${peHeadlineHTML(pe)}
+            ${blk('badges')}
             <div class="prices">
               ${sale?`<span class="price-sale">${fmtPrice(sale)}<span class="unit">${saleSym}${saleFrom}</span></span>`:''}
               ${orig&&orig>sale?`<span class="price-original">${fmtPrice(orig)}${origSym}${origFrom}</span>`:''}
               ${discount?`<span class="discount">${discount}% ↓</span>`:''}
-              ${blk('badges')}
             </div>
             ${blk('meta')}
             ${blk('dayTable')}

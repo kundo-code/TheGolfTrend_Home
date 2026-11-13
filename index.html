@@ -1077,14 +1077,14 @@ section.block{padding:100px 24px;position:relative}
 .pd-day-price-cell .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:var(--pine-deep);white-space:nowrap}
 .pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
 .pd-day-price-cell .dt{margin-top:4px;font-size:.78rem;font-weight:600;line-height:1.35;color:rgba(10,23,48,.55);word-break:keep-all}
-/* [수정] 3칸 이상 요일별 요금표 — 칸마다 요일·금액·정가·지정일을 같은 높이의 행(서브그리드)에 놓아 금액과 지정일이 같은 선에서 시작하게 하고,
-   금액·정가·지정일은 같은 왼쪽 선에서 시작(요일 글자는 그 위에서 가운데) */
+/* [수정] 3칸 이상 요일별 요금표 — 칸마다 요일·금액·정가·지정일을 같은 높이의 행(서브그리드)에 놓아 칸이 달라도 금액과 지정일이 같은 선에서 시작하게 하고,
+   금액("원" 포함)·정가는 칸 가운데, 지정일은 칸 가운데에 놓은 덩어리 안에서 왼쪽 정렬 */
 .pd-day-price-table.dp-nm{display:grid;grid-auto-rows:auto}
-.pd-day-price-table.dp-nm .pd-day-price-cell{display:grid;grid-row:span 4;grid-template-rows:subgrid;justify-content:center;justify-items:start;row-gap:0;min-width:0}
-.pd-day-price-table.dp-nm .pd-day-price-cell .d{grid-row:1;align-self:start;justify-self:center;text-align:center}
-.pd-day-price-table.dp-nm .pd-day-price-cell .v{grid-row:2;align-self:start;justify-self:start;text-align:left}
-.pd-day-price-table.dp-nm .pd-day-price-cell .was{grid-row:3;align-self:start;justify-self:start;text-align:left}
-.pd-day-price-table.dp-nm .pd-day-price-cell .dt{grid-row:4;align-self:start;justify-self:start;text-align:left}
+.pd-day-price-table.dp-nm .pd-day-price-cell{display:grid;grid-row:span 4;grid-template-rows:subgrid;justify-items:center;row-gap:0;min-width:0}
+.pd-day-price-table.dp-nm .pd-day-price-cell .d{grid-row:1;align-self:start;text-align:center}
+.pd-day-price-table.dp-nm .pd-day-price-cell .v{grid-row:2;align-self:start;text-align:center}
+.pd-day-price-table.dp-nm .pd-day-price-cell .was{grid-row:3;align-self:start;text-align:center}
+.pd-day-price-table.dp-nm .pd-day-price-cell .dt{grid-row:4;align-self:start;text-align:left}
 @media(min-width:781px){.pd-day-price-table.dp-nm{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}}
 .pd-day-price-cell .dt-grp > div{padding:2px 0}
 .pd-day-price-cell .dt .sd-wk{color:#000}.pd-day-price-cell .dt .sd-sat{color:#1877F2}.pd-day-price-cell .dt .sd-sun{color:#DC2626}

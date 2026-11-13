@@ -1055,6 +1055,11 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry:not(.pd-price-merged) .prices > span{white-space:nowrap}
 .pd-price-entry:not(.pd-price-merged) .prices .price-original,.pd-price-entry:not(.pd-price-merged) .prices .discount{order:1}
 .pd-price-entry:not(.pd-price-merged) .prices .price-sale{order:2;flex:0 0 100%;text-align:right}
+/* [수정] 통합 요금표 카드(요금 항목 없는 상품·요금표 맨 위 대표 금액 카드)도 금액("원"·"~부터" 포함)을 오른쪽 끝에 정렬하고, 정가·할인율은 그 위 줄 */
+.pd-price-entry.pd-price-merged .prices{flex-wrap:wrap;justify-content:flex-end;gap:2px 10px}
+.pd-price-entry.pd-price-merged .prices > span{white-space:nowrap}
+.pd-price-entry.pd-price-merged .prices .price-original,.pd-price-entry.pd-price-merged .prices .discount{order:1}
+.pd-price-entry.pd-price-merged .prices .price-sale{order:2;flex:0 0 100%;text-align:right}
 .pd-price-entry:not(.pd-price-merged) .prices .price-sale{font-size:calc(2.184rem + 1.5pt)} /* 아래쪽 금액 +1.5pt */
 /* [수정] 관리자에서 "별도 문의"를 켠 상품은 요금 항목에 판매가가 없을 때 그 문구를 금액 자리에 노출(상품 카드와 같은 글꼴·굵기) */
 .pd-price-entry:not(.pd-price-merged) .prices .price-sale.price-inquiry{font-family:'Pretendard','Noto Sans KR',sans-serif;font-weight:800;letter-spacing:.01em;font-size:1.5rem}

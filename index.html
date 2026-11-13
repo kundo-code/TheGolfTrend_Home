@@ -2392,7 +2392,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
    나가는 폭을 덮을 정도(20px — 레이블의 실제 모서리 밖 노출 폭보다 여유 있게)만큼만 가로 방향도
    열어줘, 레이블은 잘리지 않으면서도 다음/이전 슬라이드가 크게 드러나지는 않도록 함 */
 .ep-popup-viewport{overflow:visible;clip-path:inset(-9999px -20px -9999px -20px)}
-.ep-popup-track{display:flex;transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.ep-popup-track{--ep-gap:40px;display:flex;gap:var(--ep-gap);transition:transform .45s cubic-bezier(.22,1,.36,1)} /* [수정] 상품 사이 간격 — 넘기는 도중 앞 상품의 이미지 밖 레이블이 다음 상품 이미지 위로 올라가 보이던 문제 */
 .ep-popup-slide{flex:0 0 100%;min-width:0}
 /* [버그 수정] 위의 가로 20px 여유 때문에 옆 슬라이드(다른 상품 카드) 이미지가 카드 좌우 밖으로 살짝
    드러나 보이던 문제 — 현재 슬라이드만 보이게 하고(나머지는 visibility:hidden), 슬라이드가 넘어가는
@@ -22571,7 +22571,7 @@ function renderEpPopup(){
   stage.innerHTML = `
     <div class="ep-popup-box${anyOutside?' pv-label-overflow':''}" onclick="event.stopPropagation()">
       <div class="ep-popup-viewport">
-        <div class="ep-popup-track" id="epPopupTrack" style="transform:translateX(-${epTrackPos(epPopupIdx)*100}%)">
+        <div class="ep-popup-track" id="epPopupTrack" style="transform:${epTx(epTrackPos(epPopupIdx))}">
           ${n>1 ? epSlideCardHTML(epPopupItems[n-1], (n-1)===epPopupIdx, n-1) : ''}
           ${epPopupItems.map((it,i)=>epSlideCardHTML(it, i===epPopupIdx, i)).join('')}
           ${n>1 ? epSlideCardHTML(epPopupItems[0], 0===epPopupIdx, 0) : ''}
@@ -22594,13 +22594,15 @@ function renderEpPopup(){
 // [수정] 끝없이 이어지는(루프) 캐러셀 — 트랙 앞뒤에 마지막/첫 상품 복제본을 하나씩 두어, 마지막에서 다음으로 넘기면 첫 상품이 같은 방향(오른쪽에서
 // 왼쪽)으로 이어서 들어오고, 첫 상품에서 이전으로 넘기면 마지막 상품이 왼쪽에서 들어온다. 애니메이션이 끝나면 눈에 띄지 않게 진짜 슬라이드 위치로 되돌린다
 let epPopupWrapTimer = null;
+// 슬라이드 사이에 간격(--ep-gap)을 두므로 한 칸 이동량은 "카드 폭 + 간격" — 카드 모서리 밖으로 나온 레이블·리본이 다음 상품 이미지 위에 겹쳐 보이지 않게 한다
+function epTx(pos, dx){ return `translateX(calc(${-pos} * (100% + var(--ep-gap, 40px))${dx ? ' + '+dx+'px' : ''}))`; }
 function epTrackPos(idx){ return idx + (epPopupItems.length>1 ? 1 : 0); }
 function epPopupFinishWrap(){
   if (!epPopupWrapTimer) return;
   clearTimeout(epPopupWrapTimer); epPopupWrapTimer = null;
   const track = document.getElementById('epPopupTrack'); if (!track) return;
   track.style.transition = 'none';
-  track.style.transform = `translateX(-${epTrackPos(epPopupIdx)*100}%)`;
+  track.style.transform = epTx(epTrackPos(epPopupIdx));
   void track.offsetWidth;
   track.style.transition = '';
 }
@@ -22612,7 +22614,7 @@ function epPopupUpdatePosition(pos){
     vp.classList.add('ep-moving');
     clearTimeout(epPopupMoveTimer);
     epPopupMoveTimer = setTimeout(()=>vp.classList.remove('ep-moving'), 480);
-    track.style.transform = `translateX(-${(typeof pos==='number' ? pos : epTrackPos(epPopupIdx))*100}%)`;
+    track.style.transform = epTx(typeof pos==='number' ? pos : epTrackPos(epPopupIdx));
     track.querySelectorAll('.ep-popup-slide').forEach(el=>el.classList.toggle('active', Number(el.dataset.i)===epPopupIdx));
   }
   document.querySelectorAll('#epPopupStage .ep-popup-dot').forEach((d,i)=>d.classList.toggle('active', i===epPopupIdx));
@@ -22683,7 +22685,7 @@ function epPopupGoToProduct(catId, idx){
     if (mode!=='h') return;
     if (e.cancelable) e.preventDefault();
     dx = x;
-    track.style.transform = `translateX(calc(-${epTrackPos(epPopupIdx)*100}% + ${dx}px))`;
+    track.style.transform = epTx(epTrackPos(epPopupIdx), dx);
   }, {passive:false});
   const end = ()=>{
     if (mode==='h' && track){

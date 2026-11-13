@@ -15564,7 +15564,41 @@ function renderProductDetail(p,cat,idx){
   {
     const commonDayHTML = dayPriceSectionsHTML(plan.dayPrices.value||[], '', plan.dayDates.value);
     const commonHolHTML = holidaySectionsHTML(plan.holidayPrices.value||[], '', !!commonDayHTML);
-    if (commonDayHTML || commonHolHTML){
+    if (!visiblePriceEntries.length){
+      // [수정] 요금 항목이 없는 상품 — 출발 요일별 요금과 가격·태그 금액을 따로 두 번 보여 주지 않고, 예전 "출발 요일별 요금" 자리에
+      // 하나의 "💳 요금표"로 합쳐 노출한다: 대표 금액(가격·태그의 카드 표시 최저가, "별도 문의" 문구 포함)·선택한 출발 요일·적용 기간·
+      // 지정일 + 출발 요일별 요금 + 공휴일 요금 + 연결 링크(블로그·밴드 등)·공유 버튼. 값이 하나도 없으면 만들지 않는다
+      const fbInquiry = priceInquiryText(p);
+      const fbFrom = Number(p.from)||0;
+      const fbDays = dpDayList(p.fromDay);
+      const fbPeriod = (p.fromStart||p.fromEnd) ? [p.fromStart, p.fromEnd].filter(Boolean).map(x=>String(x).replace(/-/g,'.')).join(' ~ ') : '';
+      if (fbInquiry || fbFrom>0 || commonDayHTML || commonHolHTML){
+        const fbBrand = p.linkUrl ? detectLinkBrand(p.linkUrl) : null;
+        html += `<div class="pd-slot">
+      <div class="pd-section-title">💳 요금표</div>
+      <div class="pd-price-entries">
+        <div class="pd-price-entry layout-card">
+          <div class="prices">
+            ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">원${p.fromLabel!==false?' ~부터':''}</span></span>${priceDiscountPct(p.fromOriginal, fbFrom) ? `<span class="price-original">${fmtPrice(p.fromOriginal)}원${p.fromLabel!==false?' ~부터':''}</span><span class="discount">${priceDiscountPct(p.fromOriginal, fbFrom)}% ↓</span>` : ''}` : '')}
+          </div>
+          ${(!fbInquiry && fbFrom>0 && (fbDays.length || fbPeriod)) ? `<div class="pd-pe-departure-day-label">
+            ${fbDays.length?`<span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span>`:''}
+            ${fbPeriod?`<span class="dd-label" style="margin-left:${fbDays.length?'12px':'0'}">🗓 적용 기간</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(fbPeriod)}</span>`:''}
+          </div>` : ''}
+          ${!plan.departureDay.key ? specificDatesRowHTML(leftoverSpecificDates(p.commonDayPrices, p.commonDayDates), '') : ''}
+          ${commonDayHTML}
+          ${commonHolHTML}
+          <div class="pd-pe-actions">
+            <div class="pd-pe-bottom-row" onclick="event.stopPropagation()">
+              ${fbBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">${fbBrand.icon} ${fbBrand.label} →</a>`:''}
+              <button type="button" class="pd-pe-share-btn" onclick="sharePriceEntryImage(this)">📤 공유</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+      }
+    } else if (commonDayHTML || commonHolHTML){
       html += `<div class="pd-slot"><div class="pd-section-title">📅 출발 요일별 요금</div>
         <div style="padding:0 20px 18px">
           ${commonDayHTML}
@@ -15752,44 +15786,6 @@ function renderProductDetail(p,cat,idx){
         }).join('')}
       </div>
     </div>`;
-  }
-
-  // [추가] 요금 항목이 하나도 없을 때 — 고급편집 › 가격·태그의 "카드 표시 최저가"(출발 요일·적용 기간을 골랐다면 함께)와
-  // 출발 요일별·공휴일 요금(공통)이 있으면 그것으로 요금표를 만들고, 연결 링크(블로그·밴드 등)·공유 버튼도 함께 노출한다.
-  // 값이 하나도 없으면 요금표 자체를 만들지 않는다
-  if (!visiblePriceEntries.length){
-    const fbInquiry = priceInquiryText(p);
-    const fbFrom = Number(p.from)||0;
-    const fbDayTable = dayPriceSectionsHTML(p.commonDayPrices||[], '', p.commonDayDates) || '';
-    const fbHolRow = holidaySectionsHTML(p.commonHolidayPrices||[], '', !!fbDayTable) || '';
-    const fbDays = dpDayList(p.fromDay);
-    const fbPeriod = (p.fromStart||p.fromEnd) ? [p.fromStart, p.fromEnd].filter(Boolean).map(x=>String(x).replace(/-/g,'.')).join(' ~ ') : '';
-    if (fbInquiry || fbFrom>0 || fbDayTable || fbHolRow){
-      const fbBrand = p.linkUrl ? detectLinkBrand(p.linkUrl) : null;
-      html += `<div class="pd-slot">
-      <div class="pd-section-title">💳 요금표</div>
-      <div class="pd-price-entries">
-        <div class="pd-price-entry layout-card">
-          <div class="prices">
-            ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">원${p.fromLabel!==false?' ~부터':''}</span></span>${priceDiscountPct(p.fromOriginal, fbFrom) ? `<span class="price-original">${fmtPrice(p.fromOriginal)}원${p.fromLabel!==false?' ~부터':''}</span><span class="discount">${priceDiscountPct(p.fromOriginal, fbFrom)}% ↓</span>` : ''}` : '')}
-          </div>
-          ${(!fbInquiry && fbFrom>0 && (fbDays.length || fbPeriod)) ? `<div class="pd-pe-departure-day-label">
-            ${fbDays.length?`<span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span>`:''}
-            ${fbPeriod?`<span class="dd-label" style="margin-left:${fbDays.length?'12px':'0'}">🗓 적용 기간</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(fbPeriod)}</span>`:''}
-          </div>` : ''}
-          ${!plan.departureDay.key ? specificDatesRowHTML(leftoverSpecificDates(p.commonDayPrices, p.commonDayDates), '') : ''}
-          ${fbDayTable}
-          ${fbHolRow}
-          <div class="pd-pe-actions">
-            <div class="pd-pe-bottom-row" onclick="event.stopPropagation()">
-              ${fbBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">${fbBrand.icon} ${fbBrand.label} →</a>`:''}
-              <button type="button" class="pd-pe-share-btn" onclick="sharePriceEntryImage(this)">📤 공유</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>`;
-    }
   }
 
   // [수정] 공통 일정 요약 타임라인 — 공통 일정(또는 모든 요금 항목이 같은 일정)을 여기서 한 번만
@@ -18421,7 +18417,7 @@ function advBasicHTML(p){
           <div class="pe-labels-departure-day">${departureDayFieldHTML(p.labels, -1)}</div>
         </details>
         <details class="pe-labels" ${advDetailsAttrs('d-dp', false)}>
-          <summary>📅 출발 요일별 요금 ${advFillBadge(dpN,2)}</summary>
+          <summary>💳 요금표 <span style="font-weight:500;font-size:.72rem;opacity:.7">(출발 요일별 요금 · 공휴일 · 특정일)</span> ${advFillBadge(dpN,2)}</summary>
           <div class="pe-labels-body">
             <label>출발 요일별 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(토=파란색, 일=빨간색으로 자동 표시)</span></label>
             <div class="dp-list">

@@ -5159,6 +5159,10 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   /* 1~2칸은 4열 격자의 한 칸만 쓰지 않고 전체 폭을 나눠 쓰며 글자는 125% */
   .pd-day-price-table.dp-n1{grid-template-columns:minmax(0,1fr)}
   .pd-day-price-table.dp-n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* [수정] 정확히 3칸 — 4열 격자의 세 칸만 쓰면 오른쪽 한 칸이 비어 왼쪽으로 쏠려 보였다. 3열로 전체 폭을 나눠 쓰고, 칸이 넓어진 만큼 금액 글자를 폭에 맞춰 키운다 */
+  .pd-day-price-table:has(> .pd-day-price-cell:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(3):last-child) .pd-day-price-cell .v{font-size:min(calc(1.1rem + 3pt), calc((100vw - 78px) / 15.8))}
+  .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(3):last-child) .pd-day-price-cell .d{font-size:calc(.74rem + 2pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .d,.pd-day-price-table.dp-n2 .pd-day-price-cell .d{font-size:calc(.925rem + .25pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .v,.pd-day-price-table.dp-n2 .pd-day-price-cell .v{font-size:calc(1.375rem + 1.25pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .v .unit,.pd-day-price-table.dp-n2 .pd-day-price-cell .v .unit{font-size:calc(.675rem + 1.25pt)}

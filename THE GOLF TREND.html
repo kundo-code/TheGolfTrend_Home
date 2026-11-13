@@ -2382,6 +2382,11 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .ep-popup-footer{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,.28)}
 .ep-popup-actions{padding:14px 20px 18px}
 .ep-popup-slide .popup-body{padding-bottom:6px}
+/* [버그 수정] 모바일에서 EDITOR'S PICK 팝업(상품 2개 이상)을 좌우로 드래그하면 옆 슬라이드(translateX로 밀려난 트랙)가 팝업 배경(.popup-stage, overflow:auto)의
+   가로 스크롤 영역을 만들어 팝업창 전체가 옆으로 끌려가던 문제 — 배경의 가로 스크롤을 막고(세로만 허용), 팝업 안 드래그는 아래 스와이프 처리(epPopupSwipeInit)로 슬라이드만 넘긴다 */
+#epPopupStage{overflow-x:hidden}
+.ep-popup-box{touch-action:pan-y}
+.ep-popup-viewport{touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .ep-popup-nav{width:28px;height:28px;flex:0 0 auto;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:1.05rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:all .2s}
 .ep-popup-nav:hover{background:var(--gold);border-color:var(--gold)}
 .ep-popup-dots{flex:1;display:flex;justify-content:center;gap:6px}
@@ -22437,6 +22442,53 @@ function epPopupGoToProduct(catId, idx){
   closeEpPopup();
   openProductDetail(catId, idx);
 }
+// [수정] EDITOR'S PICK 팝업 — 손가락(터치)으로 좌우로 드래그해 다른 상품으로 넘기기. 드래그하는 동안 슬라이드가 손가락을 따라오고,
+// 손을 떼면 일정 거리(카드 폭의 20% 또는 50px 중 작은 값) 이상 밀었을 때 이전/다음 상품으로 넘어간다. 세로로 움직이면 기존처럼 스크롤.
+(function epPopupSwipeInit(){
+  const stage = document.getElementById('epPopupStage');
+  if (!stage || stage._epSwipe) return;
+  stage._epSwipe = true;
+  let sx=0, sy=0, dx=0, mode='', w=320, track=null, vp=null;
+  const reset = ()=>{ mode=''; track=null; vp=null; dx=0; };
+  stage.addEventListener('touchstart', e=>{
+    reset();
+    if (e.touches.length!==1 || epPopupItems.length<2) return;
+    vp = e.target.closest ? e.target.closest('.ep-popup-viewport') : null;
+    if (!vp) return;
+    track = document.getElementById('epPopupTrack'); if (!track){ vp=null; return; }
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; w = vp.getBoundingClientRect().width || 320;
+  }, {passive:true});
+  stage.addEventListener('touchmove', e=>{
+    if (!vp || !track || e.touches.length!==1) return;
+    const x = e.touches[0].clientX - sx, y = e.touches[0].clientY - sy;
+    if (!mode){
+      if (Math.abs(x) < 8 && Math.abs(y) < 8) return;
+      if (Math.abs(x) > Math.abs(y)){
+        mode = 'h';
+        clearInterval(epPopupTimer); epPopupTimer = null;      // 드래그 중에는 자동 넘김 멈춤
+        clearTimeout(epPopupMoveTimer);
+        vp.classList.add('ep-moving');                          // 옆 슬라이드를 보이게 하고 카드 경계에서 자름
+        track.style.transition = 'none';
+      } else { mode = 'v'; }
+    }
+    if (mode!=='h') return;
+    if (e.cancelable) e.preventDefault();
+    dx = x;
+    track.style.transform = `translateX(calc(-${epPopupIdx*100}% + ${dx}px))`;
+  }, {passive:false});
+  const end = ()=>{
+    if (mode==='h' && track){
+      track.style.transition = '';
+      const th = Math.min(50, w*0.2);
+      if (dx <= -th) epPopupMove(1);
+      else if (dx >= th) epPopupMove(-1);
+      else { epPopupUpdatePosition(); epPopupStartAuto(); }
+    }
+    reset();
+  };
+  stage.addEventListener('touchend', end, {passive:true});
+  stage.addEventListener('touchcancel', end, {passive:true});
+})();
 function closeEpPopup(){
   clearInterval(epPopupTimer);
   epPopupTimer = null;

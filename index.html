@@ -1180,6 +1180,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-departure-day-label .dd-value{color:#000}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
+.pd-pe-specific-dates{margin-top:6px;display:flex;flex-wrap:wrap}
+.pd-pe-specific-dates .dd-value{font-weight:600;line-height:1.5}
+.pd-pe-specific-dates .sd-sat{color:#1877F2}.pd-pe-specific-dates .sd-sun{color:#DC2626}.pd-pe-specific-dates .sd-wk{color:#000}
+.pd-label-row .v .sd-sat{color:#1877F2}.pd-label-row .v .sd-sun{color:#DC2626}
 /* 레이블(항공·공항·항공편·티오프 등) — 요금 항목별 자세히 토글, 상품 공통 "항공/이동 정보" 섹션에서 공용 */
 .pd-label-rows{padding:2px 20px 18px;display:flex;flex-direction:column;gap:7px}
 .pd-pe-more-sub .pd-label-rows{padding:0}
@@ -7025,6 +7029,25 @@ function dpInPeriod(d, x){
   if (!d || (!d.start && !d.end)) return true;
   const k = `${x.y}-${String(x.m).padStart(2,'0')}-${String(x.d).padStart(2,'0')}`;
   return (!d.start || k>=d.start) && (!d.end || k<=d.end);
+}
+// [추가] 요금 칸 아래에 안내되지 않은 지정일 — 해당 요일의 요금이 없거나(요금 칸이 없는 상품) 적용 기간 밖인 날짜.
+// 이런 날짜는 어느 요금 칸에도 붙지 않아 고객 화면에 나오지 않았다 → "출발 요일" 바로 아래에 따로 보여 준다
+function leftoverSpecificDates(dayPrices, dd){
+  dd = normDayDates(dd);
+  const rows = (dayPrices||[]).filter(d=>d && !dpIsMarker(d) && d.day && d.price);
+  return dd.dates.map(dateYMD).filter(Boolean)
+    .filter(x=>{ const wd=new Date(x.y,x.m-1,x.d).getDay(); return !rows.some(r=>dayValHasWeekday(r.day, wd) && dpInPeriod(r, x)); })
+    .sort((a,b)=>(a.y-b.y)||(a.m-b.m)||(a.d-b.d));
+}
+// 월을 항상 붙여 단독으로 읽히게(예: 1월 7일(목), 14일(목)) — 올해가 아닌 해는 연도도 함께
+function specificDatesFullHTML(hit){
+  const nowY = new Date().getFullYear(), groups = [];
+  hit.forEach(x=>{ const k=x.y+'-'+x.m; let g=groups[groups.length-1]; if (!g || g.k!==k){ g={k, y:x.y, m:x.m, ds:[]}; groups.push(g); } if (!g.ds.some(z=>z.d===x.d)) g.ds.push(x); });
+  const one = x=>{ const wd = WEEKDAY_KO[new Date(x.y,x.m-1,x.d).getDay()]; return `<span class="sd-d ${wd==='토'?'sd-sat':(wd==='일'?'sd-sun':'sd-wk')}">${x.d}일(${wd})</span>`; };
+  return groups.map(g=>`${g.y!==nowY ? g.y+'년 ' : ''}${g.m}월 ${g.ds.map(one).join(', ')}`).join(' · ');
+}
+function specificDatesRowHTML(hit, cls){
+  return hit.length ? `<div class="pd-pe-departure-day-label pd-pe-specific-dates${cls?' '+cls:''}"><span class="dd-label">📌 특정일 지정</span><span class="dd-divider"></span><span class="dd-value">${specificDatesFullHTML(hit)}</span></div>` : '';
 }
 function specificDatesHTML(dayVal, dd, item){
   dd = normDayDates(dd);
@@ -15522,6 +15545,11 @@ function renderProductDetail(p,cat,idx){
   if (plan.airfare.key) commonLabelRowsList.push(['✈️ 항공 포함 여부', AIRFARE_TXT[plan.airfare.value]||plan.airfare.value]);
   if (plan.stayDuration.key) commonLabelRowsList.push(['🏨 체류일', plan.stayDuration.value]);
   if (plan.departureDay.key) commonLabelRowsList.push(['📅 출발 요일', planArr('departureDay'), depDayHTML(plan.departureDay.value)]);
+  // [추가] 특정일 지정 — 출발 요일 바로 아래(요금 칸 아래에 안내되지 않은 날짜만)
+  if (plan.departureDay.key){
+    const cdl = leftoverSpecificDates(plan.dayPrices.value, plan.dayDates.value);
+    if (cdl.length) commonLabelRowsList.push(['📌 특정일 지정', '', specificDatesFullHTML(cdl)]);
+  }
   if (commonLabelRowsList.length){
     // [수정] "항공 포함 여부"가 포함/불포함이면 "항공/이동 정보 · 출발 요일", "없음(표시 안 함)"이면 항공 항목이 없으므로 "이동정보 · 출발 요일"
     const moveTitle = plan.airfare.key ? '🏷️ 항공/이동 정보 · 출발 요일' : '🏷️ 이동정보 · 출발 요일';
@@ -15654,7 +15682,10 @@ function renderProductDetail(p,cat,idx){
             const inc = incRows ? `<div class="pd-pe-included-preview ${cls}"><div class="t">✅ 포함사항</div><div class="pd-check-list included">${incRows}</div></div>` : '';
             const notRows = bulletRowsRich(pick('notIncluded', full)||'','✕');
             const notInc = notRows ? `<div class="pd-pe-notincluded-preview ${cls}"><div class="t">❌ 불포함사항</div><div class="pd-check-list excluded">${notRows}</div></div>` : '';
-            return {badges, meta, dayTable, holRow, ddLabel, inc, notInc};
+            // [추가] 특정일 지정 — 요금 칸 아래에 안내되지 않은 날짜를 출발 요일 바로 아래에 노출(카드에 출발 요일이 있을 때, 또는 공통 출발 요일이 없을 때)
+            const ddDatesList = leftoverSpecificDates(eff('dayPrices'), eff('dayDates'));
+            const ddDates = (ddDatesList.length && (dd || !plan.departureDay.key)) ? specificDatesRowHTML(ddDatesList, cls) : '';
+            return {badges, meta, dayTable, holRow, ddLabel, ddDates, inc, notInc};
           };
           const blkDedup = buildBlocks(false, ''), blkFull = buildBlocks(true, '');
           const blkScreen = buildBlocks(false, 'pe-only-screen'), blkCapture = buildBlocks(true, 'pe-only-capture');
@@ -15700,6 +15731,7 @@ function renderProductDetail(p,cat,idx){
             ${blk('dayTable')}
             ${blk('holRow')}
             ${blk('ddLabel')}
+            ${blk('ddDates')}
             ${blk('inc')}
             ${blk('notInc')}
             ${peNotesHTML}
@@ -15745,6 +15777,7 @@ function renderProductDetail(p,cat,idx){
             ${fbDays.length?`<span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span>`:''}
             ${fbPeriod?`<span class="dd-label" style="margin-left:${fbDays.length?'12px':'0'}">🗓 적용 기간</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(fbPeriod)}</span>`:''}
           </div>` : ''}
+          ${!plan.departureDay.key ? specificDatesRowHTML(leftoverSpecificDates(p.commonDayPrices, p.commonDayDates), '') : ''}
           ${fbDayTable}
           ${fbHolRow}
           <div class="pd-pe-actions">

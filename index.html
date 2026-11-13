@@ -135,6 +135,11 @@
    않는 body가 되어버려 sticky가 전혀 동작하지 않고 메뉴바가 그냥 페이지와 함께 스크롤되어 사라지는
    문제가 있었다 — 가로 스크롤 차단은 실제 스크롤 기준인 html 쪽 overflow-x:hidden만으로 충분하므로
    body의 overflow-x:hidden은 제거해 sticky가 정상 동작하는 html을 기준으로 삼게 한다 */
+/* [근본 원인 수정] 창이 열려 있을 때 뒤쪽 페이지 스크롤 잠금 — html에 overflow-x:hidden이 있어 body의 overflow:hidden만으로는 잠기지 않았다 */
+html.tgt-scroll-lock{overflow:hidden!important}
+/* 관리자 패널·고급편집이 열려 있는 동안 뒤쪽 페이지의 CSS 애니메이션도 멈춘다(자동 움직임이 반투명 창 뒤에서 번쩍임을 만들었음) */
+html.tgt-admin-open :is(header,#mainNav,main,footer) *{animation-play-state:paused!important}
+.admin-panel,.pa-body,.popup-stage,.notice-popup-overlay,.legal-modal-overlay,.widget-detail-overlay,.ep-popup-box{overscroll-behavior:contain}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--topbar-h,108px) + 54px);overflow-x:hidden;overscroll-behavior-x:none}
 body{font-family:'Pretendard','Noto Sans KR',sans-serif;color:var(--cream);line-height:1.6;overscroll-behavior-x:none;min-height:100vh;background:var(--pine-deep)}
 h1,.display{font-family:'Anton','Noto Sans KR',sans-serif;font-weight:400;line-height:1.1;letter-spacing:.01em}
@@ -1336,7 +1341,7 @@ section.block{padding:100px 24px;position:relative}
 /* [추가] 블로그·유튜브 이동 선택창 */
 /* [추가] 여행 이야기 "전체 보기" 창 */
 html.pa-open,html.pa-open body{overflow:hidden}
-.pa-overlay{position:fixed;inset:0;z-index:3400;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,23,48,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.pa-overlay{position:fixed;inset:0;z-index:3400;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,23,48,.78);overscroll-behavior:contain}
 .pa-panel{width:min(1100px,100%);height:min(88vh,1000px);display:flex;flex-direction:column;background:#F7F4EC;border-radius:22px;box-shadow:0 30px 70px rgba(10,23,48,.4);overflow:hidden}
 .pa-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 6px}
 .pa-head h3{margin:0;font-size:1.35rem;font-weight:800;color:var(--pine-deep)}
@@ -1937,7 +1942,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .apply-btn:active{box-shadow:var(--nm-shadow-gold-press)}
 /* [수정] 상품 초기화 모달 — 고급편집 모달(.adv-editor-overlay)과 동일한 관리자 패널 디자인
    시스템을 재사용하되, 체크리스트만 담는 용도라 더 좁은 폭으로 별도 정의 */
-.reset-product-overlay{position:fixed;inset:0;z-index:222;background:rgba(10,23,48,.55);backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
+.reset-product-overlay{position:fixed;inset:0;z-index:222;background:rgba(10,23,48,.78);display:none;opacity:0;transition:opacity .3s;overflow-y:auto;overscroll-behavior:contain}
 .reset-product-overlay.show{display:block;opacity:1}
 .reset-product-modal{max-width:520px;margin:40px auto;background:var(--nm-surface);border:none;border-radius:var(--nm-r-lg);box-shadow:0 24px 70px rgba(10,23,48,.35);overflow:hidden;color:var(--nm-text)}
 .rpm-body{padding:20px 26px;max-height:55vh;overflow-y:auto;background:var(--nm-surface)}
@@ -1947,7 +1952,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rpm-check-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--nm-blue);cursor:pointer;flex-shrink:0}
 .rpm-check-all{font-weight:700;padding-bottom:10px;margin-bottom:6px;border-bottom:1px solid var(--nm-border)}
 .rpm-check-list{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;padding-left:2px}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;opacity:0;pointer-events:none;transition:opacity .3s}
 .overlay.show{opacity:1;pointer-events:auto}
 
 /* Band B2C/B2B CTA row */
@@ -2014,7 +2019,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .ee-visa-badge{background:linear-gradient(135deg,#E5654A,#CA3F3F)!important}
 
 /* ADVANCED PRODUCT EDITOR */
-.adv-editor-overlay{position:fixed;inset:0;z-index:220;background:rgba(10,23,48,.55);backdrop-filter:blur(8px);display:none;opacity:0;transition:opacity .3s;overflow-y:auto}
+.adv-editor-overlay{position:fixed;inset:0;z-index:220;background:rgba(10,23,48,.78);display:none;opacity:0;transition:opacity .3s;overflow-y:auto;overscroll-behavior:contain}
 .adv-editor-overlay.show{display:block;opacity:1}
 .adv-editor{display:flex;flex-direction:column;max-height:calc(100vh - 80px);max-width:720px;margin:40px auto;background:var(--nm-surface);border:none;border-radius:var(--nm-r-lg);box-shadow:0 24px 70px rgba(10,23,48,.35);overflow:hidden;color:var(--nm-text)}
 .adv-head,.adv-tabs,.adv-foot{flex-shrink:0}
@@ -2129,6 +2134,11 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .rtf-table td,.rtf-table th{border:1px solid rgba(163,177,198,.6);padding:6px 8px;font-size:.85rem;min-width:32px}
 .row-table{display:block!important;padding:2px 0}
 .row-table .rtf-table{margin:0}
+/* [추가] 자세히 보기의 표(예약·취소 규정 등) — 표에 클래스가 없어도 격자로 보이게 한다 */
+.cardprice-box .from-days{margin-bottom:10px}
+.cardprice-box .from-period{margin-bottom:12px}
+.row-table table{border-collapse:collapse;width:100%;max-width:100%;table-layout:auto;margin:0}
+.row-table table td,.row-table table th{border:1px solid rgba(163,177,198,.6);padding:6px 8px;font-size:.85rem;vertical-align:top;word-break:keep-all;overflow-wrap:anywhere}
 /* [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 구분 */
 .cardprice-box{background:var(--nm-surface-light);border-radius:var(--nm-r-md);padding:12px 16px 14px;box-shadow:var(--nm-shadow-inset);margin-top:18px}
 .cardprice-box>label{margin-top:0}
@@ -6663,6 +6673,9 @@ function ensureExtended(p){
     else { if (f.label===undefined) f.label=''; if (f.amount===undefined) f.amount=''; }
   });
   if (p.linkUrl===undefined) p.linkUrl='';
+  if (p.fromDay===undefined) p.fromDay='';        // [추가] 카드 표시 최저가의 출발 요일(쉼표 구분)·적용 기간
+  if (p.fromStart===undefined) p.fromStart='';
+  if (p.fromEnd===undefined) p.fromEnd='';
   if (p.scheduleOverview===undefined) p.scheduleOverview='';
   if (p.scheduleNote===undefined) p.scheduleNote='';
   // [추가] 안내 박스는 기본으로 "체크포인트1 - 주의사항"(p.checkpoint1)의 값을 그대로 쓴다(공통값 사용). 예전에 안내 박스에
@@ -8670,14 +8683,14 @@ function showNoticePopup(){
   renderNoticePopup(notices);
   const stage = document.getElementById('noticePopupStage');
   stage.classList.add('show');
-  document.body.style.overflow='hidden';
+  tgtScrollLock('notice', true);
   return true;
 }
 function closeNoticePopup(){
   const stage = document.getElementById('noticePopupStage');
   stage.classList.remove('show');
   stage.innerHTML='';
-  document.body.style.overflow='';
+  tgtScrollLock('notice', false);
   if (!showEntryPopups()) showEditorsPickPopup();
 }
 
@@ -9626,7 +9639,7 @@ function toggleWeatherDetail(){
   if (!overlay) return;
   const willShow = !overlay.classList.contains('show');
   overlay.classList.toggle('show', willShow);
-  document.body.style.overflow = willShow ? 'hidden' : '';
+  tgtScrollLock('weather', willShow);
   if (!willShow && window.syncNavState) setTimeout(window.syncNavState, 50);
   if (willShow) renderWeatherDetail();
 }
@@ -9795,7 +9808,7 @@ function toggleCurrencyDetail(){
   if (!overlay) return;
   const willShow = !overlay.classList.contains('show');
   overlay.classList.toggle('show', willShow);
-  document.body.style.overflow = willShow ? 'hidden' : '';
+  tgtScrollLock('currency', willShow);
   if (!willShow && window.syncNavState) setTimeout(window.syncNavState, 50);
   if (willShow) renderCurrencyDetail();
 }
@@ -10138,7 +10151,7 @@ function updateNavActive(){
   window.addEventListener('orientationchange', kick);
   document.addEventListener('visibilitychange', kick);
   if (window.visualViewport){ window.visualViewport.addEventListener('resize', kick); window.visualViewport.addEventListener('scroll', kick); }
-  setInterval(()=>{ if (!document.hidden) kick(); }, 500);
+  setInterval(()=>{ if (!document.hidden && !(typeof _tgtBgFrozen!=='undefined' && _tgtBgFrozen)) kick(); }, 500);
   // [수정] 스크립트 실행 시점엔 이미지 등이 아직 로드 전이라 nav 레이아웃이 최종 값이 아닐 수
   // 있어(스크롤이 한 번도 안 일어나면 이 초기값이 그대로 남는다), 전체 리소스 로드 후 한 번 더 갱신
   window.addEventListener('load', update);
@@ -11155,18 +11168,29 @@ function bulletRowsRich(html, icon, opts){
   return rtfBalanceLines(normalized.split('\n').map(s=>s.trim()))
     .filter(s=>s.replace(/[\u0001\u0002]/g,'').replace(/<[^>]*>/g,'').trim() || /\u0000TBL/.test(s))
     .map(line=>{
-      const tblMatch = line.match(/^\u0000TBL(\d+)\u0000$/);
-      if (tblMatch) return `<div class="row row-table">${tables[+tblMatch[1]]}</div>`;
-      // [추가] 예약·결제·취소 규정 — 📌 제목 줄(굵게·위쪽 간격) · ➣ 안내 줄(➣ 아이콘) · ※ 참고 줄(※ 아이콘)
-      if (opts && opts.marks){
-        const plain = line.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
-        const strip = ch=>line.replace(new RegExp(ch+'(\\s|&nbsp;)*'),'');
-        if (plain.indexOf('📌')===0) return `<div class="row row-head"><span>${line}</span></div>`;
-        if (plain.indexOf('➣')===0) return `<div class="row"><span class="ic">➣</span><span>${strip('➣')}</span></div>`;
-        if (plain.indexOf('※')===0) return `<div class="row"><span class="ic">※</span><span>${strip('※')}</span></div>`;
+      // [버그 수정] 표 자리표시자가 <div>·<span> 같은 서식 태그에 감싸여 있거나 다른 글자와 같은 줄에 있으면 표로 복원되지 않아
+      // 고객 화면에 "TBL0" 글자만 남던 문제 — 줄 안의 자리표시자를 찾아 표로 되돌리고, 앞뒤에 남은 글자만 일반 줄로 그린다
+      const renderLine = ln=>{
+        // [추가] 예약·결제·취소 규정 — 📌 제목 줄(굵게·위쪽 간격) · ➣ 안내 줄(➣ 아이콘) · ※ 참고 줄(※ 아이콘)
+        if (opts && opts.marks){
+          const plain = ln.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
+          const strip = ch=>ln.replace(new RegExp(ch+'(\\s|&nbsp;)*'),'');
+          if (plain.indexOf('📌')===0) return `<div class="row row-head"><span>${ln}</span></div>`;
+          if (plain.indexOf('➣')===0) return `<div class="row"><span class="ic">➣</span><span>${strip('➣')}</span></div>`;
+          if (plain.indexOf('※')===0) return `<div class="row"><span class="ic">※</span><span>${strip('※')}</span></div>`;
+        }
+        if (ln.charAt(0)==='\u0001' || ln.charAt(0)==='\u0002') return `<div class="row row-sub${ln.charAt(0)==='\u0002'?' row-sub2':''}"><span>${ln.replace(/[\u0001\u0002]/g,'')}</span></div>`;
+        return `<div class="row"><span class="ic">${icon}</span><span>${ln}</span></div>`;
+      };
+      if (/\u0000TBL\d+\u0000/.test(line)){
+        return line.split(/(\u0000TBL\d+\u0000)/).map(part=>{
+          const m = part.match(/^\u0000TBL(\d+)\u0000$/);
+          if (m) return `<div class="row row-table">${tables[+m[1]]}</div>`;
+          if (!part.replace(/[\u0001\u0002]/g,'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim()) return '';   // 태그만 남은 조각은 버린다
+          return renderLine(part);
+        }).join('');
       }
-      if (line.charAt(0)==='\u0001' || line.charAt(0)==='\u0002') return `<div class="row row-sub${line.charAt(0)==='\u0002'?' row-sub2':''}"><span>${line.replace(/[\u0001\u0002]/g,'')}</span></div>`;
-      return `<div class="row"><span class="ic">${icon}</span><span>${line}</span></div>`;
+      return renderLine(line);
     }).join('');
 }
 // 관리자 패널의 서식 지정 가능한 장문 텍스트 입력란(contenteditable) — 미니 툴바(크기·B·I·U·색상) +
@@ -13611,6 +13635,7 @@ function renderHeroBg(){
   }).join('');
 }
 function cycleHero(){
+  if (_tgtBgFrozen) return;   // 관리자 창이 열려 있는 동안은 뒤쪽 히어로를 넘기지 않는다
   const slides=document.querySelectorAll('#heroBg .slide');
   if (!slides.length) return;
   // 방어적 가드: 슬라이드 개수가 바뀐 직후 등 heroSlideIdx가 범위를 벗어난 경우 안전하게 보정
@@ -13687,6 +13712,7 @@ function spotlightVisualUrl(entry){
   return getImage(entry.catId);
 }
 function cycleSpot(){
+  if (_tgtBgFrozen) return;   // 관리자 창이 열려 있는 동안은 EDITOR'S PICK 카드를 교체하지 않는다
   const overseasList = getSpotlightList('overseas');
   const domesticList = getSpotlightList('domestic');
   const nextOverseasEntry=overseasList[(spotOverseasIdx+1)%overseasList.length];
@@ -14866,14 +14892,14 @@ function openProductDetail(catId, idx){
   tgtTrack('product_view', tgtEvtProduct(catId, idx));
   document.getElementById('pdOverlay').classList.add('show');
   document.documentElement.classList.add('pd-open');
-  document.body.style.overflow='hidden';
+  tgtScrollLock('pd', true);
 }
 function closeProductDetail(){
   if (window.syncNavState) setTimeout(window.syncNavState, 50);
   pdShareToken++; // 진행 중이던 이미지 공유 작업이 있다면 더 이상 화면에 반영하지 않음
   document.getElementById('pdOverlay').classList.remove('show');
   document.documentElement.classList.remove('pd-open');
-  document.body.style.overflow='';
+  tgtScrollLock('pd', false);
   if (pdGalleryTimer) clearInterval(pdGalleryTimer);
   if (pdGalleryObserver){ pdGalleryObserver.disconnect(); pdGalleryObserver=null; }
   pdGalleryVisible=new Set();
@@ -15666,6 +15692,43 @@ function renderProductDetail(p,cat,idx){
     </div>`;
   }
 
+  // [추가] 요금 항목이 하나도 없을 때 — 고급편집 › 가격·태그의 "카드 표시 최저가"(출발 요일·적용 기간을 골랐다면 함께)와
+  // 출발 요일별·공휴일 요금(공통)이 있으면 그것으로 요금표를 만들고, 연결 링크(블로그·밴드 등)·공유 버튼도 함께 노출한다.
+  // 값이 하나도 없으면 요금표 자체를 만들지 않는다
+  if (!visiblePriceEntries.length){
+    const fbInquiry = priceInquiryText(p);
+    const fbFrom = Number(p.from)||0;
+    const fbDayTable = dayPriceSectionsHTML(p.commonDayPrices||[], '', p.commonDayDates) || '';
+    const fbHolRow = holidaySectionsHTML(p.commonHolidayPrices||[], '', !!fbDayTable) || '';
+    const fbDays = dpDayList(p.fromDay);
+    const fbPeriod = (p.fromStart||p.fromEnd) ? [p.fromStart, p.fromEnd].filter(Boolean).map(x=>String(x).replace(/-/g,'.')).join(' ~ ') : '';
+    if (fbInquiry || fbFrom>0 || fbDayTable || fbHolRow){
+      const fbBrand = p.linkUrl ? detectLinkBrand(p.linkUrl) : null;
+      html += `<div class="pd-slot">
+      <div class="pd-section-title">💳 요금표</div>
+      <div class="pd-price-entries">
+        <div class="pd-price-entry layout-card">
+          <div class="prices">
+            ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">원${p.fromLabel!==false?' ~부터':''}</span></span>` : '')}
+          </div>
+          ${(!fbInquiry && fbFrom>0 && (fbDays.length || fbPeriod)) ? `<div class="pd-pe-departure-day-label">
+            ${fbDays.length?`<span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span>`:''}
+            ${fbPeriod?`<span class="dd-label" style="margin-left:${fbDays.length?'12px':'0'}">🗓 적용 기간</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(fbPeriod)}</span>`:''}
+          </div>` : ''}
+          ${fbDayTable}
+          ${fbHolRow}
+          <div class="pd-pe-actions">
+            <div class="pd-pe-bottom-row" onclick="event.stopPropagation()">
+              ${fbBrand?`<a class="go" href="${escapeAttr(p.linkUrl)}" target="_blank" rel="noopener">${fbBrand.icon} ${fbBrand.label} →</a>`:''}
+              <button type="button" class="pd-pe-share-btn" onclick="sharePriceEntryImage(this)">📤 공유</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    }
+  }
+
   // [수정] 공통 일정 요약 타임라인 — 공통 일정(또는 모든 요금 항목이 같은 일정)을 여기서 한 번만
   // 보여준다. 공통과 다른 일정을 쓰는 요금 항목은 그 항목의 "상세보기" 안에서 따로 보여준다
   if (plan.schedule.key){
@@ -16067,16 +16130,35 @@ window.addEventListener('pageshow', function(e){
 // 서로 겹쳐 뜰 수 있어(고급편집이 관리자 패널 위에 추가로 열림) 단순히 열 때 hidden, 닫을 때 ''로
 // 되돌리면 고급편집만 닫아도 관리자 패널이 아직 열려있는데 스크롤이 풀려버린다 — 몇 개가 열려
 // 있는지 세어(lockBodyScroll/unlockBodyScroll) 모두 닫혔을 때만 스크롤을 되돌린다
-let _bodyScrollLockCount = 0;
-function lockBodyScroll(){ _bodyScrollLockCount++; document.body.style.overflow='hidden'; }
-function unlockBodyScroll(){ _bodyScrollLockCount=Math.max(0,_bodyScrollLockCount-1); if (_bodyScrollLockCount===0) document.body.style.overflow=''; }
+// [근본 원인 수정] html에 overflow-x:hidden이 걸려 있으면(전역 스타일) body의 overflow:hidden이 뷰포트로 전달되지 않아 잠금이 전혀 먹히지 않았다
+// (관리자 패널·고급편집·상세·팝업 어디서든 뒤쪽 페이지가 함께 스크롤됨). 이제 html에 잠금 클래스(.tgt-scroll-lock → overflow:hidden)를 걸고,
+// 이름 있는 잠금 집합으로 관리해 하나가 닫혀도 다른 창이 열려 있으면 잠금이 풀리지 않게 한다. 스크롤 위치는 바꾸지 않는다
+const _scrollLocks = new Set();
+let _tgtBgFrozen = false;
+function tgtScrollLock(name, on){
+  if (on) _scrollLocks.add(name); else _scrollLocks.delete(name);
+  const lockOn = _scrollLocks.size>0, de = document.documentElement;
+  de.classList.toggle('tgt-scroll-lock', lockOn);
+  document.body.style.overflow = lockOn ? 'hidden' : '';
+  // 관리자 패널·고급편집이 열려 있는 동안은 뒤쪽 페이지의 자동 움직임(패키지 캐러셀·히어로·EDITOR'S PICK 교체)을 멈춘다 — 이 움직임이
+  // 반투명 관리자 창 뒤에서 매 프레임 다시 그려지며 "화면이 번쩍번쩍 튀는" 원인이었다(아래 CSS의 backdrop-filter 제거와 함께)
+  const freeze = _scrollLocks.has('admin') || _scrollLocks.has('adv') || _scrollLocks.has('advReset');
+  if (freeze!==_tgtBgFrozen){
+    _tgtBgFrozen = freeze;
+    de.classList.toggle('tgt-admin-open', freeze);
+    try{ ['domestic','overseas'].forEach(t=>{ if (freeze) pkgStopAuto(t); else pkgStartAuto(t); }); }catch(e){}
+  }
+  if (!lockOn && window.syncNavState) setTimeout(window.syncNavState, 50);
+}
+function lockBodyScroll(name){ tgtScrollLock(name||'admin', true); }
+function unlockBodyScroll(name){ tgtScrollLock(name||'admin', false); }
 async function toggleAdmin(){
   const panel=document.getElementById('adminPanel');
   const overlay=document.getElementById('overlay');
   const isOpen=panel.classList.toggle('open');
   overlay.classList.toggle('show',isOpen);
   panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true'); // [Phase 3 접근성/SEO 강화] 닫혀있을 때 스크린리더·크롤러에 노출되지 않도록
-  if (isOpen) lockBodyScroll(); else unlockBodyScroll();
+  tgtScrollLock('admin', isOpen);
   if (isOpen){
     await refreshAdminSession();
     renderAdminAuthGate();
@@ -16900,7 +16982,7 @@ function openPkgLightbox(type, idx){
   const lb=document.getElementById('pkgLightbox');
   if(!lb) return;
   lb.classList.add('open');
-  document.body.style.overflow='hidden';
+  tgtScrollLock('pkgLb', true);
   plbRender();
 }
 // [수정] 좌/우로 넘길 때 이미지가 그제서야 로딩되며 생기는 딜레이를 없애기 위해 앞뒤 이미지를
@@ -16966,7 +17048,7 @@ function pkgLbMove(dir){
 function closePkgLightbox(){
   const lb=document.getElementById('pkgLightbox');
   if(lb) lb.classList.remove('open');
-  document.body.style.overflow='';
+  tgtScrollLock('pkgLb', false);
 }
 // [수정] 라이트박스에서 손가락으로 좌/우 슬라이딩해 이전/다음 이미지로 넘기는 기능 — 기존에는
 // 손을 뗄 때만 판정해 다음 이미지로 "뚝" 바뀌었는데, 이제 touchmove마다 이미지가 손가락 이동량을
@@ -17844,7 +17926,7 @@ function openAdvEditor(catId, idx){
   document.querySelectorAll('.adv-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.atab==='basic'));
   renderAdvBody();
   document.getElementById('advOverlay').classList.add('show');
-  lockBodyScroll();
+  tgtScrollLock('adv', true);
 }
 function closeAdvEditor(){
   document.getElementById('advOverlay').classList.remove('show');
@@ -17853,7 +17935,7 @@ function closeAdvEditor(){
   currentAdv=null;
   renderProductAdmin();
   renderCategoryGrid();
-  unlockBodyScroll();
+  tgtScrollLock('adv', false);
 }
 function switchAdvTab(tab){
   activeAdvTab=tab;
@@ -18189,6 +18271,8 @@ function advBasicHTML(p){
         ${sub('💰 가격 · 태그')}
         <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
         <div class="cardprice-box">
+          <!-- [추가] 카드 표시 최저가가 적용되는 출발 요일·적용 기간(선택) — 요일별 요금과 같은 방식. 요금 항목이 없는 상품의 자세히 보기 요금표에 함께 노출된다 -->
+          ${fromDayChipsHTML(p)}
           <label>카드 표시 최저가 (원, 상품카드·스팟라이트에 노출되는 금액)</label>
           <div class="price-row">
             <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number')">
@@ -20254,6 +20338,22 @@ function dpDayChipsHTML(d, peIdx, di){
     <div class="dp-period"><span class="dp-days-lab">적용 기간 <em>(선택 · 비우면 전체 기간 · 특정일 지정의 날짜가 이 기간에 속하면 이 요금 아래에 노출)</em></span>
       <div class="dp-period-in"><input type="date" value="${escapeAttr(d.start||'')}" aria-label="기간 시작일" onchange="${upd('start')}"><span>~</span><input type="date" value="${escapeAttr(d.end||'')}" aria-label="기간 종료일" onchange="${upd('end')}"></div></div>`;
 }
+// [추가] "가격 · 태그" 카드 표시 최저가의 출발 요일(복수 선택)·적용 기간 — +요일별 요금의 입력 방식과 같다(p.fromDay·fromStart·fromEnd)
+function fromDayChipsHTML(p){
+  const on = dpDayList(p.fromDay);
+  return `<div class="dp-days from-days"><span class="dp-days-lab">출발 요일 <em>(선택 · 여러 개 선택 가능${on.length?` · ${on.length}개`:''})</em></span><div class="adv-chip-group">${DAY_OPTS.map(o=>`<button type="button" class="adv-chip ${on.includes(o[0])?'active':''}" onclick="toggleFromDay('${o[0]}')">${o[1]}</button>`).join('')}</div></div>
+    <div class="dp-period from-period"><span class="dp-days-lab">적용 기간 <em>(선택 · 비우면 전체 기간)</em></span>
+      <div class="dp-period-in"><input type="date" value="${escapeAttr(p.fromStart||'')}" aria-label="기간 시작일" onchange="updateAdvField('fromStart',this.value)"><span>~</span><input type="date" value="${escapeAttr(p.fromEnd||'')}" aria-label="기간 종료일" onchange="updateAdvField('fromEnd',this.value)"></div></div>`;
+}
+function toggleFromDay(val){
+  const p=getAdvProduct(); if (!p) return;
+  let cur = dpDayList(p.fromDay);
+  if (cur.includes(val)) cur = cur.filter(x=>x!==val);
+  else cur = (val==='매일출발') ? [val] : cur.filter(x=>x!=='매일출발').concat(val);
+  const order = DAY_OPTS.map(o=>o[0]);
+  p.fromDay = cur.sort((a,b)=>order.indexOf(a)-order.indexOf(b)).join(',');
+  saveAdvChange(); renderAdvBody();
+}
 function toggleDayPriceDay(peIdx, di, val){
   const p=getAdvProduct(); if (!p) return;
   const list = peIdx<0 ? p.commonDayPrices : p.priceEntries[peIdx].dayPrices, d = list[di]; if (!d) return;
@@ -22013,7 +22113,7 @@ function showEntryPopups(){
     </div>`;
   }).join('');
   stage.classList.add('show');
-  document.body.style.overflow='hidden';
+  tgtScrollLock('entryPopup', true);
   sessionStorage.setItem('popupShown','1');
   return true;
 }
@@ -22029,7 +22129,7 @@ function closePopupStage(){
   const stage = document.getElementById('popupStage');
   stage.classList.remove('show');
   stage.innerHTML = '';
-  document.body.style.overflow = '';
+  tgtScrollLock('entryPopup', false);
   showEditorsPickPopup(); // 항목별 요금표 팝업이 모두 닫히면 이어서 EDITOR'S PICK 팝업을 시도
 }
 // [추가] 바깥 링크(카카오 채널 안내 문구·문자·명함 등)에서 실시간 상담창을 바로 열기 — https://thegolftrend.co.kr/?chat=1 (짧은 주소: /chat/)
@@ -22095,7 +22195,7 @@ function showEditorsPickPopup(){
   renderEpPopup();
   const stage = document.getElementById('epPopupStage');
   stage.classList.add('show');
-  document.body.style.overflow='hidden';
+  tgtScrollLock('epPopup', true);
   epPopupStartAuto();
   return true;
 }
@@ -22207,7 +22307,7 @@ function closeEpPopup(){
   const stage = document.getElementById('epPopupStage');
   stage.classList.remove('show');
   stage.innerHTML = '';
-  document.body.style.overflow = '';
+  tgtScrollLock('epPopup', false);
 }
 
 // 라이트박스 키보드 이벤트

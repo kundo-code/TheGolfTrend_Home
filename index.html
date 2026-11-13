@@ -1900,6 +1900,23 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .admin-product-card.apc-last{box-shadow:var(--nm-shadow-raised-sm),0 0 0 2px rgba(221,179,103,.55)}
 .apc-last-badge{flex-shrink:0;padding:2px 8px;border-radius:100px;background:var(--nm-gold-grad, #DDB367);color:#fff;font-size:.62rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}
 .apc-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+/* [추가] EDITOR'S PICK 팝업 노출 순서 패널(관리자 > 상품) */
+.ep-order-panel{margin:0 0 14px;border-radius:var(--nm-r-md);background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm)}
+.ep-order-panel > summary{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;font-weight:700;font-size:.85rem;color:var(--nm-text);list-style:none}
+.ep-order-panel > summary::-webkit-details-marker{display:none}
+.ep-order-panel > summary::before{content:'▸';color:var(--nm-blue);transition:transform .2s;display:inline-block}
+.ep-order-panel[open] > summary::before{transform:rotate(90deg)}
+.ep-order-cnt{font-weight:600;font-size:.72rem;color:var(--nm-text-soft)}
+.ep-order-note{padding:0 14px 8px;font-size:.76rem;color:var(--nm-text-soft);line-height:1.5}
+.ep-order-list{list-style:none;margin:0;padding:0 10px 12px;display:flex;flex-direction:column;gap:6px}
+.ep-order-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:12px;background:var(--nm-surface-light,rgba(255,255,255,.5));min-width:0}
+.ep-order-row.ep-order-off{opacity:.55}
+.ep-order-no{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--nm-blue);color:#fff;font-size:.72rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.ep-order-cat{flex:0 0 auto;font-size:.68rem;font-weight:700;color:var(--gold-deep);white-space:nowrap}
+.ep-order-title{flex:1 1 auto;min-width:0;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ep-order-title em{font-style:normal;font-size:.68rem;color:var(--coral,#e5654b);margin-left:4px}
+.ep-order-btn{flex:0 0 auto;width:30px;height:30px;border:none;border-radius:50%;cursor:pointer;background:var(--nm-surface);box-shadow:var(--nm-shadow-raised-sm);color:var(--nm-text);font-size:.72rem}
+.ep-order-btn:disabled{opacity:.3;cursor:default}
 .apc-btn-sm{padding:6px 12px;border-radius:var(--nm-r-pill);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;border:none}
 .apc-edit-btn{background:var(--nm-surface);color:var(--nm-blue-deep);box-shadow:var(--nm-shadow-raised-sm)}
 .apc-edit-btn:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
@@ -6402,6 +6419,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
     </div>
     <div id="tabProducts" style="display:none">
       <div class="admin-info-box"><b>💡</b> 편집할 여행지를 먼저 선택하세요. 기본 정보는 자동 저장됩니다. <b>"고급 편집"</b> 버튼으로 미디어·요금표·레이블·연락처를 관리할 수 있습니다.</div>
+      <div id="epOrderPanel"></div>
       <select class="product-cat-select" id="productCatSelect" onchange="onProductCatChange(this.value)"></select>
       <div class="product-toolbar">
         <span class="info" id="productCount"></span>
@@ -13028,7 +13046,7 @@ function priceInquiryHTML(p){
 // 등록된 모서리(corner)별로 그룹핑해 각각의 스택으로 렌더링한다. 같은 모서리에 여러 개가 켜져
 // 있으면 서로 가리지 않도록 쌓아서 노출. hasOutside는 하나라도 "이미지 밖으로 배치"가 켜져
 // 있는지를 나타내며, 호출부에서 이미지 프레임(overflow:hidden)을 풀어줄지 판단하는 데 쓰인다
-function cardLabelOverlayHTML(cardLabels){
+function cardLabelOverlayHTML(cardLabels, eager){
   const active = (cardLabels||[]).filter(l=>l.active&&l.url);
   if (!active.length) return { html:'', hasOutside:false };
   const groups = {};
@@ -13037,7 +13055,7 @@ function cardLabelOverlayHTML(cardLabels){
     (groups[corner]=groups[corner]||[]).push(l);
   });
   const html = Object.keys(groups).map(corner=>
-    `<div class="card-label-stack" data-corner="${corner}">${groups[corner].map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true" loading="lazy" decoding="async">`).join('')}</div>`
+    `<div class="card-label-stack" data-corner="${corner}">${groups[corner].map(l=>`<img class="card-label-img" src="${escapeAttr(l.url)}" alt="" aria-hidden="true" loading="${eager?'eager':'lazy'}" decoding="async">`).join('')}</div>`
   ).join('');
   return { html, hasOutside: active.some(l=>l.outside) };
 }
@@ -17621,6 +17639,7 @@ function moveProduct(idx, targetCatId){
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
 function renderProductAdmin(catId){
+  try{ renderEpOrderPanel(); }catch(e){} // [추가] EDITOR'S PICK 팝업 노출 순서 패널
   if (catId) adminProductViewAll = false;
   // [추가] 전체 보기 모드에서는 추가·초기화 버튼을 숨기고 전체 목록을 그린다
   const _addBtn=document.getElementById('addProductBtn'), _resetBtn=document.getElementById('resetCatBtn');
@@ -17743,6 +17762,37 @@ function updateProduct(idx,field,value){
 // 켤 때는 EDITOR'S PICK 등록 자체도 함께 켜지고(팝업 노출은 EDITOR'S PICK이어야 의미가 있으므로),
 // 끌 때는 EDITOR'S PICK 팝업 노출뿐 아니라 이 상품에 걸려 있는 "항목별 요금표 팝업"(각 요금 항목의
 // pe.popup)까지 모두 함께 꺼서, 리스트의 이 토글 하나로 해당 상품의 모든 팝업 노출을 확실히 끌 수 있게 한다
+// [추가] EDITOR'S PICK 팝업 노출 순서 — 팝업노출을 켠 상품(국내·해외 전체)을 홈 진입 팝업에 넘어가는 순서대로 보여 주고 ▲▼로 바꾼다.
+// 순서는 상품마다 번호(editorsPickPopupOrder, 1부터)로 저장되며 다른 입력값은 건드리지 않는다. 번호가 없는 상품(새로 켠 상품)은 맨 뒤에 붙는다
+function renderEpOrderPanel(){
+  const host = document.getElementById('epOrderPanel'); if (!host) return;
+  const items = getEditorsPickPopupItems(true);
+  if (!items.length){
+    host.innerHTML = `<details class="ep-order-panel"><summary>🔝 EDITOR'S PICK 팝업 노출 순서 <span class="ep-order-cnt">팝업노출 상품 없음</span></summary><div class="ep-order-note">상품 목록에서 <b>팝업노출</b>을 켠 상품이 여기에 나타나고, 홈 진입 팝업이 이 순서대로 넘어갑니다.</div></details>`;
+    return;
+  }
+  const open = host.querySelector('details') ? host.querySelector('details').open : false;
+  host.innerHTML = `<details class="ep-order-panel" ${open?'open':''}>
+    <summary>🔝 EDITOR'S PICK 팝업 노출 순서 <span class="ep-order-cnt">${items.length}개</span></summary>
+    <div class="ep-order-note">홈 진입 팝업이 <b>위에서 아래 순서</b>대로 넘어갑니다(맨 아래 다음은 다시 맨 위). ▲▼로 순서를 바꾸세요. 비노출 상품은 순서에는 남지만 팝업에는 나오지 않습니다.</div>
+    <ol class="ep-order-list">${items.map((it,i)=>`<li class="ep-order-row${isProductVisible(it.product)?'':' ep-order-off'}">
+      <span class="ep-order-no">${i+1}</span>
+      <span class="ep-order-cat">${escapeAttr(it.cat.ko)}</span>
+      <span class="ep-order-title">${it.product.title?escapeAttr(it.product.title):'(제목 없음)'}${isProductVisible(it.product)?'':' <em>비노출</em>'}</span>
+      <button type="button" class="ep-order-btn" ${i===0?'disabled':''} onclick="epOrderMove(${i},-1)" aria-label="위로">▲</button>
+      <button type="button" class="ep-order-btn" ${i===items.length-1?'disabled':''} onclick="epOrderMove(${i},1)" aria-label="아래로">▼</button>
+    </li>`).join('')}</ol>
+  </details>`;
+}
+function epOrderMove(i, dir){
+  const items = getEditorsPickPopupItems(true);
+  const j = i + dir;
+  if (i<0 || j<0 || i>=items.length || j>=items.length) return;
+  const t = items[i]; items[i] = items[j]; items[j] = t;
+  items.forEach((it,k)=>{ it.product.editorsPickPopupOrder = k+1; }); // 보이는 순서 그대로 1부터 다시 번호 매김
+  saveProducts();
+  renderEpOrderPanel();
+}
 function toggleProductPopup(idx, checked){
   if (productOverrides[activeProductCat]===undefined){
     productOverrides[activeProductCat]=tgtMaterializeDefaults(activeProductCat);
@@ -17873,6 +17923,7 @@ function duplicateProduct(idx){
   delete clone.uid; // 복제본은 새 상품 — 고유번호를 새로 받는다
   clone.editorsPick = false; // 복제본이 원본과 함께 EDITOR'S PICK에 중복 노출되지 않도록 기본값으로 되돌림
   clone.editorsPickPopup = false;
+  clone.editorsPickPopupOrder = 0;
   productOverrides[activeProductCat].splice(idx+1, 0, clone);
   saveProducts();renderProductAdmin();renderCategoryGrid();
 }
@@ -22319,20 +22370,33 @@ let epPopupItems = [];
 let epPopupIdx = 0;
 let epPopupTimer = null;
 let epPopupMoveTimer = null;
-function getEditorsPickPopupItems(){
+// [추가] 팝업 노출 순서 — 관리자 "EDITOR'S PICK 팝업 노출 순서"에서 정한 번호(p.editorsPickPopupOrder, 1부터)가 작은 순서로 넘어가고,
+// 번호가 없는 상품은 그 뒤에 기본 순서(국내→해외, 목록 순서)로 이어진다
+function epPopupOrderNum(p){ const n = Number(p && p.editorsPickPopupOrder); return (isFinite(n) && n>0) ? n : Infinity; }
+function getEditorsPickPopupItems(includeHidden){
   const items = [];
   const cats = CATEGORIES.domestic.concat(CATEGORIES.overseas);
   for (const cat of cats){
     getProducts(cat.id).forEach((p,idx)=>{
-      if (p.editorsPick && p.editorsPickPopup && isProductVisible(p)) items.push({cat, product:p, idx});
+      if (p.editorsPick && p.editorsPickPopup && (includeHidden || isProductVisible(p))) items.push({cat, product:p, idx});
     });
   }
-  return items;
+  return items.map((it,k)=>({it,k})).sort((a,b)=>{
+    const oa = epPopupOrderNum(a.it.product), ob = epPopupOrderNum(b.it.product);
+    if (oa===ob) return a.k-b.k;
+    return oa<ob ? -1 : 1;
+  }).map(x=>x.it);
 }
 function showEditorsPickPopup(){
   epPopupItems = getEditorsPickPopupItems();
   if (!epPopupItems.length) return false;
   epPopupIdx = 0;
+  // [수정] 상품 이미지·레이블 이미지를 미리 받아 둬 슬라이드를 넘길 때 레이블이 늦게 뜨지 않게 한다
+  epPopupItems.forEach(it=>{
+    const tm = it.product.titleMedia;
+    if (tm && tm.type==='image' && tm.url){ try{ const im=new Image(); im.src=tm.url; }catch(e){} }
+    (it.product.cardLabels||[]).filter(l=>l.active&&l.url).forEach(l=>{ try{ const im=new Image(); im.src=l.url; }catch(e){} });
+  });
   renderEpPopup();
   const stage = document.getElementById('epPopupStage');
   stage.classList.add('show');
@@ -22340,7 +22404,7 @@ function showEditorsPickPopup(){
   epPopupStartAuto();
   return true;
 }
-function epSlideCardHTML(item, active){
+function epSlideCardHTML(item, active, di){
   const { cat, product:p, idx } = item;
   const pe = (p.priceEntries||[]).find(pe=>!pe.hidden);
   // [수정] 금액 — ① "금액 대신 문구로 표시"를 켰으면 그 문구(상품 카드·스팟라이트와 같은 규칙) ② 요금 항목에 판매가가 있으면 그 금액
@@ -22361,8 +22425,8 @@ function epSlideCardHTML(item, active){
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);
   // [Phase] EDITOR'S PICK 팝업 이미지에도 등록된 레이블 이미지를 동일하게 노출
-  const epLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
-  return `<div class="ep-popup-slide${active?' active':''}">
+  const epLabelOverlay = cardLabelOverlayHTML(p.cardLabels, true); // [수정] 팝업 슬라이드는 옆으로 밀려 화면 밖에 있다가 넘어오므로 레이블 이미지를 미리(lazy 아님) 불러온다
+  return `<div class="ep-popup-slide${active?' active':''}" data-i="${di}">
     <div class="popup-visual${epLabelOverlay.hasOutside?' pv-label-overflow':''}">
       <div class="pv-clip"><div class="pv-bg" style="${bgStyle}"></div></div>
       ${prepOverlayHTML(p)}
@@ -22389,8 +22453,10 @@ function renderEpPopup(){
   stage.innerHTML = `
     <div class="ep-popup-box${anyOutside?' pv-label-overflow':''}" onclick="event.stopPropagation()">
       <div class="ep-popup-viewport">
-        <div class="ep-popup-track" id="epPopupTrack" style="transform:translateX(-${epPopupIdx*100}%)">
-          ${epPopupItems.map((it,i)=>epSlideCardHTML(it, i===epPopupIdx)).join('')}
+        <div class="ep-popup-track" id="epPopupTrack" style="transform:translateX(-${epTrackPos(epPopupIdx)*100}%)">
+          ${n>1 ? epSlideCardHTML(epPopupItems[n-1], (n-1)===epPopupIdx, n-1) : ''}
+          ${epPopupItems.map((it,i)=>epSlideCardHTML(it, i===epPopupIdx, i)).join('')}
+          ${n>1 ? epSlideCardHTML(epPopupItems[0], 0===epPopupIdx, 0) : ''}
         </div>
       </div>
       ${n>1?`<div class="ep-popup-footer">
@@ -22407,7 +22473,20 @@ function renderEpPopup(){
       </div>
     </div>`;
 }
-function epPopupUpdatePosition(){
+// [수정] 끝없이 이어지는(루프) 캐러셀 — 트랙 앞뒤에 마지막/첫 상품 복제본을 하나씩 두어, 마지막에서 다음으로 넘기면 첫 상품이 같은 방향(오른쪽에서
+// 왼쪽)으로 이어서 들어오고, 첫 상품에서 이전으로 넘기면 마지막 상품이 왼쪽에서 들어온다. 애니메이션이 끝나면 눈에 띄지 않게 진짜 슬라이드 위치로 되돌린다
+let epPopupWrapTimer = null;
+function epTrackPos(idx){ return idx + (epPopupItems.length>1 ? 1 : 0); }
+function epPopupFinishWrap(){
+  if (!epPopupWrapTimer) return;
+  clearTimeout(epPopupWrapTimer); epPopupWrapTimer = null;
+  const track = document.getElementById('epPopupTrack'); if (!track) return;
+  track.style.transition = 'none';
+  track.style.transform = `translateX(-${epTrackPos(epPopupIdx)*100}%)`;
+  void track.offsetWidth;
+  track.style.transition = '';
+}
+function epPopupUpdatePosition(pos){
   const track = document.getElementById('epPopupTrack');
   if (track){
     // 슬라이드가 넘어가는 동안만 옆 슬라이드를 보이게 하고 가로를 카드 경계에서 자른다
@@ -22415,8 +22494,8 @@ function epPopupUpdatePosition(){
     vp.classList.add('ep-moving');
     clearTimeout(epPopupMoveTimer);
     epPopupMoveTimer = setTimeout(()=>vp.classList.remove('ep-moving'), 480);
-    track.style.transform = `translateX(-${epPopupIdx*100}%)`;
-    track.querySelectorAll('.ep-popup-slide').forEach((el,i)=>el.classList.toggle('active', i===epPopupIdx));
+    track.style.transform = `translateX(-${(typeof pos==='number' ? pos : epTrackPos(epPopupIdx))*100}%)`;
+    track.querySelectorAll('.ep-popup-slide').forEach(el=>el.classList.toggle('active', Number(el.dataset.i)===epPopupIdx));
   }
   document.querySelectorAll('#epPopupStage .ep-popup-dot').forEach((d,i)=>d.classList.toggle('active', i===epPopupIdx));
   const counter = document.querySelector('#epPopupStage .ep-popup-counter');
@@ -22424,15 +22503,26 @@ function epPopupUpdatePosition(){
 }
 function epPopupGoTo(i){
   if (!epPopupItems.length) return;
+  epPopupFinishWrap();
   epPopupIdx = ((i % epPopupItems.length) + epPopupItems.length) % epPopupItems.length;
   epPopupUpdatePosition();
   epPopupStartAuto(); // 수동 조작 시 자동 슬라이드 타이머를 재시작해 바로 다음으로 넘어가지 않게 함
 }
-function epPopupMove(dir){ epPopupGoTo(epPopupIdx + dir); }
+function epPopupMove(dir){
+  const n = epPopupItems.length; if (n<2) return;
+  epPopupFinishWrap();
+  const next = epPopupIdx + dir;
+  if (next>=0 && next<n){ epPopupGoTo(next); return; }
+  // 끝에서 넘길 때 — 복제본 쪽으로 같은 방향 애니메이션 후 진짜 위치로 되돌림
+  epPopupIdx = (next + n) % n;
+  epPopupUpdatePosition(dir>0 ? n+1 : 0);
+  epPopupStartAuto();
+  epPopupWrapTimer = setTimeout(epPopupFinishWrap, 470);
+}
 function epPopupStartAuto(){
   clearInterval(epPopupTimer);
   if (epPopupItems.length<=1) return;
-  epPopupTimer = setInterval(()=>epPopupGoTo(epPopupIdx+1), 4500);
+  epPopupTimer = setInterval(()=>epPopupMove(1), 4500);
 }
 function epPopupGoToCurrent(){
   const it = epPopupItems[epPopupIdx]; if (!it) return;
@@ -22456,6 +22546,7 @@ function epPopupGoToProduct(catId, idx){
     vp = e.target.closest ? e.target.closest('.ep-popup-viewport') : null;
     if (!vp) return;
     track = document.getElementById('epPopupTrack'); if (!track){ vp=null; return; }
+    epPopupFinishWrap();                                      // 이전 넘김의 복제본 → 진짜 위치 되돌림이 남아 있으면 먼저 끝낸다
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; w = vp.getBoundingClientRect().width || 320;
   }, {passive:true});
   stage.addEventListener('touchmove', e=>{
@@ -22474,7 +22565,7 @@ function epPopupGoToProduct(catId, idx){
     if (mode!=='h') return;
     if (e.cancelable) e.preventDefault();
     dx = x;
-    track.style.transform = `translateX(calc(-${epPopupIdx*100}% + ${dx}px))`;
+    track.style.transform = `translateX(calc(-${epTrackPos(epPopupIdx)*100}% + ${dx}px))`;
   }, {passive:false});
   const end = ()=>{
     if (mode==='h' && track){

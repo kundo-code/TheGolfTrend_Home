@@ -1077,14 +1077,14 @@ section.block{padding:100px 24px;position:relative}
 .pd-day-price-cell .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:var(--pine-deep);white-space:nowrap}
 .pd-day-price-cell .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:var(--gold-deep);font-weight:500;margin-left:1px}
 .pd-day-price-cell .dt{margin-top:4px;font-size:.78rem;font-weight:600;line-height:1.35;color:rgba(10,23,48,.55);word-break:keep-all}
-/* [수정] 3칸 이상 요일별 요금표 — 칸마다 요일·금액·정가·지정일을 같은 높이의 행(서브그리드)에 놓아 금액과 지정일이 같은 선에서 시작하게 하고,
-   금액·정가·지정일은 같은 왼쪽 선에서 시작(요일 글자는 그 위에서 가운데) */
+/* [수정] 3칸 이상 요일별 요금표 — 칸마다 요일·금액·정가·지정일을 같은 높이의 행(서브그리드)에 놓아 칸이 달라도 금액과 지정일이 같은 선에서 시작하게 하고,
+   금액("원" 포함)·정가는 칸 가운데, 지정일은 칸 가운데에 놓은 덩어리 안에서 왼쪽 정렬 */
 .pd-day-price-table.dp-nm{display:grid;grid-auto-rows:auto}
-.pd-day-price-table.dp-nm .pd-day-price-cell{display:grid;grid-row:span 4;grid-template-rows:subgrid;justify-content:center;justify-items:start;row-gap:0;min-width:0}
-.pd-day-price-table.dp-nm .pd-day-price-cell .d{grid-row:1;align-self:start;justify-self:center;text-align:center}
-.pd-day-price-table.dp-nm .pd-day-price-cell .v{grid-row:2;align-self:start;justify-self:start;text-align:left}
-.pd-day-price-table.dp-nm .pd-day-price-cell .was{grid-row:3;align-self:start;justify-self:start;text-align:left}
-.pd-day-price-table.dp-nm .pd-day-price-cell .dt{grid-row:4;align-self:start;justify-self:start;text-align:left}
+.pd-day-price-table.dp-nm .pd-day-price-cell{display:grid;grid-row:span 4;grid-template-rows:subgrid;justify-items:center;row-gap:0;min-width:0}
+.pd-day-price-table.dp-nm .pd-day-price-cell .d{grid-row:1;align-self:start;text-align:center}
+.pd-day-price-table.dp-nm .pd-day-price-cell .v{grid-row:2;align-self:start;text-align:center}
+.pd-day-price-table.dp-nm .pd-day-price-cell .was{grid-row:3;align-self:start;text-align:center}
+.pd-day-price-table.dp-nm .pd-day-price-cell .dt{grid-row:4;align-self:start;text-align:left}
 @media(min-width:781px){.pd-day-price-table.dp-nm{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}}
 .pd-day-price-cell .dt-grp > div{padding:2px 0}
 .pd-day-price-cell .dt .sd-wk{color:#000}.pd-day-price-cell .dt .sd-sat{color:#1877F2}.pd-day-price-cell .dt .sd-sun{color:#DC2626}
@@ -5170,7 +5170,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   .pd-day-price-table.dp-n2{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* [수정] 정확히 3칸 — 4열 격자의 세 칸만 쓰면 오른쪽 한 칸이 비어 왼쪽으로 쏠려 보였다. 3열로 전체 폭을 나눠 쓰고, 칸이 넓어진 만큼 금액 글자를 폭에 맞춰 키운다 */
   .pd-day-price-table:has(> .pd-day-price-cell:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
-  .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(3):last-child) .pd-day-price-cell .v{font-size:min(calc(1.1rem + 3pt), calc((100vw - 78px) / 15.8))}
+  .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(3):last-child) .pd-day-price-cell .v{font-size:min(2rem, calc((100vw - 81px) / 12.5))} /* 3열 칸 폭(≈(화면폭-81)/3)에 금액(Bebas Neue 9자 ≈ 글자크기×3.7)이 거의 차도록 */
   .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(3):last-child) .pd-day-price-cell .d{font-size:calc(.74rem + 2pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .d,.pd-day-price-table.dp-n2 .pd-day-price-cell .d{font-size:calc(.925rem + .25pt)}
   .pd-day-price-table.dp-n1 .pd-day-price-cell .v,.pd-day-price-table.dp-n2 .pd-day-price-cell .v{font-size:calc(1.375rem + 1.25pt)}
@@ -5178,7 +5178,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
   .pd-day-price-table.dp-n2:has(.dt:not(.dt-empty)) .pd-day-price-cell .dt{margin:0 -2px 8px;padding:0 2px 8px}
   /* 3칸 이상 — 금액 숫자만 한 단계(+1pt) 더 키움(4열은 폭에 맞춘 상한 유지, 5개 이상 3열은 +3pt) */
   .pd-day-price-table.dp-nm .pd-day-price-cell .v{font-size:min(calc(1.1rem + 2pt), calc((100vw - 78px) / 15.8))}
-  .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(5)) .pd-day-price-cell .v{font-size:calc(1.1rem + 3pt)}
+  .pd-day-price-table.dp-nm:has(> .pd-day-price-cell:nth-child(5)) .pd-day-price-cell .v{font-size:min(2rem, calc((100vw - 81px) / 12.5))} /* 3열 칸 폭(≈(화면폭-81)/3)에 금액(Bebas Neue 9자 ≈ 글자크기×3.7)이 거의 차도록 */
 }
 
 /* [수정] 위젯(환율·날씨)과 히어로 소개 박스 사이 간격을 40px로 — 위젯 줄 아래쪽 여백(46px)을 없애고 히어로 위쪽 여백을 40px로 맞춘다 */

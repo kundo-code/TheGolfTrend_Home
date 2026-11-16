@@ -3252,10 +3252,16 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
   body.widgets-compact .currency-widget{width:fit-content;height:auto;min-height:var(--currency-h,142px)}
   body.widgets-compact .weather-widget{width:100%;max-width:240px;height:var(--weather-h,142px);box-sizing:border-box}
   body.widgets-compact .weather-widget-jp{width:100%;max-width:240px;height:var(--weather-jp-h,142px);box-sizing:border-box}
-  body.widgets-compact .cur-title{font-size:.95rem;margin-bottom:6px}
-  body.widgets-compact .cur-list .cur-row{font-size:.72rem;gap:4px;padding:0 6px}
-  body.widgets-compact .cur-flag{font-size:1.2rem}
-  body.widgets-compact .cur-calc-btn{font-size:.85rem;padding:8px 5px;margin-top:8px}
+  /* [수정] 컴팩트 모드(위젯이 메뉴바 아래 줄로 내려온 상태)는 위젯 박스가 20% 커진 만큼 환율 글자도 키운다 — 한 줄에 2개씩 2줄, 계산기 버튼은 제목 오른쪽 끝 */
+  body.widgets-compact .cur-head{margin-bottom:11px;gap:12px}
+  body.widgets-compact .cur-title{font-size:1.08rem}
+  body.widgets-compact .cur-list{gap:12px 0}
+  body.widgets-compact .cur-list .cur-row{font-size:.92rem;gap:6px;padding:0 14px 0 0}
+  body.widgets-compact .cur-list .cur-row:nth-child(even){padding:0 0 0 14px}
+  body.widgets-compact .cur-list .cur-flag{font-size:1.45rem}
+  body.widgets-compact .cur-list .cur-rate{font-size:1.1rem}
+  body.widgets-compact .cur-calc-btn{font-size:.8rem;padding:6px 14px}
+  body.widgets-compact .cur-set-btn{width:30px;height:30px;font-size:.95rem}
   body.widgets-compact .wx-loc{font-size:.92rem}
   body.widgets-compact .wx-icon{font-size:1.9rem}
   body.widgets-compact .wx-temp{font-size:1.8rem}
@@ -3368,6 +3374,11 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
     transform:scale(var(--currency-scale,1));transform-origin:top center;
     background:rgba(255,255,255,var(--currency-opacity,.92));
   }
+  /* [수정] 모바일 환율 위젯(폭 348px) — 한 줄에 2개씩 2줄, 글자는 키우고 계산기 버튼은 제목 오른쪽 끝에 둔다 */
+  .currency-widget .cur-title{font-size:1.02rem}
+  .currency-widget .cur-list .cur-row{font-size:.88rem;padding:0 10px 0 0}
+  .currency-widget .cur-list .cur-row:nth-child(even){padding:0 0 0 10px}
+  .currency-widget .cur-list .cur-rate{font-size:1.05rem}
   .widget-drag-wrap.widget-hidden .widget-box{pointer-events:none}
   /* [추가] 위젯을 화면 밖으로 드래그해 숨기면, 숨겨진 위젯 쪽 가장자리에 작은 손잡이(peek handle)
      하나만 화면 안에 남겨 다시 탭하거나 안쪽으로 드래그해 꺼낼 수 있게 한다. 날씨(서울)는 왼쪽으로,
@@ -3414,25 +3425,22 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .widget-box .wx-loc{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 55%, transparent)}
 .widget-box .wx-label{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 70%, transparent)}
 .widget-box .wx-sub{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 50%, transparent)}
-.cur-title{font-size:.8rem;font-weight:700;margin-bottom:4px}
+.cur-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.cur-head-btns{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.cur-title{font-size:.95rem;font-weight:700;margin:0;white-space:nowrap}
 /* [수정] 위젯 안의 실시간 환율은 국가별 통화 항목 사이에 구분선을 두고 한 줄로 가로로 길게
    배치한다(환율 계산기 모달의 전체 통화 목록 .cur-full-list는 세로 목록을 그대로 유지 — .cur-row는
    두 곳에서 공유되므로 .cur-list 안에서만 가로형으로 덮어쓴다) */
-.cur-list{display:flex;align-items:center;justify-content:space-between}
-/* [수정] 환율 위젯 폭을 날씨 위젯 2개를 합친 폭(348px)에 고정한 뒤로는, 그 폭 안에 달러·엔화·
-   링깃 3개가 항상 한 줄로 다 들어가도록(요청사항) 줄바꿈을 명시적으로 막는다. 폭이 이보다 더
-   좁아지는 극단적으로 좁은 화면(예: 320px, 환율 위젯 자체가 max-width:100%로 348px보다 줄어드는
-   경우)에서는 내용이 넘치면 위젯 박스의 overflow:hidden(.widget-box 기본 규칙)에 의해 시각적으로
-   잘릴 수 있다 — 폭 고정과 "항상 1줄" 요구사항을 동시에 만족하려면 불가피한 트레이드오프다 */
-.mobile-widget-row .cur-list{flex-wrap:nowrap;justify-content:center}
+/* [수정] 위젯 안의 실시간 환율은 한 줄에 통화 2개씩 최대 2줄(4개)로 배치하고 글자를 크게 한다. 같은 줄의 두 통화 사이에는 가는 구분선을 둔다
+   (환율 계산기 창의 전체 통화 목록 .cur-full-list는 세로 목록 그대로 — .cur-row는 두 곳에서 공유되므로 .cur-list 안에서만 덮어쓴다) */
+.cur-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 0;align-items:center}
+.cur-list.cur-n1{grid-template-columns:minmax(0,1fr)}
 .cur-row{display:flex;align-items:center;gap:6px;font-size:.8rem}
-/* [수정] 좌측 첫 항목(달러)은 padding-left만 0으로 지워 위젯 자체 여백(.widget-box padding)에
-   맡기고, 우측 마지막 항목(링깃)도 이전에는 padding-right까지 0으로 지워 우측 여백이 좌측보다
-   좁아 보였다 — border-right만 지우고 padding-right는 다른 항목과 동일하게 유지해 좌우 여백을
-   대칭으로 맞춘다. 대신 늘어난 폭만큼 폰트 크기를 줄여 위젯 전체 폭이 커지지 않도록 한다 */
-.cur-list .cur-row{gap:2px;padding:0 4px;font-size:.58rem;white-space:nowrap;border-right:1px solid rgba(10,23,48,.15)}
-.cur-list .cur-row:first-child{padding-left:0}
-.cur-list .cur-row:last-child{border-right:none}
+.cur-list .cur-row{gap:5px;padding:0 12px 0 0;font-size:.82rem;white-space:nowrap;min-width:0}
+.cur-list .cur-row:nth-child(odd):not(:last-child){border-right:1px solid color-mix(in srgb, currentColor 22%, transparent)}
+.cur-list .cur-row:nth-child(even){padding:0 0 0 12px}
+.cur-list .cur-flag{font-size:1.25rem;line-height:1}
+.cur-list .cur-rate{margin-left:auto;font-size:.98rem}
 .cur-flag{font-size:1rem}
 .cur-name{flex:1;color:rgba(10,23,48,.7)}
 .widget-box .cur-name{color:color-mix(in srgb, var(--widget-font-color, var(--widget-default-fc,#fff)) 70%, transparent)}
@@ -3440,7 +3448,18 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .cur-rate{font-weight:700}
 /* [수정] 세로 길이를 2px 늘리기 위해 상하 padding만 5px→6px로(좌우는 그대로 5px) — 버튼 폭은
    부모(.currency-widget)의 padding box(좌우 여백이 이제 항상 대칭)를 100% 그대로 채운다 */
-.cur-calc-btn{margin-top:6px;width:100%;padding:6px 5px;border:none;border-radius:8px;background:var(--gold);color:#fff;font-size:.75rem;font-weight:600;cursor:pointer}
+.cur-calc-btn{margin:0;width:auto;padding:5px 11px;border:none;border-radius:999px;background:var(--gold);color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.cur-set-btn{width:26px;height:26px;padding:0;border-radius:50%;border:1px solid color-mix(in srgb, currentColor 35%, transparent);background:transparent;color:inherit;font-size:.85rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.cur-set-btn:hover{background:color-mix(in srgb, currentColor 14%, transparent)}
+/* 환율 계산기 창 — 위젯에 표시할 통화 선택 */
+.cur-pick{margin:4px 0 14px;padding:12px;border-radius:12px;background:rgba(10,23,48,.04)}
+.cur-pick-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem}
+.cur-pick-cnt{font-size:.72rem;color:rgba(10,23,48,.55)}
+.cur-pick-reset{margin-left:auto;padding:4px 10px;border-radius:999px;border:1px solid rgba(10,23,48,.18);background:#fff;font-size:.68rem;cursor:pointer;color:rgba(10,23,48,.7)}
+.cur-pick-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cur-chip{padding:6px 11px;border-radius:999px;border:1px solid rgba(10,23,48,.18);background:#fff;font-size:.78rem;cursor:pointer;color:rgba(10,23,48,.75)}
+.cur-chip.on{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700}
+.cur-pick-msg{margin-top:8px;font-size:.68rem;color:rgba(10,23,48,.55);line-height:1.4}
 .cur-calc-btn:hover{background:var(--gold-deep)}
 /* 날씨·환율 상세 오버레이(클릭 시 팝업) */
 .widget-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
@@ -9676,22 +9695,78 @@ const WEATHER_LOCATION = { name:'서울특별시 강남구 세곡동', lat:37.46
 // 같은 목록을 대표 좌표와 함께 정리. 국가/권역 전체를 대표하는 주요 도시 좌표를 사용한다(정확한
 // 지점 단위 예보가 아니라 해당 권역/국가의 대략적인 날씨 참고용)
 const WEATHER_LOCATIONS = [
-  { id:'default', name:WEATHER_LOCATION.name, lat:WEATHER_LOCATION.lat, lon:WEATHER_LOCATION.lon },
-  { id:'gangwon', name:'강원권 (춘천)', lat:37.8228, lon:128.1555 },
-  { id:'chungcheong', name:'충청권 (대전)', lat:36.3504, lon:127.3845 },
-  { id:'honam', name:'호남권 (광주)', lat:35.1595, lon:126.8526 },
-  { id:'yeongnam', name:'영남권 (부산)', lat:35.1796, lon:129.0756 },
-  { id:'capital', name:'수도권 (서울)', lat:37.5665, lon:126.9780 },
-  { id:'jeju', name:'제주', lat:33.4996, lon:126.5312 },
-  { id:'japan', name:'일본 (도쿄)', lat:35.6762, lon:139.6503 },
-  { id:'china', name:'중국 (베이징)', lat:39.9042, lon:116.4074 },
-  { id:'mongolia', name:'몽골 (울란바토르)', lat:47.8864, lon:106.9057 },
-  { id:'vietnam', name:'베트남 (하노이)', lat:21.0278, lon:105.8342 },
-  { id:'thailand', name:'태국 (방콕)', lat:13.7563, lon:100.5018 },
-  { id:'philippines', name:'필리핀 (마닐라)', lat:14.5995, lon:120.9842 },
-  { id:'malaysia', name:'말레이시아 (쿠알라룸푸르)', lat:3.1390, lon:101.6869 },
-  { id:'indonesia', name:'인도네시아 (발리)', lat:-8.6500, lon:115.2167 },
-  { id:'guam', name:'미국령-괌/사이판 (괌)', lat:13.4443, lon:144.7937 },
+  // [수정] g = 날씨 상세 팝업 지역 선택 목록의 묶음(국내 / 나라별). 해외는 나라별로 주요 도시를 함께 두고, 국내와 해외 사이에는 구분선을 넣는다.
+  // 기존 id(default·gangwon…·japan·china…·guam)는 위젯이 저장해 둔 선택값과 연결돼 있으므로 그대로 둔다
+  { id:'default', name:WEATHER_LOCATION.name, lat:WEATHER_LOCATION.lat, lon:WEATHER_LOCATION.lon, g:'국내' },
+  { id:'gangwon', name:'강원권 (춘천)', lat:37.8228, lon:128.1555, g:'국내' },
+  { id:'chungcheong', name:'충청권 (대전)', lat:36.3504, lon:127.3845, g:'국내' },
+  { id:'honam', name:'호남권 (광주)', lat:35.1595, lon:126.8526, g:'국내' },
+  { id:'yeongnam', name:'영남권 (부산)', lat:35.1796, lon:129.0756, g:'국내' },
+  { id:'capital', name:'수도권 (서울)', lat:37.5665, lon:126.9780, g:'국내' },
+  { id:'jeju', name:'제주', lat:33.4996, lon:126.5312, g:'국내' },
+  // 일본
+  { id:'japan', name:'일본 (도쿄)', lat:35.6762, lon:139.6503, g:'🇯🇵 일본' },
+  { id:'jp-numazu', name:'일본 (누마즈시)', lat:35.0956, lon:138.8639, g:'🇯🇵 일본' },
+  { id:'jp-shizuoka', name:'일본 (시즈오카)', lat:34.9756, lon:138.3828, g:'🇯🇵 일본' },
+  { id:'jp-gotemba', name:'일본 (고텐바·후지산)', lat:35.3086, lon:138.9353, g:'🇯🇵 일본' },
+  { id:'jp-kumamoto', name:'일본 (구마모토)', lat:32.8032, lon:130.7079, g:'🇯🇵 일본' },
+  { id:'jp-fukuoka', name:'일본 (후쿠오카)', lat:33.5904, lon:130.4017, g:'🇯🇵 일본' },
+  { id:'jp-kagoshima', name:'일본 (가고시마)', lat:31.5966, lon:130.5571, g:'🇯🇵 일본' },
+  { id:'jp-oita', name:'일본 (오이타·벳푸)', lat:33.2382, lon:131.6126, g:'🇯🇵 일본' },
+  { id:'jp-osaka', name:'일본 (오사카)', lat:34.6937, lon:135.5023, g:'🇯🇵 일본' },
+  { id:'jp-nagoya', name:'일본 (나고야)', lat:35.1815, lon:136.9066, g:'🇯🇵 일본' },
+  { id:'jp-sapporo', name:'일본 (삿포로)', lat:43.0618, lon:141.3545, g:'🇯🇵 일본' },
+  { id:'jp-okinawa', name:'일본 (오키나와·나하)', lat:26.2124, lon:127.6809, g:'🇯🇵 일본' },
+  // 중국
+  { id:'china', name:'중국 (베이징)', lat:39.9042, lon:116.4074, g:'🇨🇳 중국' },
+  { id:'cn-shanghai', name:'중국 (상하이)', lat:31.2304, lon:121.4737, g:'🇨🇳 중국' },
+  { id:'cn-guilin', name:'중국 (계림)', lat:25.2736, lon:110.2907, g:'🇨🇳 중국' },
+  { id:'cn-qingdao', name:'중국 (칭다오)', lat:36.0671, lon:120.3826, g:'🇨🇳 중국' },
+  { id:'cn-linyi', name:'중국 (산둥 임기)', lat:35.1041, lon:118.3564, g:'🇨🇳 중국' },
+  { id:'cn-yantai', name:'중국 (옌타이)', lat:37.4638, lon:121.4479, g:'🇨🇳 중국' },
+  { id:'cn-weihai', name:'중국 (웨이하이)', lat:37.5131, lon:122.1204, g:'🇨🇳 중국' },
+  { id:'cn-guangzhou', name:'중국 (광저우)', lat:23.1291, lon:113.2644, g:'🇨🇳 중국' },
+  { id:'cn-shenzhen', name:'중국 (선전)', lat:22.5431, lon:114.0579, g:'🇨🇳 중국' },
+  { id:'cn-kunming', name:'중국 (쿤밍)', lat:25.0389, lon:102.7183, g:'🇨🇳 중국' },
+  { id:'cn-sanya', name:'중국 (하이난 싼야)', lat:18.2528, lon:109.5119, g:'🇨🇳 중국' },
+  // 태국
+  { id:'thailand', name:'태국 (방콕)', lat:13.7563, lon:100.5018, g:'🇹🇭 태국' },
+  { id:'th-pattaya', name:'태국 (파타야)', lat:12.9236, lon:100.8825, g:'🇹🇭 태국' },
+  { id:'th-chiangmai', name:'태국 (치앙마이)', lat:18.7883, lon:98.9853, g:'🇹🇭 태국' },
+  { id:'th-phuket', name:'태국 (푸껫)', lat:7.8804, lon:98.3923, g:'🇹🇭 태국' },
+  { id:'th-huahin', name:'태국 (후아힌)', lat:12.5684, lon:99.9577, g:'🇹🇭 태국' },
+  { id:'th-kanchanaburi', name:'태국 (칸차나부리)', lat:14.0228, lon:99.5328, g:'🇹🇭 태국' },
+  // 베트남
+  { id:'vietnam', name:'베트남 (하노이)', lat:21.0278, lon:105.8342, g:'🇻🇳 베트남' },
+  { id:'vn-haiphong', name:'베트남 (하이퐁)', lat:20.8449, lon:106.6881, g:'🇻🇳 베트남' },
+  { id:'vn-vinhyen', name:'베트남 (빈옌·푸토)', lat:21.3089, lon:105.6049, g:'🇻🇳 베트남' },
+  { id:'vn-danang', name:'베트남 (다낭)', lat:16.0544, lon:108.2022, g:'🇻🇳 베트남' },
+  { id:'vn-hochiminh', name:'베트남 (호치민)', lat:10.8231, lon:106.6297, g:'🇻🇳 베트남' },
+  { id:'vn-nhatrang', name:'베트남 (나트랑)', lat:12.2388, lon:109.1967, g:'🇻🇳 베트남' },
+  { id:'vn-phuquoc', name:'베트남 (푸꾸옥)', lat:10.2899, lon:103.9840, g:'🇻🇳 베트남' },
+  { id:'vn-dalat', name:'베트남 (달랏)', lat:11.9404, lon:108.4583, g:'🇻🇳 베트남' },
+  // 말레이시아
+  { id:'malaysia', name:'말레이시아 (쿠알라룸푸르)', lat:3.1390, lon:101.6869, g:'🇲🇾 말레이시아' },
+  { id:'my-johor', name:'말레이시아 (조호르바루)', lat:1.4927, lon:103.7414, g:'🇲🇾 말레이시아' },
+  { id:'my-kotakinabalu', name:'말레이시아 (코타키나발루)', lat:5.9804, lon:116.0735, g:'🇲🇾 말레이시아' },
+  { id:'my-penang', name:'말레이시아 (페낭)', lat:5.4141, lon:100.3288, g:'🇲🇾 말레이시아' },
+  { id:'my-malacca', name:'말레이시아 (말라카)', lat:2.1896, lon:102.2501, g:'🇲🇾 말레이시아' },
+  // 필리핀
+  { id:'philippines', name:'필리핀 (마닐라)', lat:14.5995, lon:120.9842, g:'🇵🇭 필리핀' },
+  { id:'ph-clark', name:'필리핀 (클락)', lat:15.1450, lon:120.5887, g:'🇵🇭 필리핀' },
+  { id:'ph-cebu', name:'필리핀 (세부)', lat:10.3157, lon:123.8854, g:'🇵🇭 필리핀' },
+  { id:'ph-boracay', name:'필리핀 (보라카이)', lat:11.9674, lon:121.9248, g:'🇵🇭 필리핀' },
+  { id:'ph-subic', name:'필리핀 (수빅)', lat:14.8200, lon:120.2800, g:'🇵🇭 필리핀' },
+  // 인도네시아
+  { id:'indonesia', name:'인도네시아 (발리)', lat:-8.6500, lon:115.2167, g:'🇮🇩 인도네시아' },
+  { id:'id-jakarta', name:'인도네시아 (자카르타)', lat:-6.2088, lon:106.8456, g:'🇮🇩 인도네시아' },
+  { id:'id-batam', name:'인도네시아 (바탐)', lat:1.0456, lon:104.0305, g:'🇮🇩 인도네시아' },
+  { id:'id-bintan', name:'인도네시아 (빈탄)', lat:1.1167, lon:104.4000, g:'🇮🇩 인도네시아' },
+  { id:'id-lombok', name:'인도네시아 (롬복)', lat:-8.5833, lon:116.1167, g:'🇮🇩 인도네시아' },
+  // 그 밖의 해외
+  { id:'sg-singapore', name:'싱가포르', lat:1.3521, lon:103.8198, g:'🇸🇬 싱가포르' },
+  { id:'mongolia', name:'몽골 (울란바토르)', lat:47.8864, lon:106.9057, g:'🇲🇳 몽골' },
+  { id:'guam', name:'미국령-괌/사이판 (괌)', lat:13.4443, lon:144.7937, g:'🇺🇸 괌·사이판' },
 ];
 const WMO_CODES = {
   0:{icon:'☀️',label:'맑음'}, 1:{icon:'🌤️',label:'대체로 맑음'}, 2:{icon:'⛅',label:'구름 조금'}, 3:{icon:'☁️',label:'흐림'},
@@ -9815,7 +9890,12 @@ function renderWeatherDetail(){
   if (!body) return;
   if (tabs) tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.tab===weatherDetailTab));
   if (select && select.options.length===0){
-    select.innerHTML = WEATHER_LOCATIONS.map(l=>`<option value="${l.id}">${escapeAttr(l.name)}</option>`).join('');
+    // [수정] 국내 지역과 해외 지역 사이에 구분선을 넣고, 해외는 나라별로 묶어(일본·중국·태국·베트남·말레이시아·필리핀·인도네시아…) 주요 도시를 보여 준다
+    const groups = []; WEATHER_LOCATIONS.forEach(l=>{ let g=groups.find(x=>x.g===l.g); if (!g){ g={g:l.g, items:[]}; groups.push(g); } g.items.push(l); });
+    select.innerHTML = groups.map((g,gi)=>{
+      const sep = (gi>0 && groups[gi-1].g==='국내') ? '<option disabled>────────────</option>' : '';
+      return sep + `<optgroup label="${escapeAttr(g.g==='국내' ? '🇰🇷 국내 지역' : g.g)}">` + g.items.map(l=>`<option value="${l.id}">${escapeAttr(l.name)}</option>`).join('') + '</optgroup>';
+    }).join('');
   }
   if (select) select.value = weatherSelectedLocId;
   const curLoc = WEATHER_LOCATIONS.find(l=>l.id===weatherSelectedLocId);
@@ -9893,12 +9973,48 @@ function toggleJapanWeatherDetail(){ openWeatherDetailFor('japan'); }
 // 기준환율을 하루 1회 갱신해 제공한다(특정 은행의 실시간 매매기준율과는 다를 수 있어 위젯·계산기
 // 화면에 안내 문구를 함께 노출한다). 기본으로 원/달러/엔화/링깃을 보여주고, 계산기에서는 동아시아·
 // 동남아시아 주요 통화를 모두 선택할 수 있다
-const CURRENCY_DEFAULT_LIST = ['USD','JPY','MYR'];
+// [수정] 위젯 기본 표시 통화: 달러·엔화·위안·링깃(4개, 한 줄에 2개씩 2줄). 사용자는 환율 계산기 창의 "위젯에 표시할 통화"(또는 위젯의 ⚙)에서 원하는 통화를
+// 최대 4개까지 골라 바꿀 수 있고, 선택은 이 기기(브라우저)에 저장된다
+const CURRENCY_DEFAULT_LIST = ['USD','JPY','CNY','MYR'];
+const CURRENCY_PICK_KEY = 'kundo_currency_pick_v1', CURRENCY_PICK_MAX = 4;
+// per = 값이 너무 작은 통화는 그 단위(예: 100동)당 원화로 보여 준다
 const CURRENCY_LABELS = {
   USD:{name:'달러', flag:'🇺🇸'}, JPY:{name:'엔화', flag:'🇯🇵'}, CNY:{name:'위안', flag:'🇨🇳'},
-  MYR:{name:'링깃', flag:'🇲🇾'}, THB:{name:'바트', flag:'🇹🇭'}, VND:{name:'동', flag:'🇻🇳'},
-  PHP:{name:'페소', flag:'🇵🇭'}, IDR:{name:'루피아', flag:'🇮🇩'},
+  MYR:{name:'링깃', flag:'🇲🇾'}, THB:{name:'바트', flag:'🇹🇭'}, VND:{name:'동', flag:'🇻🇳', per:100},
+  PHP:{name:'페소', flag:'🇵🇭'}, IDR:{name:'루피아', flag:'🇮🇩', per:100},
+  SGD:{name:'싱가포르달러', flag:'🇸🇬'}, TWD:{name:'대만달러', flag:'🇹🇼'}, HKD:{name:'홍콩달러', flag:'🇭🇰'},
+  EUR:{name:'유로', flag:'🇪🇺'}, GBP:{name:'파운드', flag:'🇬🇧'}, AUD:{name:'호주달러', flag:'🇦🇺'},
+  MNT:{name:'투그릭', flag:'🇲🇳', per:100},
 };
+let currencyPick = (()=>{
+  try{
+    const a = JSON.parse(localStorage.getItem(CURRENCY_PICK_KEY)||'null');
+    if (Array.isArray(a)){ const v = a.filter((c,i)=>CURRENCY_LABELS[c] && a.indexOf(c)===i).slice(0,CURRENCY_PICK_MAX); if (v.length) return v; }
+  }catch(e){}
+  return CURRENCY_DEFAULT_LIST.slice();
+})();
+let currencyPickMsg = '';
+// 위젯에 보여 줄 통화 — 목록 순서(달러·엔화·위안·링깃…)대로
+function currencyShowList(){ return Object.keys(CURRENCY_LABELS).filter(c=>currencyPick.includes(c)); }
+function saveCurrencyPick(){ try{ localStorage.setItem(CURRENCY_PICK_KEY, JSON.stringify(currencyPick)); }catch(e){} }
+function toggleCurrencyPick(code){
+  currencyPickMsg = '';
+  if (currencyPick.includes(code)){
+    if (currencyPick.length<=1){ currencyPickMsg = '최소 1개는 선택해야 해요.'; }
+    else currencyPick = currencyPick.filter(c=>c!==code);
+  } else if (currencyPick.length>=CURRENCY_PICK_MAX){
+    currencyPickMsg = `최대 ${CURRENCY_PICK_MAX}개까지 선택할 수 있어요. 다른 통화를 먼저 해제해 주세요.`;
+  } else currencyPick = currencyPick.concat(code);
+  saveCurrencyPick(); renderCurrencyWidget(); renderCurrencyDetail();
+}
+function resetCurrencyPick(){ currencyPick = CURRENCY_DEFAULT_LIST.slice(); currencyPickMsg=''; saveCurrencyPick(); renderCurrencyWidget(); renderCurrencyDetail(); }
+// 통화 이름·환율 표기 — per가 있는 통화는 "100동 5.7원"처럼 그 단위로
+function curDispName(code){ const l=CURRENCY_LABELS[code]||{name:code}; return (l.per>1 ? l.per : '')+l.name; }
+function curDispRate(code){
+  const k = krwPerUnit(code); if (!k) return '-';
+  const per = (CURRENCY_LABELS[code]&&CURRENCY_LABELS[code].per)||1;
+  return (k*per).toLocaleString('ko-KR',{maximumFractionDigits:2})+'원';
+}
 // [추가] 환율 계산기의 "기준 통화"(FROM) 선택지 — 목록의 외화뿐 아니라 원화(KRW)도 포함해,
 // 원화→외화·외화→원화·외화→외화(예: 달러→엔화) 어느 방향으로든 계산할 수 있게 한다. 참고용
 // 전체 환율 표(cur-full-list)는 기존처럼 외화만 보여주므로 CURRENCY_LABELS는 그대로 둔다
@@ -9932,25 +10048,34 @@ function renderCurrencyWidget(){
     scheduleWidgetSync();
     return;
   }
+  const show = currencyShowList();
   el.innerHTML = `
-    <div class="cur-title">실시간 환율</div>
-    <div class="cur-list">${CURRENCY_DEFAULT_LIST.map(code=>{
-      const per = krwPerUnit(code);
+    <div class="cur-head">
+      <div class="cur-title">실시간 환율</div>
+      <div class="cur-head-btns">
+        <button type="button" class="cur-set-btn" onclick="toggleCurrencyDetail('pick')" title="위젯에 표시할 통화 선택" aria-label="위젯에 표시할 통화 선택">⚙</button>
+        <button type="button" class="cur-calc-btn" onclick="toggleCurrencyDetail()">💱 환율 계산기</button>
+      </div>
+    </div>
+    <div class="cur-list cur-n${show.length}">${show.map(code=>{
       const lbl = CURRENCY_LABELS[code]||{name:code,flag:''};
-      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${lbl.name}</span><span class="cur-rate">${per?per.toLocaleString('ko-KR',{maximumFractionDigits:2}):'-'}원</span></div>`;
+      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}</span><span class="cur-rate">${curDispRate(code)}</span></div>`;
     }).join('')}</div>
-    <button type="button" class="cur-calc-btn" onclick="toggleCurrencyDetail()">💱 환율 계산기</button>
   `;
   scheduleWidgetSync();
 }
-function toggleCurrencyDetail(){
+function toggleCurrencyDetail(focus){
   const overlay = document.getElementById('currencyDetailOverlay');
   if (!overlay) return;
   const willShow = !overlay.classList.contains('show');
   overlay.classList.toggle('show', willShow);
   tgtScrollLock('currency', willShow);
   if (!willShow && window.syncNavState) setTimeout(window.syncNavState, 50);
-  if (willShow) renderCurrencyDetail();
+  if (willShow){
+    renderCurrencyDetail();
+    // 위젯의 ⚙에서 열었으면 "위젯에 표시할 통화" 선택 영역으로 바로 이동
+    if (focus==='pick') setTimeout(()=>{ const b=document.getElementById('curPickBox'); if (b) b.scrollIntoView({block:'center'}); }, 60);
+  }
 }
 let currencyCalcAmount = 10000, currencyCalcFrom = 'KRW', currencyCalcCode = 'USD';
 function setCurrencyCalcAmount(v){ currencyCalcAmount = Number(v)||0; renderCurrencyDetail(); }
@@ -9984,10 +10109,14 @@ function renderCurrencyDetail(){
       <select onchange="setCurrencyCalcCode(this.value)">${calcOptions(currencyCalcCode)}</select>
     </div>
     <div class="cur-calc-result">${result.toLocaleString('ko-KR',{maximumFractionDigits:2})} ${CALC_CURRENCY_LABELS[currencyCalcCode].name}</div>
+    <div class="cur-pick" id="curPickBox">
+      <div class="cur-pick-head"><b>📌 위젯에 표시할 통화</b><span class="cur-pick-cnt">${currencyPick.length}/${CURRENCY_PICK_MAX}개 선택</span><button type="button" class="cur-pick-reset" onclick="resetCurrencyPick()">기본값(달러·엔화·위안·링깃)</button></div>
+      <div class="cur-pick-chips">${allCodes.map(code=>{ const l=CURRENCY_LABELS[code]; return `<button type="button" class="cur-chip${currencyPick.includes(code)?' on':''}" aria-pressed="${currencyPick.includes(code)}" onclick="toggleCurrencyPick('${code}')">${l.flag} ${l.name}</button>`; }).join('')}</div>
+      <div class="cur-pick-msg" role="status">${currencyPickMsg?escapeAttr(currencyPickMsg):'골라 둔 통화가 홈 화면 "실시간 환율"에 한 줄에 2개씩 보여요. 이 기기에 저장돼요.'}</div>
+    </div>
     <div class="cur-full-list">${allCodes.map(code=>{
-      const p = krwPerUnit(code);
       const lbl=CURRENCY_LABELS[code];
-      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${lbl.name}(${code})</span><span class="cur-rate">${p?p.toLocaleString('ko-KR',{maximumFractionDigits:2}):'-'}원</span></div>`;
+      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}(${code})</span><span class="cur-rate">${curDispRate(code)}</span></div>`;
     }).join('')}</div>
     <div class="cur-disclaimer">※ 은행 간 기준환율(${updated} 갱신)이며, 실제 환전 시 금융기관이 고시하는 매매기준율(스프레드 포함)과는 다를 수 있습니다.</div>
   `;

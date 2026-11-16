@@ -18993,10 +18993,12 @@ function advBasicHTML(p){
 // ═══ 🤖 AI 추천 정보 — AI 골프여행 추천의 선호 스타일·세부 조건 판정에 쓰는 상품 정보(모두 선택 입력) ═══
 // 값 형식: text/num은 문자열·숫자, select는 옵션 문자열, yn은 'y'|'n', multi는 문자열 배열. 비워 두면 키를 지워 '미확인'으로 둔다
 // 가까운 정도 — 숙소 기준 이동 시간 단계. '가까움' 조건은 차량 15분 이내까지(AI_PROX_NEAR)
-const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['v15','차량 15분 이내'], ['v30','차량 30분 이내'], ['far','30분 초과'], ['none','없음']];
+const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['v15','차량 15분 이내'], ['v30','차량 30분 이내'], ['v60','차량 1시간 이내'], ['far60','차량 1시간 초과'], ['none','없음']];
+// 예전 단계 '30분 초과'(far)로 저장된 값은 그대로 보존 — 선택 칸에 '(예전 값)'으로 남고 판정은 '떨어짐'으로 같음
+const AI_PROX_LEGACY = {far:'30분 초과'};
 const AI_PROX_NEAR = ['in','v15'];
 const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 30분 이내는 \'조금 떨어짐\'으로 안내합니다. 확인 안 되면 미확인.';
-function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : v; }
+function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (AI_PROX_LEGACY[v] || v); }
 // 숙소 등록부 항목
 const AI_LODGE_FIELDS = [
   {k:'name', label:'숙소명', type:'text', help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
@@ -19208,11 +19210,12 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
   }
   if (fd.type==='select' || fd.type==='yn' || fd.type==='prox' || fd.type==='cat'){
     const opts = fd.type==='yn' ? [['y', fd.yes||'예'], ['n', fd.no||'아니오']]
-      : fd.type==='prox' ? AI_PROX_OPTS
+      : fd.type==='prox' ? AI_PROX_OPTS.slice()
       : fd.type==='cat' ? CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>[c.id, c.ko])
       : fd.opts.map(o=>[o,o]);
     // 옵션에서 빠진 예전 값이 저장돼 있으면 사라지지 않게 '(예전 값)' 항목으로 남겨 둔다
     if (fd.type==='select' && aiInfoFilled(v) && !opts.some(o=>o[0]===String(v))) opts.push([String(v), String(v)+' (예전 값)']);
+    if (fd.type==='prox' && AI_PROX_LEGACY[v]) opts.push([v, AI_PROX_LEGACY[v]+' (예전 값)']);
     // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
     const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace

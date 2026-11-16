@@ -4637,6 +4637,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-info-f{padding:8px 10px 9px;border-radius:12px;border:1px dashed rgba(10,23,48,.16);background:rgba(255,255,255,.45);transition:background .15s,border-color .15s}
 .ai-info-f:not(.filled) select,.ai-info-f:not(.filled) input[type=text],.ai-info-f:not(.filled) input[type=number]{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
 .ai-info-f select option{color:#0a1730}
+.ai-info-f.ai-wide{grid-column:1/-1}
+.ai-info-fnote{font-size:.74rem;line-height:1.45;color:var(--nm-text-soft,#667);font-weight:500}
 .ai-info-f textarea{width:100%;box-sizing:border-box;min-height:64px;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font-size:.86rem;font-family:inherit;line-height:1.5;resize:vertical}
 .ai-info-f:not(.filled) textarea{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
 .ai-info-f.filled textarea{border-color:#16a34a;color:#064e3b;font-weight:600;background:#fff}
@@ -11212,7 +11214,7 @@ const AI_PLACES_KEY='kundo_ai_places_v1';
 let aiPlaces={lodges:[], courses:[]};
 function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
-function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x) aiCourseAutoLevel(x); return x; }
+function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x && x.turf && !x.turfFairway) x.turfFairway = x.turf; /* 예전 '잔디 상태'는 페어웨이 칸으로 이어받음(원본 값은 그대로 보존) */ if (x) aiCourseAutoLevel(x); return x; }
 // Slope → 난이도(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적). Slope를 찾지 못하면 ''
 function aiSlopeOf(rating){ const nums = String(rating||'').match(/\d+(?:\.\d+)?/g); if (!nums) return null; const sl = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop(); return sl==null ? null : sl; }
 function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? '쉬움' : (sl<135 ? '보통' : '도전적')); }
@@ -19028,17 +19030,18 @@ const AI_COURSE_FIELDS = [
   {k:'par', label:'PAR', type:'num', help:'정규 18홀 기준 PAR.'},
   {k:'courseLength', label:'전장', type:'len', help:'레귤러(화이트) 티 기준. 숫자를 입력하고 단위를 고르세요 — 야드로 입력한 뒤 m를 고르면 미터로 자동 환산됩니다(1yd = 0.9144m, 반대도 동일).'},
   {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'레귤러(남성 화이트) 티 기준, 골프장·협회가 공개한 값만(백 티 값만 있으면 비워 두고 메모에). 국내 골프장은 위 🔍 검색에서 고르면 KGA 값이 자동 입력됩니다. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
-  {k:'turf', label:'잔디 상태', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
+  {k:'turfFairway', label:'잔디 상태 · 페어웨이', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
+  {k:'turfGreen', label:'잔디 상태 · 그린', type:'text', ph:'예: 벤트그라스, 그린 상태 양호', help:'그린 잔디 종류와 최근 확인한 관리 상태.'},
   {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼'], help:'평탄: 대부분 평지 · 보통 · 큼: 오르막·내리막이 많아 카트 이동이 사실상 필수.'},
   {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상). Course Rating · Slope를 입력하면 이 기준으로 자동 선택됩니다(직접 고르면 그 값이 우선, \'미확인\'을 고르면 다시 자동).'},
   {k:'famous', label:'명문·대회 개최', type:'yn', help:'프로 투어(KPGA·KLPGA·JGTO·아시안투어·LPGA 등) 정규 대회 개최 이력이 있거나 공신력 있는 골프장 랭킹(국가별 100대 등)에 든 곳이면 \'예\'.'},
   {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통'], help:'우수: 최근 1년 안에 현장 확인 또는 고객 평가로 잔디·그린·시설 관리가 좋다고 확인됨. 근거가 없으면 미확인.'},
-  {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','페어웨이 진입 불가','카트 없음(도보)'], help:'페어웨이 진입 불가: 카트 도로로만 이동. 평소 운영 기준(우천 등 예외 제외).'},
+  {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','페어웨이 진입 불가','카트 없음(도보)'], note:'우천 및 골프 코스 상태에 따라 진입 여부 확인(현장체크)', help:'페어웨이 진입 불가: 카트 도로로만 이동. 평소 운영 기준(우천 등 예외 제외).'},
   {k:'cartUse', label:'카트 이용', type:'select', opts:['포함','현지 지불','미운영'], help:'카트비가 상품 요금에 포함인지, 현지에서 내는지.'},
   {k:'caddie', label:'캐디 운영', type:'select', opts:['필수','선택','노캐디'], help:'캐디 동반이 의무인지, 고를 수 있는지, 없는지.'},
   {k:'lesson', label:'레슨 프로그램', type:'yn', help:'골프장(또는 연계 아카데미)에서 레슨을 받을 수 있으면 \'예\'.'},
   {k:'practice', label:'연습 시설', type:'yn', yes:'있음', no:'없음', sub:'practiceItems', subOpts:['드라이빙 레인지','퍼팅그린','벙커연습장','숏게임 연습장'], help:'이용할 수 있는 연습 시설을 체크하세요(하나라도 체크하면 \'있음\'으로 자동 선택). 없으면 \'없음\'.'},
-  {k:'memo', label:'메모', type:'text', help:'기타 참고 사항(고객에게는 보이지 않음).'}
+  {k:'memo', label:'메모', type:'area', rows:3, max:600, wide:true, help:'기타 참고 사항(고객에게는 보이지 않음).'}
 ];
 // 상품마다 다른 정보 — 숙소·골프장 자체 정보는 등록부에서 가져온다
 const AI_INFO_SCHEMA = [
@@ -19059,17 +19062,16 @@ const AI_INFO_SCHEMA = [
   {key:'move', label:'④ 이동·일정 편의', note:'숙소→골프장 시간(해외는 공항→숙소 포함)은 ① 숙소 등록부에서 입력합니다.', fields:[
     {k:'pickupTime', label:'공항 픽업시간', type:'text', only:'overseas', ph:'예: 도착 후 30분 내', help:'도착 후 픽업까지 대기 시간 등.'},
     {k:'dailyMove', label:'날짜별 골프장 이동시간', type:'text', ph:'예: 1일차 20분 / 2일차 40분', help:'골프장이 날마다 다르면 날짜별로.'},
-    {k:'rideCount', label:'차량 탑승 횟수(전체 일정)', type:'num', unit:'회', help:'공항 송영 포함 전체 차량 이동 횟수.'},
     {k:'teeOff', label:'티오프 시간대', type:'select', opts:['오전','오후','혼합'], help:'대부분 12시 이전이면 오전, 이후면 오후, 섞여 있으면 혼합.'},
     {k:'privateCar', label:'전용 차량', type:'yn', help:'일행만 타는 단독 차량이면 \'예\'(다른 팀과 합승이면 \'아니오\').'},
     {k:'tourShuttle', label:'관광 송영', type:'yn', only:'overseas', help:'관광지·시내 이동 차량을 제공하면 \'예\'.'},
-    {k:'minWalk', label:'도보 이동 최소', type:'yn', help:'숙소↔골프장·식당 이동에 도보 10분 넘는 구간이 없으면 \'예\'.'},
+    {k:'minWalk', label:'도보 이동 최소', type:'yn', help:'숙소↔골프장·식당 이동 시 도보로 10분이 넘으면 \'아니오\', 10분 이내면 \'예\'.'},
     {k:'moveSupport', label:'이동 지원 범위', type:'text', ph:'예: 공항·골프장 왕복 송영', help:'포함된 이동 서비스 범위.'}]},
   {key:'party', label:'⑤ 동반자·서비스·가격', note:'최소 출발 인원과 포함·불포함 항목은 기존 입력값(상품 카드의 최소 인원 · 자세히 보기의 포함/불포함)을 그대로 씁니다.', fields:[
     {k:'paxOk', label:'출발 가능 인원', type:'multi', opts:['2인','3인','4인','단체'], help:'추가요금이 있어도 출발 가능하면 체크. 단체: 8인 이상.'},
     {k:'paxSurcharge', label:'인원별 추가요금', type:'text', ph:'예: 3인 출발 시 1인 3만원 추가', help:'인원에 따라 달라지는 요금.'},
     {k:'singleSurcharge', label:'1인실 추가요금', type:'text', help:'1인실 사용 시 추가요금.'},
-    {k:'packageType', label:'상품 구성', type:'select', opts:['올인원','일반형','실속형','특가'], help:'올인원: 그린피·숙박·식사·카트·캐디피 포함 · 일반형: 기본 패키지 · 실속형: 그린피·숙박·조식 중심 · 특가: 기간 한정 할인가.'},
+    {k:'packageType', label:'상품 구성', type:'select', opts:['올인원','일반형','실속형','특가','할인적용'], help:'올인원: 그린피·숙박·식사·카트·캐디피 포함 · 일반형: 기본 패키지 · 실속형: 그린피·숙박·조식 중심 · 특가: 기간 한정 할인가 · 할인적용: 할인이 적용된 상품.'},
     {k:'dealPeriod', label:'특가 기간', type:'text', ph:'예: 2026-11-01 ~ 2026-12-15', help:'특가가 적용되는 출발 기간.'},
     {k:'vip', label:'VIP 전용', type:'yn', help:'고급 숙박에 전담 가이드·의전 등이 포함된 상품이면 \'예\'.'},
     {k:'private', label:'프라이빗(단독 진행)', type:'yn', help:'다른 팀과 합류 없이 일행만 진행하면 \'예\'.'},
@@ -19079,14 +19081,14 @@ const AI_INFO_SCHEMA = [
   {key:'rec', label:'⑥ 추천 대상·장단점·규정', note:'여기에 입력한 값은 상품 상세 정적 페이지(/golf/…)의 \'한눈에 보기\'와 \'자주 묻는 질문\'에 그대로 표시됩니다(검색엔진·AI 검색용, 매일 새벽 자동 반영). 비워 두면 표시하지 않고, 입력하지 않은 내용은 만들어 넣지 않습니다. 기존 상품 카드·자세히 보기 화면에는 영향이 없습니다.', fields:[
     {k:'audience', label:'추천 대상', type:'multi', opts:['초보','2인 플레이','4인 플레이','5인 플레이','동호회·모임','부부·가족','비즈니스','단체'], help:'이 상품이 잘 맞는 고객을 체크(여러 개 가능). 단체는 8인 이상.'},
     {k:'ageGroups', label:'추천 연령대', type:'multi', opts:['30·40대','50대','60대 이상'], help:'이 상품이 잘 맞는 연령대를 체크(여러 개 가능).'},
-    {k:'pros', label:'장점', type:'area', rows:3, max:600, ph:'한 줄에 하나씩 입력\n예: 호텔에서 골프장까지 3분', help:'한 줄에 장점 하나씩. 실제로 확인된 내용만 적어 주세요.'},
-    {k:'cons', label:'유의할 점', type:'area', rows:3, max:600, ph:'한 줄에 하나씩 입력\n예: 겨울철 이른 아침 서리 지연 가능', help:'한 줄에 하나씩. 고객이 미리 알아야 할 점.'},
+    {k:'pros', label:'장점', type:'area', rows:7, max:600, wide:true, ph:'한 줄에 하나씩 입력\n예: 호텔에서 골프장까지 3분', help:'한 줄에 장점 하나씩. 실제로 확인된 내용만 적어 주세요.'},
+    {k:'cons', label:'유의할 점', type:'area', rows:7, max:600, wide:true, ph:'한 줄에 하나씩 입력\n예: 겨울철 이른 아침 서리 지연 가능', help:'한 줄에 하나씩. 고객이 미리 알아야 할 점.'},
     {k:'rainCancel', label:'우천·취소 규정 요약', type:'area', rows:3, max:400, ph:'예: 우천 시 그린피 현지 규정에 따름 / 출발 7일 전까지 취소 시 전액 환불', help:'우천·취소 규정을 짧게 요약(전체 규정은 \'예약·취소 안내\'에 그대로 있습니다).'},
-    {k:'cartCaddie', label:'카트·캐디 방식', type:'select', opts:['카트·캐디 모두 포함','카트 포함 · 캐디피 별도','캐디 포함 · 카트비 별도','카트·캐디 모두 별도(현장 결제)','노캐디(셀프) · 카트 포함','노캐디(셀프) · 카트 별도','요금 항목별로 다름'], help:'요금에 카트·캐디가 포함인지, 현장에서 따로 내는지 선택. 포함·불포함 사항과 같게 선택해 주세요.'}]}
+    {k:'cartCaddie', label:'카트·캐디 방식', type:'select', opts:['카트·캐디 모두 포함','카트 포함','카트 포함 · 캐디피+팁 별도','캐디 선택','카트·캐디 모두 별도(현장 결제)','노캐디(셀프) · 카트 포함','노캐디(셀프) · 카트 별도','요금 항목별로 다름'], help:'요금에 카트·캐디가 포함인지, 현장에서 따로 내는지 선택. 포함·불포함 사항과 같게 선택해 주세요.'}]}
 ];
 // 예전(상품별 직접 입력) 숙소·골프장 항목 — 등록부로 옮기기 전까지는 그대로 판정에 쓴다
 const AI_LEGACY_LODGE = {lodgeName:'name', lodgeType:'lodgeType', lodgeStar:'lodgeStar', lodgeStarSrc:'lodgeStarSrc', roomSize:'roomSize', bedType:'bedType', roomTypes:'roomTypes', breakfast:'breakfast', golfDistance:'golfDistance', airportMin:'airportMin', elevator:'elevator', shuttle:'shuttle', localFood:'nearFood', cityTour:'nearCity', famousSpot:'nearSpot', mall:'nearMall', market:'nearMarket', spa:'nearSpa', koreanFood:'nearKorean', shopDistance:'memo'};
-const AI_LEGACY_COURSE = {courseName:'name', holes:'holes', par:'par', courseLength:'courseLength', rating:'rating', turf:'turf', elevation:'elevation', courseLevel:'courseLevel', famous:'famous', courseQuality:'courseQuality', cartRule:'cartRule', cartUse:'cartUse', caddie:'caddie', lesson:'lesson', practice:'practice'};
+const AI_LEGACY_COURSE = {courseName:'name', holes:'holes', par:'par', courseLength:'courseLength', rating:'rating', turf:'turfFairway', elevation:'elevation', courseLevel:'courseLevel', famous:'famous', courseQuality:'courseQuality', cartRule:'cartRule', cartUse:'cartUse', caddie:'caddie', lesson:'lesson', practice:'practice'};
 const AI_LEGACY_YN_PROX = ['localFood','cityTour','famousSpot','mall','market','spa','koreanFood'];
 function aiLegacyPlace(ai, map, fallbackName){
   const out = {}; let any = false;
@@ -19194,7 +19196,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
   const k = fd.k, lab = `<span class="ai-info-lab">${escapeAttr(fd.label)}${fd.unit?` <em>(${fd.unit})</em>`:''}${aiHelpHTML(fd)}${hint ? `<small class="ai-inh">${hint}</small>` : ''}`;
   const subArr = fd.sub && obj && Array.isArray(obj[fd.sub]) ? obj[fd.sub] : [];
   const filled = aiInfoFilled(v) || subArr.length>0;
-  const box = `class="ai-info-f${filled ? ' filled' : (hint ? ' has-auto' : '')}" data-k="${k}"`;
+  const box = `class="ai-info-f${filled ? ' filled' : (hint ? ' has-auto' : '')}${fd.wide ? ' ai-wide' : ''}" data-k="${k}"`;
   if (fd.type==='multi'){
     const arr = Array.isArray(v) ? v : [];
     return `<div ${box}>${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
@@ -19209,10 +19211,12 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
       : fd.type==='prox' ? AI_PROX_OPTS
       : fd.type==='cat' ? CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>[c.id, c.ko])
       : fd.opts.map(o=>[o,o]);
+    // 옵션에서 빠진 예전 값이 저장돼 있으면 사라지지 않게 '(예전 값)' 항목으로 남겨 둔다
+    if (fd.type==='select' && aiInfoFilled(v) && !opts.some(o=>o[0]===String(v))) opts.push([String(v), String(v)+' (예전 값)']);
     // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
     const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
-    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}</div>`;
+    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
   }
   if (fd.type==='area') return `<div ${box}>${lab}<textarea rows="${fd.rows||3}" maxlength="${fd.max||400}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}">${escapeAttr(v||'')}</textarea></div>`;
   if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;

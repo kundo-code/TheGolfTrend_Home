@@ -2387,7 +2387,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 /* [수정] 상품 카드별 독립 카드 — 팝업 틀(.ep-card)은 상품마다 따로 갖고(테두리·배경·상세 보기/닫기 버튼 포함), .ep-popup-box는 카드 폭만 잡아 주는 투명 래퍼.
    이전·다음 버튼·점·카운터(.ep-popup-footer)만 카드 아래에 하나로 공유한다 */
 .ep-popup-box{width:320px;max-width:92vw;position:relative}
-.ep-card{height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--pine),var(--pine-deep));border:1px solid var(--glass-border-soft);border-radius:22px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);position:relative;animation:popupIn .4s cubic-bezier(.22,1,.36,1) both}
+.ep-card{height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--pine),var(--pine-deep));border:1px solid var(--glass-border-soft);border-radius:22px;overflow:hidden;box-shadow:0 40px 90px -34px rgba(0,0,0,.6),0 4px 20px rgba(0,0,0,.4);position:relative;animation:popupIn .4s cubic-bezier(.22,1,.36,1) both} /* 그림자 가로 번짐을 줄여(-34px) 좌우 20px 클리핑 경계에서 잘린 띠가 보이지 않게 */
 .ep-card .popup-actions{margin-top:auto}
 /* [Phase] 항목별 요금표 팝업(.popup-card)과 동일하게, "이미지 밖으로 배치" 레이블이 카드의 둥근
    모서리에 잘리지 않도록 클리핑을 풀어준다 */
@@ -2415,6 +2415,9 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .ep-popup-slide{visibility:hidden}
 .ep-popup-slide.active{visibility:visible}
 .ep-popup-viewport.ep-moving{clip-path:none} /* 독립 카드가 화면 가장자리까지 그대로 밀려 나가고 들어오게(옆 카드는 넘기는 동안에만 보임) */
+/* [수정] 화면이 넓은 PC(≥781px)에서는 넘기는 동안 옆 카드들이 화면 가득 모두 보였다 사라졌다 — 가운데 카드 영역(좌우 20px 여유: 이미지 밖 레이블 허용) 밖은
+   넘기는 중에도 보이지 않게 잘라, 카드가 그 영역 안에서만 밀려 나가고 들어오게 한다. 모바일·좁은 화면은 위의 화면 전체 이동 그대로 */
+@media(min-width:781px){.ep-popup-viewport.ep-moving{clip-path:inset(-9999px -20px -9999px -20px)}}
 .ep-popup-viewport.ep-moving .ep-popup-slide{visibility:visible}
 .ep-popup-footer{display:flex;align-items:center;gap:10px;margin-top:14px;padding:8px 14px;border-radius:100px;background:rgba(0,0,0,.42)} /* 카드 밖 아래에 하나만 */
 .ep-popup-actions{padding:14px 20px 18px}
@@ -13368,7 +13371,9 @@ function productCardHTML(p, catId, idx){
   // [Phase] "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 쌓아서 노출
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
-  const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
+  // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
+  const prosHTML = cardProsListHTML(p);
+  const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length || prosHTML);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
   const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isRecommended?' data-label-recommend="1"':'') + (lblProfile.isSuggested?' data-label-suggest="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'') + (lblProfile.isPriceUp?' data-label-price="up"':'') + (lblProfile.isPriceDown?' data-label-price="down"':'');
   return `<article class="product${hasCp?' has-cp':''}"${lblAttrs} onclick="productCardClick(event,'${catId}',${idx},this)">
@@ -13391,7 +13396,7 @@ function productCardHTML(p, catId, idx){
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
-    ${cardProsListHTML(p) ? `<div class="product-divider card-pros-div"></div>${cardProsListHTML(p)}` : ''}
+    ${prosHTML ? `<div class="product-divider card-pros-div card-fold"></div>${prosHTML.replace('<ul class="card-pros">','<ul class="card-pros card-fold">')}` : ''}
     ${cpTopHTML}
     ${cardTags.length?`<div class="product-tag-row card-fold">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     ${cp2HTML}

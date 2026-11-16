@@ -1054,27 +1054,36 @@ section.block{padding:100px 24px;position:relative}
 .pd-price-entry .emph.special{background:rgba(255,107,74,.12);color:#D9502E;border:1px solid rgba(255,107,74,.35)}
 .pd-price-entry .pe-headline{display:block;box-sizing:border-box;width:100%;margin-top:3px;padding:5px 12px;border-radius:8px;background:rgba(221,179,103,.2);border:1px solid rgba(221,179,103,.45);color:var(--pine-deep);font-weight:600;font-size:calc(.98rem + 1pt);line-height:1.35;overflow-wrap:anywhere;box-shadow:0 2px 6px rgba(10,23,48,.1),0 1px 2px rgba(10,23,48,.06),inset 0 -1px 0 rgba(10,23,48,.035)} /* 대표 문구 — 연한 색상 박스(박스 가로폭 전체)에 그림자 음영으로 가독성↑, 글자 +1pt, 살짝 아래로 */
 .pd-price-entry .pe-headline.no-shade{box-shadow:none}
-/* [수정] 요금 항목 카드: 정가·할인율은 위 줄, 금액(원 포함)은 그 아래 카드 맨 오른쪽에 정렬하고 글자가 중간에서 줄바꿈되지 않게 한다(요금 항목이 없을 때 보이는 통합 요금표 맨 위 금액은 기존 그대로) */
-.pd-price-entry .prices{display:flex;align-items:baseline;gap:10px;margin-top:2px}
-.pd-price-entry:not(.pd-price-merged) .prices{flex-wrap:wrap;justify-content:flex-end;gap:2px 10px}
-.pd-price-entry:not(.pd-price-merged) .prices > span{white-space:nowrap}
-.pd-price-entry:not(.pd-price-merged) .prices .price-original,.pd-price-entry:not(.pd-price-merged) .prices .discount{order:1}
-.pd-price-entry:not(.pd-price-merged) .prices .price-sale{order:2;flex:0 0 100%;text-align:right}
-/* [수정] 통합 요금표 카드(요금 항목 없는 상품·요금표 맨 위 대표 금액 카드)도 금액("원"·"~부터" 포함)을 오른쪽 끝에 정렬하고, 정가·할인율은 그 위 줄 */
-.pd-price-entry.pd-price-merged .prices{flex-wrap:wrap;justify-content:flex-end;gap:2px 10px}
-.pd-price-entry.pd-price-merged .prices > span{white-space:nowrap}
-.pd-price-entry.pd-price-merged .prices .price-original,.pd-price-entry.pd-price-merged .prices .discount{order:1}
-.pd-price-entry.pd-price-merged .prices .price-sale{order:2;flex:0 0 100%;text-align:right}
-.pd-price-entry:not(.pd-price-merged) .prices .price-sale{font-size:calc(2.184rem + 1.5pt)} /* 아래쪽 금액 +1.5pt */
+/* [수정] 요금표 가격 줄 — 정가(취소선)·할인율은 판매가(실결제) 왼쪽에 한 줄로 두고 줄 전체를 오른쪽 끝에 정렬한다. 판매가 글자 크기는 유지하고 정가·할인율만
+   화면(카드) 폭에 맞춰 줄여 한 줄에 들어오게 한다(--orig-fs를 fitPriceRows()가 실제 폭을 재서 정함) */
+.pd-price-entry .prices{display:flex;flex-wrap:nowrap;justify-content:flex-end;align-items:baseline;gap:8px;margin-top:2px}
+.pd-price-entry .prices.prices-wrap{flex-wrap:wrap}
+.pd-price-entry .prices > span{white-space:nowrap}
+.pd-price-entry .prices .price-original{order:1;flex:0 1 auto}
+.pd-price-entry .prices .discount{order:2;flex:0 0 auto}
+.pd-price-entry .prices .price-sale{order:3;flex:0 0 auto;text-align:right}
+.pd-price-entry:not(.pd-price-merged) .prices .price-sale{font-size:calc(2.184rem + 1.5pt)} /* 판매가(실결제) +1.5pt */
 /* [수정] 관리자에서 "별도 문의"를 켠 상품은 요금 항목에 판매가가 없을 때 그 문구를 금액 자리에 노출(상품 카드와 같은 글꼴·굵기) */
 .pd-price-entry:not(.pd-price-merged) .prices .price-sale.price-inquiry{font-family:'Pretendard','Noto Sans KR',sans-serif;font-weight:800;letter-spacing:.01em;font-size:1.5rem}
 .pd-price-entry .price-sale{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.184rem;font-weight:500;color:var(--pine-deep)}
 .pd-price-entry .price-sale .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.9rem;color:var(--gold-deep);font-weight:500;margin-left:2px}
-.pd-price-entry .price-original{font-size:1.105rem;color:rgba(10,23,48,.35);text-decoration:line-through}
-.pd-price-entry .discount{font-size:.75rem;color:var(--coral);font-weight:700}
+.pd-price-entry .price-original{font-size:var(--orig-fs,1.105rem);color:rgba(10,23,48,.35);text-decoration:line-through}
+.pd-price-entry .discount{font-size:calc(var(--orig-fs,1.105rem) * .68);color:var(--coral);font-weight:700}
+/* [수정] PC(≥781px) 상품 상세 요금표의 금액은 지금보다 120%로 — 판매가(실결제)와 요일별 요금표 칸의 금액·"원" */
+@media(min-width:781px){
+  .pd-price-entry .price-sale{font-size:calc(2.184rem * 1.2)}
+  .pd-price-entry:not(.pd-price-merged) .prices .price-sale{font-size:calc((2.184rem + 1.5pt) * 1.2)}
+  .pd-price-entry:not(.pd-price-merged) .prices .price-sale.price-inquiry{font-size:1.8rem}
+  .pd-price-entry .price-sale .unit{font-size:calc(.9rem * 1.2)}
+  #pdContent .pd-day-price-table .pd-day-price-cell .v{font-size:calc(1.365rem * 1.2)}
+  #pdContent .pd-day-price-table .pd-day-price-cell .v .unit{font-size:calc(.62rem * 1.2)}
+  #pdContent .pd-day-price-table.dp-nm .pd-day-price-cell .v{font-size:calc((1.365rem + 2pt) * 1.2)}
+  #pdContent .pd-day-price-table.dp-n1 .pd-day-price-cell .v,#pdContent .pd-day-price-table.dp-n2 .pd-day-price-cell .v{font-size:calc(1.71rem * 1.2)}
+  #pdContent .pd-day-price-table.dp-n1 .pd-day-price-cell .v .unit,#pdContent .pd-day-price-table.dp-n2 .pd-day-price-cell .v .unit{font-size:calc(.775rem * 1.2)}
+}
 /* [수정] "2인 이상" 배지 오른쪽에 "항공 포함 여부"·"체류일" 배지를 함께 두기 위해, 오른쪽 정렬은
    개별 배지가 아니라 이 배지들을 담는 래퍼(.pd-pe-badges)에 준다 */
-.pd-pe-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap} /* [수정] 박수·인원·항공 배지는 요금 항목 제목(○박○일 일정-출발) 바로 아래에 왼쪽부터 */
+.pd-pe-badges{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap} /* [수정] 박수·인원·항공 배지는 요금 항목 제목(○박○일 일정-출발) 바로 아래, 오른쪽 끝에 정렬 */
 .pd-price-entry .min-people,.pd-price-entry .pe-flag-badge{font-size:.72rem;color:var(--gold-deep);font-weight:600;background:rgba(221,179,103,.12);border:1px solid rgba(221,179,103,.3);border-radius:100px;padding:3px 10px}
 /* [수정] 요금 항목별 라운드·숙박·식사 — 금액·최소 인원(.prices) 바로 아래 구분선을 두고 노출 */
 .pd-pe-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:10px;border-top:1px dashed rgba(10,23,48,.14);padding-top:10px;font-size:.82rem;color:rgba(10,23,48,.72)}
@@ -1332,6 +1341,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-contact a.phone{background:rgba(221,179,103,.16);border-color:rgba(221,179,103,.4);color:var(--gold-deep)}
 .pd-contact a.kakao{background:rgba(254,229,0,.22);border-color:rgba(230,200,0,.5);color:#7A6400}
 .pd-share{padding:12px 16px 16px;display:flex;gap:8px}
+/* [수정] 모바일: 맨 아래까지 내렸을 때 화면 왼쪽 아래에 떠 있는 "실시간 상담" 버튼이 공유 버튼들을 가리지 않도록, 버튼 줄 아래에 그 버튼 높이만큼 여백을 둔다(공유 버튼이 상담 버튼 위로 올라옴) */
+@media(max-width:780px){.pd-share{padding-bottom:calc(16px + 48px + 18px + env(safe-area-inset-bottom))}}
 .pd-share button{flex:1;padding:11px;background:transparent;border:1px solid rgba(10,23,48,.14);border-radius:12px;color:rgba(10,23,48,.75);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
 .pd-share button:hover{background:rgba(10,23,48,.04);color:var(--pine-deep)}
 /* [버그 수정] 이미지 생성이 끝나 실제 공유 시트를 여는 두 번째 탭이 필요한 상태를, 버튼 글자만
@@ -6732,6 +6743,8 @@ function tgtPersistProductUids(){
   if (_tgtUidDirty){ _tgtUidDirty = false; saveProducts(); }
 }
 function ensureExtended(p){
+  // [수정] 선호 스타일 "실력 향상·레슨"을 "실력 향상"으로 이름 변경 — 예전 이름 그대로 저장된 카드 태그(문구가 정확히 일치하는 것만)도 새 이름으로 맞춘다
+  for (let n=1;n<=10;n++){ if (p['cardTag'+n]==='실력 향상·레슨') p['cardTag'+n]='실력 향상'; }
   if (!p.uid){ p.uid = tgtNewProductUid(); _tgtUidDirty = true; }
   if (!p.contact) p.contact={phone:'',kakaoChannel:'',kakaoFriend:''};
   if (!p.gallery) p.gallery=[];
@@ -13099,7 +13112,7 @@ function cardTagStyles(p){
     if (sv==='__none') continue;
     if (sv && STYLE_OPTIONS.some(o=>o.value===sv)){ if (!out.includes(sv)) out.push(sv); continue; }
     const plain = String(richToPlain(t)).trim();
-    const o = STYLE_OPTIONS.find(x=>styleTagText(x.value)===plain || x.value===plain);
+    const o = STYLE_OPTIONS.find(x=>styleTagText(x.value)===plain || x.value===plain) || (plain==='실력 향상·레슨' ? STYLE_OPTIONS.find(x=>x.value==='골프 실력 향상형') : null);
     if (o && !out.includes(o.value)) out.push(o.value);
   }
   return out;
@@ -16058,7 +16071,7 @@ function renderProductDetail(p,cat,idx){
 
   // Share
   html += `<div class="pd-slot"><div class="pd-share">
-    <button onclick="shareProductImage(this)">📤 공유하기</button>
+    <button onclick="shareProductImage(this)">${pdShareLabel(p)}</button>
     <button onclick="shareProductLink()">🔗 링크 공유</button>
     <button onclick="closeProductDetail()">닫기</button>
   </div></div>`;
@@ -16070,7 +16083,27 @@ function renderProductDetail(p,cat,idx){
   // Sync gallery display
   setTimeout(()=>updateGalleryDisplay(),50);
   pdObserveGalleries();
+  // [수정] 정가를 판매가 왼쪽 한 줄에 맞추기(정가·할인율 글자만 폭에 맞춰 줄임) — 글꼴이 자리 잡은 뒤에도 한 번 더
+  requestAnimationFrame(()=>fitPriceRows(c));
+  try{ if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>fitPriceRows(c)); }catch(e){}
+  pdSharePrefetchWatch(p);
 }
+// [수정] 요금표 가격 줄(.prices) — 정가(취소선)·할인율은 판매가 왼쪽에 한 줄로 둔다. 판매가 글자 크기는 그대로 두고, 한 줄에 안 들어오면 정가·할인율 글자만
+// 0.5px씩 줄여(최소 9px) 맞춘다. 그래도 넘치는 아주 좁은 화면에서만 줄바꿈을 허용한다
+function fitPriceRows(root){
+  (root||document).querySelectorAll('.pd-price-entry .prices').forEach(row=>{
+    row.classList.remove('prices-wrap'); row.style.removeProperty('--orig-fs');
+    const orig = row.querySelector('.price-original');
+    if (!orig || !row.clientWidth) return;
+    let fs = parseFloat(getComputedStyle(orig).fontSize) || 17.7;
+    // 오른쪽 정렬(flex-end) 줄은 넘친 부분이 왼쪽으로 빠져 scrollWidth에 잡히지 않으므로, 자식 폭의 합 + 간격으로 직접 잰다
+    const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+    const over = ()=>{ const kids = Array.from(row.children); return kids.reduce((w,k)=>w+k.getBoundingClientRect().width,0) + gap*(kids.length-1) > row.clientWidth + 0.5; };
+    while (over() && fs > 9){ fs -= 0.5; row.style.setProperty('--orig-fs', fs+'px'); }
+    if (over()) row.classList.add('prices-wrap');
+  });
+}
+(function(){ let t=null; window.addEventListener('resize', ()=>{ clearTimeout(t); t=setTimeout(()=>{ const c=document.getElementById('pdContent'); if (c) fitPriceRows(c); }, 120); }); })();
 
 // [버그 수정] html2canvas는 일정 요약 타임라인의 원형/알약 배지(.pd-sch-day-num, .pd-sch-opt .tag,
 // .pd-sch-meals span) 안의 텍스트를 실제 라이브 화면과 달리 박스 아래쪽에 치우치게(거의 바닥에
@@ -16253,19 +16286,21 @@ function downloadImageFile(file){
 // [버그 수정] 이미지가 준비되면 버튼 글자만 "공유 시트 열기"로 바뀌었는데, 실기기에서는 이 미묘한
 // 텍스트 변화를 못 보고 지나쳐 "눌러도 반응 없다"고 느끼는 경우가 있었다 — 금색 배경 + 펄스
 // 애니메이션(share-ready 클래스)으로 지금 한 번 더 눌러야 한다는 것을 명확히 알려준다
-function offerShare(btn, origLabel, file, title, restart){
+function offerShare(btn, origLabel, file, title, restart, text, link){
   const canShareFiles = !!(navigator.share && navigator.canShare && navigator.canShare({files:[file]}));
   if (!canShareFiles){
     btn.disabled=false; btn.textContent=origLabel;
     downloadImageFile(file);
+    // 공유 시트가 없는 브라우저(PC 등): 상품 이미지를 저장하는 경우 상품 링크 주소는 복사해 둔다
+    if (link && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(()=>alert('상품 이미지를 저장했고, 상품 링크 주소를 복사했습니다.')).catch(()=>{}); }
     return;
   }
   btn.disabled=false;
-  btn.textContent='📤 눌러서 공유하기';
+  btn.textContent=origLabel; // [수정] 준비되면 "눌러서 공유하기"로 바뀌던 문구를 원래 이름(요금포스터로 공유하기) 그대로 두고, 금색 깜박임으로만 한 번 더 누르라고 알린다
   btn.classList.add('share-ready');
   btn.onclick=function(){
     try{
-      navigator.share({files:[file], title, text:title}).catch(err=>{
+      navigator.share({files:[file], title, text:text||title}).catch(err=>{
         if (!(err && err.name==='AbortError')) downloadImageFile(file);
       }).finally(()=>{
         btn.textContent=origLabel;
@@ -16292,11 +16327,59 @@ function pdShareImageUrl(p, catId){
   if (gallery.length && gallery[0].items[0].url) return gallery[0].items[0].url;
   return getImage(catId) || '';
 }
+// [수정] 맨 아래 공유 버튼 — "요금포스터로 공유하기": 관리자 패널 고급편집 › 갤러리/요금포스터에 등록한 이 상품의 요금 포스터 이미지를 공유한다.
+// 요금 포스터가 없으면 상품 카드 이미지(타이틀 사진 → 갤러리 첫 사진 → 지역 대표 이미지)와 상품 링크 주소를 함께 공유한다
+function pdPosterOf(p){ return (p && p.pkgPoster && p.pkgPoster.url) ? p.pkgPoster : null; }
+function pdShareLabel(p){ return pdPosterOf(p) ? '📤 요금포스터로 공유하기' : '📤 공유하기'; }
+function pdShareSpec(p, catId, idx){
+  const poster = pdPosterOf(p);
+  const title = p.title || '';
+  if (poster) return {url:poster.url, kind:'poster', title, text:title};
+  const link = getProductShareUrl(catId, idx);
+  return {url:pdShareImageUrl(p, catId), kind:'card', title, text:(title?title+'\n':'')+link, link};
+}
+// 공유 시트(navigator.share)는 버튼을 누른 바로 그 순간에 열어야 해서(특히 iOS), 상세 페이지 맨 아래 공유 버튼 줄이 화면에 보이면 이미지를 미리 받아 둔다 —
+// 미리 받아 둔 경우 버튼을 한 번 누르면 바로 공유 시트가 열린다
+let pdSharePrefetched = null; // {url, file}
+function pdSharePrefetchWatch(p){
+  pdSharePrefetched = null;
+  const bar = document.querySelector('#pdContent .pd-share'); if (!bar || !currentPd) return;
+  const catId = currentPd.catId, idx = currentPd.idx, token = pdShareToken;
+  const go = async ()=>{
+    try{
+      if (token!==pdShareToken || !navigator.share) return;
+      const spec = pdShareSpec(p, catId, idx); if (!spec.url) return;
+      const resp = await fetch(spec.url); if (!resp.ok) return;
+      const blob = await resp.blob();
+      if (token!==pdShareToken) return;
+      const ext = (blob.type.split('/')[1]||'jpg').replace('jpeg','jpg').split('+')[0];
+      const base = (p.title||'상품').replace(/[\\/:*?"<>|]/g,'');
+      pdSharePrefetched = {url:spec.url, file:new File([blob], `${base}${spec.kind==='poster'?'_요금포스터':''}.${ext}`, {type:blob.type||'image/jpeg'})};
+    }catch(e){ /* 미리 받기 실패는 조용히 — 누르면 기존처럼 그때 불러온다 */ }
+  };
+  if ('IntersectionObserver' in window){
+    const io = new IntersectionObserver(es=>{ if (es.some(x=>x.isIntersecting)){ io.disconnect(); go(); } }, {rootMargin:'400px'});
+    io.observe(bar);
+  } else go();
+}
+function pdShareNow(btn, file, spec){
+  try{
+    navigator.share({files:[file], title:spec.title, text:spec.text}).catch(err=>{
+      if (!(err && err.name==='AbortError')) downloadImageFile(file);
+    });
+  }catch(e){ downloadImageFile(file); }
+}
 async function shareProductImage(btn){
   if (!currentPd) return;
   const p=getProducts(currentPd.catId)[currentPd.idx]; if (!p) return;
-  const imageUrl = pdShareImageUrl(p, currentPd.catId);
+  const spec = pdShareSpec(p, currentPd.catId, currentPd.idx);
+  const imageUrl = spec.url;
   if (!imageUrl){ alert('공유할 사진이 없습니다. "🔗 링크 공유"를 이용해주세요.'); return; }
+  // 미리 받아 둔 이미지가 있으면 기다리지 않고 바로 공유 시트를 연다(누른 순간에 열어야 iOS에서도 동작)
+  if (pdSharePrefetched && pdSharePrefetched.url===imageUrl && navigator.share && navigator.canShare && navigator.canShare({files:[pdSharePrefetched.file]})){
+    pdShareNow(btn, pdSharePrefetched.file, spec);
+    return;
+  }
   const myToken = pdShareToken;
   const stale = ()=> myToken!==pdShareToken;
   const origLabel = btn.textContent;
@@ -16314,9 +16397,10 @@ async function shareProductImage(btn){
     clearInterval(tickTimer);
     if (stale()) return;
     const ext = (blob.type.split('/')[1]||'jpg').replace('jpeg','jpg').split('+')[0];
-    const fileName = `${(p.title||'상품').replace(/[\\/:*?"<>|]/g,'')}.${ext}`;
+    const fileName = `${(p.title||'상품').replace(/[\\/:*?"<>|]/g,'')}${spec.kind==='poster'?'_요금포스터':''}.${ext}`;
     const file = new File([blob], fileName, {type: blob.type||'image/jpeg'});
-    offerShare(btn, origLabel, file, p.title||'', ()=>shareProductImage(btn));
+    pdSharePrefetched = {url:imageUrl, file};
+    offerShare(btn, origLabel, file, spec.title, ()=>shareProductImage(btn), spec.text, spec.link);
   } catch(e){
     clearInterval(tickTimer);
     if (stale()) return;
@@ -16371,7 +16455,8 @@ window.addEventListener('pageshow', function(e){
   const btn = bar ? bar.querySelector('button') : null;
   if (!btn) return;
   btn.disabled=false;
-  btn.textContent='📤 공유하기';
+  const _p = currentPd ? getProducts(currentPd.catId)[currentPd.idx] : null;
+  btn.textContent=_p ? pdShareLabel(_p) : '📤 공유하기';
   btn.classList.remove('share-ready');
   btn.onclick=function(){ shareProductImage(this); };
 });
@@ -21250,7 +21335,7 @@ const STYLE_GROUPS = [
     {value:'쉬운 골프장 선호', label:'🌿 쉬운 코스'},
     {value:'어려운 골프장 선호', label:'🔥 어려운 코스'},
     {value:'집중 라운드형', label:'🏌️‍♂️ 집중 라운드'},
-    {value:'골프 실력 향상형', label:'🎯 실력 향상·레슨'}]},
+    {value:'골프 실력 향상형', label:'🎯 실력 향상'}]},
   {label:'🌿 여행·경험', items:[
     {value:'미식 및 주변 관광 중심', label:'🍴 미식·관광 중심'},
     {value:'미식 및 쇼핑 중심', label:'🛍 미식·쇼핑 중심'},

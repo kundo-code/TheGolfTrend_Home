@@ -11212,7 +11212,10 @@ try{linkHiddenOverrides=JSON.parse(localStorage.getItem(LINK_HIDDEN_KEY)||'{}')}
 // [추가] AI 추천용 숙소·골프장 등록부 — 한 번 등록해 두고 여러 상품에서 선택(연결)만 한다. 수정하면 연결된 모든 상품에 반영
 const AI_PLACES_KEY='kundo_ai_places_v1';
 let aiPlaces={lodges:[], courses:[]};
-function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
+// 숙소 등록부 — 예전 '30분 초과'(far) → '차량 1시간 초과'(far60) (거리 항목 키는 AI_LODGE_FIELDS의 near*)
+const AI_PROX_KEYS = ['nearFood','nearCity','nearSpot','nearMall','nearMarket','nearSpa','nearKorean'];
+function aiProxNorm(x){ if (x) AI_PROX_KEYS.forEach(k=>{ if (x[k]==='far') x[k] = 'far60'; }); return x; }
+function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id).map(aiProxNorm) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
 function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x && x.turf && !x.turfFairway) x.turfFairway = x.turf; /* 예전 '잔디 상태'는 페어웨이 칸으로 이어받음(원본 값은 그대로 보존) */ if (x) aiCourseAutoLevel(x); return x; }
 // Slope → 난이도(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적). Slope를 찾지 못하면 ''
@@ -18994,11 +18997,10 @@ function advBasicHTML(p){
 // 값 형식: text/num은 문자열·숫자, select는 옵션 문자열, yn은 'y'|'n', multi는 문자열 배열. 비워 두면 키를 지워 '미확인'으로 둔다
 // 가까운 정도 — 숙소 기준 이동 시간 단계. '가까움' 조건은 차량 15분 이내까지(AI_PROX_NEAR)
 const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['v15','차량 15분 이내'], ['v30','차량 30분 이내'], ['v60','차량 1시간 이내'], ['far60','차량 1시간 초과'], ['none','없음']];
-// 예전 단계 '30분 초과'(far)로 저장된 값은 그대로 보존 — 선택 칸에 '(예전 값)'으로 남고 판정은 '떨어짐'으로 같음
-const AI_PROX_LEGACY = {far:'30분 초과'};
+// 예전 단계 '30분 초과'(far)로 저장된 값은 '차량 1시간 초과'(far60)로 바꿔 저장한다(aiPlacesNorm이 불러올 때 변환, 다음 저장 때 반영)
 const AI_PROX_NEAR = ['in','v15'];
 const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 30분 이내는 \'조금 떨어짐\'으로 안내합니다. 확인 안 되면 미확인.';
-function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (AI_PROX_LEGACY[v] || v); }
+function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (v==='far' ? '차량 1시간 초과' : v); }
 // 숙소 등록부 항목
 const AI_LODGE_FIELDS = [
   {k:'name', label:'숙소명', type:'text', help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
@@ -19097,7 +19099,7 @@ function aiLegacyPlace(ai, map, fallbackName){
   Object.keys(map).forEach(k=>{
     if (!aiInfoFilled(ai[k])) return;
     any = true;
-    out[map[k]] = AI_LEGACY_YN_PROX.includes(k) ? (ai[k]==='y' ? 'v15' : (k==='spa' ? 'none' : 'far')) : ai[k];   // 예/아니오 → 가까움(차량 15분 이내)/떨어짐
+    out[map[k]] = AI_LEGACY_YN_PROX.includes(k) ? (ai[k]==='y' ? 'v15' : (k==='spa' ? 'none' : 'far60')) : ai[k];   // 예/아니오 → 가까움(차량 15분 이내)/떨어짐
   });
   if (!any) return null;
   aiCourseNorm(out);
@@ -19215,7 +19217,6 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
       : fd.opts.map(o=>[o,o]);
     // 옵션에서 빠진 예전 값이 저장돼 있으면 사라지지 않게 '(예전 값)' 항목으로 남겨 둔다
     if (fd.type==='select' && aiInfoFilled(v) && !opts.some(o=>o[0]===String(v))) opts.push([String(v), String(v)+' (예전 값)']);
-    if (fd.type==='prox' && AI_PROX_LEGACY[v]) opts.push([v, AI_PROX_LEGACY[v]+' (예전 값)']);
     // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
     const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace

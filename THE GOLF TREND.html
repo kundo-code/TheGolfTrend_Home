@@ -19179,10 +19179,10 @@ function advBasicHTML(p){
 // ═══ 🤖 AI 추천 정보 — AI 골프여행 추천의 선호 스타일·세부 조건 판정에 쓰는 상품 정보(모두 선택 입력) ═══
 // 값 형식: text/num은 문자열·숫자, select는 옵션 문자열, yn은 'y'|'n', multi는 문자열 배열. 비워 두면 키를 지워 '미확인'으로 둔다
 // 가까운 정도 — 숙소 기준 이동 시간 단계. '가까움' 조건은 차량 15분 이내까지(AI_PROX_NEAR)
-const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['v15','차량 15분 이내'], ['v30','차량 30분 이내'], ['v60','차량 1시간 이내'], ['far60','차량 1시간 초과'], ['none','없음']];
+const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['v15','차량 15분 이내'], ['v20','차량 20분 이내'], ['v30','차량 30분 이내'], ['v60','차량 1시간 이내'], ['far60','차량 1시간 초과'], ['none','없음']];
 // 예전 단계 '30분 초과'(far)로 저장된 값은 '차량 1시간 초과'(far60)로 바꿔 저장한다(aiPlacesNorm이 불러올 때 변환, 다음 저장 때 반영)
 const AI_PROX_NEAR = ['in','v15'];
-const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 30분 이내는 \'조금 떨어짐\'으로 안내합니다. 확인 안 되면 미확인.';
+const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 20분·30분 이내는 \'조금 떨어짐\'으로 안내합니다. 확인 안 되면 미확인.';
 function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (v==='far' ? '차량 1시간 초과' : v); }
 // 숙소 등록부 항목
 const AI_LODGE_FIELDS = [
@@ -19192,7 +19192,7 @@ const AI_LODGE_FIELDS = [
   {k:'lodgeStar', label:'숙박 등급', type:'select', opts:['3성급','4성급','5성급'], help:'정부·관광청 공식 등급 또는 주요 예약 사이트 표기 등급. 둘이 다르면 낮은 쪽, 확인 안 되면 미확인. 아래에 확인 출처를 꼭 적어 주세요.'},
   {k:'lodgeStarSrc', label:'등급 확인 출처', type:'text', ph:'예: 호텔 공식 사이트, 관광청', help:'등급을 확인한 곳(사이트·문서). 고객 안내 근거로 함께 보여 줍니다.'},
   {k:'roomSize', label:'객실 크기', type:'text', ph:'예: 32㎡', help:'상품에 배정되는 기본 객실의 면적(㎡).'},
-  {k:'bedType', label:'침대 구성', type:'text', ph:'예: 트윈 2 / 더블 1', help:'기본 객실 기준 침대 종류와 개수.'},
+  {k:'bedType', label:'침대 구성', type:'multi', opts:['트윈 2베드','더블 1베드','트리플 3베드','쿼드 4베드'], help:'기본 객실 기준 침대 구성(여러 개 선택 가능). 예전에 글자로 입력해 둔 값은 \'예전 입력값\'으로 남아 있습니다.'},
   {k:'roomLayout', label:'객실 구성', type:'multi', opts:['침실1+욕실','침실1+거실+욕실','침실2+거실+주방+욕실','침실3+거실+주방+욕실'], help:'배정 가능한 객실의 공간 구성(여러 개 가능). 침실2+거실+주방+욕실은 콘도·빌라형처럼 일행이 한 객실을 함께 쓰는 구조.'},
   {k:'roomTypes', label:'가능 객실', type:'multi', opts:['1인실','2인실','4인실'], help:'실제로 배정 가능한 객실만 체크. 1인실은 추가요금이 있어도 가능하면 체크.'},
   {k:'breakfast', label:'조식', type:'yn', yes:'포함', no:'불포함', help:'상품 요금에 조식이 포함되면 \'포함\'.'},
@@ -19203,11 +19203,11 @@ const AI_LODGE_FIELDS = [
   {k:'nearFood', label:'현지 맛집', type:'prox', help:AI_PROX_HELP},
   {k:'nearCity', label:'시내(번화가)', type:'prox', help:AI_PROX_HELP},
   {k:'nearSpot', label:'유명 관광지', type:'prox', help:AI_PROX_HELP},
-  {k:'nearMall', label:'쇼핑몰', type:'prox', help:AI_PROX_HELP},
+  {k:'nearMall', label:'대형마트·쇼핑몰', type:'prox', help:AI_PROX_HELP},
   {k:'nearMarket', label:'전통시장', type:'prox', help:AI_PROX_HELP},
   {k:'nearSpa', label:'온천·스파', type:'prox', help:AI_PROX_HELP+' 숙소에 온천·스파가 있으면 \'숙소 안\'.'},
   {k:'nearKorean', label:'한식당', type:'prox', only:'overseas', help:AI_PROX_HELP+' \'한식 접근\' 조건에 쓰입니다.'},
-  {k:'memo', label:'메모', type:'text', help:'기타 참고 사항(고객에게는 보이지 않음).'}
+  {k:'memo', label:'메모', type:'area', rows:3, max:600, wide:true, help:'기타 참고 사항(고객에게는 보이지 않음).'}
 ];
 // 골프장 등록부 항목
 const AI_COURSE_FIELDS = [
@@ -19233,10 +19233,10 @@ const AI_COURSE_FIELDS = [
 // 상품마다 다른 정보 — 숙소·골프장 자체 정보는 등록부에서 가져온다
 const AI_INFO_SCHEMA = [
   {key:'lodge', label:'① 숙박·객실', place:'lodge', fields:[
-    {k:'sameLodge', label:'숙소 변경 없음(동일 숙소)', type:'yn', help:'전 일정을 한 숙소에서 묵으면 \'예\'.'},
-    {k:'lodgeChanges', label:'숙소 변경 횟수', type:'num', unit:'회', help:'일정 중 숙소를 옮기는 횟수(0이면 동일 숙소).'},
+    {k:'sameLodge', label:'숙소 변경 없음(동일 숙소)', type:'yn', def:'y', help:'전 일정을 한 숙소에서 묵으면 \'예\'.'},
+    {k:'lodgeChanges', label:'숙소 변경 횟수', type:'num', unit:'회', def:0, help:'일정 중 숙소를 옮기는 횟수(0이면 동일 숙소).'},
     {k:'longStay', label:'장박(7박 이상) 가능', type:'yn', only:'overseas', help:'7박 이상으로 연장 예약이 가능하면 \'예\'.'},
-    {k:'multiNight', label:'연박(2박 이상) 가능', type:'yn', only:'domestic', help:'국내 상품은 1박 2일이 대부분이라 2박 이상으로 연장 예약이 가능하면 \'예\'. 고객의 \'장박\' 조건은 국내 상품에서 이 값으로 판정합니다.'}]},
+    {k:'multiNight', label:'연박(2박 이상) 가능', type:'yn', only:'domestic', def:'n', help:'국내 상품은 1박 2일이 대부분이라 2박 이상으로 연장 예약이 가능하면 \'예\'. 고객의 \'장박\' 조건은 국내 상품에서 이 값으로 판정합니다.'}]},
   {key:'course', label:'② 골프코스·라운드', place:'course', fields:[
     {k:'multiCourse', label:'다색 골프(여러 골프장)', type:'yn', help:'일정 중 2곳 이상 골프장을 돌면 \'예\'. 연결된 골프장이 2곳 이상이면 비워 둬도 자동으로 \'예\'로 판정.'}]},
   {key:'meal', label:'③ 식사·관광·쇼핑', note:'맛집·관광지·쇼핑몰·온천 등 주변 시설의 가까운 정도는 ① 숙소 등록부에서 입력합니다.', fields:[
@@ -19351,6 +19351,10 @@ function aiMergedInfo(p, pe, dom){
   const out = Object.assign({}, auto.out, base), src = {};
   AI_PE_KEYS.forEach(k=>{ if (aiInfoFilled(own[k])) out[k] = own[k]; });
   Object.keys(auto.src).forEach(k=>{ if (!aiInfoFilled(base[k]) && !aiInfoFilled(own[k])) src[k] = auto.src[k]; });
+  // 기본값 — 관리자 입력·자동 판정이 모두 없을 때만(가장 낮은 우선순위): 숙소 변경 없음 '예' · 변경 횟수 0 · (국내) 연박 '아니오'
+  if (!aiInfoFilled(out.sameLodge) && !aiInfoFilled(out.lodgeChanges)){ out.sameLodge = 'y'; src.sameLodge = '기본값'; }   // 변경 횟수를 입력했다면 그 값으로 판정
+  if (!aiInfoFilled(out.lodgeChanges) && out.sameLodge!=='n'){ out.lodgeChanges = 0; src.lodgeChanges = '기본값'; }
+  if (dom && !aiInfoFilled(out.multiNight)){ out.multiNight = 'n'; src.multiNight = '기본값'; }
   Object.defineProperty(out, '__src', {value:src, enumerable:false});   // 자동으로 읽어 온 값의 출처(근거 문장에 표시)
   return out;
 }
@@ -19409,13 +19413,16 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
   const box = `class="ai-info-f${filled ? ' filled' : (hint ? ' has-auto' : '')}${fd.wide ? ' ai-wide' : ''}" data-k="${k}"`;
   if (fd.type==='multi'){
     const arr = Array.isArray(v) ? v : [];
-    return `<div ${box}>${lab}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
+    // 예전에 글자로 입력해 둔 값(문자열)·선택 구조로 바꾸며 따로 보관한 값은 사라지지 않게 '예전 입력값'으로 보여 준다
+    const legacyTxt = typeof v==='string' && v.trim() ? aiPlainText(v) : (obj && typeof obj[k+'Legacy']==='string' ? obj[k+'Legacy'] : '');
+    return `<div ${box}>${lab}${legacyTxt ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고): ${escapeAttr(legacyTxt)}</small>` : ''}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
   }
   if (fd.type==='len'){
     const L = aiLenParse(v);
     if (!L.ok) return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" oninput="${save(k,'this.value')}"><small class="ai-len-conv">예전에 글자로 입력한 값입니다. 지우고 숫자로 다시 입력하면 yd↔m 자동 환산을 쓸 수 있어요.</small></div>`;
     return `<div ${box}>${lab}<div class="ai-len" data-unit="${L.u}"><input type="number" min="0" step="1" inputmode="numeric" value="${L.n===''?'':L.n}" placeholder="미확인" oninput="${save(k,'aiLenVal(this)')}"><select data-nofill aria-label="전장 단위" onchange="aiLenUnit(this);${save(k,'aiLenVal(this)')}"><option value="yd" ${L.u==='yd'?'selected':''}>yd (야드)</option><option value="m" ${L.u==='m'?'selected':''}>m (미터)</option></select></div><small class="ai-len-conv">${aiLenConvTxt(L.n, L.u)}</small></div>`;
   }
+  const dv = (!aiInfoFilled(v) && fd.defShow!==undefined) ? fd.defShow : v;   // 기본값 — 저장된 값이 없을 때 화면에만 미리 보여 준다(판정은 aiMergedInfo가 같은 기본값을 씀)
   if (fd.type==='select' || fd.type==='yn' || fd.type==='prox' || fd.type==='cat'){
     const opts = fd.type==='yn' ? [['y', fd.yes||'예'], ['n', fd.no||'아니오']]
       : fd.type==='prox' ? AI_PROX_OPTS.slice()
@@ -19426,7 +19433,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
     const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
-    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
+    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(dv==null?'':dv)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
   }
   // 글·긴 글 입력란 — 공용 서식 도구(크기·글꼴·B·I·U·색상 등)를 쓸 수 있는 서식 입력란(.rtf-editable). 이름 칸(plain)은 일반 입력란 유지
   if (aiIsRichField(fd)){
@@ -19436,7 +19443,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     return `<div ${box}>${lab}<div class="rtf-editable ai-rtf ${area?'ai-rtf-area':'ai-rtf-line'}" contenteditable="true" data-placeholder="${escapeAttr(fd.ph||'')}" style="min-height:${minH}px"
       oninput="${save(k,'aiRichNorm(this.innerHTML)')}" ${area?'':`onkeydown="if(event.key==='Enter')event.preventDefault()"`} onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${init}</div></div>`;
   }
-  if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
+  if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(dv)?escapeAttr(dv):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
   return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
 }
 // 전장 — "6,850yd" / "6,264m" 형식으로 저장. 숫자+단위가 아닌 예전 글자 값은 ok:false(그대로 글자 칸으로 표시)
@@ -19572,7 +19579,12 @@ function advAiInfoHTML(p){
   const vis = (p.priceEntries||[]).filter(x=>!x.hidden);
   const auto = aiAutoInfo(p, vis.length===1 ? vis[0] : null, dom);
   const allF = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields));
-  const autoHint = fd => (!aiInfoFilled(ai[fd.k]) && aiInfoFilled(auto.out[fd.k])) ? `🔄 자동: ${escapeAttr(aiAutoValTxt(fd, auto.out[fd.k]))} (${escapeAttr(auto.src[fd.k])}) — 다를 때만 입력` : '';
+  const merged = aiMergedInfo(p, vis.length===1 ? vis[0] : null, dom);
+  const defOf = fd => (fd.def!==undefined && !aiInfoFilled(ai[fd.k]) && merged.__src && merged.__src[fd.k]==='기본값') ? merged[fd.k] : undefined;   // 입력·자동 값이 없어 기본값이 적용 중인 항목
+  const autoHint = fd => (!aiInfoFilled(ai[fd.k]) && aiInfoFilled(auto.out[fd.k])) ? `🔄 자동: ${escapeAttr(aiAutoValTxt(fd, auto.out[fd.k]))} (${escapeAttr(auto.src[fd.k])}) — 다를 때만 입력`
+    : (defOf(fd)!==undefined ? `⭐ 기본값: ${escapeAttr(aiAutoValTxt(fd, defOf(fd)))} — 다를 때만 입력` : '');
+  const autoOnly = fd => !aiInfoFilled(ai[fd.k]) && aiInfoFilled(auto.out[fd.k]);   // 자동 판정 값이 있는 칸(기본값은 제외)
+  const withDef = fd => defOf(fd)!==undefined ? Object.assign({}, fd, {defShow:defOf(fd)}) : fd;
   const autoList = Object.keys(auto.out).filter(k=>!aiInfoFilled(ai[k])).map(k=>{ const fd = allF.find(x=>x.k===k); return fd && shown(fd) ? `${escapeAttr(fd.label)}(${escapeAttr(auto.src[k])})` : ''; }).filter(Boolean);
   const nL = Array.isArray(ai.lodgeIds) ? ai.lodgeIds.length : 0, nC = Array.isArray(ai.courseIds) ? ai.courseIds.length : 0;
   const filled = AI_INFO_SCHEMA.reduce((n,g)=>n+g.fields.filter(fd=>shown(fd) && aiInfoFilled(ai[fd.k])).length, 0);
@@ -19588,11 +19600,11 @@ function advAiInfoHTML(p){
         ${AI_INFO_SCHEMA.map(g=>{
           const n = g.fields.filter(fd=>shown(fd) && aiInfoFilled(ai[fd.k])).length + (g.place ? (g.place==='lodge' ? nL : nC) : 0);
           return `<details class="pe-labels" ${advDetailsAttrs('ai-'+g.key, false)}>
-            <summary>${g.label} ${n ? advBadge(`✓ ${n}`, 'ok') : (g.fields.some(fd=>shown(fd) && autoHint(fd)) ? advBadge(`🔄 자동 ${g.fields.filter(fd=>shown(fd) && autoHint(fd)).length}`, 'ok') : advBadge('비어 있음','empty'))}</summary>
+            <summary>${g.label} ${n ? advBadge(`✓ ${n}`, 'ok') : (g.fields.some(fd=>shown(fd) && autoOnly(fd)) ? advBadge(`🔄 자동 ${g.fields.filter(fd=>shown(fd) && autoOnly(fd)).length}`, 'ok') : advBadge('비어 있음','empty'))}</summary>
             ${g.place ? aiPlaceLinkHTML(p, g.place) + aiLegacyBoxHTML(p, g.place) : ''}
             ${g.note ? `<p class="ai-info-note">${escapeAttr(g.note)}</p>` : ''}
             ${g.place ? `<div class="ai-sub-l">이 상품의 일정 정보</div>` : ''}
-            <div class="ai-info-grid">${g.fields.filter(shown).map(fd=>aiFieldHTML(fd, ai[fd.k], save, saveMulti, '', autoHint(fd))).join('')}</div>
+            <div class="ai-info-grid">${g.fields.filter(shown).map(fd=>aiFieldHTML(withDef(fd), ai[fd.k], save, saveMulti, '', autoHint(fd))).join('')}</div>
           </details>`;
         }).join('')}
       </div>
@@ -19609,6 +19621,7 @@ function aiFieldMax(k){ const f = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields)).
 function updateAiInfoMulti(k, opt, on){
   const p=getAdvProduct(); if (!p) return;
   const ai = aiInfoOf(p);
+  if (typeof ai[k]==='string' && ai[k].trim()){ ai[k+'Legacy'] = ai[k]; delete ai[k]; }
   const arr = Array.isArray(ai[k]) ? ai[k].filter(x=>x!==opt) : [];
   if (on) arr.push(opt);
   if (arr.length) ai[k] = arr; else delete ai[k];
@@ -19643,6 +19656,7 @@ function aiLevelDomSync(x){
 }
 function updateAiPlaceMulti(kind, id, k, opt, on){
   const x = aiFindPlace(kind, id); if (!x) return;
+  if (typeof x[k]==='string' && x[k].trim()){ x[k+'Legacy'] = x[k]; delete x[k]; }   // 글자로 입력했던 예전 값(예: 침대 구성)은 사라지지 않게 따로 보관
   const arr = Array.isArray(x[k]) ? x[k].filter(o=>o!==opt) : [];
   if (on) arr.push(opt);
   if (arr.length) x[k] = arr; else delete x[k];
@@ -22103,11 +22117,13 @@ function aiInfoTest(key, F){
     const n = key.slice(5), lab = n+'인실';
     return aiMulti(L, x=>x.roomTypes, v=>v.includes(lab), v=>`객실 ${v.join('·')}`) || aiKwRes(F, n==='1' ? ['1인실','1인 1실','싱글'] : [lab, `${n}인 1실`], false, '객실 구성 미등록 — 상담 시 확인');
   }
-  if (key==='lodge:same'){ const v = aiYn(ai.sameLodge); if (v!==null) return {v, t:`관리자 입력: 숙소 변경 ${v?'없음':'있음'}`}; const c = aiNum(ai.lodgeChanges); if (c!=null) return {v:c===0, t:`숙소 변경 ${c}회`}; return {v:null, t:'숙소 변경 여부 미등록 — 상담 시 확인'}; }
+  if (key==='lodge:same'){ const v = aiYn(ai.sameLodge); if (v!==null) return {v, t:`${by('sameLodge')}: 숙소 변경 ${v?'없음':'있음'}`}; const c = aiNum(ai.lodgeChanges); if (c!=null) return {v:c===0, t:`숙소 변경 ${c}회`}; return {v:null, t:'숙소 변경 여부 미등록 — 상담 시 확인'}; }
   if (key==='lodge:long' && F.dom){   // 국내는 1박 2일이 대부분 — 2박 이상 연박 가능을 장박으로 본다
-    const v = aiYn(ai.multiNight); if (v!==null) return {v, t:`${by('multiNight')}: 연박(2박 이상) ${v?'가능':'불가'}`};
+    const isDef = !!(ai.__src && ai.__src.multiNight==='기본값');
+    const v = isDef ? null : aiYn(ai.multiNight); if (v!==null) return {v, t:`${by('multiNight')}: 연박(2박 이상) ${v?'가능':'불가'}`};
     if (F.nights!=null && F.nights>=2) return {v:true, t:`${F.nights}박 일정 (국내 연박)`};
-    return aiKwRes(F, ['연박','2박','3박','장박'], false, '연박 가능 여부 미등록 — 상담 시 확인');
+    const kw = aiKwRes(F, ['연박','2박','3박','장박'], false, '연박 가능 여부 미등록 — 상담 시 확인');
+    return isDef ? ((kw && kw.v===true) ? kw : {v:false, t:'기본값 기준: 연박(2박 이상) 불가'}) : kw;
   }
   if (key==='lodge:long'){ const v = aiYn(ai.longStay); if (v!==null) return {v, t:`${by('longStay')}: 장박 ${v?'가능':'불가'}`}; if (F.nights!=null && F.nights>=7) return {v:true, t:`${F.nights}박 일정`}; return aiKwRes(F, ['한달','장박','롱스테이','장기 체류','장기체류'], false, '장박 가능 여부 미등록 — 상담 시 확인'); }
   const LEVEL = {'course:easy':'쉬움', 'course:normal':'보통', 'course:hard':'도전적'};

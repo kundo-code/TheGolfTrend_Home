@@ -535,6 +535,12 @@ function llmsTxt(data, stateDate) {
   pages.forEach(p => { const f = path.join(ROOT, p.path, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, p.html); });
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap(pages, stateDate));
   fs.writeFileSync(path.join(ROOT, 'llms.txt'), llmsTxt(data, stateDate));
+  // GitHub Actions 워크플로우(build-seo-pages.yml)는 'git add golf sitemap.xml'만 하므로, llms.txt가 바뀐 채 add되지 않으면 이어지는
+  // 'git pull --rebase'가 "You have unstaged changes"(종료 코드 128)로 실패했다 — Actions에서 돌 때는 llms.txt도 직접 스테이징해 함께 커밋되게 한다
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    try { require('child_process').execFileSync('git', ['add', 'llms.txt'], { cwd: ROOT, stdio: 'inherit' }); }
+    catch (e) { console.warn('llms.txt 스테이징 실패(무시):', e.message); }
+  }
   const cnt = { overseas: data.products.filter(p => p.region === 'overseas').length, domestic: data.products.filter(p => p.region === 'domestic').length };
   console.log(`상품 ${data.products.length}개(해외 ${cnt.overseas} · 국내 ${cnt.domestic}) → 페이지 ${pages.length}개, 기준일 ${stateDate}`);
 })().catch(e => { console.error('생성 실패:', e.message); process.exit(1); });

@@ -18547,6 +18547,7 @@ function openAdvEditor(catId, idx){
   currentAdv={catId, idx}; activeAdvTab='basic'; _ctagPending=null; // 편집창을 새로 열면 입력 안 한 빈 태그 칸은 없앤다
   adminPosRememberProduct(catId, idx); adminPosSave({tab:'products', adv:true, advTab:'basic', advScroll:0});
   advResetEntryOpenState(); // 요금 항목 펼침 상태는 상품마다 따로 — 다른 상품을 열면 초기화
+  ADV_GROUP_KEYS.forEach(k=>{ advOpenState[k] = false; }); advSaveOpenState(); // 큰 항목 6개는 편집창을 열 때마다 모두 접힌 상태로 시작
   const cat=findCat(catId);
   const products=getProducts(catId);
   const p=products[idx];
@@ -18708,11 +18709,38 @@ function advIsOpen(key, dflt){
 function advDetailsAttrs(key, dflt){
   return `data-ck="${key}" ${advIsOpen(key, dflt)?'open':''} ontoggle="advRememberToggle(this)"`;
 }
+// [수정] 상품 고급 편집의 6개 큰 항목(그룹)은 한 번에 하나만 펼친다 — 하나를 펼치면 나머지(이전에 수정하던 항목)는 자동으로 접힌다.
+// "모두 펼치기"를 누른 동안에는 이 동작을 잠시 멈춘다. 항목 안쪽 세부 섹션·요금 항목은 영향 없음
+const ADV_GROUP_KEYS = ['g-card','g-expose','g-title','g-detail','g-entries','g-ai'];
+let advAccordionPaused = false;
+function advSaveOpenState(){ try{ localStorage.setItem(ADV_OPEN_KEY, JSON.stringify(advOpenState)); }catch(e){} }
+// 방금 연 그룹(el) 말고 펼쳐진 그룹을 모두 접는다 — 접힌 그룹 중 el보다 위에 있던 것이 있으면 true(그만큼 el이 위로 밀리므로 위치를 다시 맞춰야 함)
+function advCloseOtherGroups(el){
+  const body = document.getElementById('advBody'); if (!body) return false;
+  let closedAbove = false;
+  body.querySelectorAll('details[data-ck]').forEach(d=>{
+    if (d===el || !ADV_GROUP_KEYS.includes(d.dataset.ck) || !d.open) return;
+    if (d.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) closedAbove = true;
+    d.open = false; advOpenState[d.dataset.ck] = false;
+  });
+  advSaveOpenState();
+  return closedAbove;
+}
+// 열어 둔 그룹의 제목 줄이 고정 머리글 바로 아래에 오게 스크롤(instant — 접히며 밀린 위치를 자연스럽게 보정)
+function advAlignGroup(el, smooth){
+  const body = document.getElementById('advBody'); if (!body || !el) return;
+  const nav = body.querySelector('.adv-sticky-head');
+  const top = body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav ? nav.offsetHeight : 0) - 8;
+  body.scrollTo({top: Math.max(0, top), behavior: smooth ? 'smooth' : 'instant'});
+}
 function advRememberToggle(el){
   const key = el.dataset.ck; if (!key) return;
   if (key.startsWith('pe')){ advEntryOpenState[key] = el.open; return; }
   advOpenState[key] = el.open;
-  try{ localStorage.setItem(ADV_OPEN_KEY, JSON.stringify(advOpenState)); }catch(e){}
+  if (el.open && !advAccordionPaused && ADV_GROUP_KEYS.includes(key)){
+    if (advCloseOtherGroups(el)) advAlignGroup(el, false);
+  }
+  advSaveOpenState();
 }
 // 요금 항목을 삭제·복제·순서변경하면 인덱스 기반 키가 다른 항목을 가리키게 되므로 초기화
 function advResetEntryOpenState(){ advEntryOpenState = {}; }
@@ -18728,6 +18756,7 @@ function advJump(key){
   const el = body && body.querySelector(`details[data-ck="${key}"]`);
   if (!el) return;
   if (!el.open) el.open = true;
+  if (ADV_GROUP_KEYS.includes(key) && !advAccordionPaused){ advOpenState[key] = true; advCloseOtherGroups(el); } // 위치 계산 전에 다른 항목부터 접는다
   const nav = body.querySelector('.adv-sticky-head');
   const top = body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav ? nav.offsetHeight : 0) - 8;
   body.scrollTo({top, behavior:'smooth'});
@@ -18736,8 +18765,10 @@ function advJump(key){
 // 모두 접기: 요금 항목·일정 일자 카드까지 전부
 function advToggleAll(open){
   const body = document.getElementById('advBody'); if (!body) return;
+  advAccordionPaused = true; // "모두 펼치기"는 한 번에 하나만 펼치는 동작을 잠시 멈춘다
   body.querySelectorAll('details[data-ck]').forEach(d=>{ if (open && d.closest('.pe-item')) return; d.open = open; });
   if (!open) body.querySelectorAll('.pe-block.pe-item[open], .sch-day-block[open]').forEach(d=>{ d.open = false; });
+  setTimeout(()=>{ advAccordionPaused = false; }, 300); // toggle 이벤트가 모두 처리된 뒤 다시 켠다
 }
 
 function advBasicHTML(p){
@@ -18927,7 +18958,7 @@ function advBasicHTML(p){
     </details>
 
     <!-- ═══ 📝 제목 · 기본 정보 — 상품 카드 제목·박스·meta 항목 (이미지·레이블과 분리) ═══ -->
-    <details class="adv-group" ${advDetailsAttrs('g-title', true)}>
+    <details class="adv-group" ${advDetailsAttrs('g-title', false)}>
       <summary><span class="adv-g-title">📝 제목 · 기본 정보</span><span class="adv-where">지역명·제목·요약 설명 · 상품 카드 박스·meta</span>${advFillBadge(titleN, titleKeys.length)}</summary>
       <div class="adv-group-body">
         ${sub('📝 제목', '상품 카드 · AI·검색엔진용 메타 정보')}
@@ -18993,7 +19024,7 @@ function advBasicHTML(p){
     </details>
 
     <!-- ═══ 📄 자세히 보기 — 상품 상세 페이지의 공통 정보 (상세 페이지 노출 순서대로) ═══ -->
-    <details class="adv-group" ${advDetailsAttrs('g-detail', true)}>
+    <details class="adv-group" ${advDetailsAttrs('g-detail', false)}>
       <summary><span class="adv-g-title">📄 자세히 보기 (공통)</span><span class="adv-where">상세 페이지 · 요금 항목에서 비워두면 이 값 적용</span>${advFillBadge(detailSecN, 8)}</summary>
       <div class="adv-group-body">
         <!-- [수정] 항공/이동 정보와 출발 요일을 한 섹션으로 — 상세 페이지 "항공/이동 정보"에 함께 노출된다 -->
@@ -19106,7 +19137,7 @@ function advBasicHTML(p){
     </details>
 
     <!-- ═══ 💳 요금 항목 ═══ -->
-    <details class="adv-group" ${advDetailsAttrs('g-entries', true)}>
+    <details class="adv-group" ${advDetailsAttrs('g-entries', false)}>
       <summary><span class="adv-g-title">💳 요금 항목 ${nEntries}개</span><span class="adv-where">자세히 보기 "요금표" · 활성 팝업 ${popupCount}/${POPUP_MAX}</span></summary>
       <div class="adv-group-body">
         <!-- [추가] 요금 항목 ↔ 공통값 상속 안내 + 일괄 정리 버튼 -->
@@ -19716,8 +19747,8 @@ function cpResetBg(btn){
 }
 // 체크포인트 편집기로 이동 — checkpoint1(주의사항)은 상품 카드 그룹, checkpoint2(참고사항)는 "포함 · 불포함 · 참고사항"에 있다
 function advJumpCp(field){
-  const open = k=>{ const d=document.querySelector(`#advBody details[data-ck="${k}"]`); if (d) d.open=true; };
-  if (field==='checkpoint2'){ open('g-detail'); open('d-inc'); } else open('g-card');
+  const open = k=>{ const d=document.querySelector(`#advBody details[data-ck="${k}"]`); if (d) d.open=true; return d; };
+  if (field==='checkpoint2'){ const g = open('g-detail'); open('d-inc'); if (g){ advOpenState['g-detail']=true; advCloseOtherGroups(g); } } else { const g = open('g-card'); if (g){ advOpenState['g-card']=true; advCloseOtherGroups(g); } }
   const el=document.querySelector(`#advBody .cp-editor[data-field="${field}"]`); if (!el) return;
   const body=document.getElementById('advBody'), nav=body.querySelector('.adv-sticky-head');
   body.scrollTo({top: body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav?nav.offsetHeight:0) - 10, behavior:'smooth'});

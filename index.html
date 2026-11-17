@@ -13529,7 +13529,7 @@ function refreshCategoryProducts(regionKey){
       // 실제 첫 상품이 중앙에 오도록 즉시(애니메이션 없이) 맞춘다(여행이야기 캐러셀과 동일한 방식)
       requestAnimationFrame(()=>{
         const firstReal = grid.querySelectorAll('.product')[1];
-        if (firstReal) grid.scrollLeft = firstReal.offsetLeft - (grid.clientWidth - firstReal.clientWidth)/2;
+        if (firstReal) grid.scrollLeft = loopCenterX(grid, firstReal) - grid.clientWidth/2;
         mcfUpdate(grid);
       });
     }
@@ -13636,7 +13636,7 @@ function pcScroll(regionKey, dir){
 // 끝없는 루프(복제 카드) 트랙에서 ext 번호(복제 포함 순번)의 카드를 보이게 할 scrollLeft — 모바일(1장 가운데 스냅)은 가운데, PC·태블릿(왼쪽 스냅)은 두 번째 칸이 그 카드가 되게(카운터·반투명 처리의 "가운데" 기준과 같음)
 function pcExtLeft(track, ext){
   const cards = track.querySelectorAll('.product'); const c = cards[ext]; if (!c) return 0;
-  if (window.innerWidth<=780) return c.offsetLeft - (track.clientWidth - c.clientWidth)/2;
+  if (window.innerWidth<=780) return loopCenterX(track, c) - track.clientWidth/2;
   const lead = cards[Math.max(0, ext-1)];
   return lead.offsetLeft - cards[0].offsetLeft;
 }
@@ -13646,7 +13646,7 @@ function pcGoTo(regionKey, idx){
   if (track.dataset.bump==='0'){
     track.dataset.active = idx;
     const card = track.querySelectorAll('.product')[idx];
-    if (card) track.scrollTo({left: card.offsetLeft - (track.clientWidth - card.clientWidth)/2, behavior:'smooth'});
+    if (card) track.scrollTo({left: loopCenterX(track, card) - track.clientWidth/2, behavior:'smooth'});
     pcUpdateDots(regionKey);
     // 모두 보이는 데스크톱에서는 스크롤이 없으므로, 고른 카드를 잠깐 강조해 어떤 카드인지 알려준다
     if (card && track.scrollWidth <= track.clientWidth+1){ card.classList.remove('pc-pulse'); void card.offsetWidth; card.classList.add('pc-pulse'); }
@@ -13659,11 +13659,21 @@ function pcGoTo(regionKey, idx){
 // ── 끝없는 루프 공통 처리(국내·해외 상품 캐러셀, 모바일 3개 이하 상품 트랙, 여행 이야기 트랙) ──
 // 트랙 앞뒤에 같은 모양의 복제 카드가 있으므로, 스크롤이 멈춘 뒤(손가락·마우스를 뗀 뒤) 복제 구간에 서 있으면 같은 모양의 진짜 구간으로
 // total칸만큼 즉시(애니메이션 없이) 옮긴다 — 화면은 그대로라 눈에는 같은 방향으로 계속 이어지는 것처럼 보인다
+// 카드 가운데의 "스크롤 좌표" — 모바일에서는 카드에 zoom(fitProductCardsToScreen)이 걸려 offsetLeft/offsetWidth가 실제 스크롤 거리와 달라지므로
+// (복제 카드 이동 거리가 틀려 두 복제 카드 사이를 계속 오가며 카드가 번갈아 깜빡이던 원인) 화면에 그려진 위치(getBoundingClientRect)에서 직접 구한다
+function loopCenterX(track, card){
+  const tr = track.getBoundingClientRect(), cr = card.getBoundingClientRect();
+  return cr.left + cr.width/2 - tr.left - track.clientLeft + track.scrollLeft;
+}
+function loopStepOf(track, cards){
+  cards = cards || track.querySelectorAll('.product');
+  return cards.length>1 ? loopCenterX(track, cards[1]) - loopCenterX(track, cards[0]) : 0;
+}
 function loopNormalize(track, sel, k, total, dual){
   if (!track || !total || total<2 || !k) return false;
   const cards = track.querySelectorAll(sel);
   if (cards.length < total + 2*k) return false;
-  const step = cards[1].offsetLeft - cards[0].offsetLeft;
+  const step = (!dual || window.innerWidth<=780) ? (cards[1] ? loopCenterX(track, cards[1]) - loopCenterX(track, cards[0]) : 0) : cards[1].offsetLeft - cards[0].offsetLeft;
   if (!(step>0)) return false;
   let shift = 0;
   if (!dual || window.innerWidth<=780){
@@ -13926,7 +13936,7 @@ function initProductCarousel(regionKey){
   } else if (window.innerWidth<=780){
     requestAnimationFrame(()=>{
       const firstReal = track.querySelectorAll('.product')[0];
-      if (firstReal) track.scrollLeft = firstReal.offsetLeft - (track.clientWidth - firstReal.clientWidth)/2;
+      if (firstReal) track.scrollLeft = loopCenterX(track, firstReal) - track.clientWidth/2;
       pcUpdateDots(regionKey);
       pcUpdateCenterDim(regionKey);
       mcfUpdate(track);

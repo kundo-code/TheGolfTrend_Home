@@ -13421,8 +13421,20 @@ function productCardHTML(p, catId, idx){
 // 노출 여부를 정확히 판정하므로, 캐러셀을 넘겨 카드가 실제로 보이는 순간 자연스럽게 로딩된다.
 // MutationObserver로 이후에 새로 생기는 카드(카테고리 전환, 필터, 캐러셀 재구성 등)도 자동으로
 // 감시 대상에 포함시켜, 렌더 함수마다 일일이 훅을 걸 필요가 없게 한다
+// 가로로 넘기는 상품 트랙(.pc-track, 모바일의 .product-grid) 안의 카드는 IntersectionObserver의 rootMargin(세로만 600px)이 가로 스크롤 영역의 가려진 부분에는
+// 적용되지 않아(스크롤 컨테이너가 잘라 낸 영역만 '보임'으로 판정) 옆 카드·끝에 붙은 복제 카드(루프에서 이어 보일 첫 상품)의 사진이 실제로 화면에 들어온 뒤에야 불러와져
+// 마지막 상품에서 다시 처음으로 넘어갈 때 잠깐 빈 회색 카드가 보이다 튀어 보였다 — 트랙 안 카드는 지연 없이 바로 채운다(복제 카드는 같은 URL이라 추가 다운로드 없음)
+function lazyBgInHTrack(el){
+  const t = el.closest && el.closest('.pc-track, .product-grid');
+  return !!t && (t.classList.contains('pc-track') || window.innerWidth<=780);
+}
 function attachLazyBg(el){
   if (!el || !el.dataset || !el.dataset.bgSrc) return;
+  if (lazyBgInHTrack(el)){
+    el.style.backgroundImage = `url('${el.dataset.bgSrc}')`;
+    delete el.dataset.bgSrc;
+    return;
+  }
   if (attachLazyBg._io){
     attachLazyBg._io.observe(el);
   } else {
@@ -13515,8 +13527,13 @@ function refreshCategoryProducts(regionKey){
     const mobileLoop = window.innerWidth<=780 && filtered.length>=2;
     grid.dataset.total = filtered.length;
     grid.dataset.looped = mobileLoop ? '1' : '';
+    // [수정] 복제 카드를 앞뒤 2장씩 붙인다(상품이 2개면 2개 전부) — 1장씩만 붙이면 상품이 2개일 때 끝 복제 카드 오른쪽에 아무 카드도 없어서, 마지막 → 처음으로
+    // 이어질 때 다음 카드가 갑자기 나타나(튐) 보였다. 복제가 2장 있으면 끝에서도 항상 옆 카드가 이어 보인다
+    const loopK = mobileLoop ? Math.min(2, filtered.length) : 0;
+    grid.dataset.bump = loopK || '';
+    const cloneHTML = arr => arr.map(x=>productCardHTML(x.p, x.catId, x.i)).join('');
     grid.innerHTML = mobileLoop
-      ? productCardHTML(filtered[filtered.length-1].p, filtered[filtered.length-1].catId, filtered[filtered.length-1].i) + cardsHTML + productCardHTML(filtered[0].p, filtered[0].catId, filtered[0].i)
+      ? cloneHTML(filtered.slice(-loopK)) + cardsHTML + cloneHTML(filtered.slice(0, loopK))
       : cardsHTML;
     observeProductVideos(grid); // 화면에 보이는 카드의 타이틀 동영상만 재생(백지 현상 방지)
     // [Phase] 상품이 3개 이하라 캐러셀(.pc-track)로 전환되지 않아도, 모바일에서 손가락으로 화면을
@@ -13530,7 +13547,7 @@ function refreshCategoryProducts(regionKey){
       // [수정] 범퍼가 맨 앞에 붙으므로, scrollIntoView 대신 grid 자신의 scrollLeft만 직접 계산해
       // 실제 첫 상품이 중앙에 오도록 즉시(애니메이션 없이) 맞춘다(여행이야기 캐러셀과 동일한 방식)
       requestAnimationFrame(()=>{
-        const firstReal = grid.querySelectorAll('.product')[1];
+        const firstReal = grid.querySelectorAll('.product')[loopK||1];
         if (firstReal) grid.scrollLeft = loopCenterX(grid, firstReal) - grid.clientWidth/2;
         mcfUpdate(grid);
       });
@@ -13717,7 +13734,7 @@ function loopCfgOf(track){
   if (!track) return null;
   if (track.classList.contains('pc-track')){ const k=parseInt(track.dataset.bump,10)||0; return k?{sel:'.product',k,total:parseInt(track.dataset.total,10)||0,dual:true}:null; }
   if (track.id==='blogGrid') return track.dataset.looped==='1' ? {sel:'.post',k:1,total:parseInt(track.dataset.total,10)||0,dual:false} : null;
-  return track.dataset.looped==='1' ? {sel:'.product',k:1,total:parseInt(track.dataset.total,10)||0,dual:false} : null;
+  return track.dataset.looped==='1' ? {sel:'.product',k:parseInt(track.dataset.bump,10)||1,total:parseInt(track.dataset.total,10)||0,dual:false} : null;
 }
 function loopNormalizeNow(track){ const c=loopCfgOf(track); return c ? loopNormalize(track, c.sel, c.k, c.total, c.dual) : false; }
 function loopBind(track){

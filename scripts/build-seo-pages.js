@@ -166,7 +166,7 @@ function extractInPage() {
       const from = Number(p.from) || 0;
       res.push({
         region, catId: cat.id, catKo: cat.ko, catTagline: cat.tagline || '', idx, uid: p.uid,
-        title: plain(p.title), monthsTag: productMonthsLabel(p), periodText: plain(p.nights), nightsCount: plain(p.nightsCount),
+        title: plain(p.title), titleRegion: plain(p.titleRegion), titleSub: plain(p.titleSub), metaDesc: plain(p.metaDesc), monthsTag: productMonthsLabel(p), periodText: plain(p.nights), nightsCount: plain(p.nightsCount),
         rounds: plain(p.rounds), stay: plain(p.stay), meals: plain(p.meals), lodge: lodgeText(p), ticket: ticketText(p),
         airfare: p.airfareIncluded === 'included' ? '항공 포함' : (p.airfareIncluded === 'excluded' ? '항공 불포함' : ''),
         flightTime: plain(p.flightTime), transferLabel: dom ? '숙소→골프장' : '공항→호텔', transferTime: plain(p.transferTime), hotelToGolfTime: plain(p.hotelToGolfTime),
@@ -295,6 +295,9 @@ const cta = (p, data) => `<div class="cta">
 <a href="${esc(data.contact.kakaoChat)}" target="_blank" rel="noopener">카카오톡 상담</a></div>`;
 
 const titleFull = p => (p.title + (p.monthsTag ? ` 【${p.monthsTag}】` : '')).trim();
+// 관리자 '지역명 · 제목보조(Sub-Title)' — 검색·AI 검색에서 상품명을 더 구체적으로 알아보도록 <title>·구조화 데이터 이름 앞에 붙인다(비어 있으면 기존 그대로)
+const kickerOf = p => [p.titleRegion, p.titleSub].filter(Boolean).join(' · ');
+const titleSeo = p => [kickerOf(p), titleFull(p)].filter(Boolean).join(' ');
 const regionName = r => r === 'overseas' ? '해외 골프여행' : '국내 골프여행';
 // 최저가 — 페이지에 보이는 모든 금액(홈페이지 표시가·요금 항목·요일별 요금) 중 가장 낮은 값. 가격 문의 상품은 금액을 쓰지 않는다
 function lowestPrice(p) {
@@ -307,6 +310,8 @@ const priceText = p => { if (p.priceInquiry) return p.priceInquiry; const lo = l
 function descOf(p) {
   const lo = lowestPrice(p);
   const bits = [p.nightsCount, p.rounds, p.lodge, p.airfare, p.monthsTag ? `추천 시기 ${p.monthsTag}` : '', lo > 0 ? `${won(lo)}${p.fromLabel ? '~' : ''}` : ''].filter(Boolean);
+  // 관리자가 '요약 설명(Meta Description)'을 입력했으면 그 문장을 맨 앞에 둔다(150자 안에서 잘리지 않게)
+  if (p.metaDesc) return clip(`${p.metaDesc} | ${p.title} — ${bits.join(' · ')}. ${p.catKo} 골프 패키지 THE GOLF TREND.`, 150);
   return clip(`${p.title} — ${bits.join(' · ')}. ${p.catKo} 골프 패키지 상담·예약 THE GOLF TREND.`, 150);
 }
 
@@ -406,7 +411,8 @@ function productPage(p, data, stateDate) {
   const faq = faqFor(p, data);
   const faqHtml = faq.length ? `<h2>자주 묻는 질문</h2><div class="card faq">${faq.map(([q, a]) => `<h3>${esc(q)}</h3><p class="l">${esc(a)}</p>`).join('')}</div>` : '';
   const body = `<h1>${esc(p.title)}</h1>
-<p class="lead">${[p.catKo, p.monthsTag && `추천 시기 ${p.monthsTag}`].filter(Boolean).map(esc).join(' · ')}</p>
+<p class="lead">${[kickerOf(p), p.catKo, p.monthsTag && `추천 시기 ${p.monthsTag}`].filter(Boolean).map(esc).join(' · ')}</p>
+${p.metaDesc ? `<p>${esc(p.metaDesc)}</p>` : ''}
 ${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}
 ${hero}
 <h2>한눈에 보기</h2><div class="card"><table class="facts"><tbody>${rows.join('')}</tbody></table></div>
@@ -428,12 +434,12 @@ ${cta(p, data)}`;
   } : undefined;
   const props = [['일정', p.nightsCount], ['골프 라운드', p.rounds], ['숙박', p.stay], ['숙소 위치', p.lodge], ['식사', p.meals], ['항공', p.airfare], ['추천 판매 시기', p.monthsTag], ['최소 출발 인원', p.minPeople ? `${p.minPeople}명 이상` : ''], ['추천 대상', p.aiFacts.audience.join(', ')], ['추천 연령대', p.aiFacts.ageGroups.join(', ')], ['카트·캐디 방식', p.aiFacts.cartCaddie]]
     .filter(([, v]) => v).map(([name, value]) => ({ '@type': 'PropertyValue', name, value }));
-  const product = { '@context': 'https://schema.org', '@type': 'Product', '@id': url + '#product', name: titleFull(p), description: descOf(p), url, sku: code,
+  const product = { '@context': 'https://schema.org', '@type': 'Product', '@id': url + '#product', name: titleSeo(p), description: descOf(p), url, sku: code,
     image: p.images.slice(0, 6).map(i => abs(i.url)), category: `${regionName(p.region)} > ${p.catKo}`, brand: { '@type': 'Brand', name: 'THE GOLF TREND' },
     ...(props.length ? { additionalProperty: props } : {}), ...(offers ? { offers } : {}) };
 
   const crumbs = [{ name: '홈', path: '/' }, { name: regionName(p.region), path: `/golf/${p.region}/` }, { name: p.catKo, path: `/golf/${p.catId}/` }, { name: titleFull(p), path: pagePath }];
-  return { path: pagePath, html: layout({ title: `${titleFull(p)} | ${p.catKo} 골프여행 패키지 - THE GOLF TREND`, description: descOf(p), canonicalPath: pagePath, ogImage: image, track: { uid: p.uid, title: p.title, cat: p.catId, region: p.region }, jsonLd: faq.length ? [product, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }] : product, body, crumbs, data, stateDate }) };
+  return { path: pagePath, html: layout({ title: `${titleSeo(p)} | ${p.catKo} 골프여행 패키지 - THE GOLF TREND`, description: descOf(p), canonicalPath: pagePath, ogImage: image, track: { uid: p.uid, title: p.title, cat: p.catId, region: p.region }, jsonLd: faq.length ? [product, { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }] : product, body, crumbs, data, stateDate }) };
 }
 
 function listItems(ps) {
@@ -535,6 +541,12 @@ function llmsTxt(data, stateDate) {
   pages.forEach(p => { const f = path.join(ROOT, p.path, 'index.html'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, p.html); });
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap(pages, stateDate));
   fs.writeFileSync(path.join(ROOT, 'llms.txt'), llmsTxt(data, stateDate));
+  // GitHub Actions 워크플로우(build-seo-pages.yml)는 'git add golf sitemap.xml'만 하므로, llms.txt가 바뀐 채 add되지 않으면 이어지는
+  // 'git pull --rebase'가 "You have unstaged changes"(종료 코드 128)로 실패했다 — Actions에서 돌 때는 llms.txt도 직접 스테이징해 함께 커밋되게 한다
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    try { require('child_process').execFileSync('git', ['add', 'llms.txt'], { cwd: ROOT, stdio: 'inherit' }); }
+    catch (e) { console.warn('llms.txt 스테이징 실패(무시):', e.message); }
+  }
   const cnt = { overseas: data.products.filter(p => p.region === 'overseas').length, domestic: data.products.filter(p => p.region === 'domestic').length };
   console.log(`상품 ${data.products.length}개(해외 ${cnt.overseas} · 국내 ${cnt.domestic}) → 페이지 ${pages.length}개, 기준일 ${stateDate}`);
 })().catch(e => { console.error('생성 실패:', e.message); process.exit(1); });

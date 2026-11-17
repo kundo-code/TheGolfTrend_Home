@@ -105,12 +105,12 @@ function extractInPage() {
   };
   const plain = v => lines(v).join(' ');
   const strip = s => String(s || '').replace(/^["“”']+|["“”']+$/g, '').trim();
-  const filled = v => Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && String(v).trim() !== '');
+  const filled = v => Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && (String(v).indexOf('<') >= 0 ? (plain(v) !== '' || /<table/i.test(String(v))) : String(v).trim() !== ''));
   const fmtField = (f, v) => {
     if (Array.isArray(v)) { const sub = f.sub ? '' : ''; return v.join(', ') + sub; }
     if (f.type === 'yn') return v === 'y' ? (f.yes || '예') : (f.no || '아니오');
     if (f.type === 'num') return v + (f.unit || '');
-    return String(v);
+    return typeof v === 'string' && v.indexOf('<') >= 0 ? plain(v) : String(v);   // 서식(HTML)이 들어간 값은 글자만
   };
   const placeFacts = (fields, place, skip) => {
     const out = [];
@@ -178,9 +178,9 @@ function extractInPage() {
         priceInquiry: strip(priceInquiry), from, fromLabel: p.fromLabel !== false,
         entries, commonDayPrices: dayRows(p.commonDayPrices), commonHolidayPrices: holRows(p.commonHolidayPrices), commonDates: dateList(p.commonDayDates),
         included: lines(p.commonIncluded), notIncluded: lines(p.commonNotIncluded), precautions: lines(p.commonPrecautions), notes: lines(p.notes), booking: lines(p.bookingPolicy),
-        aiFacts: { packageType: info.packageType || '', mealsIncl: info.mealsIncl || [], mealCount: info.mealCount || '', paxOk: info.paxOk || [],
+        aiFacts: { packageType: info.packageType || '', mealsIncl: info.mealsIncl || [], mealCount: plain(info.mealCount), paxOk: info.paxOk || [],
           audience: info.audience || [], ageGroups: info.ageGroups || [], cartCaddie: info.cartCaddie || '',
-          pros: String(info.pros || '').split(/\n/).map(x => x.trim()).filter(Boolean), cons: String(info.cons || '').split(/\n/).map(x => x.trim()).filter(Boolean), rainCancel: String(info.rainCancel || '').split(/\n/).map(x => x.trim()).filter(Boolean) },
+          pros: lines(info.pros), cons: lines(info.cons), rainCancel: lines(info.rainCancel) },
         courses, lodges, images
       });
     });

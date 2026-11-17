@@ -4668,6 +4668,12 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-info-f select option{color:#0a1730}
 .ai-info-f.ai-wide{grid-column:1/-1}
 .ai-info-fnote{font-size:.74rem;line-height:1.45;color:var(--nm-text-soft,#667);font-weight:500}
+.ai-info-f .rtf-editable.ai-rtf{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font-size:.86rem;font-family:inherit;line-height:1.5;font-weight:400;white-space:pre-wrap;overflow-wrap:anywhere;outline:none;resize:vertical;overflow:auto}
+.ai-info-f .rtf-editable.ai-rtf:focus{box-shadow:0 0 0 2px var(--nm-blue)}
+.ai-info-f .rtf-editable.ai-rtf-line{resize:none;overflow:visible}
+.ai-info-f .rtf-editable.ai-rtf:empty:before{white-space:pre-line;color:#8a94a6;font-weight:400}
+.ai-info-f:not(.filled) .rtf-editable.ai-rtf{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
+.ai-info-f.filled .rtf-editable.ai-rtf{border-color:#16a34a;color:#064e3b;background:#fff}
 .ai-info-f textarea{width:100%;box-sizing:border-box;min-height:64px;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font-size:.86rem;font-family:inherit;line-height:1.5;resize:vertical}
 .ai-info-f:not(.filled) textarea{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
 .ai-info-f.filled textarea{border-color:#16a34a;color:#064e3b;font-weight:600;background:#fff}
@@ -11254,7 +11260,7 @@ function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodg
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
 function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x && x.turf && !x.turfFairway) x.turfFairway = x.turf; /* 예전 '잔디 상태'는 페어웨이 칸으로 이어받음(원본 값은 그대로 보존) */ if (x) aiCourseAutoLevel(x); return x; }
 // Slope → 난이도(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적). Slope를 찾지 못하면 ''
-function aiSlopeOf(rating){ const nums = String(rating||'').match(/\d+(?:\.\d+)?/g); if (!nums) return null; const sl = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop(); return sl==null ? null : sl; }
+function aiSlopeOf(rating){ const nums = String(typeof rating==='string' && rating.indexOf('<')>=0 ? richToPlain(rating) : (rating||'')).match(/\d+(?:\.\d+)?/g); if (!nums) return null; const sl = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop(); return sl==null ? null : sl; }
 function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? '쉬움' : (sl<135 ? '보통' : '도전적')); }
 // 난이도가 비어 있거나 자동 값(courseLevelAuto)이면 Course Rating · Slope로 다시 정한다. 관리자가 직접 고른 값은 그대로 둔다
 function aiCourseAutoLevel(x){
@@ -11734,7 +11740,7 @@ function rtfSingleBlocked(editable){
   if (editable && editable.matches && editable.matches(RTF_SINGLE_SEL)){ rtfNoTargetHint('이 입력란은 한 줄 입력란이라 줄간격·표·하위서식은 적용되지 않습니다'); return true; }
   return false;
 }
-const RTF_SINGLE_SEL = '.ctag-edit,.pe-headline-edit,.inq-edit,.dp-title-edit'; // 한 줄 입력란 — 표·하위서식·줄간격은 해당 없음
+const RTF_SINGLE_SEL = '.ctag-edit,.pe-headline-edit,.inq-edit,.dp-title-edit,.ai-rtf-line'; // 한 줄 입력란 — 표·하위서식·줄간격은 해당 없음
 document.addEventListener('focusin', e=>{
   const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
   const bar = document.querySelector('.rtf-global');
@@ -13205,11 +13211,12 @@ function cardMoveList(p, catId){
 // [추가] 고급편집 › 🤖 AI 추천 정보 › ⑥ "장점"에 입력한 값(한 줄에 하나씩) — 비어 있으면 빈 문자열
 function cardProsLines(p){
   const t = (p && p.aiInfo && typeof p.aiInfo==='object') ? String(p.aiInfo.pros||'') : '';
-  return t.split(/\n/).map(x=>x.trim()).filter(Boolean);
+  return richToText(t).split(/\n/).map(x=>x.trim()).filter(Boolean);
 }
 function cardProsListHTML(p){
-  const ls = cardProsLines(p);
-  return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${escapeAttr(l)}</li>`).join('')}</ul>` : '';
+  const t = (p && p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo.pros : '';
+  const ls = aiLinesHTML(t);   // 서식을 넣은 장점은 서식 그대로 카드에 보인다
+  return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
 }
 // 기본 정보(박수·라운드·숙박·식사·항공) 한 줄 — 히어로 카드와 팝업 카드가 같은 값을 쓴다
 function spotBasicMeta(p){
@@ -19179,7 +19186,7 @@ const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도)
 function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (v==='far' ? '차량 1시간 초과' : v); }
 // 숙소 등록부 항목
 const AI_LODGE_FIELDS = [
-  {k:'name', label:'숙소명', type:'text', help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
+  {k:'name', label:'숙소명', type:'text', plain:true, help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
   {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 숙소를 고를 때 같은 국가·권역의 숙소를 먼저 보여 줍니다.'},
   {k:'lodgeType', label:'숙소 유형', type:'select', opts:['골프텔','리조트','풀빌라','시내호텔','기타'], help:'골프텔: 골프장 부지 안 숙박 전용 시설 · 리조트: 수영장·스파 등 부대시설을 갖춘 휴양형 · 풀빌라: 객실(동)마다 전용 수영장이 있는 독채형 · 시내호텔: 도심·번화가에 있는 호텔'},
   {k:'lodgeStar', label:'숙박 등급', type:'select', opts:['3성급','4성급','5성급'], help:'정부·관광청 공식 등급 또는 주요 예약 사이트 표기 등급. 둘이 다르면 낮은 쪽, 확인 안 되면 미확인. 아래에 확인 출처를 꼭 적어 주세요.'},
@@ -19204,7 +19211,7 @@ const AI_LODGE_FIELDS = [
 ];
 // 골프장 등록부 항목
 const AI_COURSE_FIELDS = [
-  {k:'name', label:'골프장(코스)명', type:'text', help:'공식 명칭. 같은 골프장을 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
+  {k:'name', label:'골프장(코스)명', type:'text', plain:true, help:'공식 명칭. 같은 골프장을 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
   {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 골프장을 고를 때 같은 국가·권역을 먼저 보여 줍니다.'},
   {k:'holes', label:'홀 수', type:'select', opts:['18','27','36','45+'], help:'골프장 전체 홀 수(27홀 골프장이면 27).'},
   {k:'par', label:'PAR', type:'num', help:'정규 18홀 기준 PAR.'},
@@ -19348,7 +19355,30 @@ function aiMergedInfo(p, pe, dom){
   return out;
 }
 function aiEntryLabel(p, i){ const pe = (p.priceEntries||[])[i]; const h = pe ? String(richToPlain(pe.headline||'')).trim() : ''; return h || `항목 ${String(i+1).padStart(2,'0')}`; }
-function aiInfoFilled(v){ return Array.isArray(v) ? v.length>0 : (v!==undefined && v!==null && String(v).trim()!==''); }
+// 서식 있는 글자(HTML) 값 — AI 추천 정보의 글·긴 글 입력란은 공용 서식 도구(크기·글꼴·B·I·U·색상 등)로 꾸밀 수 있다.
+// 서식을 쓰지 않은 값은 예전과 같은 일반 글자로 저장하고(기존 값·판정 로직과 그대로 호환), 서식이 들어간 값만 HTML로 저장한다.
+// 판정·검색·요약에 쓰는 곳은 항상 aiPlainText()로 글자만 꺼내 쓴다
+function aiIsRichField(fd){ return !!fd && (fd.type==='text' || fd.type==='area') && !fd.plain; }
+function aiPlainText(v){ return Array.isArray(v) ? v.join('·') : ((typeof v==='string' && v.indexOf('<')>=0) ? richToPlain(v) : String(v==null?'':v)); }
+function aiRichNorm(html){
+  const t = String(html==null?'':html);
+  if (!richToPlain(t) && !/<table/i.test(t)) return '';
+  if (!/<(?!\/?(br|div|p)\b)[a-z]/i.test(t)) return richToText(t).trim();   // 서식 없는 글자뿐 → 일반 글자로 저장
+  return sanitizeRichHTML(t);
+}
+// 줄 단위 HTML(한 줄에 하나씩 입력하는 장점 등) — 서식은 살리고 줄은 <br>·블록 끝에서 나눈다. 일반 글자는 줄마다 이스케이프
+function aiLinesHTML(v){
+  const t = String(v==null?'':v);
+  if (t.indexOf('<')<0) return t.split(/\n/).map(x=>x.trim()).filter(Boolean).map(x=>escapeAttr(x));
+  return sanitizeRichHTML(t).replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|li)>/gi,'\n').replace(/<(div|p|li)(\s[^>]*)?>/gi,'')
+    .split(/\n/).map(x=>x.trim()).filter(x=>x && richToPlain(x));
+}
+function aiInfoFilled(v){
+  if (Array.isArray(v)) return v.length>0;
+  if (v===undefined || v===null) return false;
+  const t = String(v);
+  return t.indexOf('<')>=0 ? (!!richToPlain(t) || /<table/i.test(t)) : t.trim()!=='';
+}
 function aiPlaceList(kind){ return kind==='lodge' ? aiPlaces.lodges : aiPlaces.courses; }
 function aiPlaceFields(kind){ return kind==='lodge' ? AI_LODGE_FIELDS : AI_COURSE_FIELDS; }
 function aiPlaceIdsKey(kind){ return kind==='lodge' ? 'lodgeIds' : 'courseIds'; }
@@ -19398,7 +19428,14 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
     return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(v==null?'':v)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
   }
-  if (fd.type==='area') return `<div ${box}>${lab}<textarea rows="${fd.rows||3}" maxlength="${fd.max||400}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}">${escapeAttr(v||'')}</textarea></div>`;
+  // 글·긴 글 입력란 — 공용 서식 도구(크기·글꼴·B·I·U·색상 등)를 쓸 수 있는 서식 입력란(.rtf-editable). 이름 칸(plain)은 일반 입력란 유지
+  if (aiIsRichField(fd)){
+    const area = fd.type==='area';
+    const init = (typeof v==='string' && /<[a-z]/i.test(v)) ? sanitizeRichHTML(v) : plainToRichInit(v==null?'':String(v));
+    const minH = area ? Math.round((fd.rows||3)*20.6+18) : 38;
+    return `<div ${box}>${lab}<div class="rtf-editable ai-rtf ${area?'ai-rtf-area':'ai-rtf-line'}" contenteditable="true" data-placeholder="${escapeAttr(fd.ph||'')}" style="min-height:${minH}px"
+      oninput="${save(k,'aiRichNorm(this.innerHTML)')}" ${area?'':`onkeydown="if(event.key==='Enter')event.preventDefault()"`} onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${init}</div></div>`;
+  }
   if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(v)?escapeAttr(v):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
   return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
 }
@@ -19424,8 +19461,9 @@ function aiLenUnit(sel){
 // 입력·선택할 때마다 칸의 입력됨(.filled) 표시를 다시 판정
 function aiFieldFillSync(e){
   const f = e.target && e.target.closest && e.target.closest('.ai-info-f'); if (!f) return;
-  const any = [...f.querySelectorAll('input,select,textarea')].some(el=>{
+  const any = [...f.querySelectorAll('input,select,textarea,[contenteditable="true"]')].some(el=>{
     if (el.hasAttribute('data-nofill')) return false;
+    if (el.isContentEditable && el.getAttribute('contenteditable')==='true') return !!richToPlain(el.innerHTML) || /<table/i.test(el.innerHTML);
     if (el.type==='checkbox') return el.checked;
     return String(el.value||'').trim()!=='';
   });
@@ -19523,10 +19561,10 @@ function aiLegacyBoxHTML(p, kind){
   if (!leg) return '';
   const word = kind==='lodge' ? '숙소' : '골프장';
   const fields = aiPlaceFields(kind);
-  const items = Object.keys(leg).filter(k=>k!=='legacy' && k!=='name' && aiInfoFilled(leg[k])).map(k=>{ const fd = fields.find(f=>f.k===k); const v = leg[k]; return `${fd?fd.label:k}: ${Array.isArray(v)?v.join('·'):(fd && fd.type==='prox' ? aiProxLabel(v) : (v==='y'?'예':(v==='n'?'아니오':v)))}`; });
+  const items = Object.keys(leg).filter(k=>k!=='legacy' && k!=='name' && aiInfoFilled(leg[k])).map(k=>{ const fd = fields.find(f=>f.k===k); const v = leg[k]; return `${fd?fd.label:k}: ${Array.isArray(v)?v.join('·'):(fd && fd.type==='prox' ? aiProxLabel(v) : (v==='y'?'예':(v==='n'?'아니오':aiPlainText(v))))}`; });
   return `<div class="ai-legacy"><b>이 상품에 직접 입력해 둔 ${word} 정보${leg.name?` (${escapeAttr(leg.name)})`:''}</b><p>${escapeAttr(items.join(' · '))}</p><button type="button" class="apc-btn-sm" onclick="aiMigrateLegacy('${kind}')">${word} 등록부로 옮기고 연결</button><span class="ai-info-note"> 옮기기 전까지도 추천 판정에는 그대로 쓰입니다.</span></div>`;
 }
-function aiAutoValTxt(fd, v){ return Array.isArray(v) ? v.join('·') : (fd && fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : String(v)); }
+function aiAutoValTxt(fd, v){ return Array.isArray(v) ? v.join('·') : (fd && fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : aiPlainText(v)); }
 function advAiInfoHTML(p){
   const ai = (p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {};
   const dom = currentAdv ? isDomesticCat(currentAdv.catId) : false, shown = fd => aiFieldShown(fd, dom);
@@ -19564,7 +19602,7 @@ function aiInfoOf(p){ if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArr
 function updateAiInfo(k, v){
   const p=getAdvProduct(); if (!p) return;
   const ai = aiInfoOf(p);
-  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0, aiFieldMax(k)) : v;
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0, v.indexOf('<')>=0 ? 20000 : aiFieldMax(k)*10) : v;
   saveAdvChange();
 }
 function aiFieldMax(k){ const f = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields)).find(x=>x.k===k); return (f && f.max) || 200; }
@@ -19578,7 +19616,7 @@ function updateAiInfoMulti(k, opt, on){
 }
 function updateAiPlace(kind, id, k, v){
   const x = aiFindPlace(kind, id); if (!x) return;
-  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete x[k]; else x[k] = typeof v==='string' ? v.slice(0,200) : v;
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete x[k]; else x[k] = typeof v==='string' ? v.slice(0, v.indexOf('<')>=0 ? 20000 : 2000) : v;
   const fd = aiPlaceFields(kind).find(f=>f.k===k);
   if (fd && fd.sub && v!=='y') delete x[fd.sub];   // '없음'·'미확인'이면 보조 체크(연습 시설 종류)도 비운다
   if (kind==='course' && (k==='rating' || k==='courseLevel')){
@@ -20541,7 +20579,7 @@ function peAiInfoHTML(p, pe, i){
   const allFields = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields));
   const defs = AI_PE_KEYS.filter(k=>k!=='lodgeIds' && k!=='courseIds').map(k=>allFields.find(fd=>fd.k===k)).filter(fd=>fd && aiFieldShown(fd, dom));
   const n = AI_PE_KEYS.filter(k=>aiInfoFilled(own[k])).length;
-  const valTxt = (fd, v) => Array.isArray(v) ? v.join('·') : (fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : String(v));
+  const valTxt = (fd, v) => Array.isArray(v) ? v.join('·') : (fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : aiPlainText(v));
   const auto = aiAutoInfo(p, pe, dom);
   const hint = fd => aiInfoFilled(base[fd.k]) ? `비우면 상품 공통값: ${escapeAttr(valTxt(fd, base[fd.k]))}`
     : (aiInfoFilled(auto.out[fd.k]) ? `🔄 비우면 자동: ${escapeAttr(valTxt(fd, auto.out[fd.k]))} (이 항목의 ${escapeAttr(auto.src[fd.k])})` : '비우면 상품 공통값(미입력)');
@@ -20563,7 +20601,7 @@ function peAiOf(p, i){ const pe = p.priceEntries[i]; if (!pe) return null; if (!
 function peAiTidy(p, i){ const pe = p.priceEntries[i]; if (pe && pe.aiInfo && !Object.keys(pe.aiInfo).length) delete pe.aiInfo; }
 function updatePeAi(i, k, v){
   const p=getAdvProduct(); if (!p) return; const ai = peAiOf(p, i); if (!ai) return;
-  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0,200) : v;
+  if (v===''||v==null||(typeof v==='number' && !isFinite(v))) delete ai[k]; else ai[k] = typeof v==='string' ? v.slice(0, v.indexOf('<')>=0 ? 20000 : 2000) : v;
   peAiTidy(p, i); saveAdvChange();
 }
 function updatePeAiMulti(i, k, opt, on){
@@ -22146,7 +22184,7 @@ function aiInfoTest(key, F){
     return aiKwRes(F, words, false, '상품 구성 미등록 — 상담 시 확인');
   }
   if (key==='opt:tour'){ const v = aiYn(ai.optionalTour); if (v!==null) return {v, t:`관리자 입력: 선택 관광 ${v?'있음':'없음'}`}; if (ai.tourIncluded) return {v:ai.tourIncluded==='선택 관광', t:`관광: ${ai.tourIncluded}`}; return aiKwRes(F, ['선택관광','선택 관광'], true, '선택 관광 정보 미등록 — 상담 시 확인'); }
-  if (key==='nopay'){ const v = aiYn(ai.noExtraPay); if (v!==null) return {v, t:`${by('noExtraPay')}: 현지 추가 지불 ${v?'없음':'있음'}${String(ai.localMandatory||'').trim()&&!v?` (${String(ai.localMandatory).slice(0,40)})`:''}`}; if (String(ai.localMandatory||'').trim()) return {v:false, t:`현지 필수 지불: ${String(ai.localMandatory).slice(0,40)}`}; return {v:null, t:'현지 추가 지불 정보 미등록 — 상담 시 확인'}; }
+  if (key==='nopay'){ const v = aiYn(ai.noExtraPay); if (v!==null) return {v, t:`${by('noExtraPay')}: 현지 추가 지불 ${v?'없음':'있음'}${aiPlainText(ai.localMandatory).trim()&&!v?` (${aiPlainText(ai.localMandatory).slice(0,40)})`:''}`}; if (aiPlainText(ai.localMandatory).trim()) return {v:false, t:`현지 필수 지불: ${aiPlainText(ai.localMandatory).slice(0,40)}`}; return {v:null, t:'현지 추가 지불 정보 미등록 — 상담 시 확인'}; }
   return {v:null, t:''};
 }
 // 상품·가격 스타일(레이블) 판정 — 관리자가 상품에 적용한 레이블(카드에 노출 켜짐)로 판정한다

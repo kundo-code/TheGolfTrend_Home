@@ -613,6 +613,7 @@ section.block{padding:100px 24px;position:relative}
   /* [추가] 모바일에서도 데스크톱 호버처럼 가운데 카드를 강조 — 가운데 카드는 현재 크기 그대로 두고
      (확대 대신) 좌우 카드를 90%로 줄이고 반투명(60%) 처리. 가운데 카드는 호버 때처럼 금색 테두리·흰 배경 */
   .pc-track>.product,.product-grid>.product{transform-origin:center}
+  .pc-track>.product{transition:transform .3s,transform-origin .3s,box-shadow .3s,opacity .3s,border-color .3s,background .3s}
   .pc-track>.product:hover,.product-grid>.product:hover{transform:translateZ(0)}
   .pc-track>.product.m-side,.pc-track>.product.m-side:hover,
   .product-grid>.product.m-side,.product-grid>.product.m-side:hover{transform:scale(.9) translateZ(0);opacity:.6}
@@ -626,6 +627,7 @@ section.block{padding:100px 24px;position:relative}
    레이어를 새로 합성하면서 마우스를 빠르게 움직일 때 화면이 하얗게 깜빡이는 버그가 생길 수 있다
    (Chromium/Safari 공통 현상) — translateZ(0)로 미리 별도 GPU 레이어를 만들어두고 hover 상태에서도
    같은 3D 변환을 유지해, 레이어가 새로 생성/제거되지 않고 그대로 갱신만 되도록 한다 */
+.loop-jump>.product{transition:none!important}
 .product{min-width:0;padding:18px;background:rgba(255,255,255,.75);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);border-radius:20px;transition:all .3s;cursor:pointer;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(10,23,48,.16),0 2px 6px rgba(10,23,48,.08);transform:translateZ(0);will-change:transform}
 @media(hover:hover){.product:hover{transform:translateY(-6px) translateZ(0);border-color:var(--gold);background:#fff;box-shadow:0 26px 54px rgba(10,23,48,.26),0 8px 18px rgba(10,23,48,.16)}}
 /* [수정] 타이틀 이미지 원본 사이즈 1080×810px(4:3)에 맞춰 노출.
@@ -13659,21 +13661,32 @@ function pcGoTo(regionKey, idx){
 // ── 끝없는 루프 공통 처리(국내·해외 상품 캐러셀, 모바일 3개 이하 상품 트랙, 여행 이야기 트랙) ──
 // 트랙 앞뒤에 같은 모양의 복제 카드가 있으므로, 스크롤이 멈춘 뒤(손가락·마우스를 뗀 뒤) 복제 구간에 서 있으면 같은 모양의 진짜 구간으로
 // total칸만큼 즉시(애니메이션 없이) 옮긴다 — 화면은 그대로라 눈에는 같은 방향으로 계속 이어지는 것처럼 보인다
-// 카드 가운데의 "스크롤 좌표" — 모바일에서는 카드에 zoom(fitProductCardsToScreen)이 걸려 offsetLeft/offsetWidth가 실제 스크롤 거리와 달라지므로
-// (복제 카드 이동 거리가 틀려 두 복제 카드 사이를 계속 오가며 카드가 번갈아 깜빡이던 원인) 화면에 그려진 위치(getBoundingClientRect)에서 직접 구한다
-function loopCenterX(track, card){
-  const tr = track.getBoundingClientRect(), cr = card.getBoundingClientRect();
-  return cr.left + cr.width/2 - tr.left - track.clientLeft + track.scrollLeft;
+// 카드 가운데의 "스크롤 좌표" — 모바일에서는 (1) 카드에 zoom(fitProductCardsToScreen)이 걸려 offsetLeft/offsetWidth가 실제 스크롤 거리와 다르고,
+// (2) 가운데 강조(mcfUpdate)로 좌우 카드가 0.9배로 줄며 기준점이 안쪽 모서리(m-left=오른쪽, m-right=왼쪽)라 화면에 그려진 사각형의 가운데도 실제 레이아웃 가운데와 달라진다.
+// 그래서 그려진 사각형에서 현재 scale(transform)과 기준점 클래스를 되돌려 "레이아웃상 가운데"를 구한다 — 복제 카드를 진짜 카드로 옮길 때
+// 거리가 정확해야 이동 뒤 스냅 보정(몇 px 튐)이나 두 복제 카드를 오가는 깜빡임이 생기지 않는다
+function loopCenters(track, sel){
+  const cards = Array.prototype.slice.call(track.querySelectorAll(sel || '.product'));
+  const tr = track.getBoundingClientRect(), base = -tr.left - track.clientLeft + track.scrollLeft;
+  return cards.map(card=>{
+    const q = card.getBoundingClientRect();
+    let sc = 1; try{ const tf = getComputedStyle(card).transform; if (tf && tf!=='none') sc = new DOMMatrix(tf).a || 1; }catch(e){}
+    // transform-origin(가로) 비율 — 전환(transition) 도중에는 값이 바뀌는 중이므로 클래스가 아니라 지금 적용된 값(px)을 카드 폭으로 나눠 구한다
+    let f = .5; try{ const ox = parseFloat(getComputedStyle(card).transformOrigin), ow = card.offsetWidth; if (isFinite(ox) && ow>0) f = ox/ow; }catch(e){}
+    const w = q.width / sc;
+    return q.left + q.width/2 - (f-.5)*w*(1-sc) + base;
+  });
 }
-function loopStepOf(track, cards){
-  cards = cards || track.querySelectorAll('.product');
-  return cards.length>1 ? loopCenterX(track, cards[1]) - loopCenterX(track, cards[0]) : 0;
+function loopCenterX(track, card, sel){
+  const cards = Array.prototype.slice.call(track.querySelectorAll(sel || '.product')), i = cards.indexOf(card);
+  return i<0 ? 0 : loopCenters(track, sel)[i];
 }
+function loopStepOf(track, sel){ const xs = loopCenters(track, sel); return xs.length>1 ? xs[1]-xs[0] : 0; }
 function loopNormalize(track, sel, k, total, dual){
   if (!track || !total || total<2 || !k) return false;
   const cards = track.querySelectorAll(sel);
   if (cards.length < total + 2*k) return false;
-  const step = (!dual || window.innerWidth<=780) ? (cards[1] ? loopCenterX(track, cards[1]) - loopCenterX(track, cards[0]) : 0) : cards[1].offsetLeft - cards[0].offsetLeft;
+  const step = (!dual || window.innerWidth<=780) ? loopStepOf(track, sel) : cards[1].offsetLeft - cards[0].offsetLeft;
   if (!(step>0)) return false;
   let shift = 0;
   if (!dual || window.innerWidth<=780){
@@ -13690,8 +13703,14 @@ function loopNormalize(track, sel, k, total, dual){
   if (!shift) return false;
   const prev = track.style.scrollBehavior;
   track.style.scrollBehavior = 'auto';
+  // 스크롤 스냅은 scale(transform)이 적용된 카드 상자를 기준으로 위치를 잡는다 — 이동 직후 새 가운데 카드가 아직 '옆 카드'(0.9배) 상태이면
+  // 스냅 위치가 몇 px 어긋났다가 강조가 바뀌면서 다시 맞춰지며 카드가 튄다. 이동과 같은 순간에 가운데 강조를 전환 없이 바로 갱신한다
+  track.classList.add('loop-jump');
   track.scrollLeft += shift*step;
+  try{ if (typeof mcfUpdate==='function') mcfUpdate(track); }catch(e){}
+  void track.offsetWidth; // 스타일 즉시 반영(전환 없이)
   track.style.scrollBehavior = prev;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>track.classList.remove('loop-jump')));
   return true;
 }
 function loopCfgOf(track){

@@ -689,6 +689,12 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 시기 태그를 제목 안(끝)에 오른쪽 float로 넣어, 제목 첫째·둘째 줄도 카드 오른쪽 끝까지 쓰고 태그는 마지막 글자가 있는 줄의 오른쪽 끝에 놓인다 */
 .product-visual-title .pt-months{float:right;margin-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
 .product-visual-title h4{flex:1;min-width:0}
+/* [추가] 제목 위 한 줄(지역명 · 제목보조 — 같은 크기, 제목보다 작게) + "펼쳐보기" 위 요약 설명(좌측 정렬, 파란색) — 카드 폭을 넘으면 JS(fitCardLines)가 글자 크기만 줄여 한 줄을 유지 */
+.product-kicker,.product-metadesc{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
+.product-kicker{color:var(--pine-deep);margin:2px 0 4px}
+.product-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
+.product-metadesc{color:#3176bd;margin:2px 0 10px}
+.product-metadesc .pmd-dot{margin-right:.4em}
 /* 상세 페이지 상단: "영남권 · YEONGNAM" 줄의 오른쪽 끝에 배치 (글자 크기는 상품 카드의 표기와 동일) */
 .pd-top-title .cat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
 .pd-top-title .cat-row .cat{margin-bottom:0;min-width:0}
@@ -6949,6 +6955,10 @@ function ensureExtended(p){
   if (p.airfareIncluded===undefined) p.airfareIncluded = '';
   if (p.minPeople===undefined) p.minPeople = '';
   if (p.nightsCount===undefined) p.nightsCount = ''; // [수정] 박수 — 카드에서 기간 옆에 노출
+  // [추가] AI·검색 노출용 제목 정보 — 지역명 · 제목보조(Sub-Title)는 카드 제목 위 한 줄, 요약 설명(Meta Description)은 카드 "펼쳐보기" 위·공유 문구·정적 페이지 설명에 쓴다(비어 있으면 아무것도 표시하지 않음)
+  if (p.titleRegion===undefined) p.titleRegion = '';
+  if (p.titleSub===undefined) p.titleSub = '';
+  if (p.metaDesc===undefined) p.metaDesc = '';
   // [수정] 비행시간 · 이동 소요시간 — 국내는 "숙소→골프장", 해외는 "공항→호텔"로 레이블만 다르게 표시
   if (p.flightTime===undefined) p.flightTime = '';
   if (p.transferTime===undefined) p.transferTime = '';
@@ -13398,6 +13408,10 @@ function productCardHTML(p, catId, idx){
   }).join('');
   // [Phase] "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 쌓아서 노출
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
+  // [추가] 제목 위 한 줄(지역명 + 제목보조) · "펼쳐보기" 위 요약 설명 — 입력한 값만 표시(비어 있으면 줄 자체를 만들지 않음). 줄이 넘어가면 글자 크기만 줄여 한 줄로 맞춘다(fitCardLines)
+  const _kReg = String(p.titleRegion||'').trim(), _kSub = String(p.titleSub||'').trim(), _kMeta = String(p.metaDesc||'').trim();
+  const kickerHTML = (_kReg||_kSub) ? `<div class="product-kicker"><span class="pk-fit">${_kReg?`<span class="pk-region">${escapeAttr(_kReg)}</span>`:''}${_kReg&&_kSub?'<span class="pk-dot">·</span>':''}${_kSub?`<span class="pk-sub">${escapeAttr(_kSub)}</span>`:''}</span></div>` : '';
+  const metaDescHTML = _kMeta ? `<div class="product-metadesc"><span class="pmd-fit"><span class="pmd-dot">·</span>${escapeAttr(_kMeta)}</span></div>` : '';
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
   const prosHTML = cardProsListHTML(p);
@@ -13415,6 +13429,7 @@ function productCardHTML(p, catId, idx){
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
+    ${kickerHTML}
     <div class="product-visual-title"><h4>${p.title}${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</h4></div>
     <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
@@ -13428,6 +13443,7 @@ function productCardHTML(p, catId, idx){
     ${cpTopHTML}
     ${cardTags.length?`<div class="product-tag-row card-fold">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     ${cp2HTML}
+    ${metaDescHTML}
     ${hasCp?`<button type="button" class="product-expand" aria-expanded="false" onclick="toggleProductCard(event,this)"><span class="pe-open">펼쳐보기 ▾</span><span class="pe-close">접기 ▴</span></button>`:''}
     <div class="product-foot">
       ${priceInquiryText(p) ? `<span class="price price-inquiry">${priceInquiryHTML(p)}</span>` : `<span class="price">${priceWasHTML(p.fromOriginal, displayPrice)}${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>`}
@@ -16501,12 +16517,13 @@ function offerShare(btn, origLabel, file, title, restart, text, link){
   if (!canShareFiles){
     btn.disabled=false; btn.textContent=origLabel;
     downloadImageFile(file);
-    // 공유 시트가 없는 브라우저(PC 등): 상품 이미지를 저장하는 경우 상품 링크 주소는 복사해 둔다
-    if (link && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(()=>alert('상품 이미지를 저장했고, 상품 링크 주소를 복사했습니다.')).catch(()=>{}); }
+    // 공유 시트가 없는 브라우저(PC 등): 이미지를 저장하고, 공유 문구(상품 링크 포함)는 복사해 둔다
+    const copyTxt = text || link;
+    if (copyTxt && navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(copyTxt).then(()=>alert(text ? '이미지를 저장했고, 공유 문구(상품 링크 포함)를 복사했습니다.' : '상품 이미지를 저장했고, 상품 링크 주소를 복사했습니다.')).catch(()=>{}); }
     return;
   }
   btn.disabled=false;
-  btn.textContent=origLabel; // [수정] 준비되면 "눌러서 공유하기"로 바뀌던 문구를 원래 이름(요금포스터로 공유하기) 그대로 두고, 금색 깜박임으로만 한 번 더 누르라고 알린다
+  btn.textContent=origLabel; // [수정] 준비되면 "눌러서 공유하기"로 바뀌던 문구를 원래 이름(요금포스터 공유) 그대로 두고, 금색 깜박임으로만 한 번 더 누르라고 알린다
   btn.classList.add('share-ready');
   btn.onclick=function(){
     try{
@@ -16537,16 +16554,40 @@ function pdShareImageUrl(p, catId){
   if (gallery.length && gallery[0].items[0].url) return gallery[0].items[0].url;
   return getImage(catId) || '';
 }
-// [수정] 맨 아래 공유 버튼 — "요금포스터로 공유하기": 관리자 패널 고급편집 › 갤러리/요금포스터에 등록한 이 상품의 요금 포스터 이미지를 공유한다.
+// [수정] 맨 아래 공유 버튼 — "요금포스터 공유": 관리자 패널 고급편집 › 갤러리/요금포스터에 등록한 이 상품의 요금 포스터 이미지를 공유한다.
 // 요금 포스터가 없으면 상품 카드 이미지(타이틀 사진 → 갤러리 첫 사진 → 지역 대표 이미지)와 상품 링크 주소를 함께 공유한다
 function pdPosterOf(p){ return (p && p.pkgPoster && p.pkgPoster.url) ? p.pkgPoster : null; }
-function pdShareLabel(p){ return pdPosterOf(p) ? '📤 요금포스터로 공유하기' : '📤 공유하기'; }
+function pdShareLabel(p){ return pdPosterOf(p) ? '📤 요금포스터 공유' : '📤 공유하기'; }
+// 줄바꿈을 살려 서식 있는 값(HTML)을 일반 글자로 바꾼다 — 공유 문구용(richToPlain은 줄바꿈을 모두 없앤다)
+function richToText(v){
+  const t=String(v==null?'':v);
+  if (t.indexOf('<')<0) return richToPlain(t);
+  const d=document.createElement('div');
+  d.innerHTML=sanitizeRichHTML(t).replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|li|tr|h[1-6])>/gi,'$&\n');
+  return (d.textContent||'').replace(/\u00a0/g,' ').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+// [수정] 공유 문구 — 지역명 · 제목보조 / 제목 / 요약 설명(Meta Description) / 포함사항 · 불포함사항 · 참고사항 / 상품 자세히 보기 링크.
+// 입력된 값만 넣는다(비어 있는 항목은 줄 자체를 만들지 않음). 포함·불포함·참고사항은 "자세히 보기(공통)" 값, 없으면 첫 요금 항목의 값을 쓴다
+function pdShareText(p, link){
+  const out = [];
+  const kicker = [p.titleRegion, p.titleSub].map(v=>String(v||'').trim()).filter(Boolean).join(' · ');
+  if (kicker) out.push(kicker);
+  const title = richToText(p.title||''); if (title) out.push(title);
+  const meta = String(p.metaDesc||'').trim(); if (meta) out.push(meta);
+  const pe0 = (p.priceEntries && p.priceEntries[0]) || {};
+  [['✅ 포함사항', p.commonIncluded || pe0.included], ['❌ 불포함사항', p.commonNotIncluded || pe0.notIncluded], ['📌 참고사항', p.commonPrecautions || p.checkpoint2 || pe0.precautions]].forEach(([label, v])=>{
+    const t = richToText(v||''); if (t) out.push('\n'+label+'\n'+t);
+  });
+  if (link) out.push('\n👉 자세히 보기\n'+link);
+  return out.join('\n').trim();
+}
 function pdShareSpec(p, catId, idx){
   const poster = pdPosterOf(p);
-  const title = p.title || '';
-  if (poster) return {url:poster.url, kind:'poster', title, text:title};
+  const title = richToText(p.title||'');
   const link = getProductShareUrl(catId, idx);
-  return {url:pdShareImageUrl(p, catId), kind:'card', title, text:(title?title+'\n':'')+link, link};
+  const text = pdShareText(p, link);
+  if (poster) return {url:poster.url, kind:'poster', title, text, link};
+  return {url:pdShareImageUrl(p, catId), kind:'card', title, text, link};
 }
 // 공유 시트(navigator.share)는 버튼을 누른 바로 그 순간에 열어야 해서(특히 iOS), 상세 페이지 맨 아래 공유 버튼 줄이 화면에 보이면 이미지를 미리 받아 둔다 —
 // 미리 받아 둔 경우 버튼을 한 번 누르면 바로 공유 시트가 열린다
@@ -18705,8 +18746,10 @@ function advBasicHTML(p){
   const f = v => advFilled(v) ? 1 : 0;
   // ── 상태 배지 계산 ──
   const exposeN = f(p.editorsPick) + f(productEffMonths(p).length ? 'y' : '');
-  const cardKeys = [p.titleMedia&&p.titleMedia.url, p.title, p.nights, p.from, p.checkpoint1, cardTagsOf(p).length?'y':'', p.checkpoint2||p.commonPrecautions];
+  const cardKeys = [p.titleMedia&&p.titleMedia.url, p.from, p.checkpoint1, cardTagsOf(p).length?'y':'', p.checkpoint2||p.commonPrecautions];
   const cardN = cardKeys.filter(advFilled).length;
+  const titleKeys = [p.title, p.titleRegion, p.titleSub, p.metaDesc, p.nights];
+  const titleN = titleKeys.filter(advFilled).length;
   const basicN = [p.minPeople, p.rounds, (p.airfareIncluded&&p.airfareIncluded!=='none')?'y':'', p.stay, p.meals].filter(advFilled).length;
   const moveN = [isDomestic?'':p.flightTime, p.hotelToGolfTime, p.transferTime].filter(advFilled).length;
   const L = p.labels;
@@ -18722,8 +18765,9 @@ function advBasicHTML(p){
     <!-- [추가] 빠른 이동 — 스크롤 위치와 무관하게 상단에 고정, 그룹으로 바로 이동·펼치기/접기 -->
     <div class="adv-sticky-head">
     <div class="adv-quicknav">
-      <button type="button" onclick="advJump('g-expose')">⚙️ 노출 설정</button>
       <button type="button" onclick="advJump('g-card')">🃏 상품 카드</button>
+      <button type="button" onclick="advJump('g-expose')">⚙️ 노출 설정</button>
+      <button type="button" onclick="advJump('g-title')">📝 제목 · 기본 정보</button>
       <button type="button" onclick="advJump('g-detail')">📄 자세히 보기</button>
       <button type="button" onclick="advJump('g-entries')">💳 요금 항목 <b>${nEntries}</b></button>
       <button type="button" onclick="advJump('g-ai')">🤖 AI 추천 정보</button>
@@ -18739,33 +18783,9 @@ function advBasicHTML(p){
     ${advTitleBarHTML(p)}
     </div>
 
-    <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->
-    <details class="adv-group" ${advDetailsAttrs('g-expose', false)}>
-      <summary><span class="adv-g-title">⚙️ 노출 · 분류 설정</span><span class="adv-where">EDITOR'S PICK · 추천 판매 시기</span>${advFillBadge(exposeN, 2)}</summary>
-      <div class="adv-group-body">
-        <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px;margin:0">
-            <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
-            <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
-          </label>
-          <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
-          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
-            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
-            <span class="toggle-slider"></span>
-            <span class="pt-lbl">팝업 노출</span>
-          </label>
-        </div>
-        <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
-        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsMulti(${val})`)}
-        <div class="season-chip-row">${chipMultiHTML(SEASON_TAGS.map(t=>[t.key,t.label]), p.seasonTags, val=>`toggleProductSeasonTag('${val}')`)}</div>
-        <div class="file-hint" style="margin-top:4px">시즌 버튼을 고르면 상품 카드 제목 우측 "【 … 】" 자리에 시즌 이름이 그대로 나오고, 그 시즌에 속한 달도 기간별 소팅·자동 비노출 판단에 함께 쓰입니다</div>
-      </div>
-    </details>
-
     <!-- ═══ 🃏 상품 카드 — 상품 목록 카드에 노출되는 항목 ═══ -->
-    <details class="adv-group" ${advDetailsAttrs('g-card', true)}>
-      <summary><span class="adv-g-title">🃏 상품 카드</span><span class="adv-where">상품 목록 카드에 노출</span>${advFillBadge(cardN, cardKeys.length)}</summary>
+    <details class="adv-group" ${advDetailsAttrs('g-card', false)}>
+      <summary><span class="adv-g-title">🃏 상품 카드</span><span class="adv-where">이미지 · 레이블 · 가격 · 태그 · 체크포인트</span>${advFillBadge(cardN, cardKeys.length)}</summary>
       <div class="adv-group-body">
         ${sub('🖼 이미지')}
         <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 카드·자세히 보기 상단 대표 이미지 -->
@@ -18796,58 +18816,6 @@ function advBasicHTML(p){
             <span class="file-hint" style="display:block;margin-bottom:8px">권장 사이즈 200×200px 이상(1:1 정사각형 비율) · 배경이 비치는 투명 PNG 권장 · 2MB 이하 · "카드에 노출"을 켠 레이블만 상품 카드 이미지에 노출되며, 항목별로 노출 위치(모서리)와 이미지 밖으로 배치할지 개별 설정할 수 있습니다</span>
             ${cardLabelsHTML(p)}
             <label class="media-btn" style="margin-top:10px">+ 레이블 이미지 추가하기<input type="file" accept="image/*" onchange="addCardLabel(this)"></label>
-          </div>
-        </details>
-
-        ${sub('📝 제목')}
-        <label>제목</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
-
-        <!-- [수정] 기본 정보를 제목과 카드 태그 사이로 이동. 상품 카드에 "박스"로 표시되는 항목은 한데 모으고
-             입력칸을 실제 카드 박스와 같은 색으로 칠해 어떤 값이 어디에 어떻게 보이는지 바로 알 수 있게 했다 -->
-        ${sub('📋 기본 정보', '카드 + 자세히 보기 "상품기본정보" + 요금 항목 기본값')}
-        <div class="card-box-fields">
-          <div class="cbf-head">🔲 상품 카드에 <b>박스</b>로 표시되는 항목 <span class="cbf-sub">입력칸 색 = 카드 박스 색</span></div>
-          <div class="grid-2">
-            <div><label>👥 최소 인원 ${hint('(제목 아래 왼쪽)')}</label><input type="text" class="bf-input bf-gold" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
-            <div><label>✈️ 항공 포함 여부 ${hint('(최소 인원 오른쪽)')}</label>
-              <select class="bf-input bf-gold ${p.airfareIncluded==='excluded'?'airfare-excluded':(p.airfareIncluded==='included'?'airfare-normal':'')}" onchange="updateAdvField('airfareIncluded',this.value);renderAdvBody()">
-                ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-              </select>
-            </div>
-            <div><label>🗓 기간 ${hint('(제목 아래 오른쪽 · 박스 색 = 추천 판매 시기 월 색상)')}</label><input type="text" class="bf-input bf-gray" style="${periodBoxStyle(p)}" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
-            <div><label>🌙 박수 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-            <div><label>🏨 체류일 ${hint('("항공/이동 정보"의 체류일과 같은 값)')}</label>
-              <select class="bf-input bf-gray" onchange="updatePriceEntryLabel(-1,'stayDuration',this.value);renderAdvBody()">
-                ${STAY_OPTS.map(o=>`<option value="${o[0]}" ${(p.labels.stayDuration||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-              </select>
-            </div>
-            <div><label>📍 숙소 위치 ${hint('(체류일 오른쪽 · 없음이면 표시 안 함)')}</label>
-              <select class="bf-input bf-gray lodge-${p.lodgeLocation||'none'}" onchange="updateAdvField('lodgeLocation',this.value);this.className='bf-input bf-gray lodge-'+this.value">
-                ${LODGE_OPTS.map(o=>`<option value="${o[0]}" ${(p.lodgeLocation||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-              </select>
-            </div>
-            <div><label>🎟️ 항공 발권 대행 서비스 ${hint('(숙소 위치 오른쪽 · 없음이면 표시 안 함)')}</label>
-              <select class="bf-input bf-gray ticket-${p.ticketService||'none'}" onchange="updateAdvField('ticketService',this.value);this.className='bf-input bf-gray ticket-'+this.value">
-                ${TICKET_OPTS.map(o=>`<option value="${o[0]}" ${(p.ticketService||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="full"><div class="mw-label-row"><label>⛳ 라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 3R" oninput="updateAdvField('rounds',this.value)"></div>
-          <div class="full"><div class="mw-label-row"><label>🏨 숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
-          <div class="full"><div class="mw-label-row"><label>🍽 식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
-        </div>
-        <span class="mw-hint" style="margin-top:6px">"한 줄로"를 켜면 카드 하단 meta 영역에서 그 항목이 한 줄 전체를 차지합니다</span>
-
-        <details class="adv-collapsible" ${advDetailsAttrs('card-move', false)}>
-          <summary>🚘 교통 · ✈️ 비행 · 이동 정보 ${hint('(카드 하단 meta 영역)')} ${advFillBadge(moveN, isDomestic?2:3)}</summary>
-          <div class="adv-collapsible-body">
-            <div class="grid-2">
-              <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
-              <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'🚌 공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
-              <div class="full"><div class="mw-label-row"><label>⛳ 호텔⇔골프장</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
-            </div>
           </div>
         </details>
 
@@ -18926,6 +18894,96 @@ function advBasicHTML(p){
           </div>
         </div>
 
+
+      </div>
+    </details>
+
+    <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-expose', false)}>
+      <summary><span class="adv-g-title">⚙️ 노출 · 분류 설정</span><span class="adv-where">EDITOR'S PICK · 추천 판매 시기</span>${advFillBadge(exposeN, 2)}</summary>
+      <div class="adv-group-body">
+        <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px;margin:0">
+            <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
+            <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
+          </label>
+          <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
+          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
+            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
+            <span class="toggle-slider"></span>
+            <span class="pt-lbl">팝업 노출</span>
+          </label>
+        </div>
+        <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
+        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsMulti(${val})`)}
+        <div class="season-chip-row">${chipMultiHTML(SEASON_TAGS.map(t=>[t.key,t.label]), p.seasonTags, val=>`toggleProductSeasonTag('${val}')`)}</div>
+        <div class="file-hint" style="margin-top:4px">시즌 버튼을 고르면 상품 카드 제목 우측 "【 … 】" 자리에 시즌 이름이 그대로 나오고, 그 시즌에 속한 달도 기간별 소팅·자동 비노출 판단에 함께 쓰입니다</div>
+      </div>
+    </details>
+
+    <!-- ═══ 📝 제목 · 기본 정보 — 상품 카드 제목·박스·meta 항목 (이미지·레이블과 분리) ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-title', true)}>
+      <summary><span class="adv-g-title">📝 제목 · 기본 정보</span><span class="adv-where">지역명·제목·요약 설명 · 상품 카드 박스·meta</span>${advFillBadge(titleN, titleKeys.length)}</summary>
+      <div class="adv-group-body">
+        ${sub('📝 제목', '상품 카드 · AI·검색엔진용 메타 정보')}
+        <!-- [추가] 제목 위 한 줄: 지역명(왼쪽) + 제목보조(Sub-Title)(지역명 바로 오른쪽) — 상품 카드 제목 위에 같은 크기로 이어 보인다 -->
+        <div class="grid-2">
+          <div><label>지역명 ${hint('(카드 제목 위 왼쪽 · 예: 말레이시아-쿠알라룸푸르)')}</label><input type="text" value="${escapeAttr(p.titleRegion||'')}" placeholder="예: 말레이시아-쿠알라룸푸르" oninput="updateAdvField('titleRegion',this.value)"></div>
+          <div><label>제목보조(Sub-Title) ${hint('(지역명 오른쪽 · 예: 2027 항공포함 패키지)')}</label><input type="text" value="${escapeAttr(p.titleSub||'')}" placeholder="예: 2027 항공포함 패키지" oninput="updateAdvField('titleSub',this.value)"></div>
+        </div>
+        <label>제목(Title)</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
+        <!-- [추가] 제목 아래 한 줄: 요약 설명(Meta Description) — 상품 카드의 "펼쳐보기" 위, 공유 문구, 정적 페이지 설명에 쓴다 -->
+        <label>요약 설명(Meta Description) ${hint('(카드 "펼쳐보기" 위 좌측 정렬 · 공유 문구·검색 설명에도 사용)')}</label><input type="text" value="${escapeAttr(p.metaDesc||'')}" placeholder="예: 쿠알라룸푸르 카장 한달살기" oninput="updateAdvField('metaDesc',this.value)">
+
+        <!-- [수정] 기본 정보를 제목과 카드 태그 사이로 이동. 상품 카드에 "박스"로 표시되는 항목은 한데 모으고
+             입력칸을 실제 카드 박스와 같은 색으로 칠해 어떤 값이 어디에 어떻게 보이는지 바로 알 수 있게 했다 -->
+        ${sub('📋 기본 정보', '카드 + 자세히 보기 "상품기본정보" + 요금 항목 기본값')}
+        <div class="card-box-fields">
+          <div class="cbf-head">🔲 상품 카드에 <b>박스</b>로 표시되는 항목 <span class="cbf-sub">입력칸 색 = 카드 박스 색</span></div>
+          <div class="grid-2">
+            <div><label>👥 최소 인원 ${hint('(제목 아래 왼쪽)')}</label><input type="text" class="bf-input bf-gold" value="${escapeAttr(p.minPeople||'')}" placeholder="예: 2" oninput="updateAdvField('minPeople',this.value)"></div>
+            <div><label>✈️ 항공 포함 여부 ${hint('(최소 인원 오른쪽)')}</label>
+              <select class="bf-input bf-gold ${p.airfareIncluded==='excluded'?'airfare-excluded':(p.airfareIncluded==='included'?'airfare-normal':'')}" onchange="updateAdvField('airfareIncluded',this.value);renderAdvBody()">
+                ${AIRFARE_OPTS.map(o=>`<option value="${o[0]}" ${(p.airfareIncluded||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>🗓 기간 ${hint('(제목 아래 오른쪽 · 박스 색 = 추천 판매 시기 월 색상)')}</label><input type="text" class="bf-input bf-gray" style="${periodBoxStyle(p)}" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
+            <div><label>🌙 박수 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
+            <div><label>🏨 체류일 ${hint('("항공/이동 정보"의 체류일과 같은 값)')}</label>
+              <select class="bf-input bf-gray" onchange="updatePriceEntryLabel(-1,'stayDuration',this.value);renderAdvBody()">
+                ${STAY_OPTS.map(o=>`<option value="${o[0]}" ${(p.labels.stayDuration||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>📍 숙소 위치 ${hint('(체류일 오른쪽 · 없음이면 표시 안 함)')}</label>
+              <select class="bf-input bf-gray lodge-${p.lodgeLocation||'none'}" onchange="updateAdvField('lodgeLocation',this.value);this.className='bf-input bf-gray lodge-'+this.value">
+                ${LODGE_OPTS.map(o=>`<option value="${o[0]}" ${(p.lodgeLocation||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+            <div><label>🎟️ 항공 발권 대행 서비스 ${hint('(숙소 위치 오른쪽 · 없음이면 표시 안 함)')}</label>
+              <select class="bf-input bf-gray ticket-${p.ticketService||'none'}" onchange="updateAdvField('ticketService',this.value);this.className='bf-input bf-gray ticket-'+this.value">
+                ${TICKET_OPTS.map(o=>`<option value="${o[0]}" ${(p.ticketService||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="full"><div class="mw-label-row"><label>⛳ 라운드</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),"updateAdvField('metaWide.rounds',this.checked)")}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 3R" oninput="updateAdvField('rounds',this.value)"></div>
+          <div class="full"><div class="mw-label-row"><label>🏨 숙박</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),"updateAdvField('metaWide.stay',this.checked)")}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 3박" oninput="updateAdvField('stay',this.value)"></div>
+          <div class="full"><div class="mw-label-row"><label>🍽 식사</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),"updateAdvField('metaWide.meals',this.checked)")}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateAdvField('meals',this.value)"></div>
+        </div>
+        <span class="mw-hint" style="margin-top:6px">"한 줄로"를 켜면 카드 하단 meta 영역에서 그 항목이 한 줄 전체를 차지합니다</span>
+
+        <details class="adv-collapsible" ${advDetailsAttrs('card-move', false)}>
+          <summary>🚘 교통 · ✈️ 비행 · 이동 정보 ${hint('(카드 하단 meta 영역)')} ${advFillBadge(moveN, isDomestic?2:3)}</summary>
+          <div class="adv-collapsible-body">
+            <div class="grid-2">
+              <div class="full"><div class="mw-label-row"><label>비행시간 ${isDomestic?'<span class="pe-disabled-note">(국내 상품은 비활성화됨)</span>':''}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.flightTime),"updateAdvField('metaWide.flightTime',this.checked)",isDomestic)}</div><input type="text" value="${escapeAttr(p.flightTime||'')}" placeholder="예: 1시간 30분" oninput="updateAdvField('flightTime',this.value)" ${isDomestic?'disabled':''}></div>
+              <div class="full"><div class="mw-label-row"><label>${isDomestic?'숙소→골프장 소요시간':'🚌 공항→호텔 소요시간'}</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.transferTime),"updateAdvField('metaWide.transferTime',this.checked)")}</div><input type="text" value="${escapeAttr(p.transferTime||'')}" placeholder="예: 30분" oninput="updateAdvField('transferTime',this.value)"></div>
+              <div class="full"><div class="mw-label-row"><label>⛳ 호텔⇔골프장</label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.hotelToGolf),"updateAdvField('metaWide.hotelToGolf',this.checked)")}</div><input type="text" value="${escapeAttr(p.hotelToGolfTime||'')}" placeholder="예: 20분" oninput="updateAdvField('hotelToGolfTime',this.value)"></div>
+            </div>
+          </div>
+        </details>
 
       </div>
     </details>
@@ -21528,6 +21586,38 @@ function renderAll(){
 safeRender(()=>applySeasonTheme(getSeasonTheme(), false));
 try{ applyTheme(); }catch(e){}
 safeRender(initLazyBg);
+// [추가] 상품 카드의 한 줄 텍스트(제목 위 지역명·제목보조, "펼쳐보기" 위 요약 설명)가 카드 폭을 넘으면 글자 크기를 줄여(최소 10px) 줄이 넘어가지 않게 한다.
+// 카드는 여러 곳(국가/권역 목록·캐러셀 복제·필터 전환)에서 다시 그려지므로 MutationObserver로 새로 생긴 줄을 자동으로 맞추고, 창 크기·글꼴 로딩 때도 다시 맞춘다
+function fitCardLines(root){
+  (root||document).querySelectorAll('.product-kicker, .product-metadesc').forEach(box=>{
+    const inner = box.firstElementChild; if (!inner) return;
+    box.style.fontSize = '';
+    const room = box.clientWidth; if (!(room>0)) return;
+    // 가장 큰 글자 크기 16px에서 넘치면 비율만큼 줄인다 — 줄여도 넘치면 한 번 더 보정
+    for (let i=0; i<3; i++){
+      const need = box.scrollWidth, cur = parseFloat(getComputedStyle(box).fontSize) || 16;
+      if (need <= room + 0.5) break;
+      box.style.fontSize = Math.max(10, Math.floor(cur*room/need*100 - 1)/100) + 'px';
+      if (cur <= 10) break;
+    }
+  });
+}
+function initCardLineFit(){
+  let queued = false;
+  const run = ()=>{ if (queued) return; queued = true; requestAnimationFrame(()=>{ queued = false; try{ fitCardLines(); }catch(e){} }); };
+  if (typeof MutationObserver !== 'undefined'){
+    new MutationObserver(ms=>{
+      for (const m of ms) for (const n of m.addedNodes){
+        if (n.nodeType!==1) continue;
+        if ((n.matches && n.matches('.product, .product-kicker, .product-metadesc')) || (n.querySelector && n.querySelector('.product-kicker, .product-metadesc'))){ run(); setTimeout(run, 700); return; }
+      }
+    }).observe(document.body, {childList:true, subtree:true});
+  }
+  window.addEventListener('resize', run);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+  run();
+}
+safeRender(initCardLineFit);
 
 // ══ AI 골프 여행 추천 엔진 ══════════════════════════════════════
 // 별도 서버/외부 AI API 없이, 전체 상품 카탈로그(getProducts)를 대상으로

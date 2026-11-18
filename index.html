@@ -19344,18 +19344,13 @@ const AI_COURSE_FIELDS = [
 const AI_INFO_SCHEMA = [
   {key:'lodge', label:'① 숙박·객실', place:'lodge', fields:[
     {k:'sameLodge', label:'숙소 변경 없음(동일 숙소)', type:'yn', def:'y', help:'전 일정을 한 숙소에서 묵으면 \'예\'.'},
-    {k:'lodgeChanges', label:'숙소 변경 횟수', type:'num', unit:'회', def:0, help:'일정 중 숙소를 옮기는 횟수(0이면 동일 숙소).'},
     {k:'longStay', label:'장박(7박 이상) 가능', type:'yn', only:'overseas', help:'7박 이상으로 연장 예약이 가능하면 \'예\'.'},
     {k:'multiNight', label:'연박(2박 이상) 가능', type:'yn', only:'domestic', def:'n', help:'국내 상품은 1박 2일이 대부분이라 2박 이상으로 연장 예약이 가능하면 \'예\'. 고객의 \'장박\' 조건은 국내 상품에서 이 값으로 판정합니다.'}]},
   {key:'course', label:'② 골프코스·라운드', place:'course', fields:[
     {k:'multiCourse', label:'다색 골프(여러 골프장)', type:'yn', help:'일정 중 2곳 이상 골프장을 돌면 \'예\'. 연결된 골프장이 2곳 이상이면 비워 둬도 자동으로 \'예\'로 판정.'}]},
-  {key:'meal', label:'③ 식사·관광·쇼핑', note:'맛집·관광지·쇼핑몰·온천 등 주변 시설의 가까운 정도는 ① 숙소 등록부에서 입력합니다.', fields:[
-    {k:'mealsIncl', label:'포함 식사', type:'multi', opts:['조식','중식','석식'], help:'상품 요금에 포함된 식사만 체크(일부 일정만 포함이면 그 식사도 체크하고 횟수를 적기).'},
-    {k:'mealCount', label:'포함 식사 횟수', type:'text', ph:'예: 조식 3회 · 석식 2회', help:'전체 일정 기준 횟수.'},
+  {key:'meal', label:'③ 식사·관광·쇼핑', note:'맛집·관광지·쇼핑몰·온천 등 주변 시설의 가까운 정도와 숙소의 식사제공은 ① 숙소 등록부에서 입력합니다. 포함 식사·횟수는 일자별 상세 일정·기본 정보의 식사 문구·숙소 식사제공에서 자동으로 읽습니다(요금 항목별 예전 입력값은 판정에 그대로 쓰입니다).', fields:[
     {k:'mealChoice', label:'식사 선택권', type:'yn', yes:'있음', no:'없음', help:'포함 식사의 메뉴·식당을 고를 수 있으면 \'있음\'.'},
-    {k:'freeTime', label:'자유시간', type:'yn', yes:'있음', no:'없음', help:'골프·이동 외에 반나절 이상 자유 일정이 있으면 \'있음\'.'},
-    {k:'tourIncluded', label:'관광 포함 여부', type:'select', opts:['포함','선택 관광','없음'], help:'요금에 관광이 포함인지, 원하는 사람만 추가하는지.'},
-    {k:'localExtra', label:'현지 추가 비용', type:'text', ph:'예: 캐디팁 1인 $15', help:'현지에서 추가로 들 수 있는 비용 안내.'}]},
+    {k:'freeTime', label:'자유시간', type:'yn', yes:'있음', no:'없음', help:'골프·이동 외에 반나절 이상 자유 일정이 있으면 \'있음\'.'}]},
   {key:'move', label:'④ 이동·일정 편의', note:'숙소→골프장 시간(해외는 공항→숙소 포함)은 ① 숙소 등록부에서, 티오프 시간대(주중·주말)는 ② 골프장 등록부에서 입력합니다.', fields:[
     {k:'privateCar', label:'전용 차량', type:'yn', help:'일행만 타는 단독 차량이면 \'예\'(다른 팀과 합승이면 \'아니오\').'},
     {k:'tourShuttle', label:'관광 송영', type:'yn', only:'overseas', help:'관광지·시내 이동 차량을 제공하면 \'예\'.'},
@@ -19723,10 +19718,10 @@ function advAiInfoHTML(p){
       </div>
     </details>`;
 }
-// 정리되어 입력칸에서 빠진 예전 항목(공항 픽업시간·날짜별 골프장 이동시간·티오프 시간대·이동 지원 범위) — 이미 입력해 둔 값은 지우지 않고 참고용으로 보여 준다
-const AI_RETIRED = {move:[['pickupTime','공항 픽업시간'],['dailyMove','날짜별 골프장 이동시간'],['teeOff','티오프 시간대'],['moveSupport','이동 지원 범위']]};
+// 정리되어 입력칸에서 빠진 예전 항목(숙소 변경 횟수·포함 식사·포함 식사 횟수·관광 포함 여부·현지 추가 비용·공항 픽업시간·날짜별 골프장 이동시간·티오프 시간대·이동 지원 범위) — 이미 입력해 둔 값은 지우지 않고 참고용으로 보여 준다
+const AI_RETIRED = {lodge:[['lodgeChanges','숙소 변경 횟수']], meal:[['mealsIncl','포함 식사'],['mealCount','포함 식사 횟수'],['tourIncluded','관광 포함 여부'],['localExtra','현지 추가 비용']], move:[['pickupTime','공항 픽업시간'],['dailyMove','날짜별 골프장 이동시간'],['teeOff','티오프 시간대'],['moveSupport','이동 지원 범위']]};
 function aiRetiredNoteHTML(gKey, ai){
-  const items = (AI_RETIRED[gKey]||[]).filter(([k])=>aiInfoFilled(ai[k])).map(([k,l])=>`${l}: ${escapeAttr(aiPlainText(ai[k]))}`);
+  const items = (AI_RETIRED[gKey]||[]).filter(([k])=>aiInfoFilled(ai[k])).map(([k,l])=>`${l}: ${escapeAttr(Array.isArray(ai[k]) ? ai[k].join('·') : aiPlainText(ai[k]))}`);
   return items.length ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고 · 입력칸에서 정리된 항목): ${items.join(' · ')}</small>` : '';
 }
 function aiInfoOf(p){ if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArray(p.aiInfo)) p.aiInfo = {}; return p.aiInfo; }
@@ -20711,7 +20706,8 @@ function peAiInfoHTML(p, pe, i){
   const own = (pe.aiInfo && typeof pe.aiInfo==='object') ? pe.aiInfo : {}, base = (p.aiInfo && typeof p.aiInfo==='object') ? p.aiInfo : {};
   const allFields = [].concat(...AI_INFO_SCHEMA.map(g=>g.fields));
   const defs = AI_PE_KEYS.filter(k=>k!=='lodgeIds' && k!=='courseIds').map(k=>allFields.find(fd=>fd.k===k)).filter(fd=>fd && aiFieldShown(fd, dom));
-  const n = AI_PE_KEYS.filter(k=>aiInfoFilled(own[k])).length;
+  const n = defs.filter(fd=>aiInfoFilled(own[fd.k])).length;
+  const retiredTxt = [['mealsIncl','포함 식사'],['mealCount','포함 식사 횟수']].filter(([k])=>aiInfoFilled(own[k])).map(([k,l])=>`${l}: ${escapeAttr(Array.isArray(own[k]) ? own[k].join('·') : aiPlainText(own[k]))}`).join(' · ');
   const valTxt = (fd, v) => Array.isArray(v) ? v.join('·') : (fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : aiPlainText(v));
   const auto = aiAutoInfo(p, pe, dom);
   const hint = fd => aiInfoFilled(base[fd.k]) ? `비우면 상품 공통값: ${escapeAttr(valTxt(fd, base[fd.k]))}`
@@ -20726,8 +20722,9 @@ function peAiInfoHTML(p, pe, i){
   };
   return `<details class="pe-labels" ${advDetailsAttrs(`pe${i}-ai`, n>0)}>
       <summary>🤖 AI 추천 정보 <span class="adv-where">이 항목만 다른 값 · 비우면 상품 공통값·자동 판정</span> ${n ? advBadge(`✓ ${n}`, 'ok') : (Object.keys(auto.out).length ? advBadge(`🔄 자동 ${Object.keys(auto.out).length}`, 'ok') : advBadge('공통값 사용',''))}</summary>
-      <p class="ai-info-note">🔄 표시된 칸은 이 항목의 일자별 일정·최소 인원·강조 태그·포함/불포함에서 자동으로 읽은 값이라 입력하지 않아도 됩니다. 식사·상품 구성·출발 인원·숙소처럼 이 요금 항목만 다른 내용이 있을 때만 입력하세요. AI 추천은 요금 항목마다 따로 판정해, 고객 조건에 가장 잘 맞는 항목을 "추천 요금 항목"으로 안내합니다.</p>
+      <p class="ai-info-note">🔄 표시된 칸은 이 항목의 일자별 일정·최소 인원·강조 태그·포함/불포함에서 자동으로 읽은 값이라 입력하지 않아도 됩니다. 상품 구성·출발 인원·숙소처럼 이 요금 항목만 다른 내용이 있을 때만 입력하세요(식사는 일자별 상세 일정에서 자동으로 읽습니다). AI 추천은 요금 항목마다 따로 판정해, 고객 조건에 가장 잘 맞는 항목을 "추천 요금 항목"으로 안내합니다.</p>
       <div class="ai-info-grid">${defs.map(fd=>aiFieldHTML(fd, own[fd.k], save, saveMulti, '', hint(fd))).join('')}${placePick('lodge')}${placePick('course')}</div>
+      ${retiredTxt ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고 · 입력칸에서 정리된 항목 · 판정에는 계속 쓰임): ${retiredTxt}</small>` : ''}
     </details>`;
 }
 function peAiOf(p, i){ const pe = p.priceEntries[i]; if (!pe) return null; if (!pe.aiInfo || typeof pe.aiInfo!=='object' || Array.isArray(pe.aiInfo)) pe.aiInfo = {}; return pe.aiInfo; }

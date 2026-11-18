@@ -2641,7 +2641,9 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 /* [Phase 3 상품등록 개선] 관리자 패널 복수 선택 칩(다중 선택 항목 공용) */
 .adv-chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 /* [수정] 박수(복수 선택) 아래, 선택한 박수마다 출발 공항 칩 줄 */
-.stay-add{display:flex;gap:6px;margin-top:8px}
+.stay-line{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 14px}
+.stay-line .adv-chip-group{flex:0 1 auto}
+.stay-add{display:flex;gap:6px;flex:1 1 220px;min-width:200px;margin-top:2px}
 .adv-body .stay-add input{flex:1;min-width:0;padding:6px 10px;font-size:.78rem}
 .stay-add-btn{flex:none;padding:6px 12px;border:none;border-radius:var(--nm-r-pill);background:var(--nm-surface);color:var(--nm-text);font-weight:700;font-size:.76rem;font-family:inherit;cursor:pointer;box-shadow:var(--nm-shadow-raised-sm)}
 .stay-add-btn:hover{color:#fff;background:var(--nm-gold-grad)}
@@ -19104,7 +19106,7 @@ function advBasicHTML(p){
               </select>
             </div>
             <div><label>🗓 기간 ${hint('(제목 아래 오른쪽 · 박스 색 = 추천 판매 시기 월 색상)')}</label><input type="text" class="bf-input bf-gray" style="${periodBoxStyle(p)}" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
-            <div><label>🌙 박수 ${hint('(복수 선택 · 직접 추가 가능 · 식사 정보 아래 구분선 다음)')}</label>${stayNightsFieldHTML(-1, p.labels)}</div>
+            <div class="full"><label>🌙 박수 ${hint('(기간 아래 · 복수 선택 · 직접 추가 가능 · 식사 정보 아래 구분선 다음)')}</label>${stayNightsFieldHTML(-1, p.labels)}</div>
             <div class="full"><label>🛫 출발 지역 ${hint('(박수 다음 박스 · 괄호 안에 아래에서 고른 출발 공항 표시)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.depRegion||'')}" placeholder="예: 부산" oninput="updateAdvField('depRegion',this.value)">
               <div class="dep-apt-box"><span class="dep-apt-l">출발 공항 ${hint('(복수 선택 · 요금 항목에서 따로 고르지 않으면 모두 이 공항)')}</span>${chipMultiHTML(AIRPORT_OPTS, p.labels.departureAirport, val=>`toggleLabelMulti(-1,'departureAirport','${val}')`)}</div>
             </div>
@@ -20910,7 +20912,7 @@ function stayNightsFieldHTML(peIdx, L){
   const custom = sel.filter(n=>!STAY_ORDER.includes(n));
   const opts = normStay(STAY_ORDER.concat(custom)).map(x=>[x.n,x.n]);
   const chips = chipMultiHTML(opts, sel, n=>`toggleStayNight(${peIdx},'${n}')`);
-  return `${chips}<div class="stay-add"><input type="text" data-ral-skip inputmode="numeric" maxlength="6" placeholder="직접 추가 (예: 9 또는 12박)" onkeydown="if(event.key==='Enter'){event.preventDefault();addStayNight(${peIdx},this)}"><button type="button" class="stay-add-btn" onclick="addStayNight(${peIdx},this.previousElementSibling)">+ 추가</button></div>`;
+  return `<div class="stay-line">${chips}<div class="stay-add"><input type="text" data-ral-skip inputmode="numeric" maxlength="6" placeholder="직접 추가 (예: 9 또는 12박)" onkeydown="if(event.key==='Enter'){event.preventDefault();addStayNight(${peIdx},this)}"><button type="button" class="stay-add-btn" onclick="addStayNight(${peIdx},this.previousElementSibling)">+ 추가</button></div></div>`;
 }
 function toggleStayNight(peIdx, n){
   const p=getAdvProduct(); if (!p) return;

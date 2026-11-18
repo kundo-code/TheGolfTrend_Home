@@ -1739,8 +1739,18 @@ footer{padding:80px 24px 40px;border-top:1px solid rgba(10,23,48,.08);background
 .admin-fab,.mobile-call-fab,.tb-booking-fab{position:fixed;z-index:206}
 /* [추가] 실시간 상담 버튼 — 오른쪽 아이콘 묶음(전화·문의·관리자)과 별개로 왼쪽 아래에 둔다 */
 .tgt-chat-fab{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:208;display:flex;align-items:center;gap:8px;padding:0 18px 0 14px;height:52px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:linear-gradient(135deg,#d8ab45,#b98a24);color:#fff;font-family:inherit;font-size:.95rem;font-weight:800;letter-spacing:.01em;cursor:pointer;box-shadow:0 8px 22px rgba(10,23,48,.32),inset 0 2px 4px rgba(255,255,255,.55);transition:transform .15s,box-shadow .15s}
+.tgt-chat-fab{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .25s ease,box-shadow .15s}
+.tgt-chat-fab .tgt-chat-grip{display:none}
+/* [추가] 실시간 상담 버튼을 왼쪽으로 끌어 화면 밖으로 접어 두고(손잡이만 남김), 눌러서 또는 오른쪽으로 끌어 다시 펼친다.
+   접힌 상태에서도 배지(숫자)·깜박임은 손잡이에 그대로 보여 상담원이 새 상담을 놓치지 않는다 */
+.tgt-chat-fab.is-folded{transform:translateX(var(--fab-fold,-100%));padding-right:0;gap:0}
+.tgt-chat-fab.is-folded:hover,.tgt-chat-fab.is-folded:active{transform:translateX(var(--fab-fold,-100%))}
+.tgt-chat-fab.is-folded .tgt-chat-ico,.tgt-chat-fab.is-folded .tgt-chat-lab{opacity:0}
+.tgt-chat-fab.is-folded .tgt-chat-grip{display:flex;position:absolute;right:0;top:0;bottom:0;width:34px;align-items:center;justify-content:center;font-size:1.15rem;line-height:1}
+.tgt-chat-fab.is-dragging{transition:none}
 .tgt-chat-fab:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(10,23,48,.36),inset 0 2px 4px rgba(255,255,255,.55)}
 .tgt-chat-fab:active{transform:scale(.97)}
+.tgt-chat-fab.is-folded:active{transform:translateX(var(--fab-fold,-100%))}
 .tgt-chat-fab .tgt-chat-ico{font-size:1.35rem;line-height:1}
 .tgt-chat-fab.is-open{display:none}
 .tgt-chat-badge{position:absolute;top:-6px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#e11d48;color:#fff;font-size:.74rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff}
@@ -6383,7 +6393,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
 <a href="#booking" class="tb-booking-fab" aria-label="문의하기"><img class="fab-icon fab-img" src="assets/icons/icon-inquiry.png" alt="" width="256" height="256" draggable="false"></a>
 <button type="button" class="mobile-call-fab" onclick="callHotline()" aria-label="전화하기"><span class="fab-icon">📞</span></button>
 <!-- [추가] 실시간 상담(채팅) — 처음 누를 때 assets/live-chat.js를 불러온다. DB: docs/sql/2026-10-28_live_chat.sql -->
-<button type="button" class="tgt-chat-fab" id="tgtChatFab" onclick="tgtChatOpen()" aria-label="실시간 상담 열기"><span class="tgt-chat-ico" aria-hidden="true">💬</span><span class="tgt-chat-lab">실시간 상담</span><span class="tgt-chat-badge" id="tgtChatBadge" hidden></span></button>
+<button type="button" class="tgt-chat-fab" id="tgtChatFab" onclick="tgtChatFabClick(event)" aria-label="실시간 상담 열기"><span class="tgt-chat-ico" aria-hidden="true">💬</span><span class="tgt-chat-lab">실시간 상담</span><span class="tgt-chat-grip" aria-hidden="true">💬</span><span class="tgt-chat-badge" id="tgtChatBadge" hidden></span></button>
 <!-- ADMIN -->
 <!-- [수정][설정 버튼 컴포넌트] 이모지(⚙️)는 OS·브라우저마다 색·굵기가 달라 참고 이미지의 "선명한
      검은 톱니바퀴"를 재현할 수 없어, 직접 그린 8개 톱니 SVG로 교체 — 크기는 CSS(.admin-fab-icon)에서
@@ -12898,6 +12908,7 @@ function pickDestCategory(id){
   const isOverseas = CATEGORIES.overseas.some(c=>c.id===id);
   const cur = isOverseas ? selectedOverseasId : selectedDomesticId;
   if (cur===id){
+    if (window.innerWidth<=780 && scrollToDestCard(isOverseas?'overseas':'domestic')) return;
     const panel = document.getElementById(isOverseas?'categoryPanelOverseas':'categoryPanelDomestic');
     if (panel) smoothScrollToEl(panel, 400, -(DEST_BAR_H+8));
     return;
@@ -13240,7 +13251,37 @@ function smoothScrollToEl(el, duration, offset, done){
 // [수정] 국가/권역을 고르면 상품 목록으로 이동 — 고른 국가/권역 카드(.cat-card.open)가 있는 줄의 윗변이 고정 영역(메뉴바 + 모바일은 국가·시즌 고정 바) 바로 아래에 오게 한다.
 // 이전에는 모바일에서 2단계(패널 → 상품 목록)로 이동했는데, 이동 도중 탑바가 접히며 문서 위치가 바뀌어 iOS에서 카드 줄이 위로 더 올라가 잘리는 경우가 있었다.
 // 도착 뒤 한 번 더 위치를 재계산해(탑바 접힘 등으로 어긋났으면) 바로잡는다
+// [수정] 모바일 — 국가/권역을 고르면 가운데 상품 카드의 윗변이 고정 바(메뉴바 + 국가/권역 줄 + 시즌·월 줄) 바로 아래(약 6px)에 오도록 이동한다.
+// 카드 크기 맞춤(fitProductCardsToScreen)·가운데 카드 지정이 그린 직후 바뀔 수 있어 도착 뒤 몇 번 더 위치를 재계산해 바로잡는다
+function destCardTargetY(regionKey){
+  const grid = document.getElementById(regionKey==='overseas'?'productGridOverseas':'productGridDomestic');
+  if (!grid) return null;
+  const card = grid.querySelector('.product.m-center') || [...grid.querySelectorAll('.product')].find(c=>c.getBoundingClientRect().width>100);
+  if (!card) return null;
+  const nav = document.getElementById('mainNav'), bar = document.getElementById('destPeriodBar');
+  const navBottom = nav ? nav.getBoundingClientRect().bottom : 54;
+  const barH = (bar && bar.offsetHeight) || (DEST_BAR_H+1);
+  return Math.max(0, card.getBoundingClientRect().top + window.scrollY - (navBottom + barH + 6));
+}
+function scrollToDestCard(regionKey, tries){
+  const y = destCardTargetY(regionKey);
+  if (y===null) return false;
+  const startY = window.scrollY, dur = tries ? 160 : 500, t0 = performance.now();
+  const ease = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  const step = now => {
+    const t = Math.min(1, (now-t0)/dur);
+    window.scrollTo({top: startY + (y-startY)*ease(t), behavior:'instant'});
+    if (t<1) requestAnimationFrame(step);
+    else setTimeout(()=>{
+      const want = destCardTargetY(regionKey);
+      if (want!==null && (tries||0) < 3 && Math.abs(window.scrollY - want) > 3) scrollToDestCard(regionKey, (tries||0)+1);
+    }, 220);
+  };
+  requestAnimationFrame(step);
+  return true;
+}
 function scrollToDestTiles(regionKey, tries){
+  if (window.innerWidth<=780 && scrollToDestCard(regionKey, tries)) return;
   const grid = document.getElementById(regionKey==='overseas'?'catGridOverseas':'catGridDomestic');
   if (!grid) return;
   const tiles = grid.querySelector('.cat-card.open') || grid; // 방금 고른 국가/권역 카드(그 카드가 있는 줄)가 고정 영역 바로 아래에 오게
@@ -17902,6 +17943,66 @@ function tgtLoadChat(){
   if (!_tgtChatLoading) _tgtChatLoading = tgtLoadScript('assets/live-chat.js?v='+TGT_CHAT_VERSION).catch(e=>{ _tgtChatLoading = null; throw e; });
   return _tgtChatLoading;
 }
+// [추가] 실시간 상담 버튼 접기/펼치기 — 왼쪽으로 끌면 화면 밖으로 접히고(손잡이만 남음), 손잡이를 누르거나 오른쪽으로 끌면 펼쳐진다. 상태는 이 기기에 기억한다.
+// 접힌 상태에서도 배지·깜박임(상담원 알림)은 손잡이에 남는다
+const TGT_FAB_VIS = 34, TGT_FAB_KEY = 'tgtChatFabFolded';
+let _tgtFabSuppress = false;
+function tgtChatFabClick(e){
+  const fab = document.getElementById('tgtChatFab');
+  if (_tgtFabSuppress){ if (e) e.preventDefault(); return; }
+  if (fab && fab.classList.contains('is-folded')){ tgtChatFabSet(false); return; }
+  tgtChatOpen();
+}
+function tgtChatFabSet(folded){
+  const fab = document.getElementById('tgtChatFab'); if (!fab) return;
+  fab.style.setProperty('--fab-fold', tgtChatFabFoldX()+'px');
+  fab.classList.toggle('is-folded', !!folded);
+  fab.setAttribute('aria-expanded', folded ? 'false' : 'true');
+  try{ localStorage.setItem(TGT_FAB_KEY, folded ? '1' : '0'); }catch(e){}
+}
+function tgtChatFabFoldX(){
+  const fab = document.getElementById('tgtChatFab'); if (!fab) return -100;
+  const w = fab.offsetWidth || 150, left = parseFloat(getComputedStyle(fab).left) || 0;
+  return -(w + left - TGT_FAB_VIS);
+}
+(function initChatFabFold(){
+  const fab = document.getElementById('tgtChatFab'); if (!fab) return;
+  let folded = false; try{ folded = localStorage.getItem(TGT_FAB_KEY)==='1'; }catch(e){}
+  const refresh = ()=>{ fab.style.setProperty('--fab-fold', tgtChatFabFoldX()+'px'); };
+  refresh(); fab.classList.toggle('is-folded', folded);
+  window.addEventListener('resize', refresh);
+  new MutationObserver(refresh).observe(fab, {attributes:true, attributeFilter:['class']});
+  try{ new ResizeObserver(refresh).observe(fab); }catch(e){}   // 글꼴이 늦게 로드돼 버튼 폭이 바뀌어도 접힌 손잡이 폭을 일정하게 유지
+  let sx=0, sy=0, base=0, cur=0, drag=false, moved=false, pid=null;
+  fab.addEventListener('pointerdown', e=>{
+    if (e.button>0 || e.pointerType==='mouse' && e.buttons!==1) return;
+    refresh(); sx=e.clientX; sy=e.clientY; drag=true; moved=false; pid=e.pointerId;
+    base = fab.classList.contains('is-folded') ? tgtChatFabFoldX() : 0; cur = base;
+    try{ fab.setPointerCapture(pid); }catch(_){}   // 손가락·마우스가 버튼 밖으로 나가도 끌기가 이어지게
+  });
+  fab.addEventListener('pointermove', e=>{
+    if (!drag || e.pointerId!==pid) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!moved){
+      if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+      moved = true; fab.classList.add('is-dragging');
+    }
+    const min = tgtChatFabFoldX();
+    cur = Math.min(0, Math.max(min, base + dx));
+    fab.style.transform = `translateX(${cur}px)`;
+    e.preventDefault();
+  });
+  const end = e=>{
+    if (!drag || (e && e.pointerId!==pid)) return;
+    drag = false;
+    if (!moved) return;
+    fab.classList.remove('is-dragging'); fab.style.transform = '';
+    tgtChatFabSet(cur < tgtChatFabFoldX()/2);   // 절반 넘게 밀려 있으면 접힘, 아니면 펼침
+    _tgtFabSuppress = true; setTimeout(()=>{ _tgtFabSuppress = false; }, 350);   // 끌고 난 뒤 따라오는 클릭은 무시
+  };
+  fab.addEventListener('pointerup', end);
+  fab.addEventListener('pointercancel', end);
+})();
 function tgtChatOpen(){
   // 관리자 로그인 중에는 같은 버튼이 상담원 창(목록·대화·답변)을 연다 — 관리자 패널로 가지 않고 바로 응대
   if (adminSession || _tgtAuthed===true){

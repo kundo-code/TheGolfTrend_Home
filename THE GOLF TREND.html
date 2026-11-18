@@ -19309,7 +19309,7 @@ const AI_LODGE_FIELDS = [
   {k:'nearSpot', label:'유명 관광지', type:'prox', help:AI_PROX_HELP},
   {k:'nearMall', label:'대형마트·쇼핑몰', type:'prox', help:AI_PROX_HELP},
   {k:'nearMarket', label:'전통시장·야시장', type:'prox', help:AI_PROX_HELP},
-  {k:'nearSpa', label:'온천·스파', type:'prox', help:AI_PROX_HELP+' 숙소에 온천·스파가 있으면 \'숙소 안\'.'},
+  {k:'nearSpa', label:'온천·스파·마사지', type:'prox', help:AI_PROX_HELP+' 숙소에 온천·스파·마사지 시설이 있으면 \'숙소 안\'.'},
   {k:'nearKorean', label:'한식당', type:'prox', only:'overseas', help:AI_PROX_HELP+' \'한식 접근\' 조건에 쓰입니다.'},
   {k:'nearHospital', label:'병원·약국', type:'prox', help:AI_PROX_HELP+' 병원과 약국 중 가까운 곳 기준(진료·처방 가능한 곳).'},
   {k:'memo', label:'메모', type:'area', rows:3, max:600, wide:true, help:'기타 참고 사항(고객에게는 보이지 않음).'}
@@ -22288,7 +22288,7 @@ function aiInfoTest(key, F){
   const ynTxt = (v, y, n) => v==='y' ? (y||'예') : (n||'아니오');
   // 숙소 주변 시설 — 가까운 정도(숙소 안·도보 5분 / 도보 10·15분 이내 / 차량 15분 이내 = 가까움)
   const PROX = {'food:local':['nearFood','현지 맛집',['맛집','미식','로컬 푸드','현지식']], 'tour:city':['nearCity','시내',['시내 관광','시티투어','시내투어','시내']], 'tour:famous':['nearSpot','유명 관광지',['관광지','명소']],
-    'shop:mall':['nearMall','쇼핑몰',['쇼핑','아울렛','쇼핑몰']], 'shop:market':['nearMarket','전통시장·야시장',['전통시장','야시장','시장']], 'spa':['nearSpa','온천·스파',['온천','스파','마사지','사우나']], 'meal:korean':['nearKorean','한식당',['한식']]};
+    'shop:mall':['nearMall','쇼핑몰',['쇼핑','아울렛','쇼핑몰']], 'shop:market':['nearMarket','전통시장·야시장',['전통시장','야시장','시장']], 'spa':['nearSpa','온천·스파·마사지',['온천','스파','마사지','사우나']], 'meal:korean':['nearKorean','한식당',['한식']]};
   if (key==='meal:korean' && F.dom) return {v:true, t:'국내 상품'};
   if (PROX[key]){
     const [f, label, words] = PROX[key];

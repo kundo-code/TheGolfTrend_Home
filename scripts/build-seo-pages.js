@@ -172,7 +172,7 @@ function extractInPage() {
         flightTime: plain(p.flightTime), transferLabel: dom ? '숙소→골프장' : '공항→호텔', transferTime: plain(p.transferTime), hotelToGolfTime: plain(p.hotelToGolfTime),
         minPeople: plain(p.minPeople),
         departAirports: Array.isArray(lab.departureAirport) ? lab.departureAirport : [], arrAirport: plain(lab.arrAirport), flightNo: plain(lab.flightNo),
-        departureDay: Array.isArray(lab.departureDay) ? lab.departureDay : [], stayDuration: plain(stayText(lab.stayNights)),
+        departureDay: Array.isArray(lab.departureDay) ? lab.departureDay : [], stayDuration: plain(stayNightsText(lab.stayNights)),
         tags: cardTagEntries(p).map(t => t.plain).filter(Boolean),
         checkpoints: [].concat(lines(p.checkpoint1), lines(p.checkpoint2)),
         priceInquiry: strip(priceInquiry), from, fromLabel: p.fromLabel !== false,
@@ -363,7 +363,7 @@ function productPage(p, data, stateDate) {
   const rows = [];
   const add = (k, v) => { if (v !== undefined && v !== null && String(v).trim() !== '') rows.push(`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`); };
   add('지역', `${regionName(p.region)} › ${p.catKo}`);
-  add('일정', p.nightsCount); add('박수·출발 공항', p.stayDuration); add('출발 지역', p.depRegion); add('출발 가능 기간', p.periodText); add('추천 판매 시기', p.monthsTag);
+  add('일정', p.nightsCount); add('출발 지역', p.depRegion); add('출발 가능 기간', p.periodText); add('추천 판매 시기', p.monthsTag);
   add('출발 요일', p.departureDay.join(', ')); add('골프 라운드', p.rounds); add('숙박', p.stay); add('숙소 위치', p.lodge); add('식사', p.meals);
   add('항공', p.airfare); add('출발 공항', p.departAirports.join(', ')); add('도착 공항', p.arrAirport); add('항공편', p.flightNo);
   add('비행 시간', p.flightTime); add(p.transferLabel + ' 이동', p.transferTime); add('호텔→골프장 이동', p.hotelToGolfTime);

@@ -809,7 +809,8 @@ section.block{padding:100px 24px;position:relative}
 .ctag-del:hover{background:#FDE8E8}
 .ctag-add-row{display:flex;align-items:center;gap:10px;padding:0 10px 10px}
 .ctag-empty-hint{font-size:.76rem;color:var(--nm-text-soft)}
-.ctag-cell{display:flex;align-items:center;gap:4px;min-width:0;border-radius:100px}
+.ctag-cell{display:flex;align-items:stretch;gap:4px;min-width:0;border-radius:100px}
+.ctag-cell>.ctag-grip{align-self:center}
 .ctag-grip{flex-shrink:0;width:16px;text-align:center;cursor:grab;color:var(--nm-text-soft);font-size:.9rem;line-height:1;user-select:none;-webkit-user-select:none;touch-action:none}
 .ctag-grip:active{cursor:grabbing}
 .ctag-cell.dragging{opacity:.4}
@@ -2639,6 +2640,13 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .sd-title{font-size:.96rem;font-weight:700;color:var(--nm-blue-deep);letter-spacing:.03em}
 /* [Phase 3 상품등록 개선] 관리자 패널 복수 선택 칩(다중 선택 항목 공용) */
 .adv-chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+/* [수정] 박수(복수 선택) 아래, 선택한 박수마다 출발 공항 칩 줄 */
+.stay-apt-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.stay-apt-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 10px;border-radius:var(--nm-r-sm);background:rgba(49,118,189,.07)}
+.stay-apt-n{font-weight:800;font-size:.8rem;color:var(--nm-text);min-width:46px}
+.stay-apt-l{font-size:.72rem;font-weight:700;color:var(--nm-text-soft)}
+.stay-apt-row .adv-chip-group{margin-top:0}
+.stay-apt-row .adv-chip{padding:5px 11px;font-size:.74rem}
 .adv-chip{padding:7px 14px;border-radius:var(--nm-r-pill);border:none;background:var(--nm-surface);color:var(--nm-text-soft);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;box-shadow:var(--nm-shadow-raised-sm)}
 .adv-chip:hover{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-blue)}
 .adv-chip.active{background:var(--nm-gold-grad);color:#fff;box-shadow:var(--nm-shadow-gold-press)}
@@ -6663,7 +6671,7 @@ function isDomesticCat(catId){ return CATEGORIES.domestic.some(c=>c.id===catId);
 //   galleryConfig: {layout:'slide'|'thumb', autoSlide:bool},
 //   priceEntries: [{link, headline, layout, emphasis, salePrice, originalPrice}],
 //   contact: {phone, kakaoChannel, kakaoFriend},
-//   labels: {airfare, airPattern, departureAirport, stayDuration, departureDay, teeOffTime, roundsCount, mealsCount},
+//   labels: {airfare, airPattern, departureAirport, stayNights, departureDay, teeOffTime, roundsCount, mealsCount},
 //   calendarMode: 'none'|'daily'|'auto' }
 
 // 팝업 최대 3개까지 동시 노출 가능
@@ -6672,7 +6680,7 @@ const POPUP_MAX = 6;
 function newLabels(){
   return {
     airfare:'none', airPattern:[], departureAirport:[], arrAirport:'', flightNo:'',
-    stayDuration:'none', departureDay:[],
+    stayDuration:'none', stayNights:[], departureDay:[],
     teeOffTimes:{day1:'',day2:'',day3:'',day4:''}
   };
 }
@@ -6727,6 +6735,8 @@ function ensureLabels(L){
   }
   if (!L.airfare) L.airfare='none';
   if (!L.stayDuration) L.stayDuration='none';
+  // [수정] 박수(구 체류일): 예전 단일 값은 처음 한 번만 복수 선택 구조로 옮기고 원래 값(stayDuration)은 그대로 둔다
+  L.stayNights = normStay(L.stayNights===undefined ? L.stayDuration : L.stayNights);
   // [Phase 3 상품등록 개선] 항공 패턴 · 출발 공항 · 출발 요일은 복수 선택 가능하도록 배열로 전환.
   // 기존에 단일 문자열로 저장된 값은 배열로 이관(마이그레이션)한다.
   ['airPattern','departureAirport','departureDay'].forEach(k=>{
@@ -6998,7 +7008,15 @@ function ensureExtended(p){
   // [수정] 상품 카드에 노출할 항공 포함 여부·최소 인원 — 여러 요금 항목에 종속시키지 않고 상품 단위로 단순화
   if (p.airfareIncluded===undefined) p.airfareIncluded = '';
   if (p.minPeople===undefined) p.minPeople = '';
-  if (p.nightsCount===undefined) p.nightsCount = ''; // [수정] 박수 — 카드에서 기간 옆에 노출
+  if (p.nightsCount===undefined) p.nightsCount = ''; // [수정] 예전 "박수" 칸의 원문 — 이제 화면에 쓰지 않는 백업(데이터 보존용)
+  // [수정] 출발 지역(구 "박수" 칸의 새 이름) — 카드 박스로 노출. 예전 박수 칸의 내용은 박수 선택(stayNights)으로 한 번만 옮기고 출발 지역은 비워 둔다
+  if (p.depRegion===undefined) p.depRegion = '';
+  if (p.stayMigrated===undefined){
+    p.stayMigrated = true;
+    const ns = parseNightsCount(p.nightsCount);
+    if (ns.length) p.labels.stayNights = normStay((p.labels.stayNights||[]).concat(ns));
+    _tgtUidDirty = true;
+  }
   // [추가] AI·검색 노출용 제목 정보 — 지역명 · 제목보조(Sub-Title)는 카드 제목 위 한 줄, 요약 설명(Meta Description)은 카드 "펼쳐보기" 위·공유 문구·정적 페이지 설명에 쓴다(비어 있으면 아무것도 표시하지 않음)
   if (p.titleRegion===undefined) p.titleRegion = '';
   if (p.titleSub===undefined) p.titleSub = '';
@@ -7052,6 +7070,32 @@ function ensureExtended(p){
 function _peStrKey(v){ return String(v==null?'':v).trim(); }
 function _peArrKey(a){ return (Array.isArray(a)?a:[]).filter(Boolean).slice().sort().join('|'); }
 function _peNoneKey(v){ return (v && v!=='none') ? String(v) : ''; }
+// [수정] 박수(구 체류일) — 한 상품에 여러 박수가 있을 수 있어 복수 선택, 선택한 박수마다 출발 공항을 고른다.
+// 저장 형태: labels.stayNights = [{n:'3박', apt:['인천1','김해']}, ...] (예전 단일 값 labels.stayDuration은 그대로 두고 읽기만 한다)
+const STAY_ORDER=['1박','2박','3박','4박','5박','6박','장박'];
+function normStay(v){
+  const src = Array.isArray(v) ? v : ((v && v!=='none') ? [v] : []);
+  const map = {};
+  src.forEach(x=>{
+    const o = (x && typeof x==='object') ? x : {n:x};
+    const n = String(o.n==null?'':o.n).trim();
+    if (!n || n==='none') return;
+    const m = map[n] || (map[n]={n, apt:[]});
+    (Array.isArray(o.apt)?o.apt:[]).forEach(a=>{ if (a && !m.apt.includes(a)) m.apt.push(a); });
+  });
+  const rank = n => { const i=STAY_ORDER.indexOf(n); return i<0 ? 99 : i; };
+  return Object.keys(map).map(k=>map[k]).sort((a,b)=>rank(a.n)-rank(b.n));
+}
+function _peStayKey(v){ return normStay(v).map(x=>x.n+(x.apt.length?':'+x.apt.slice().sort().join(','):'')).join('|'); }
+function stayText(v, sep){ return normStay(v).map(x=>x.n+(x.apt.length?'('+x.apt.join('·')+')':'')).join(sep||' / '); }
+function stayNightsText(v){ return normStay(v).map(x=>x.n).join(' / '); }
+// 예전 "박수" 칸(nightsCount)에 적어 둔 글에서 박수만 읽어 낸다('1박당 요금' 같은 문구는 박수가 아님)
+function parseNightsCount(str){
+  str = String(str||''); const out = []; const re = /(\d+)\s*박(?!\s*당)/g; let m;
+  while ((m = re.exec(str))){ const n = m[1]+'박'; if (STAY_ORDER.includes(n) && !out.includes(n)) out.push(n); }
+  if (/장\s*박/.test(str) && !out.includes('장박')) out.push('장박');
+  return out;
+}
 // 리치 텍스트(HTML)·일반 텍스트 모두 "줄 단위 순수 텍스트"로 정규화 — 서식(굵게 등)만 다른 경우는
 // 같은 내용으로 본다. DOMParser는 스크립트·이미지 로딩이 일어나지 않는 비활성 문서를 만든다
 function _peTextKey(v){
@@ -7288,7 +7332,7 @@ const PE_INHERIT = {
   departureAirport: {label:'출발 공항',    pe:pe=>pe.labels.departureAirport, cm:p=>p.labels.departureAirport, key:_peArrKey},
   arrAirport:       {label:'도착 공항',    pe:pe=>pe.labels.arrAirport,       cm:p=>p.labels.arrAirport,       key:_peStrKey},
   flightNo:         {label:'항공편',       pe:pe=>pe.labels.flightNo,         cm:p=>p.labels.flightNo,         key:_peStrKey},
-  stayDuration:     {label:'체류일',       pe:pe=>pe.labels.stayDuration,     cm:p=>p.labels.stayDuration,     key:_peNoneKey},
+  stayNights:       {label:'박수',         pe:pe=>pe.labels.stayNights,       cm:p=>p.labels.stayNights,       key:_peStayKey},
   departureDay:     {label:'출발 요일',    pe:pe=>pe.labels.departureDay,     cm:p=>p.labels.departureDay,     key:_peArrKey},
   dayPrices:        {label:'출발 요일별 요금', pe:pe=>pe.dayPrices,          cm:p=>p.commonDayPrices,         key:_peDayKey},
   dayDates:         {label:'특정일 지정', pe:pe=>pe.dayDates,                  cm:p=>p.commonDayDates,          key:_peDatesKey},
@@ -13417,8 +13461,8 @@ function productCardHTML(p, catId, idx){
   const cardTags = cardTagEntries(p);
   const airfareText = p.airfareIncluded==='included' ? '항공 포함' : (p.airfareIncluded==='excluded' ? '항공 불포함' : '');
   // [추가] "2인 이상" 배지 옆에 항공포함여부·체류일을 함께 노출 — 체류일은 요금 항목과 무관한
-  // 공통 레이블(p.labels.stayDuration)을 사용한다
-  const cardStayText = (p.labels && p.labels.stayDuration && p.labels.stayDuration!=='none') ? p.labels.stayDuration : '';
+  // 공통 레이블(p.labels.stayNights)을 사용한다
+  const cardStayText = stayText(p.labels && p.labels.stayNights);
   const transferLabel = isDomesticCat(catId) ? '숙소→골프장' : '공항→호텔';
   const mw = p.metaWide || {};
   // [수정] meta 항목 중 일부가 "한 줄로"(전체 폭)로 표시되면, 이후 항목들의 시각적 좌/우 칸이
@@ -13438,8 +13482,8 @@ function productCardHTML(p, catId, idx){
   const metaGroup2 = cardMoveList(p, catId);
   // [수정] 박수·체류일 박스 — 식사 정보와 비행시간 정보 사이, 구분선 바로 아래 한 줄로(박스 색상 동일)
   const stayBoxes = [
-    p.nightsCount ? `<span class="product-period-box">🌙 ${escapeAttr(p.nightsCount)}</span>` : '',
-    cardStayText ? `<span class="product-period-box">🏨 ${escapeAttr(cardStayText)}</span>` : '',
+    p.depRegion ? `<span class="product-period-box">🛫 ${escapeAttr(p.depRegion)}</span>` : '',
+    cardStayText ? `<span class="product-period-box">🌙 ${escapeAttr(cardStayText)}</span>` : '',
     lodgeText(p) ? `<span class="product-period-box lodge-box lodge-${p.lodgeLocation}">📍 ${escapeAttr(lodgeText(p))}</span>` : '',
     ticketText(p) ? `<span class="product-period-box ticket-box">🎟️ ${escapeAttr(ticketText(p))}</span>` : '',
   ].join('');
@@ -16029,7 +16073,7 @@ function renderProductDetail(p,cat,idx){
   if (plan.arrAirport.key) commonLabelRowsList.push(['🛬 도착 공항', plan.arrAirport.value]);
   if (plan.flightNo.key) commonLabelRowsList.push(['🎫 항공편', plan.flightNo.value]);
   if (plan.airfare.key) commonLabelRowsList.push(['✈️ 항공 포함 여부', AIRFARE_TXT[plan.airfare.value]||plan.airfare.value]);
-  if (plan.stayDuration.key) commonLabelRowsList.push(['🏨 체류일', plan.stayDuration.value]);
+  if (plan.stayNights.key) commonLabelRowsList.push(['🌙 박수', stayText(plan.stayNights.value)]);
   if (plan.departureDay.key) commonLabelRowsList.push(['📅 출발 요일', planArr('departureDay'), depDayHTML(plan.departureDay.value)]);
   // [추가] 특정일 지정 — 출발 요일 바로 아래(요금 칸 아래에 안내되지 않은 날짜만)
   if (plan.departureDay.key){
@@ -16041,7 +16085,7 @@ function renderProductDetail(p,cat,idx){
     const moveTitle = plan.airfare.key ? '🏷️ 항공/이동 정보 · 출발 요일' : '🏷️ 이동정보 · 출발 요일';
     html += `<div class="pd-slot"><div class="pd-section-title">${moveTitle}</div>
       <div class="pd-label-rows">${commonLabelRowsList.map(([k,v,h])=>`<div class="pd-label-row"><span class="k">${k}</span><span class="v">${h!==undefined?h:escapeAttr(v)}</span></div>`).join('')}</div>
-      ${commonOverrideNote(['departureAirport','airPattern','arrAirport','flightNo','airfare','stayDuration','departureDay'])}
+      ${commonOverrideNote(['departureAirport','airPattern','arrAirport','flightNo','airfare','stayNights','departureDay'])}
     </div>`;
   }
 
@@ -16176,11 +16220,11 @@ function renderProductDetail(p,cat,idx){
             // [수정] "항공 포함 여부"·"체류일" 선택 내용을 "2인 이상" 레이블 오른쪽에 배지로 함께 노출
             const minPeople = _peStrKey(pick('minPeople', full));
             const airfare = _peNoneKey(pick('airfare', full));
-            const stayDur = _peNoneKey(pick('stayDuration', full));
+            const stayDur = stayText(pick('stayNights', full));
             const badges = (minPeople||airfare||stayDur) ? `<div class="pd-pe-badges ${cls}">
                 ${minPeople?`<span class="min-people">👥 ${escapeAttr(fmtMinPeople(minPeople))}</span>`:''}
                 ${airfare?`<span class="pe-flag-badge ${airfare==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(AIRFARE_TXT[airfare]||airfare)}</span>`:''}
-                ${stayDur?`<span class="pe-flag-badge">🏨 ${escapeAttr(stayDur)}</span>`:''}
+                ${stayDur?`<span class="pe-flag-badge">🌙 ${escapeAttr(stayDur)}</span>`:''}
               </div>` : '';
             // [수정] 요금 항목별 라운드·숙박·식사 — 금액/최소 인원 바로 아래 구분선을 두고 노출.
             // "한 줄로" 토글(pe.metaWide)을 켠 항목은 혼자 한 줄 전체를 차지하고, 같은 줄에 있는
@@ -18213,7 +18257,7 @@ function renderProductAdmin(catId){
         <div class="full"><label>제목 · Title</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateProduct(${i},'title',this.value)"></div>
         <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
         <div><label>🗓 기간 · Nights <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
-        <div><label>🌙 박수 <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateProduct(${i},'nightsCount',this.value)"></div>
+        <div><label>🛫 출발 지역 <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.depRegion||'')}" placeholder="예: 부산" oninput="updateProduct(${i},'depRegion',this.value)"></div>
         <div><div class="mw-label-row"><label>라운드 · Rounds <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),`toggleMetaWide(${i},'rounds',this.checked)`)}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
         <div><div class="mw-label-row"><label>숙박 · Stay <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.stay),`toggleMetaWide(${i},'stay',this.checked)`)}</div><input type="text" value="${escapeAttr(p.stay||'')}" placeholder="예: 4성급 호텔 2박" oninput="updateProduct(${i},'stay',this.value)"></div>
         <div><div class="mw-label-row"><label>식사 · Meals <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.meals),`toggleMetaWide(${i},'meals',this.checked)`)}</div><input type="text" value="${escapeAttr(p.meals||'')}" placeholder="예: 조식 3회" oninput="updateProduct(${i},'meals',this.value)"></div>
@@ -18848,7 +18892,7 @@ function advBasicHTML(p){
   const basicN = [p.minPeople, p.rounds, (p.airfareIncluded&&p.airfareIncluded!=='none')?'y':'', p.stay, p.meals].filter(advFilled).length;
   const moveN = [isDomestic?'':p.flightTime, p.hotelToGolfTime, p.transferTime].filter(advFilled).length;
   const L = p.labels;
-  const airN = [_peNoneKey(L.airfare), _peArrKey(L.airPattern), _peArrKey(L.departureAirport), L.arrAirport, L.flightNo, _peNoneKey(L.stayDuration), _peArrKey(L.departureDay)].filter(advFilled).length;
+  const airN = [_peNoneKey(L.airfare), _peArrKey(L.airPattern), _peArrKey(L.departureAirport), L.arrAirport, L.flightNo, _peStayKey(L.stayNights), _peArrKey(L.departureDay)].filter(advFilled).length;
   const dpN = (_peDayKey(p.commonDayPrices)?1:0) + (_peDatesKey(p.commonDayDates)?1:0) + (_peHolKey(p.commonHolidayPrices)?1:0);
   const incN = f(p.commonIncluded) + f(p.commonNotIncluded) + f(p.commonPrecautions);
   const schOn = !!_peSchKey({s:p.schedule, t:p.labels.teeOffTimes});
@@ -19044,13 +19088,9 @@ function advBasicHTML(p){
               </select>
             </div>
             <div><label>🗓 기간 ${hint('(제목 아래 오른쪽 · 박스 색 = 추천 판매 시기 월 색상)')}</label><input type="text" class="bf-input bf-gray" style="${periodBoxStyle(p)}" value="${escapeAttr(p.nights)}" placeholder="예: 3박 5일" oninput="updateAdvField('nights',this.value)"></div>
-            <div><label>🌙 박수 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nightsCount||'')}" placeholder="예: 2박" oninput="updateAdvField('nightsCount',this.value)"></div>
-            <div><label>🏨 체류일 ${hint('("항공/이동 정보"의 체류일과 같은 값)')}</label>
-              <select class="bf-input bf-gray" onchange="updatePriceEntryLabel(-1,'stayDuration',this.value);renderAdvBody()">
-                ${STAY_OPTS.map(o=>`<option value="${o[0]}" ${(p.labels.stayDuration||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
-              </select>
-            </div>
-            <div><label>📍 숙소 위치 ${hint('(체류일 오른쪽 · 없음이면 표시 안 함)')}</label>
+            <div><label>🛫 출발 지역 ${hint('(식사 정보 아래 구분선 다음)')}</label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.depRegion||'')}" placeholder="예: 부산" oninput="updateAdvField('depRegion',this.value)"></div>
+            <div class="full"><label>🌙 박수 ${hint('(복수 선택 · 선택한 박수마다 출발 공항 선택 · "항공/이동 정보"의 박수와 같은 값)')}</label>${stayNightsFieldHTML(-1, p.labels)}</div>
+            <div><label>📍 숙소 위치 ${hint('(박수 아래 · 없음이면 표시 안 함)')}</label>
               <select class="bf-input bf-gray lodge-${p.lodgeLocation||'none'}" onchange="updateAdvField('lodgeLocation',this.value);this.className='bf-input bf-gray lodge-'+this.value">
                 ${LODGE_OPTS.map(o=>`<option value="${o[0]}" ${(p.lodgeLocation||'none')===o[0]?'selected':''}>${o[1]}</option>`).join('')}
               </select>
@@ -20284,7 +20324,7 @@ const PE_ACCENT_COLORS = ['#2F6FED','#16B8A6','#F0A63A','#EE5A6F','#8E5FE0','#33
 function peInhPreview(f, v){
   switch(f){
     case 'airfare': return AIRFARE_TXT[v]||'';
-    case 'stayDuration': return (v && v!=='none') ? v : '';
+    case 'stayNights': return stayText(v);
     case 'airPattern': case 'departureAirport': case 'departureDay': return (v||[]).filter(Boolean).join(', ');
     case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${dpDayList(d.day).join(' ㅣ ')}${d.start||d.end?` (${d.start||''}~${d.end||''})`:''} ${fmtPrice(d.price)}원`).join(' / ');
     case 'dayDates': return normDayDates(v).dates.map(fmtHolidayDate).join(', ');
@@ -20318,8 +20358,8 @@ function peInhPlaceholder(p, f, fallback){
 const PE_EMPTY_TEE = () => ({day1:'',day2:'',day3:'',day4:''});
 function peClearField(pe, f){
   switch(f){
-    case 'airfare': case 'stayDuration': pe.labels[f]='none'; break;
-    case 'airPattern': case 'departureAirport': case 'departureDay': pe.labels[f]=[]; break;
+    case 'airfare': pe.labels[f]='none'; break;
+    case 'stayNights': case 'airPattern': case 'departureAirport': case 'departureDay': pe.labels[f]=[]; break;
     case 'arrAirport': case 'flightNo': pe.labels[f]=''; break;
     case 'dayPrices': case 'holidayPrices': pe[f]=[]; break;
     case 'dayDates': pe[f]=newDayDates(); break;
@@ -20330,7 +20370,7 @@ function peClearField(pe, f){
 function peSetField(pe, f, v){
   const c = JSON.parse(JSON.stringify(v));
   switch(f){
-    case 'airfare': case 'stayDuration': case 'airPattern': case 'departureAirport':
+    case 'airfare': case 'stayNights': case 'airPattern': case 'departureAirport':
     case 'departureDay': case 'arrAirport': case 'flightNo': pe.labels[f]=c; break;
     case 'schedule': pe.schedule=ensureSchedule(c.s); pe.labels.teeOffTimes=Object.assign(PE_EMPTY_TEE(), c.t||{}); break;
     default: pe[f]=c;
@@ -20340,7 +20380,7 @@ function commonSetField(p, f, v){
   const c = JSON.parse(JSON.stringify(v));
   switch(f){
     case 'minPeople': case 'rounds': case 'stay': case 'meals': p[f]=c; break;
-    case 'airfare': case 'stayDuration': case 'airPattern': case 'departureAirport':
+    case 'airfare': case 'stayNights': case 'airPattern': case 'departureAirport':
     case 'departureDay': case 'arrAirport': case 'flightNo': p.labels[f]=c; break;
     case 'dayPrices': p.commonDayPrices=c; break;
     case 'dayDates': p.commonDayDates=c; break;
@@ -20369,7 +20409,7 @@ function peClearToCommon(i, f){
 // ① 공통값이 비어 있고 모든 요금 항목이 같은 값이면 → 그 값을 공통으로 옮기고 항목에서는 비운다
 // ② 공통값이 있고 어떤 항목이 공통과 같은 값이면 → 그 항목에서만 비운다(공통값을 따라가게)
 // 항목마다 값이 다른 필드는 건드리지 않는다
-const PE_CARD_FIELDS = ['minPeople','rounds','stay','meals','stayDuration']; // 공통값이 상품 카드에도 노출되는 필드
+const PE_CARD_FIELDS = ['minPeople','rounds','stay','meals','stayNights']; // 공통값이 상품 카드에도 노출되는 필드
 function promoteEntriesToCommon(){
   const p=getAdvProduct(); if (!p) return;
   const entries=p.priceEntries||[];
@@ -20449,7 +20489,7 @@ function priceEntryHTML(pe, i, popupCount, p){
   const handleAttrs = `draggable="true" ondragstart="peDragStart(event,${i})" ondragend="peDragEnd(event)" onclick="event.preventDefault();event.stopPropagation()"`;
   // [추가] 세부 섹션별 상속 상태 — 직접 입력한 값이 있는 섹션만 기본으로 펼침
   const sMeta = peSecState(p, pe, ['minPeople','rounds','stay','meals']);
-  const sAir  = peSecState(p, pe, ['airfare','airPattern','departureAirport','arrAirport','flightNo','stayDuration','departureDay']);
+  const sAir  = peSecState(p, pe, ['airfare','airPattern','departureAirport','arrAirport','flightNo','stayNights','departureDay']);
   const sDp   = peSecState(p, pe, ['dayPrices','dayDates','holidayPrices']);
   const sInc  = peSecState(p, pe, ['included','notIncluded','precautions']);
   const sSch  = peSecState(p, pe, ['schedule']);
@@ -20706,7 +20746,7 @@ function labelsHTML(pe, peIdx, showDepartureDay, p){
     <div class="full"><label>출발 공항 (복수 선택 가능)</label>${chipMultiHTML(AIRPORT_OPTS,L.departureAirport,val=>`toggleLabelMulti(${peIdx},'departureAirport','${val}')`)}${hint('departureAirport')}</div>
     <div><label>도착 공항</label><input type="text" value="${escapeAttr(L.arrAirport||'')}" placeholder="${escapeAttr(ph('arrAirport','예: 시즈오카'))}" oninput="updatePriceEntryLabel(${peIdx},'arrAirport',this.value)">${hint('arrAirport')}</div>
     <div><label>항공편</label><input type="text" value="${escapeAttr(L.flightNo||'')}" placeholder="${escapeAttr(ph('flightNo','예: NH862 / JAL 편명 자유 입력'))}" oninput="updatePriceEntryLabel(${peIdx},'flightNo',this.value)">${hint('flightNo')}</div>
-    <div><label>체류일</label>${sel(STAY_OPTS,L.stayDuration,'stayDuration')}${hint('stayDuration')}</div>
+    <div class="full"><label>박수 (복수 선택 가능 · 선택한 박수마다 출발 공항 선택)</label>${stayNightsFieldHTML(peIdx, L)}${hint('stayNights')}</div>
   </div>
   ${showDepartureDay?`<div class="pe-labels-departure-day">${departureDayFieldHTML(L, peIdx)}${hint('departureDay')}</div>`:''}`;
 }
@@ -20846,6 +20886,89 @@ function updatePriceEntryLabel(peIdx, field, val, type){
   scheduleOwner(p,peIdx).labels[field]=val;
   saveAdvChange();
 }
+// [수정] 박수(복수 선택) + 선택한 박수마다 출발 공항 선택 — 공통(peIdx=-1)·요금 항목 모두 같은 UI
+function stayNightsFieldHTML(peIdx, L){
+  const sel = normStay(L.stayNights);
+  const nightChips = chipMultiHTML(STAY_ORDER.map(n=>[n,n]), sel.map(x=>x.n), n=>`toggleStayNight(${peIdx},'${n}')`);
+  const aptRows = sel.map(x=>`<div class="stay-apt-row"><span class="stay-apt-n">🌙 ${escapeAttr(x.n)}</span><span class="stay-apt-l">출발 공항</span>${chipMultiHTML(AIRPORT_OPTS, x.apt, a=>`toggleStayAirport(${peIdx},'${x.n}','${a}')`)}</div>`).join('');
+  return `${nightChips}${aptRows?`<div class="stay-apt-list">${aptRows}</div>`:''}`;
+}
+function toggleStayNight(peIdx, n){
+  const p=getAdvProduct(); if (!p) return;
+  const L = scheduleOwner(p,peIdx).labels;
+  const arr = normStay(L.stayNights), i = arr.findIndex(x=>x.n===n);
+  if (i>=0) arr.splice(i,1); else arr.push({n, apt:[]});
+  L.stayNights = normStay(arr);
+  saveAdvChange(); renderAdvBody();
+}
+function toggleStayAirport(peIdx, n, apt){
+  const p=getAdvProduct(); if (!p) return;
+  const L = scheduleOwner(p,peIdx).labels;
+  const arr = normStay(L.stayNights), it = arr.find(x=>x.n===n); if (!it) return;
+  const i = it.apt.indexOf(apt);
+  if (i>=0) it.apt.splice(i,1); else it.apt.push(apt);
+  const order = AIRPORT_OPTS.map(o=>o[0]);
+  it.apt.sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+  L.stayNights = arr;
+  saveAdvChange(); renderAdvBody();
+}
+// [수정] 관리자 패널의 좌·우로 나뉜 입력칸 정렬 — 라벨이 두 줄로 줄바꿈되는 등 높이가 다른 칸이 있어도 같은 줄(행)의
+// 입력창(입력·선택·서식 입력란)이 같은 높이선에 놓이도록, 위쪽에 있는 칸의 입력창 위 여백만 늘린다(내용·값은 건드리지 않음).
+// 레이아웃이 바뀔 때(그리기·펼침/접힘·창 크기·글꼴 로드)마다 처음부터 다시 계산한다
+const TGT_ALIGN_GRIDS = '.grid-2,.apc-fields,.ctag-grid2,.card-tag-grid,.ai-info-grid,.form-grid,.tee-grid';
+const TGT_ALIGN_CTL = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea,.rtf-editable,.ai-info-multi';
+let _tgtAligning = false;
+function tgtAlignAdminRows(){
+  if (_tgtAligning) return; _tgtAligning = true;
+  try{
+    const roots = document.querySelectorAll('#adminPanel, .adv-editor-overlay');
+    roots.forEach(r=>{
+      r.querySelectorAll('[data-ral]').forEach(e=>{ e.style.marginTop = e.dataset.ral; delete e.dataset.ral; });
+    });
+    roots.forEach(r=>{
+      if (!r.offsetParent && getComputedStyle(r).position!=='fixed') return;
+      const grids = [...r.querySelectorAll(TGT_ALIGN_GRIDS)].reverse(); // 안쪽 그리드부터
+      grids.forEach(g=>{
+        const cs = getComputedStyle(g);
+        if (cs.display!=='grid' || cs.gridTemplateColumns.split(' ').length<2) return;
+        const rows = {};
+        [...g.children].forEach(cell=>{
+          if (getComputedStyle(cell).display==='none') return;
+          const cr = cell.getBoundingClientRect(); if (!cr.height) return;
+          const ctl = cell.querySelector(TGT_ALIGN_CTL); if (!ctl) return;
+          // 안쪽에 또 다른 칸 나눔이 있으면 그 안쪽 규칙에 맡긴다
+          for (let n=ctl.parentElement; n && n!==cell; n=n.parentElement){ if (getComputedStyle(n).display==='grid') return; }
+          let shift = ctl; while (shift.parentElement && shift.parentElement!==cell) shift = shift.parentElement;
+          const cr2 = ctl.getBoundingClientRect(); if (!cr2.height) return;
+          (rows[Math.round(cr.top)] = rows[Math.round(cr.top)] || []).push({shift, top:cr2.top});
+        });
+        Object.values(rows).forEach(cells=>{
+          if (cells.length<2) return;
+          const mx = Math.max(...cells.map(c=>c.top));
+          cells.forEach(c=>{
+            const d = mx - c.top; if (d<1) return;
+            c.shift.dataset.ral = c.shift.style.marginTop;
+            c.shift.style.marginTop = ((parseFloat(getComputedStyle(c.shift).marginTop)||0) + d) + 'px';
+          });
+        });
+      });
+    });
+  } finally { _tgtAligning = false; }
+}
+(function initAdminRowAlign(){
+  let t = 0;
+  const run = () => { cancelAnimationFrame(t); tgtAlignAdminRows(); t = requestAnimationFrame(tgtAlignAdminRows); };
+  const inAdmin = n => n.nodeType===1 && (n.closest ? n.closest('#adminPanel, .adv-editor-overlay') : null);
+  new MutationObserver(ms=>{
+    if (_tgtAligning) return;
+    if (ms.some(m=>[...m.addedNodes].some(inAdmin))) tgtAlignAdminRows();
+  }).observe(document.body, {childList:true, subtree:true});
+  const rootObs = new MutationObserver(run);
+  document.querySelectorAll('#adminPanel, .adv-editor-overlay').forEach(r=>rootObs.observe(r, {attributes:true, attributeFilter:['class','aria-hidden']}));
+  document.addEventListener('toggle', e=>{ if (inAdmin(e.target)) run(); }, true);
+  window.addEventListener('resize', run);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
+})();
 // [Phase 3 상품등록 개선] 복수 선택 칩 토글 (요금 항목 레이블: 항공 패턴 · 출발 공항 · 출발 요일)
 function toggleLabelMulti(peIdx, field, value){
   const p=getAdvProduct(); if (!p) return;

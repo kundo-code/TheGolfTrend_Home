@@ -11350,7 +11350,7 @@ try{linkHiddenOverrides=JSON.parse(localStorage.getItem(LINK_HIDDEN_KEY)||'{}')}
 const AI_PLACES_KEY='kundo_ai_places_v1';
 let aiPlaces={lodges:[], courses:[]};
 // 숙소 등록부 — 예전 '30분 초과'(far) → '차량 1시간 초과'(far60) (거리 항목 키는 AI_LODGE_FIELDS의 near*)
-const AI_PROX_KEYS = ['nearFood','nearCity','nearSpot','nearMall','nearMarket','nearSpa','nearKorean'];
+const AI_PROX_KEYS = ['nearFood','nearCity','nearSpot','nearMall','nearMarket','nearSpa','nearKorean','nearHospital'];
 function aiProxNorm(x){ if (x) AI_PROX_KEYS.forEach(k=>{ if (x[k]==='far') x[k] = 'far60'; }); return x; }
 function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id).map(aiProxNorm) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
@@ -19311,6 +19311,7 @@ const AI_LODGE_FIELDS = [
   {k:'nearMarket', label:'전통시장', type:'prox', help:AI_PROX_HELP},
   {k:'nearSpa', label:'온천·스파', type:'prox', help:AI_PROX_HELP+' 숙소에 온천·스파가 있으면 \'숙소 안\'.'},
   {k:'nearKorean', label:'한식당', type:'prox', only:'overseas', help:AI_PROX_HELP+' \'한식 접근\' 조건에 쓰입니다.'},
+  {k:'nearHospital', label:'병원·약국', type:'prox', help:AI_PROX_HELP+' 병원과 약국 중 가까운 곳 기준(진료·처방 가능한 곳).'},
   {k:'memo', label:'메모', type:'area', rows:3, max:600, wide:true, help:'기타 참고 사항(고객에게는 보이지 않음).'}
 ];
 // 골프장 등록부 항목

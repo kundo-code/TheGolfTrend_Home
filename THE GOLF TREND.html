@@ -690,11 +690,18 @@ section.block{padding:100px 24px;position:relative}
 .product-visual-title .pt-months{float:right;margin-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
 .product-visual-title h4{flex:1;min-width:0}
 /* [추가] 제목 위 한 줄(지역명 · 제목보조 — 같은 크기, 제목보다 작게) + "펼쳐보기" 위 요약 설명(좌측 정렬, 파란색) — 카드 폭을 넘으면 JS(fitCardLines)가 글자 크기만 줄여 한 줄을 유지 */
-.product-kicker,.product-metadesc{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
+.product-kicker,.pmd-line,.spot-kicker,.popup-kicker,.pd-kicker{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
+.product-metadesc{display:block;width:100%;min-width:0}
+.spot-kicker{color:rgba(255,255,255,.88);font-size:.95rem;margin:0 0 2px}
+.popup-kicker{color:rgba(255,255,255,.88);font-size:.92rem;margin:0 0 3px}
+.pd-kicker{color:var(--pine-deep);font-size:1rem;margin:0 0 4px}
+.spot-kicker .pk-dot,.popup-kicker .pk-dot,.pd-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
 .product-kicker{color:var(--pine-deep);margin:2px 0 4px}
 .product-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
 .product-metadesc{color:#3176bd;margin:2px 0 10px}
+.product-metadesc .pmd-line{color:#3176bd}
 .product-metadesc .pmd-dot{margin-right:.4em}
+.product-metadesc .pmd-line a{color:inherit}
 /* 상세 페이지 상단: "영남권 · YEONGNAM" 줄의 오른쪽 끝에 배치 (글자 크기는 상품 카드의 표기와 동일) */
 .pd-top-title .cat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
 .pd-top-title .cat-row .cat{margin-bottom:0;min-width:0}
@@ -5791,6 +5798,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
           <div class="spot-stack">
             <div class="spot-content" id="spotLayer0a">
               <div class="spot-visual" id="spotVisual0a"></div>
+              <div class="spot-kicker" id="spotKicker0a"></div>
               <h3 id="spotTitle0a">카와나 후지 코스</h3>
               <div class="spot-meta" id="spotMeta0a"></div>
               <div class="spot-move" id="spotMove0a"></div>
@@ -5803,6 +5811,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
             </div>
             <div class="spot-content spot-back" id="spotLayer0b">
               <div class="spot-visual" id="spotVisual0b"></div>
+              <div class="spot-kicker" id="spotKicker0b"></div>
               <h3 id="spotTitle0b"></h3>
               <div class="spot-meta" id="spotMeta0b"></div>
               <div class="spot-move" id="spotMove0b"></div>
@@ -5820,6 +5829,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
           <div class="spot-stack">
             <div class="spot-content" id="spotLayer1a">
               <div class="spot-visual" id="spotVisual1a"></div>
+              <div class="spot-kicker" id="spotKicker1a"></div>
               <h3 id="spotTitle1a">바나힐스 GC</h3>
               <div class="spot-meta" id="spotMeta1a"></div>
               <div class="spot-move" id="spotMove1a"></div>
@@ -5832,6 +5842,7 @@ button.spot-region-tag:active{filter:brightness(.95);transform:translateY(1px)}
             </div>
             <div class="spot-content spot-back" id="spotLayer1b">
               <div class="spot-visual" id="spotVisual1b"></div>
+              <div class="spot-kicker" id="spotKicker1b"></div>
               <h3 id="spotTitle1b"></h3>
               <div class="spot-meta" id="spotMeta1b"></div>
               <div class="spot-move" id="spotMove1b"></div>
@@ -6803,6 +6814,17 @@ function tgtPersistProductUids(){
   Object.keys(productOverrides||{}).forEach(c=>{ try{ getProducts(c); }catch(e){} });
   if (_tgtUidDirty){ _tgtUidDirty = false; saveProducts(); }
 }
+const _HTML_TAGS = new Set(['b','i','u','s','em','strong','span','font','br','div','p','a','sub','sup','small','big','mark','strike','ul','ol','li','table','tr','td','th','img']);
+function splitLegacyTitle(t){
+  const src = String(t==null?'':t);
+  const m = /^\s*\[([^\[\]]+)\]\s*([\s\S]*)$/.exec(src); if (!m) return null;
+  const region = m[1].replace(/\s+/g,' ').trim(); let rest = m[2], sub = '';
+  const sm = /^<([^<>]+)>\s*([\s\S]*)$/.exec(rest);
+  if (sm){ const tag = (/^\/?\s*([a-z][a-z0-9]*)/i.exec(sm[1])||[])[1]; if (!tag || !_HTML_TAGS.has(tag.toLowerCase())){ sub = sm[1].replace(/\s+/g,' ').trim(); rest = sm[2]; } }
+  const title = rest.replace(/\s+/g,' ').trim();
+  if (!region || !title) return null;
+  return {region, sub, title};
+}
 function ensureExtended(p){
   // [수정] 선호 스타일 "실력 향상·레슨"을 "실력 향상"으로 이름 변경 — 예전 이름 그대로 저장된 카드 태그(문구가 정확히 일치하는 것만)도 새 이름으로 맞춘다
   for (let n=1;n<=10;n++){ if (p['cardTag'+n]==='실력 향상·레슨') p['cardTag'+n]='실력 향상'; }
@@ -6981,6 +7003,15 @@ function ensureExtended(p){
   if (p.titleRegion===undefined) p.titleRegion = '';
   if (p.titleSub===undefined) p.titleSub = '';
   if (p.metaDesc===undefined) p.metaDesc = '';
+  // [추가] 예전 제목 "[지역명] <제목보조> 제목"을 지역명·제목보조·제목 3칸으로 한 번만 나눠 채운다(titleSplit 표시) — 이미 지역명·제목보조·요약 설명 중 하나라도 입력한 상품은 건드리지 않는다.
+  // 나눌 수 없는 제목(앞의 [ ]가 없거나 나머지 제목이 비는 경우)은 그대로 둔다. 요약 설명은 직접 입력한 값만 쓴다
+  if (p.titleSplit===undefined){
+    p.titleSplit = true;
+    if (!String(p.titleRegion).trim() && !String(p.titleSub).trim() && !String(p.metaDesc).trim()){
+      const sp = splitLegacyTitle(p.title);
+      if (sp){ p.titleRegion = sp.region; p.titleSub = sp.sub; p.title = sp.title; _tgtUidDirty = true; }   // 관리자가 로그인한 상태에서 열면 나뉜 값이 공유 저장소(Supabase)에도 저장된다
+    }
+  }
   // [수정] 비행시간 · 이동 소요시간 — 국내는 "숙소→골프장", 해외는 "공항→호텔"로 레이블만 다르게 표시
   if (p.flightTime===undefined) p.flightTime = '';
   if (p.transferTime===undefined) p.transferTime = '';
@@ -13432,9 +13463,10 @@ function productCardHTML(p, catId, idx){
   // [Phase] "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 쌓아서 노출
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   // [추가] 제목 위 한 줄(지역명 + 제목보조) · "펼쳐보기" 위 요약 설명 — 입력한 값만 표시(비어 있으면 줄 자체를 만들지 않음). 줄이 넘어가면 글자 크기만 줄여 한 줄로 맞춘다(fitCardLines)
-  const _kReg = String(p.titleRegion||'').trim(), _kSub = String(p.titleSub||'').trim(), _kMeta = String(p.metaDesc||'').trim();
-  const kickerHTML = (_kReg||_kSub) ? `<div class="product-kicker"><span class="pk-fit">${_kReg?`<span class="pk-region">${escapeAttr(_kReg)}</span>`:''}${_kReg&&_kSub?'<span class="pk-dot">·</span>':''}${_kSub?`<span class="pk-sub">${escapeAttr(_kSub)}</span>`:''}</span></div>` : '';
-  const metaDescHTML = _kMeta ? `<div class="product-metadesc"><span class="pmd-fit"><span class="pmd-dot">·</span>${escapeAttr(_kMeta)}</span></div>` : '';
+  const kickerHTML = productKickerHTML(p, 'product-kicker');
+  // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
+  const _metaLines = aiLinesHTML(p.metaDesc);
+  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">·</span>${l}</span></div>`).join('')}</div>` : '';
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
   const prosHTML = cardProsListHTML(p);
@@ -13474,6 +13506,13 @@ function productCardHTML(p, catId, idx){
     </div>
   </article>`;
 }
+// 지역명 · 제목보조 한 줄(상품 카드·EDITOR'S PICK·팝업·자세히 보기 공통) — 입력한 값만, 비어 있으면 ''. cls: 곳마다 다른 글자색·크기용 클래스
+function productKickerInner(p){
+  const r = String(p && p.titleRegion || '').trim(), sb = String(p && p.titleSub || '').trim();
+  if (!r && !sb) return '';
+  return `<span class="pk-fit">${r?`<span class="pk-region">${escapeAttr(r)}</span>`:''}${r&&sb?'<span class="pk-dot">·</span>':''}${sb?`<span class="pk-sub">${escapeAttr(sb)}</span>`:''}</span>`;
+}
+function productKickerHTML(p, cls){ const i = productKickerInner(p); return i ? `<div class="${cls}">${i}</div>` : ''; }
 // [추가][성능] 상품 카드 사진(.pv-bg.lazy-bg) 지연 로딩 — data-bg-src를 가진 요소가 화면(또는
 // 캐러셀의 실제 보이는 영역) 근처로 들어올 때만 background-image를 지정한다. 카드가 많은
 // 카테고리를 펼쳐도 화면에 보이지도 않는 카드의 사진까지 한꺼번에 디코딩하지 않아 초기 렌더링
@@ -14135,6 +14174,7 @@ function renderSpotlightSlot(slot, layer, entry){
   visualEl.innerHTML = `<div class="sv-clip"><div class="sv-bg" style="${visualStyle}"></div>${hasVideo?`<video src="${escapeAttr(p.titleMedia.url)}" muted playsinline loop autoplay aria-hidden="true"></video>`:''}</div>${prepOverlayHTML(p)}${spotLabelOverlay.html}`;
   // [수정] EDITOR'S PICK 카드 제목에는 국가/지역명을 넣지 않음 — 지역 구분은 옆의 spot-region-tag로 충분
   document.getElementById('spotTitle'+sfx).textContent=p.title;
+  { const k = document.getElementById('spotKicker'+sfx); if (k){ k.innerHTML = productKickerInner(p); k.style.display = k.innerHTML ? '' : 'none'; } }
   // [Phase 3] 항공 포함여부는 요금표 항목(첫 번째, 숨김 제외)의 레이블에서 가져온다 — spotBasicMeta(팝업 카드와 공통)
   const meta=spotBasicMeta(p);
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
@@ -15893,6 +15933,7 @@ function renderProductDetail(p,cat,idx){
   // [수정] 제목은 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단에 별도 박스로 분리
   let html = `<div class="pd-slot pd-top-title">
     <div class="cat-row"><div class="cat">${cat.ko} · ${cat.en}</div>${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</div>
+    ${productKickerHTML(p, 'pd-kicker')}
     <h2>${p.title}</h2>
   </div>`;
   html += `<div class="pd-slot pd-title-slot">
@@ -16596,7 +16637,7 @@ function pdShareText(p, link){
   const kicker = [p.titleRegion, p.titleSub].map(v=>String(v||'').trim()).filter(Boolean).join(' · ');
   if (kicker) out.push(kicker);
   const title = richToText(p.title||''); if (title) out.push(title);
-  const meta = String(p.metaDesc||'').trim(); if (meta) out.push(meta);
+  const meta = richToText(p.metaDesc||''); if (meta) out.push(meta);
   const pe0 = (p.priceEntries && p.priceEntries[0]) || {};
   [['✅ 포함사항', p.commonIncluded || pe0.included], ['❌ 불포함사항', p.commonNotIncluded || pe0.notIncluded], ['📌 참고사항', p.commonPrecautions || p.checkpoint2 || pe0.precautions]].forEach(([label, v])=>{
     const t = richToText(v||''); if (t) out.push('\n'+label+'\n'+t);
@@ -18988,7 +19029,7 @@ function advBasicHTML(p){
         </div>
         <label>제목(Title)</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
         <!-- [추가] 제목 아래 한 줄: 요약 설명(Meta Description) — 상품 카드의 "펼쳐보기" 위, 공유 문구, 정적 페이지 설명에 쓴다 -->
-        <label>요약 설명(Meta Description) ${hint('(카드 "펼쳐보기" 위 좌측 정렬 · 공유 문구·검색 설명에도 사용)')}</label><input type="text" value="${escapeAttr(p.metaDesc||'')}" placeholder="예: 쿠알라룸푸르 카장 한달살기" oninput="updateAdvField('metaDesc',this.value)">
+        <label>요약 설명(Meta Description) ${hint('(카드 "펼쳐보기" 위 좌측 정렬 · 공유 문구·검색 설명에도 사용)')}</label>${richTextFieldHTML(p.metaDesc||'', "updateAdvField('metaDesc',aiRichNorm(__HTML__))", {cls:'meta-desc-field', minHeight:'80px', placeholder:'예: 쿠알라룸푸르 카장 한달살기\n(줄마다 카드에 한 줄씩 표시)'})}
 
         <!-- [수정] 기본 정보를 제목과 카드 태그 사이로 이동. 상품 카드에 "박스"로 표시되는 항목은 한데 모으고
              입력칸을 실제 카드 박스와 같은 색으로 칠해 어떤 값이 어디에 어떻게 보이는지 바로 알 수 있게 했다 -->
@@ -21687,8 +21728,9 @@ try{ applyTheme(); }catch(e){}
 safeRender(initLazyBg);
 // [추가] 상품 카드의 한 줄 텍스트(제목 위 지역명·제목보조, "펼쳐보기" 위 요약 설명)가 카드 폭을 넘으면 글자 크기를 줄여(최소 10px) 줄이 넘어가지 않게 한다.
 // 카드는 여러 곳(국가/권역 목록·캐러셀 복제·필터 전환)에서 다시 그려지므로 MutationObserver로 새로 생긴 줄을 자동으로 맞추고, 창 크기·글꼴 로딩 때도 다시 맞춘다
+const CARD_FIT_SEL = '.product-kicker, .pmd-line, .spot-kicker, .popup-kicker, .pd-kicker';
 function fitCardLines(root){
-  (root||document).querySelectorAll('.product-kicker, .product-metadesc').forEach(box=>{
+  (root||document).querySelectorAll(CARD_FIT_SEL).forEach(box=>{
     const inner = box.firstElementChild; if (!inner) return;
     box.style.fontSize = '';
     const room = box.clientWidth; if (!(room>0)) return;
@@ -21708,7 +21750,7 @@ function initCardLineFit(){
     new MutationObserver(ms=>{
       for (const m of ms) for (const n of m.addedNodes){
         if (n.nodeType!==1) continue;
-        if ((n.matches && n.matches('.product, .product-kicker, .product-metadesc')) || (n.querySelector && n.querySelector('.product-kicker, .product-metadesc'))){ run(); setTimeout(run, 700); return; }
+        if ((n.matches && n.matches('.product,'+CARD_FIT_SEL)) || (n.querySelector && n.querySelector(CARD_FIT_SEL)) || (n.closest && n.closest(CARD_FIT_SEL))){ run(); setTimeout(run, 700); return; }
       }
     }).observe(document.body, {childList:true, subtree:true});
   }
@@ -21995,7 +22037,7 @@ function aiProdFacts(p, catId, onlyPe){
     // 관리자 "AI 추천 정보"(p.aiInfo) · 상품 문구(태그·제목·숙박·대표 문구·강조) · 포함사항 · 티오프 시간
     ai: mi,
     lodges: aiLinkedPlaces(p, 'lodge', mi), courses: aiLinkedPlaces(p, 'course', mi),   // 등록부에서 연결한 숙소·골프장(+예전 직접 입력값)
-    hay: cardTagsOf(p).concat([p.title||'', p.stay||'']).concat(flat(eff('stay'))).concat(entries.map(pe=>richToPlain(pe.headline||''))).concat(emph).join(' '),
+    hay: cardTagsOf(p).concat([p.title||'', p.titleRegion||'', p.titleSub||'', aiPlainText(p.metaDesc||''), p.stay||'']).concat(flat(eff('stay'))).concat(entries.map(pe=>richToPlain(pe.headline||''))).concat(emph).join(' '),
     inc: [p.commonIncluded].concat(entries.map(pe=>pe.included)).map(v=>richToPlain(v||'')).join(' '),
     nights: nm ? Number(nm[1]) : null,
     tee: (JSON.stringify([p.labels && p.labels.teeOffTimes].concat(entries.map(pe=>pe.labels && pe.labels.teeOffTimes)))||'').match(/\b\d{1,2}:\d{2}\b/g) || []};
@@ -22908,6 +22950,7 @@ function showEntryPopups(){
       </div>
       <div class="popup-body">
         <div class="popup-cat">${cat.ko} · ${cat.en}</div>
+        ${productKickerHTML(p, 'popup-kicker')}
         <h3 class="popup-title">${escapeAttr(p.title)}</h3>
         ${richToPlain(pe.headline||'')?`<p class="popup-headline">${escapeAttr(richToPlain(pe.headline))}</p>`:''}
         ${sale?`<div class="popup-price"><b>${fmtPrice(sale)}</b><span>${saleSym}${saleFrom}</span></div>`:''}
@@ -23062,6 +23105,7 @@ function epSlideCardHTML(item, active, di){
     </div>
     <div class="popup-body">
       <div class="popup-cat">${cat.ko} · ${cat.en}</div>
+      ${productKickerHTML(p, 'popup-kicker')}
       <h3 class="popup-title">${escapeAttr(p.title)}</h3>
       ${headline?`<p class="popup-headline">${escapeAttr(headline)}</p>`:''}
       ${basicMeta.length?`<div class="popup-meta">${basicMeta.map(m=>`<span>${m}</span>`).join('')}</div>`:''}

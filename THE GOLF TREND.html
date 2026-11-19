@@ -695,7 +695,12 @@ section.block{padding:100px 24px;position:relative}
 .product-kicker,.pmd-line,.spot-kicker,.popup-kicker,.pd-kicker{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
 .product-metadesc{display:block;width:100%;min-width:0}
 /* [수정] 요약 설명은 기본 굵기(보통)로 — 굵게는 관리자 입력란에서 서식(B)을 준 글자만 굵게 보인다(.pmd-line은 다른 한 줄 문구와 공통 규칙이 굵게로 잡혀 있었음) */
-.product-metadesc .pmd-line{font-weight:400}
+.product-metadesc .pmd-line{font-weight:400;font-size:.85rem;line-height:1.5;box-sizing:border-box;white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all;overflow-wrap:anywhere}
+/* [수정] 요약 설명은 줄이 길어도 한 줄로 줄이거나 …로 자르지 않고 카드 폭에서 줄바꿈해 끝까지 보여준다. 관리자 입력란의 하위서식(1·2단계)은 1.5글자·3글자 들여쓰기 */
+.product-metadesc .pmd-line.pmd-sub1{padding-left:1.5em}
+.product-metadesc .pmd-line.pmd-sub2{padding-left:3em}
+.card-pros li.cp-sub1{padding-left:1.5em}
+.card-pros li.cp-sub2{padding-left:3em}
 .spot-kicker{color:rgba(255,255,255,.88);font-size:.95rem;margin:0 0 2px}
 .popup-kicker{color:rgba(255,255,255,.88);font-size:.92rem;margin:0 0 3px}
 .pd-kicker{color:var(--pine-deep);font-size:1rem;margin:0 0 4px}
@@ -13608,8 +13613,8 @@ function cardProsListHTML(p){
 // [수정] 상품 카드(펼쳐보기)·EDITOR'S PICK·팝업 카드의 ✓ 목록은 "제목·기본정보 › 요약 설명" 입력값을 쓴다.
 // (AI 추천정보 › 장점은 자세히 보기 페이지의 "일정 요약 타임라인" 위에서 노출 — cardProsListHTML)
 function cardSummaryListHTML(p){
-  const ls = aiLinesHTML(p && p.metaDesc);
-  return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
+  const ls = aiLinesLv(p && p.metaDesc);
+  return ls.length ? `<ul class="card-pros">${ls.map(o=>`<li${o.lv?` class="cp-sub${o.lv}"`:''}>${o.h}</li>`).join('')}</ul>` : '';
 }
 // 기본 정보(박수·라운드·숙박·식사·항공) 한 줄 — 히어로 카드와 팝업 카드가 같은 값을 쓴다
 function spotBasicMeta(p){
@@ -13828,8 +13833,8 @@ function productCardHTML(p, catId, idx){
   // [추가] 제목 위 한 줄(지역명 + 제목보조) · "펼쳐보기" 위 요약 설명 — 입력한 값만 표시(비어 있으면 줄 자체를 만들지 않음). 줄이 넘어가면 글자 크기만 줄여 한 줄로 맞춘다(fitCardLines)
   const kickerHTML = productKickerHTML(p, 'product-kicker');
   // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
-  const _metaLines = aiLinesHTML(p.metaDesc);
-  const _metaInner = _metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit">${l}</span></div>`).join('');
+  const _metaLines = aiLinesLv(p.metaDesc);
+  const _metaInner = _metaLines.map(o=>`<div class="pmd-line${o.lv?` pmd-sub${o.lv}`:''}"><span class="pmd-fit">${o.h}</span></div>`).join('');
   // 접힌 상태: 카드 아래쪽(펼쳐보기 버튼 위)에 노출. 펼친 상태: 아래쪽은 숨기고(.pmd-main) 항공·이동 정보 위의 같은 서식 목록(.pmd-fold)으로 옮겨 한 번만 보이게 한다
   const metaDescHTML = _metaLines.length ? `<div class="product-metadesc pmd-main">${_metaInner}</div>` : '';
   const metaDescFoldHTML = _metaLines.length ? `<div class="product-metadesc pmd-fold card-fold">${_metaInner}</div>` : '';
@@ -19907,6 +19912,18 @@ function aiLinesHTML(v){
   return sanitizeRichHTML(t).replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|li)>/gi,'\n').replace(/<(div|p|li)(\s[^>]*)?>/gi,'')
     .split(/\n/).map(x=>x.trim()).filter(x=>x && richToPlain(x));
 }
+// [추가] 줄 단위 + 하위서식 단계(0·1·2) — 관리자 입력란의 하위서식(<div class="rtf-sub">·rtf-sub2) 줄을 상품 카드에서도 같은 들여쓰기로 보이게 한다
+function aiLinesLv(v){
+  const t = String(v==null?'':v);
+  if (t.indexOf('<')<0) return t.split(/\n/).map(x=>x.trim()).filter(Boolean).map(x=>({h:escapeAttr(x), lv:0}));
+  return sanitizeRichHTML(t)
+    .replace(/<div[^>]*class="[^"]*\brtf-sub2\b[^"]*"[^>]*>/gi,'\n\u0002')
+    .replace(/<div[^>]*class="[^"]*\brtf-sub\b[^"]*"[^>]*>/gi,'\n\u0001')
+    .replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|li)>/gi,'\n').replace(/<(div|p|li)(\s[^>]*)?>/gi,'')
+    .split(/\n/).map(x=>x.trim())
+    .map(x=>({h:x.replace(/^[\u0001\u0002]/,''), lv:x.charAt(0)==='\u0002'?2:(x.charAt(0)==='\u0001'?1:0)}))
+    .filter(o=>o.h && richToPlain(o.h));
+}
 function aiInfoFilled(v){
   if (Array.isArray(v)) return v.length>0;
   if (v===undefined || v===null) return false;
@@ -22418,7 +22435,7 @@ try{ applyTheme(); }catch(e){}
 safeRender(initLazyBg);
 // [추가] 상품 카드의 한 줄 텍스트(제목 위 지역명·제목보조, "펼쳐보기" 위 요약 설명)가 카드 폭을 넘으면 글자 크기를 줄여(최소 10px) 줄이 넘어가지 않게 한다.
 // 카드는 여러 곳(국가/권역 목록·캐러셀 복제·필터 전환)에서 다시 그려지므로 MutationObserver로 새로 생긴 줄을 자동으로 맞추고, 창 크기·글꼴 로딩 때도 다시 맞춘다
-const CARD_FIT_SEL = '.product-kicker, .pmd-line, .spot-kicker, .popup-kicker, .pd-kicker';
+const CARD_FIT_SEL = '.product-kicker, .spot-kicker, .popup-kicker, .pd-kicker';   // 요약 설명(.pmd-line)은 글자를 줄이지 않고 줄바꿈한다
 function fitCardLines(root){
   (root||document).querySelectorAll(CARD_FIT_SEL).forEach(box=>{
     const inner = box.firstElementChild; if (!inner) return;

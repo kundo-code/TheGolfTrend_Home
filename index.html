@@ -23636,8 +23636,11 @@ function showEditorsPickPopup(){
   // [수정] 상품 이미지·레이블 이미지를 미리 받아 둬 슬라이드를 넘길 때 레이블이 늦게 뜨지 않게 한다
   epPopupItems.forEach(it=>{
     const tm = it.product.titleMedia;
-    if (tm && tm.type==='image' && tm.url){ try{ const im=new Image(); im.src=tm.url; }catch(e){} }
-    (it.product.cardLabels||[]).filter(l=>l.active&&l.url).forEach(l=>{ try{ const im=new Image(); im.src=l.url; }catch(e){} });
+    // [수정] 내려받기만이 아니라 디코딩(decode)까지 미리 해 둔다 — 아직 화면에 나온 적 없는 슬라이드는 visibility:hidden이라 그려지지 않아,
+    // 처음 넘어오는 순간 큰 이미지 디코딩·래스터 때문에 넘김 애니메이션이 끊기며 "툭 튀는" 현상이 생겼다
+    const _warm = (u)=>{ try{ const im=new Image(); im.src=u; if (im.decode) im.decode().catch(()=>{}); }catch(e){} };
+    if (tm && tm.type==='image' && tm.url) _warm(tm.url); else { try{ const g=getImage(it.cat.id); if (typeof g==='string' && g) _warm(g); }catch(e){} }
+    (it.product.cardLabels||[]).filter(l=>l.active&&l.url).forEach(l=>_warm(l.url));
   });
   renderEpPopup();
   const stage = document.getElementById('epPopupStage');
@@ -23716,13 +23719,14 @@ function renderEpPopup(){
 }
 // [수정] 끝없이 이어지는(루프) 캐러셀 — 트랙 앞뒤에 마지막/첫 상품 복제본을 하나씩 두어, 마지막에서 다음으로 넘기면 첫 상품이 같은 방향(오른쪽에서
 // 왼쪽)으로 이어서 들어오고, 첫 상품에서 이전으로 넘기면 마지막 상품이 왼쪽에서 들어온다. 애니메이션이 끝나면 눈에 띄지 않게 진짜 슬라이드 위치로 되돌린다
-let epPopupWrapTimer = null;
+let epPopupWrapTimer = null, epPopupMoveTok = 0;
 // 슬라이드 사이에 간격(--ep-gap)을 두므로 한 칸 이동량은 "카드 폭 + 간격" — 카드 모서리 밖으로 나온 레이블·리본이 다음 상품 이미지 위에 겹쳐 보이지 않게 한다
 function epTx(pos, dx){ return `translateX(calc(${-pos} * (100% + var(--ep-gap, 40px))${dx ? ' + '+dx+'px' : ''}))`; }
 function epTrackPos(idx){ return idx + (epPopupItems.length>1 ? 1 : 0); }
 function epPopupFinishWrap(){
   if (!epPopupWrapTimer) return;
   clearTimeout(epPopupWrapTimer); epPopupWrapTimer = null;
+  epPopupMoveTok++;
   const track = document.getElementById('epPopupTrack'); if (!track) return;
   track.style.transition = 'none';
   track.style.transform = epTx(epTrackPos(epPopupIdx));
@@ -23736,9 +23740,16 @@ function epPopupUpdatePosition(pos){
     const vp = track.parentElement;
     vp.classList.add('ep-moving');
     clearTimeout(epPopupMoveTimer);
-    epPopupMoveTimer = setTimeout(()=>vp.classList.remove('ep-moving'), 480);
-    track.style.transform = epTx(typeof pos==='number' ? pos : epTrackPos(epPopupIdx));
     track.querySelectorAll('.ep-popup-slide').forEach(el=>el.classList.toggle('active', Number(el.dataset.i)===epPopupIdx));
+    // [수정] 새 슬라이드(처음 보이는 슬라이드는 아직 그려진 적이 없음)를 먼저 보이게 해 그려 둔 뒤, 두 프레임 뒤에 넘김 애니메이션을 시작한다.
+    // 곧바로 시작하면 첫 그리기·이미지 디코딩이 애니메이션 도중에 끼어들어 프레임이 건너뛰며 슬라이드가 한 번에 "툭" 튀었다
+    const target = typeof pos==='number' ? pos : epTrackPos(epPopupIdx), tok = ++epPopupMoveTok;
+    void vp.offsetWidth;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if (tok!==epPopupMoveTok || !track.isConnected) return;   // 그 사이 다른 이동·닫기가 있었으면 건너뜀
+      track.style.transform = epTx(target);
+      epPopupMoveTimer = setTimeout(()=>vp.classList.remove('ep-moving'), 480);
+    }));
   }
   document.querySelectorAll('#epPopupStage .ep-popup-dot').forEach((d,i)=>d.classList.toggle('active', i===epPopupIdx));
   const counter = document.querySelector('#epPopupStage .ep-popup-counter');
@@ -23760,7 +23771,7 @@ function epPopupMove(dir){
   epPopupIdx = (next + n) % n;
   epPopupUpdatePosition(dir>0 ? n+1 : 0);
   epPopupStartAuto();
-  epPopupWrapTimer = setTimeout(epPopupFinishWrap, 470);
+  epPopupWrapTimer = setTimeout(epPopupFinishWrap, 540);   // 두 프레임 지연 + 애니메이션(.45s)이 끝난 뒤
 }
 function epPopupStartAuto(){
   clearInterval(epPopupTimer);
@@ -23800,7 +23811,7 @@ function epPopupGoToProduct(catId, idx){
       if (Math.abs(x) > Math.abs(y)){
         mode = 'h';
         clearInterval(epPopupTimer); epPopupTimer = null;      // 드래그 중에는 자동 넘김 멈춤
-        clearTimeout(epPopupMoveTimer);
+        clearTimeout(epPopupMoveTimer); epPopupMoveTok++;       // 대기 중이던 넘김 시작이 드래그를 덮어쓰지 않게
         vp.classList.add('ep-moving');                          // 옆 슬라이드를 보이게 하고 카드 경계에서 자름
         track.style.transition = 'none';
       } else { mode = 'v'; }

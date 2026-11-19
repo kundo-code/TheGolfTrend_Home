@@ -507,7 +507,7 @@ section.block{padding:100px 24px;position:relative}
 @media(max-width:780px){
   /* [Phase] touch-action을 지정하지 않으면(기본값 auto) 터치는 브라우저 네이티브 가로 스크롤(관성
      포함)로 처리되고, PC 마우스 드래그만 initCarouselDrag()가 보조한다 */
-  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;cursor:grab;padding-bottom:6px;scrollbar-width:none;-ms-overflow-style:none}
+  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;cursor:grab;padding-bottom:6px;padding-top:8px;margin-top:-8px;scrollbar-width:none;-ms-overflow-style:none}
   .product-grid.dragging{cursor:grabbing;scroll-behavior:auto}
   .product-grid::-webkit-scrollbar{display:none}
   /* [수정] 상품 카드 영역만 상위 패널(.category-view 8px + 섹션 14px)의 좌우 프레임 없이 화면
@@ -539,6 +539,8 @@ section.block{padding:100px 24px;position:relative}
      (트랙 패딩 + 컨트롤 바 margin-top), 카드가 커져도 아래 컨트롤 바(이전/다음 버튼·도트·카운터)와
      절대 겹치지 않게 한다 — 기본값은 아래 폴백이고, JS가 렌더 직후 카드 실측 높이로 정확히 덮어쓴다 */
   padding-bottom:24px;
+  /* [수정] 카드 이미지 위 라벨(가격인하 리본 등)은 카드 위·옆으로 6px 삐져나오는데, 가로 스크롤 영역(overflow-x:auto)은 세로로도 잘라 리본 윗부분이 잘렸다 — 위쪽에 여유를 주되 같은 만큼 음수 여백으로 상쇄해 카드 위치는 그대로 */
+  padding-top:8px;margin-top:-8px;
 }
 .pc-track::-webkit-scrollbar{display:none}
 /* [추가] 필터로 남은 상품이 3개 이하일 때 — 범퍼 없이 카드만 가운데 정렬(넘칠 때는 auto 여백이 0이 되어 앞쪽이 잘리지 않음) */
@@ -687,8 +689,9 @@ section.block{padding:100px 24px;position:relative}
 .pt-months{white-space:nowrap;color:var(--gold-deep);font-weight:700}
 /* [수정] 상품 카드의 추천 판매 시기 "【 10월 】" — 제목 뒤 하이픈(-) 제거, 제목의 마지막 줄(제목이 2~3줄이면 마지막 글자가 있는 줄) 오른쪽 끝에 배치, 글자 크기는 제목보다 2pt 작게 */
 /* [수정] 시기 태그를 제목 안(끝)에 오른쪽 float로 넣어, 제목 첫째·둘째 줄도 카드 오른쪽 끝까지 쓰고 태그는 마지막 글자가 있는 줄의 오른쪽 끝에 놓인다 */
-.product-visual-title .pt-months{float:right;margin-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
-.product-visual-title h4{flex:1;min-width:0}
+/* [수정] iOS Safari에서는 -webkit-box(줄수 제한) 안의 float가 무시돼 국내 카드의 시기 태그가 제목 바로 뒤에 붙었다 — 제목 밖 flex 형제로 두고 항상 오른쪽 끝(제목 마지막 줄 높이)에 정렬 */
+.product-visual-title .pt-months{flex:0 0 auto;margin-left:auto;padding-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
+.product-visual-title h4{flex:0 1 auto;min-width:0}
 /* [추가] 제목 위 한 줄(지역명 · 제목보조 — 같은 크기, 제목보다 작게) + "펼쳐보기" 위 요약 설명(좌측 정렬, 파란색) — 카드 폭을 넘으면 JS(fitCardLines)가 글자 크기만 줄여 한 줄을 유지 */
 .product-kicker,.pmd-line,.spot-kicker,.popup-kicker,.pd-kicker{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
 .product-metadesc{display:block;width:100%;min-width:0}
@@ -696,6 +699,8 @@ section.block{padding:100px 24px;position:relative}
 .popup-kicker{color:rgba(255,255,255,.88);font-size:.92rem;margin:0 0 3px}
 .pd-kicker{color:var(--pine-deep);font-size:1rem;margin:0 0 4px}
 .spot-kicker .pk-dot,.popup-kicker .pk-dot,.pd-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
+/* [추가] 상품 카드 지역명 줄 위 국가명(팝업의 .popup-cat과 같은 표기) — 항상 한 줄 영역을 확보 */
+.product-country{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.68rem;line-height:1.2;color:var(--gold-deep);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:10px 0 2px}
 .product-kicker{color:var(--pine-deep);margin:2px 0 4px}
 .product-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
 .product-metadesc{color:#3176bd;margin:2px 0 10px}
@@ -3533,8 +3538,14 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .cur-calc-btn:hover{background:var(--gold-deep)}
 /* [추가] 현찰 살 때 환율 표시 */
 .cur-sub{display:inline-block;margin-left:5px;font-size:.62em;font-weight:700;opacity:.85;vertical-align:middle}
+.cur-mode-btn{margin:0 0 0 5px;padding:2px 7px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font-family:inherit;cursor:pointer;line-height:1.3}
+.cur-mode-btn:hover{opacity:1;background:rgba(255,255,255,.18)}
+.cur-mode-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
+.cur-mode-row>span{font-size:.8rem;font-weight:700;margin-right:4px}
 .cur-mid{margin-left:2px;font-size:.58em;font-weight:700;opacity:.65}
 .cur-spread-grid{display:grid;gap:8px}
+.cur-hana-use{display:block;margin:0 0 10px!important;padding:8px 10px;border-radius:8px;background:rgba(49,118,189,.07);font-size:.78rem;line-height:1.5}
+.cur-hana-use span{display:block;margin-top:3px;color:var(--nm-text-soft,#667);font-size:.74rem}
 .cur-spread-row{display:grid;grid-template-columns:150px 112px 1fr;align-items:center;gap:8px;margin:0!important}
 .cur-spread-row .cs-name{font-weight:700;font-size:.82rem}
 .cur-spread-row .cs-in{display:flex;align-items:center;gap:4px}
@@ -9212,7 +9223,7 @@ function collectSiteState(){
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides, calHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
     collectorEndpoint: collectorEndpointOverride,
-    aiPlaces, chatHours: chatHoursOverride, currencySpread,
+    aiPlaces, chatHours: chatHoursOverride, currencySpread, currencyBank, currencyUseHana,
   };
 }
 function applySiteState(state){
@@ -9245,6 +9256,8 @@ function applySiteState(state){
   if (state.collectorEndpoint !== undefined){ collectorEndpointOverride = state.collectorEndpoint; try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){} }
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
+  if (typeof state.currencyUseHana==='boolean'){ currencyUseHana = state.currencyUseHana; try{ localStorage.setItem(CUR_HANA_KEY, currencyUseHana ? '1' : '0'); }catch(e){} try{ renderCurrencyWidget(); }catch(e){} }
+  if (typeof state.currencyBank==='string'){ currencyBank = state.currencyBank.slice(0,20); try{ localStorage.setItem(CUR_BANK_KEY, currencyBank); }catch(e){} }
   if (state.currencySpread && typeof state.currencySpread==='object'){ currencySpread = curSpreadNorm(state.currencySpread); try{ localStorage.setItem(CUR_SPREAD_KEY, JSON.stringify(currencySpread)); }catch(e){} try{ renderCurrencyWidget(); }catch(e){} }
   if (state.chatHours && typeof state.chatHours==='object'){ chatHoursOverride = state.chatHours; try{ localStorage.setItem(CHAT_HOURS_KEY, JSON.stringify(chatHoursOverride)); }catch(e){} try{ renderChatHoursLabels(); }catch(e){} }
   // 등록부가 없는 예전 상태(이 기능 이전에 저장된 데이터)를 받으면 이 기기의 등록부를 유지하고, 다음 저장 때 함께 올린다
@@ -10195,8 +10208,43 @@ function curSpreadNorm(o){
 }
 let currencySpread = {};
 try{ currencySpread = curSpreadNorm(JSON.parse(localStorage.getItem(CUR_SPREAD_KEY)||'{}')); }catch(e){}
-function curSpreadOf(code){ const v = currencySpread[code]; return v>0 ? v : 0; }
-function curAnySpread(){ return Object.keys(currencySpread).length>0; }
+// 어떤 은행 기준 스프레드인지(예: 하나은행) — 관리자가 적으면 "현찰 살 때(하나은행 기준)"으로 표시한다
+const CUR_BANK_KEY = 'kundo_currency_bank_v1', CUR_MODE_KEY = 'kundo_currency_mode_v1';
+let currencyBank = '';
+try{ currencyBank = String(localStorage.getItem(CUR_BANK_KEY)||'').slice(0,20); }catch(e){}
+// 위젯 표시 방식(방문자가 위젯에서 고른다): 'cash' = 현찰 살 때, 'base' = 은행 간 기준환율. 고르지 않았으면 스프레드가 입력돼 있으면 현찰 살 때
+function curMode(){
+  let m = ''; try{ m = localStorage.getItem(CUR_MODE_KEY)||''; }catch(e){}
+  if (m==='cash' || m==='base') return curAnySpread() ? m : 'base';
+  return curAnySpread() ? 'cash' : 'base';
+}
+function curModeLabel(m){ return m==='cash' ? `현찰 살 때${curBankName() ? '('+escapeAttr(curBankName())+' 기준)' : ''}` : '기준환율'; }
+function setCurrencyMode(m){
+  try{ localStorage.setItem(CUR_MODE_KEY, m==='base' ? 'base' : 'cash'); }catch(e){}
+  renderCurrencyWidget(); renderCurrencyDetail();
+}
+function toggleCurrencyMode(){ setCurrencyMode(curMode()==='cash' ? 'base' : 'cash'); }
+function setCurrencyBank(v){
+  currencyBank = String(v||'').trim().slice(0,20);
+  try{ localStorage.setItem(CUR_BANK_KEY, currencyBank); }catch(e){}
+  queueSiteStateSync(); renderCurrencyWidget(); renderCurrencyDetail();
+}
+// 하나은행 현찰 살 때 스프레드 참고값 — 하나은행 고시를 정리한 제3자 자료(2026년 8월 26일·10월 8일 고시 기준, 통화별 수치가 서로 일치)에서 확인된 통화만 넣었다.
+// 링깃·동·페소·루피아·대만달러·투그릭은 확인하지 못해 비워 두었다(기준환율로 표시, "기준" 표시). 하나은행 공식 고시와 다를 수 있어 안내 문구를 함께 보여 주며,
+// 관리자가 입력한 스프레드가 있으면 그 통화는 입력값이 우선한다. 관리자 패널에서 "하나은행 참고값 사용"을 끄면 입력한 값만 쓴다
+const CUR_HANA_SPREAD = {USD:1.75, JPY:1.75, EUR:1.99, CNY:5, SGD:1.99, HKD:1.97, THB:5, GBP:1.97, AUD:1.97};
+const CUR_HANA_KEY = 'kundo_currency_usehana_v1';
+let currencyUseHana = true;
+try{ if (localStorage.getItem(CUR_HANA_KEY)==='0') currencyUseHana = false; }catch(e){}
+function curBankName(){ return currencyBank || (currencyUseHana ? '하나은행' : ''); }
+function curSpreadOf(code){ const v = currencySpread[code]; if (v>0) return v; return (currencyUseHana && CUR_HANA_SPREAD[code]) || 0; }
+function curAdminSpreadCount(){ return Object.keys(currencySpread).length; }
+function curAnySpread(){ return curAdminSpreadCount()>0 || currencyUseHana; }
+function setCurrencyUseHana(on){
+  currencyUseHana = !!on;
+  try{ localStorage.setItem(CUR_HANA_KEY, currencyUseHana ? '1' : '0'); }catch(e){}
+  queueSiteStateSync(); renderCurrencyWidget(); renderCurrencyDetail(); try{ renderAdminWidgets(); }catch(e){}
+}
 // 1단위(KRW는 1) = 몇 원 — 스프레드가 있으면 기준환율 × (1 + 스프레드%)
 function curCashPerUnit(code){
   const k = krwPerUnit(code); if (!k) return null;
@@ -10213,22 +10261,25 @@ function setCurrencySpread(code, raw){
   renderCurrencyWidget(); renderCurrencyDetail();
   const prev = document.getElementById('curSpreadPrev_'+code); if (prev) prev.textContent = curSpreadPreview(code);
 }
+// 지금 화면에 쓰는 환율(1단위 = 몇 원) — 방식이 '현찰 살 때'이면 스프레드를 더하고, '기준환율'이면 기준환율 그대로
+function curRatePerUnit(code){ return curMode()==='cash' ? curCashPerUnit(code) : krwPerUnit(code); }
 function curSpreadPreview(code){
   const base = krwPerUnit(code); if (!base) return '';
   const per = (CURRENCY_LABELS[code]&&CURRENCY_LABELS[code].per)||1;
   const fmt = v=>(v*per).toLocaleString('ko-KR',{maximumFractionDigits:2});
-  return curSpreadOf(code) ? `기준 ${fmt(base)}원 → 현찰 살 때 ${fmt(curCashPerUnit(code))}원` : `기준 ${fmt(base)}원 (스프레드 미입력 — 기준환율로 표시)`;
+  const own = currencySpread[code]>0;
+  return curSpreadOf(code) ? `기준 ${fmt(base)}원 → 현찰 살 때 ${fmt(curCashPerUnit(code))}원 (${curSpreadOf(code)}%${own ? '' : ' · 하나은행 참고값'})` : `기준 ${fmt(base)}원 (스프레드 없음 — 기준환율로 표시)`;
 }
 // 통화 이름·환율 표기 — per가 있는 통화는 "100동 5.7원"처럼 그 단위로
 function curDispName(code){ const l=CURRENCY_LABELS[code]||{name:code}; return (l.per>1 ? l.per : '')+l.name; }
 function curDispRate(code){
-  const k = curCashPerUnit(code); if (!k) return '-';
+  const k = curRatePerUnit(code); if (!k) return '-';
   const per = (CURRENCY_LABELS[code]&&CURRENCY_LABELS[code].per)||1;
   return (k*per).toLocaleString('ko-KR',{maximumFractionDigits:2})+'원';
 }
 // 위젯·목록 한 줄의 환율 — 일부 통화에만 스프레드를 입력했다면 입력하지 않은 통화에는 "기준" 표시를 붙여 구분한다
 function curRateHTML(code){
-  const mid = curAnySpread() && !curSpreadOf(code) ? '<sup class="cur-mid" title="현찰 스프레드 미입력 — 은행 간 기준환율">기준</sup>' : '';
+  const mid = curMode()==='cash' && !curSpreadOf(code) ? '<sup class="cur-mid" title="현찰 스프레드 미입력 — 은행 간 기준환율">기준</sup>' : '';
   return curDispRate(code)+mid;
 }
 // [추가] 환율 계산기의 "기준 통화"(FROM) 선택지 — 목록의 외화뿐 아니라 원화(KRW)도 포함해,
@@ -10267,7 +10318,7 @@ function renderCurrencyWidget(){
   const show = currencyShowList();
   el.innerHTML = `
     <div class="cur-head">
-      <div class="cur-title">실시간 환율${curAnySpread()?'<span class="cur-sub">현찰 살 때</span>':''}</div>
+      <div class="cur-title">실시간 환율${curAnySpread()?`<button type="button" class="cur-sub cur-mode-btn" onclick="toggleCurrencyMode()" title="눌러서 현찰 살 때 ↔ 기준환율 전환" aria-label="환율 기준 전환: 지금 ${curMode()==='cash'?'현찰 살 때':'기준환율'}">${curMode()==='cash'?'현찰 살 때':'기준환율'} ⇄</button>`:''}</div>
       <div class="cur-head-btns">
         <button type="button" class="cur-set-btn" onclick="toggleCurrencyDetail('pick')" title="위젯에 표시할 통화 선택" aria-label="위젯에 표시할 통화 선택">⚙</button>
         <button type="button" class="cur-calc-btn" onclick="toggleCurrencyDetail()">💱 환율 계산기</button>
@@ -10299,10 +10350,10 @@ function setCurrencyCalcFrom(v){ currencyCalcFrom = v; renderCurrencyDetail(); }
 function setCurrencyCalcCode(v){ currencyCalcCode = v; renderCurrencyDetail(); }
 // [추가] KRW를 기준(pivot)으로 삼아 임의의 두 통화(원화 포함) 사이를 환산 — 달러→다른 외화,
 // 외화→달러처럼 목록의 어떤 통화 조합이든 계산할 수 있게 한다
-// 현찰 살 때 환율(스프레드를 입력한 통화) 기준으로 계산한다 — 스프레드가 없으면 기준환율과 같다
+// 선택한 기준(현찰 살 때 또는 기준환율)으로 계산한다 — 스프레드가 없는 통화는 기준환율과 같다
 function currencyConvert(amount, fromCode, toCode){
   if (!currencyData || !currencyData.rates) return null;
-  const pFrom = curCashPerUnit(fromCode), pTo = curCashPerUnit(toCode);
+  const pFrom = curRatePerUnit(fromCode), pTo = curRatePerUnit(toCode);
   if (!pFrom || !pTo) return null;
   return amount * (pFrom/pTo);
 }
@@ -10319,6 +10370,7 @@ function renderCurrencyDetail(){
   const updated = currencyData.time_last_update_utc ? new Date(currencyData.time_last_update_utc).toLocaleDateString('ko-KR') : '';
   const calcOptions = (selected)=>calcCodes.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${CALC_CURRENCY_LABELS[c].flag} ${CALC_CURRENCY_LABELS[c].name}(${c})</option>`).join('');
   body.innerHTML = `
+    ${curAnySpread() ? `<div class="cur-mode-row" role="group" aria-label="환율 기준"><span>환율 기준</span><button type="button" class="cur-chip${curMode()==='cash'?' on':''}" aria-pressed="${curMode()==='cash'}" onclick="setCurrencyMode('cash')">현찰 살 때${curBankName()?`(${escapeAttr(curBankName())})`:''}</button><button type="button" class="cur-chip${curMode()==='base'?' on':''}" aria-pressed="${curMode()==='base'}" onclick="setCurrencyMode('base')">기준환율</button></div>` : ''}
     <div class="cur-calc-row">
       <input type="number" min="0" step="1" value="${currencyCalcAmount}" oninput="setCurrencyCalcAmount(this.value)">
       <select onchange="setCurrencyCalcFrom(this.value)">${calcOptions(currencyCalcFrom)}</select>
@@ -10336,7 +10388,9 @@ function renderCurrencyDetail(){
       return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}(${code})</span><span class="cur-rate">${curRateHTML(code)}</span></div>`;
     }).join('')}</div>
     <div class="cur-disclaimer">${curAnySpread()
-      ? `※ 은행 간 기준환율(${updated} 갱신)에 통화별 현찰 살 때 스프레드를 더한 값입니다(‘기준’ 표시 통화는 스프레드 미입력으로 기준환율). 환율 계산기도 같은 환율로 계산하며, 실제 환전 시 금융기관이 고시하는 환율과는 다를 수 있습니다.`
+      ? (curMode()==='cash'
+        ? `※ 은행 간 기준환율(${updated} 갱신)에 통화별 현찰 살 때 스프레드${curBankName()?`(${escapeAttr(curBankName())} 기준 참고값)`:''}를 더한 값입니다(‘기준’ 표시 통화는 스프레드 정보가 없어 기준환율). 환율 계산기도 같은 환율로 계산하며, 실제 환전 시 금융기관이 고시하는 환율·우대율과는 다를 수 있으니 환전 전 은행 앱에서 확인해 주세요.`
+        : `※ 은행 간 기준환율(${updated} 갱신)입니다. 위 \'환율 기준\'에서 현찰 살 때로 바꿔 볼 수 있으며, 실제 환전 시 금융기관이 고시하는 환율과는 다를 수 있습니다.`)
       : `※ 은행 간 기준환율(${updated} 갱신)이며, 실제 환전 시 금융기관이 고시하는 매매기준율(스프레드 포함)과는 다를 수 있습니다.`}</div>
   `;
 }
@@ -11177,8 +11231,10 @@ function renderAdminWidgets(){
     <div class="ai-logo-xform" style="margin-top:16px">
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">💱 현찰 살 때 스프레드 (환율 위젯·목록·계산기)</span>
       <span class="file-hint" style="display:block;margin-bottom:6px">위젯의 환율을 은행 간 기준환율이 아니라 <b>현찰 살 때</b> 환율로 표시합니다. 이용하는 은행이 고시하는 통화별 <b>현찰 살 때 스프레드(%)</b>를 입력하면 기준환율 × (1 + 스프레드)로 계산합니다. 입력하지 않은 통화는 기준환율 그대로 보이고(일부만 입력하면 "기준" 표시), 입력한 값만 쓰며 임의의 값을 넣지 않습니다. 모든 방문자에게 적용됩니다.</span>
-      <div class="cur-spread-grid">${Object.keys(CURRENCY_LABELS).map(code=>{ const l=CURRENCY_LABELS[code]; return `<label class="cur-spread-row"><span class="cs-name">${l.flag} ${escapeAttr(curDispName(code))}(${code})</span><span class="cs-in"><input type="number" min="0" max="30" step="0.01" inputmode="decimal" placeholder="예: 1.75" value="${currencySpread[code]!==undefined?currencySpread[code]:''}" onchange="setCurrencySpread('${code}',this.value)"><em>%</em></span><span class="cs-prev" id="curSpreadPrev_${code}">${escapeAttr(curSpreadPreview(code))}</span></label>`; }).join('')}</div>
-      ${curAnySpread()?`<button type="button" class="file-btn danger" onclick="if(confirm('입력한 스프레드를 모두 지우고 기준환율로 되돌릴까요?')){currencySpread={};try{localStorage.setItem(CUR_SPREAD_KEY,'{}')}catch(e){}queueSiteStateSync();renderCurrencyWidget();renderCurrencyDetail();renderAdminWidgets()}" style="margin-top:6px">스프레드 모두 지우기</button>`:''}
+      <label class="cur-hana-use"><input type="checkbox" ${currencyUseHana?'checked':''} onchange="setCurrencyUseHana(this.checked)"> <b>하나은행 현찰 살 때 스프레드 참고값 사용</b> <span>달러·엔화 1.75% · 유로 1.99% · 위안·바트 5.00% · 싱가포르달러 1.99% · 홍콩달러·파운드·호주달러 1.97% (하나은행 고시를 정리한 제3자 자료, 2026년 8~10월 기준). 링깃·동·페소·루피아·대만달러·투그릭은 확인하지 못해 비워 두었고 "기준환율"로 표시됩니다. 아래 입력칸에 값을 적으면 그 통화는 입력값이 우선합니다.</span></label>
+      <label class="cur-spread-row" style="margin-bottom:6px!important"><span class="cs-name">🏦 기준 은행 이름</span><span class="cs-in"><input type="text" maxlength="20" placeholder="예: 하나은행" value="${escapeAttr(currencyBank)}" onchange="setCurrencyBank(this.value)" style="width:150px"></span><span class="cs-prev">적으면 위젯에 "현찰 살 때(하나은행 기준)"으로 표시됩니다. 입력하는 스프레드는 이 은행의 고시값이어야 합니다.</span></label>
+      <div class="cur-spread-grid">${Object.keys(CURRENCY_LABELS).map(code=>{ const l=CURRENCY_LABELS[code]; return `<label class="cur-spread-row"><span class="cs-name">${l.flag} ${escapeAttr(curDispName(code))}(${code})</span><span class="cs-in"><input type="number" min="0" max="30" step="0.01" inputmode="decimal" placeholder="${currencyUseHana && CUR_HANA_SPREAD[code] ? '하나 '+CUR_HANA_SPREAD[code] : '예: 1.75'}" value="${currencySpread[code]!==undefined?currencySpread[code]:''}" onchange="setCurrencySpread('${code}',this.value)"><em>%</em></span><span class="cs-prev" id="curSpreadPrev_${code}">${escapeAttr(curSpreadPreview(code))}</span></label>`; }).join('')}</div>
+      ${curAdminSpreadCount()?`<button type="button" class="file-btn danger" onclick="if(confirm('직접 입력한 스프레드를 모두 지울까요?')){currencySpread={};try{localStorage.setItem(CUR_SPREAD_KEY,'{}')}catch(e){}queueSiteStateSync();renderCurrencyWidget();renderCurrencyDetail();renderAdminWidgets()}" style="margin-top:6px">스프레드 모두 지우기</button>`:''}
     </div>
     <details class="admin-info-collapse widget-group-collapse" id="widgetIndividualCollapse" style="margin-top:16px"${individualWasOpen?' open':''}>
       <summary>🎛️ 개별 위젯 설정 (환율 · 날씨 국내 · 날씨 해외)</summary>
@@ -13665,8 +13721,9 @@ function productCardHTML(p, catId, idx){
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
+    <div class="product-country">${escapeAttr(cat.ko)} · ${escapeAttr(cat.en)}</div>
     ${kickerHTML}
-    <div class="product-visual-title"><h4>${p.title}${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</h4></div>
+    <div class="product-visual-title"><h4>${p.title}</h4>${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</div>
     <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
     <div class="product-period-row-top">
@@ -14416,6 +14473,19 @@ function spotlightVisualUrl(entry){
   if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
   return getImage(entry.catId);
 }
+// [수정] 모바일 화면 자동 아래로 밀림 방지 — EDITOR'S PICK 카드는 8초마다 내용이 바뀌며 카드 높이(두 레이어 중 큰 쪽)가
+// 달라지는데, 그 영역이 현재 보고 있는 화면 "위쪽"에 있으면 iOS Safari(스크롤 앵커링 없음)에서는 아래 콘텐츠가 통째로
+// 밀려 내려온다. 교체 전후 스포트라이트 하단 위치 차이만큼 스크롤을 보정해 보고 있는 화면이 그대로 유지되게 한다.
+function spotKeepScroll(fn){
+  const grid = document.querySelector('.spotlight-grid');
+  if (!grid){ fn(); return; }
+  const before = grid.getBoundingClientRect().bottom;
+  fn();
+  const after = grid.getBoundingClientRect().bottom;
+  const d = after - before;
+  // 스포트라이트 하단이 화면 위쪽(이미 지나간 영역)에 있을 때만 보정 — 화면 안에서 보고 있을 때는 그대로 둔다
+  if (d && before <= 0 && window.scrollY > 0) window.scrollBy(0, d);
+}
 function cycleSpot(){
   if (_tgtBgFrozen) return;   // 관리자 창이 열려 있는 동안은 EDITOR'S PICK 카드를 교체하지 않는다
   const overseasList = getSpotlightList('overseas');
@@ -14434,7 +14504,7 @@ function cycleSpot(){
       0: overseasList2[spotOverseasIdx%overseasList2.length],
       1: domesticList2[spotDomesticIdx%domesticList2.length],
     };
-    [0,1].forEach(slot=>{
+    spotKeepScroll(()=>[0,1].forEach(slot=>{
       const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
       renderSpotlightSlot(slot, backLayer, entries[slot]);
       const frontEl=document.getElementById('spotLayer'+slot+spotFront[slot]);
@@ -14448,7 +14518,7 @@ function cycleSpot(){
       // 즉시 정지시켜 불필요한 디코딩이 쌓이지 않도록 한다
       setTimeout(()=>{ const v=frontEl.querySelector('video'); if (v) v.pause(); }, SPOT_FADE_MS);
       spotFront[slot]=backLayer;
-    });
+    }));
   });
 }
 // [Phase] EDITOR'S PICK 카드를 손가락으로 좌/우로 스와이프하면 그 슬롯(해외/국내)만 수동으로
@@ -14464,7 +14534,7 @@ function spotSwipeSlot(slot, dir){
   preloadImage(spotlightVisualUrl(nextEntry)).then(()=>{
     if (slot===0) spotOverseasIdx = nextIdx; else spotDomesticIdx = nextIdx;
     const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
-    renderSpotlightSlot(slot, backLayer, nextEntry);
+    spotKeepScroll(()=>renderSpotlightSlot(slot, backLayer, nextEntry));
     const frontEl=document.getElementById('spotLayer'+slot+spotFront[slot]);
     const backEl=document.getElementById('spotLayer'+slot+backLayer);
     requestAnimationFrame(()=>{
@@ -18042,7 +18112,7 @@ function tgtLoadChat(){
 }
 // [추가] 실시간 상담 버튼 접기/펼치기 — 왼쪽으로 끌면 화면 밖으로 접히고(손잡이만 남음), 손잡이를 누르거나 오른쪽으로 끌면 펼쳐진다. 상태는 이 기기에 기억한다.
 // 접힌 상태에서도 배지·깜박임(상담원 알림)은 손잡이에 남는다
-const TGT_FAB_VIS = 34, TGT_FAB_KEY = 'tgtChatFabFolded';
+const TGT_FAB_VIS = 34, TGT_FAB_KEY = 'tgtChatFabFolded2';
 let _tgtFabSuppress = false;
 function tgtChatFabClick(e){
   const fab = document.getElementById('tgtChatFab');
@@ -18064,7 +18134,8 @@ function tgtChatFabFoldX(){
 }
 (function initChatFabFold(){
   const fab = document.getElementById('tgtChatFab'); if (!fab) return;
-  let folded = false; try{ folded = localStorage.getItem(TGT_FAB_KEY)==='1'; }catch(e){}
+  // [수정] 기본값은 접힌 상태 — 상품 카드를 가리지 않게 손잡이만 보이고, 사용자가 펼쳐 두면(저장값 '0') 그 기기에서는 펼친 상태로 시작한다
+  let folded = true; try{ if (localStorage.getItem(TGT_FAB_KEY)==='0') folded = false; }catch(e){}
   const refresh = ()=>{ fab.style.setProperty('--fab-fold', tgtChatFabFoldX()+'px'); };
   refresh(); fab.classList.toggle('is-folded', folded);
   window.addEventListener('resize', refresh);

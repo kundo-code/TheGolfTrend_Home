@@ -507,7 +507,7 @@ section.block{padding:100px 24px;position:relative}
 @media(max-width:780px){
   /* [Phase] touch-action을 지정하지 않으면(기본값 auto) 터치는 브라우저 네이티브 가로 스크롤(관성
      포함)로 처리되고, PC 마우스 드래그만 initCarouselDrag()가 보조한다 */
-  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;cursor:grab;padding-bottom:6px;scrollbar-width:none;-ms-overflow-style:none}
+  .product-grid{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;cursor:grab;padding-bottom:6px;padding-top:8px;margin-top:-8px;scrollbar-width:none;-ms-overflow-style:none}
   .product-grid.dragging{cursor:grabbing;scroll-behavior:auto}
   .product-grid::-webkit-scrollbar{display:none}
   /* [수정] 상품 카드 영역만 상위 패널(.category-view 8px + 섹션 14px)의 좌우 프레임 없이 화면
@@ -539,6 +539,8 @@ section.block{padding:100px 24px;position:relative}
      (트랙 패딩 + 컨트롤 바 margin-top), 카드가 커져도 아래 컨트롤 바(이전/다음 버튼·도트·카운터)와
      절대 겹치지 않게 한다 — 기본값은 아래 폴백이고, JS가 렌더 직후 카드 실측 높이로 정확히 덮어쓴다 */
   padding-bottom:24px;
+  /* [수정] 카드 이미지 위 라벨(가격인하 리본 등)은 카드 위·옆으로 6px 삐져나오는데, 가로 스크롤 영역(overflow-x:auto)은 세로로도 잘라 리본 윗부분이 잘렸다 — 위쪽에 여유를 주되 같은 만큼 음수 여백으로 상쇄해 카드 위치는 그대로 */
+  padding-top:8px;margin-top:-8px;
 }
 .pc-track::-webkit-scrollbar{display:none}
 /* [추가] 필터로 남은 상품이 3개 이하일 때 — 범퍼 없이 카드만 가운데 정렬(넘칠 때는 auto 여백이 0이 되어 앞쪽이 잘리지 않음) */
@@ -687,8 +689,9 @@ section.block{padding:100px 24px;position:relative}
 .pt-months{white-space:nowrap;color:var(--gold-deep);font-weight:700}
 /* [수정] 상품 카드의 추천 판매 시기 "【 10월 】" — 제목 뒤 하이픈(-) 제거, 제목의 마지막 줄(제목이 2~3줄이면 마지막 글자가 있는 줄) 오른쪽 끝에 배치, 글자 크기는 제목보다 2pt 작게 */
 /* [수정] 시기 태그를 제목 안(끝)에 오른쪽 float로 넣어, 제목 첫째·둘째 줄도 카드 오른쪽 끝까지 쓰고 태그는 마지막 글자가 있는 줄의 오른쪽 끝에 놓인다 */
-.product-visual-title .pt-months{float:right;margin-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
-.product-visual-title h4{flex:1;min-width:0}
+/* [수정] iOS Safari에서는 -webkit-box(줄수 제한) 안의 float가 무시돼 국내 카드의 시기 태그가 제목 바로 뒤에 붙었다 — 제목 밖 flex 형제로 두고 항상 오른쪽 끝(제목 마지막 줄 높이)에 정렬 */
+.product-visual-title .pt-months{flex:0 0 auto;margin-left:auto;padding-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
+.product-visual-title h4{flex:0 1 auto;min-width:0}
 /* [추가] 제목 위 한 줄(지역명 · 제목보조 — 같은 크기, 제목보다 작게) + "펼쳐보기" 위 요약 설명(좌측 정렬, 파란색) — 카드 폭을 넘으면 JS(fitCardLines)가 글자 크기만 줄여 한 줄을 유지 */
 .product-kicker,.pmd-line,.spot-kicker,.popup-kicker,.pd-kicker{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
 .product-metadesc{display:block;width:100%;min-width:0}
@@ -696,6 +699,8 @@ section.block{padding:100px 24px;position:relative}
 .popup-kicker{color:rgba(255,255,255,.88);font-size:.92rem;margin:0 0 3px}
 .pd-kicker{color:var(--pine-deep);font-size:1rem;margin:0 0 4px}
 .spot-kicker .pk-dot,.popup-kicker .pk-dot,.pd-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
+/* [추가] 상품 카드 지역명 줄 위 국가명(팝업의 .popup-cat과 같은 표기) — 항상 한 줄 영역을 확보 */
+.product-country{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.68rem;line-height:1.2;color:var(--gold-deep);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:10px 0 2px}
 .product-kicker{color:var(--pine-deep);margin:2px 0 4px}
 .product-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
 .product-metadesc{color:#3176bd;margin:2px 0 10px}
@@ -13716,8 +13721,9 @@ function productCardHTML(p, catId, idx){
       <span class="product-region-pill">${escapeAttr(cat.ko)}</span>
       <span class="save-btn" onclick="event.stopPropagation()" aria-label="찜하기">♡</span>
     </div>
+    <div class="product-country">${escapeAttr(cat.ko)} · ${escapeAttr(cat.en)}</div>
     ${kickerHTML}
-    <div class="product-visual-title"><h4>${p.title}${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</h4></div>
+    <div class="product-visual-title"><h4>${p.title}</h4>${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</div>
     <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
     <div class="product-period-row-top">
@@ -14467,6 +14473,19 @@ function spotlightVisualUrl(entry){
   if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
   return getImage(entry.catId);
 }
+// [수정] 모바일 화면 자동 아래로 밀림 방지 — EDITOR'S PICK 카드는 8초마다 내용이 바뀌며 카드 높이(두 레이어 중 큰 쪽)가
+// 달라지는데, 그 영역이 현재 보고 있는 화면 "위쪽"에 있으면 iOS Safari(스크롤 앵커링 없음)에서는 아래 콘텐츠가 통째로
+// 밀려 내려온다. 교체 전후 스포트라이트 하단 위치 차이만큼 스크롤을 보정해 보고 있는 화면이 그대로 유지되게 한다.
+function spotKeepScroll(fn){
+  const grid = document.querySelector('.spotlight-grid');
+  if (!grid){ fn(); return; }
+  const before = grid.getBoundingClientRect().bottom;
+  fn();
+  const after = grid.getBoundingClientRect().bottom;
+  const d = after - before;
+  // 스포트라이트 하단이 화면 위쪽(이미 지나간 영역)에 있을 때만 보정 — 화면 안에서 보고 있을 때는 그대로 둔다
+  if (d && before <= 0 && window.scrollY > 0) window.scrollBy(0, d);
+}
 function cycleSpot(){
   if (_tgtBgFrozen) return;   // 관리자 창이 열려 있는 동안은 EDITOR'S PICK 카드를 교체하지 않는다
   const overseasList = getSpotlightList('overseas');
@@ -14485,7 +14504,7 @@ function cycleSpot(){
       0: overseasList2[spotOverseasIdx%overseasList2.length],
       1: domesticList2[spotDomesticIdx%domesticList2.length],
     };
-    [0,1].forEach(slot=>{
+    spotKeepScroll(()=>[0,1].forEach(slot=>{
       const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
       renderSpotlightSlot(slot, backLayer, entries[slot]);
       const frontEl=document.getElementById('spotLayer'+slot+spotFront[slot]);
@@ -14499,7 +14518,7 @@ function cycleSpot(){
       // 즉시 정지시켜 불필요한 디코딩이 쌓이지 않도록 한다
       setTimeout(()=>{ const v=frontEl.querySelector('video'); if (v) v.pause(); }, SPOT_FADE_MS);
       spotFront[slot]=backLayer;
-    });
+    }));
   });
 }
 // [Phase] EDITOR'S PICK 카드를 손가락으로 좌/우로 스와이프하면 그 슬롯(해외/국내)만 수동으로
@@ -14515,7 +14534,7 @@ function spotSwipeSlot(slot, dir){
   preloadImage(spotlightVisualUrl(nextEntry)).then(()=>{
     if (slot===0) spotOverseasIdx = nextIdx; else spotDomesticIdx = nextIdx;
     const backLayer = spotFront[slot]==='a' ? 'b' : 'a';
-    renderSpotlightSlot(slot, backLayer, nextEntry);
+    spotKeepScroll(()=>renderSpotlightSlot(slot, backLayer, nextEntry));
     const frontEl=document.getElementById('spotLayer'+slot+spotFront[slot]);
     const backEl=document.getElementById('spotLayer'+slot+backLayer);
     requestAnimationFrame(()=>{
@@ -18093,7 +18112,7 @@ function tgtLoadChat(){
 }
 // [추가] 실시간 상담 버튼 접기/펼치기 — 왼쪽으로 끌면 화면 밖으로 접히고(손잡이만 남음), 손잡이를 누르거나 오른쪽으로 끌면 펼쳐진다. 상태는 이 기기에 기억한다.
 // 접힌 상태에서도 배지·깜박임(상담원 알림)은 손잡이에 남는다
-const TGT_FAB_VIS = 34, TGT_FAB_KEY = 'tgtChatFabFolded';
+const TGT_FAB_VIS = 34, TGT_FAB_KEY = 'tgtChatFabFolded2';
 let _tgtFabSuppress = false;
 function tgtChatFabClick(e){
   const fab = document.getElementById('tgtChatFab');
@@ -18115,7 +18134,8 @@ function tgtChatFabFoldX(){
 }
 (function initChatFabFold(){
   const fab = document.getElementById('tgtChatFab'); if (!fab) return;
-  let folded = false; try{ folded = localStorage.getItem(TGT_FAB_KEY)==='1'; }catch(e){}
+  // [수정] 기본값은 접힌 상태 — 상품 카드를 가리지 않게 손잡이만 보이고, 사용자가 펼쳐 두면(저장값 '0') 그 기기에서는 펼친 상태로 시작한다
+  let folded = true; try{ if (localStorage.getItem(TGT_FAB_KEY)==='0') folded = false; }catch(e){}
   const refresh = ()=>{ fab.style.setProperty('--fab-fold', tgtChatFabFoldX()+'px'); };
   refresh(); fab.classList.toggle('is-folded', folded);
   window.addEventListener('resize', refresh);

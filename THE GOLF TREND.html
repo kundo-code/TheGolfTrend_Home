@@ -14142,13 +14142,30 @@ function mcfUpdate(container){
   cards.forEach((c,i)=>{ c.classList.toggle('m-center', i===best); c.classList.toggle('m-side', i!==best);
     c.classList.toggle('m-left', i<best); c.classList.toggle('m-right', i>best); });
 }
+// [추가] 펼쳐 둔 상품 카드는 좌우로 넘겨 다른 상품이 가운데로 오면(스크롤이 멈춘 뒤) 자동으로 접는다 — 이전 상품의 카드가 펼쳐진 채 남지 않게.
+// 가운데 카드가 그대로면(같은 카드에서 살짝만 움직인 경우) 접지 않는다
+function collapseCardsExcept(container, keep){
+  container.querySelectorAll('.product.expanded').forEach(c=>{
+    if (c===keep) return;
+    c.classList.remove('expanded');
+    const b = c.querySelector('.product-expand'); if (b) b.setAttribute('aria-expanded', 'false');
+  });
+}
+function settleCenterCollapse(container, center){
+  if (!container || !center) return;
+  if (container.__lastCenter===center) return;   // 처음(미정)이면 가운데가 아닌 펼친 카드를 접는다 — 아직 펼친 카드가 없으면 아무 일도 없음
+  container.__lastCenter = center;
+  collapseCardsExcept(container, center);
+}
 function initMobileCardFocus(container){
   if (!container) return;
   mcfUpdate(container);
   if (container.dataset.mcf) return;
   container.dataset.mcf = '1';
-  let raf = 0;
+  let raf = 0, settle = 0;
   container.addEventListener('scroll', ()=>{
+    clearTimeout(settle);
+    settle = setTimeout(()=>{ if (window.innerWidth<=780) settleCenterCollapse(container, container.querySelector(':scope > .product.m-center')); }, 160);
     if (raf) return;
     raf = requestAnimationFrame(()=>{ raf = 0; mcfUpdate(container); });
   }, {passive:true});
@@ -14195,6 +14212,10 @@ function initProductCarousel(regionKey){
     scrollTimer=setTimeout(()=>{
       pcUpdateDots(regionKey);
       pcUpdateCenterDim(regionKey);
+      if (window.innerWidth>780){   // 모바일은 initMobileCardFocus가 처리
+        const cs = Array.from(track.querySelectorAll(':scope > .product'));
+        if (cs.length>3) settleCenterCollapse(track, cs[pcNearestExtIndex(track)]);
+      }
     }, 80);
   });
   pcUpdateDots(regionKey);

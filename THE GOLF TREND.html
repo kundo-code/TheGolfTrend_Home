@@ -4729,7 +4729,11 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-info-f.ai-wide{grid-column:1/-1}
 .ai-opt-desc:empty{display:none}
 .ai-combos{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.ai-combo-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr) minmax(0,1.2fr) auto;gap:6px;align-items:center}
+.ai-combo-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) minmax(0,1.1fr) auto;gap:6px;align-items:center}
+/* [수정] 조합별 전장: 숫자 칸은 넓게, 단위(yd/m) 선택 칸은 글자 폭에 맞게 좁힌다 */
+.ai-combo-row .ai-len{min-width:0}
+.ai-info-f .ai-combo-row .ai-len input[type=number]{flex:1 1 0;min-width:0}
+.ai-info-f .ai-combo-row .ai-len select{min-width:0;width:58px!important;padding-left:8px;padding-right:20px}
 .ai-combo-row input[type=text]{width:100%;box-sizing:border-box;min-height:38px;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;font-size:.86rem;font-family:inherit}
 @media(max-width:780px){.ai-combo-row{grid-template-columns:1fr 1fr}.ai-combo-row .ai-combo-rating{grid-column:1/-1}}
 .ai-info-fnote{font-size:.74rem;line-height:1.45;color:var(--nm-text-soft,#667);font-weight:500}

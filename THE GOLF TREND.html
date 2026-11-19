@@ -13612,9 +13612,23 @@ function cardProsListHTML(p){
 }
 // [수정] 상품 카드(펼쳐보기)·EDITOR'S PICK·팝업 카드의 ✓ 목록은 "제목·기본정보 › 요약 설명" 입력값을 쓴다.
 // (AI 추천정보 › 장점은 자세히 보기 페이지의 "일정 요약 타임라인" 위에서 노출 — cardProsListHTML)
-function cardSummaryListHTML(p){
+// [추가] 어두운 배경(EDITOR'S PICK 카드·팝업)에서는 입력란에서 준 "어두운 글자색"(검정·짙은 남색 등 — 기본 글자색이 서식으로 박혀 들어온 경우 포함)이
+// 배경에 묻혀 안 보인다 — 밝기가 낮은 글자색만 흰색으로 바꾸고, 빨강·파랑·초록처럼 배경 위에서도 보이는 색은 그대로 둔다
+function aiLightenDark(html){
+  if (!html || html.indexOf('color')<0) return html;
+  try{
+    const box = document.createElement('div'); box.innerHTML = html;
+    const lum = css=>{ const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(css||''); return m ? (0.299*m[1]+0.587*m[2]+0.114*m[3])/255 : null; };
+    box.querySelectorAll('[style*="color"],font[color]').forEach(el=>{
+      if (el.style && el.style.color){ const l = lum(el.style.color); if (l!==null && l<0.30) el.style.color = '#ffffff'; }
+      if (el.tagName==='FONT' && el.getAttribute('color')){ const t = document.createElement('i'); t.style.color = el.getAttribute('color'); const l = lum(t.style.color); if (l!==null && l<0.30) el.setAttribute('color','#ffffff'); }
+    });
+    return box.innerHTML;
+  }catch(e){ return html; }
+}
+function cardSummaryListHTML(p, dark){
   const ls = aiLinesLv(p && p.metaDesc);
-  return ls.length ? `<ul class="card-pros">${ls.map(o=>`<li${o.lv?` class="cp-sub${o.lv}"`:''}>${o.h}</li>`).join('')}</ul>` : '';
+  return ls.length ? `<ul class="card-pros">${ls.map(o=>`<li${o.lv?` class="cp-sub${o.lv}"`:''}>${dark?aiLightenDark(o.h):o.h}</li>`).join('')}</ul>` : '';
 }
 // 기본 정보(박수·라운드·숙박·식사·항공) 한 줄 — 히어로 카드와 팝업 카드가 같은 값을 쓴다
 function spotBasicMeta(p){
@@ -14574,7 +14588,7 @@ function renderSpotlightSlot(slot, layer, entry){
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   // [추가] 🚘 교통 · ✈️ 비행 · 이동 정보 + 구분선 아래 "AI 추천 정보 › 장점" — 입력한 값이 있을 때만
   document.getElementById('spotMove'+sfx).innerHTML=cardMoveList(p, entry.catId).map(m=>`<span>${m.html}</span>`).join('');
-  document.getElementById('spotPros'+sfx).innerHTML=cardSummaryListHTML(p);
+  document.getElementById('spotPros'+sfx).innerHTML=cardSummaryListHTML(p, true);
   const displayPrice=getDisplayPrice(p);
   document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${priceWasHTML(p.fromOriginal, displayPrice)}${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
@@ -23810,7 +23824,7 @@ function epSlideCardHTML(item, active, di){
   const headline = pe ? richToPlain(pe.headline||'') : '';
   const basicMeta = headline ? [] : spotBasicMeta(p);
   const moveItems = cardMoveList(p, cat.id);
-  const prosHTML = cardSummaryListHTML(p);
+  const prosHTML = cardSummaryListHTML(p, true);   // 어두운 팝업 배경 — 어두운 글자색은 흰색으로
   const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);

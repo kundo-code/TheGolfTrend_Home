@@ -3525,6 +3525,17 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .cur-chip.on{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700}
 .cur-pick-msg{margin-top:8px;font-size:.68rem;color:rgba(10,23,48,.55);line-height:1.4}
 .cur-calc-btn:hover{background:var(--gold-deep)}
+/* [추가] 현찰 살 때 환율 표시 */
+.cur-sub{display:inline-block;margin-left:5px;font-size:.62em;font-weight:700;opacity:.85;vertical-align:middle}
+.cur-mid{margin-left:2px;font-size:.58em;font-weight:700;opacity:.65}
+.cur-spread-grid{display:grid;gap:8px}
+.cur-spread-row{display:grid;grid-template-columns:150px 112px 1fr;align-items:center;gap:8px;margin:0!important}
+.cur-spread-row .cs-name{font-weight:700;font-size:.82rem}
+.cur-spread-row .cs-in{display:flex;align-items:center;gap:4px}
+.cur-spread-row .cs-in input{width:84px}
+.cur-spread-row .cs-in em{font-style:normal;font-size:.8rem}
+.cur-spread-row .cs-prev{font-size:.74rem;color:var(--nm-text-soft,#667)}
+@media(max-width:560px){.cur-spread-row{grid-template-columns:1fr 112px}.cur-spread-row .cs-prev{grid-column:1/-1}}
 /* 날씨·환율 상세 오버레이(클릭 시 팝업) */
 .widget-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,23,48,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
 .widget-detail-overlay.show{display:flex}
@@ -9190,7 +9201,7 @@ function collectSiteState(){
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides, calHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
     collectorEndpoint: collectorEndpointOverride,
-    aiPlaces, chatHours: chatHoursOverride,
+    aiPlaces, chatHours: chatHoursOverride, currencySpread,
   };
 }
 function applySiteState(state){
@@ -9223,6 +9234,7 @@ function applySiteState(state){
   if (state.collectorEndpoint !== undefined){ collectorEndpointOverride = state.collectorEndpoint; try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){} }
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
+  if (state.currencySpread && typeof state.currencySpread==='object'){ currencySpread = curSpreadNorm(state.currencySpread); try{ localStorage.setItem(CUR_SPREAD_KEY, JSON.stringify(currencySpread)); }catch(e){} try{ renderCurrencyWidget(); }catch(e){} }
   if (state.chatHours && typeof state.chatHours==='object'){ chatHoursOverride = state.chatHours; try{ localStorage.setItem(CHAT_HOURS_KEY, JSON.stringify(chatHoursOverride)); }catch(e){} try{ renderChatHoursLabels(); }catch(e){} }
   // 등록부가 없는 예전 상태(이 기능 이전에 저장된 데이터)를 받으면 이 기기의 등록부를 유지하고, 다음 저장 때 함께 올린다
   if (state.aiPlaces && typeof state.aiPlaces==='object'){ aiPlaces = aiPlacesNorm(state.aiPlaces); try{ localStorage.setItem(AI_PLACES_KEY, JSON.stringify(aiPlaces)); }catch(e){} }
@@ -10161,12 +10173,52 @@ function toggleCurrencyPick(code){
   saveCurrencyPick(); renderCurrencyWidget(); renderCurrencyDetail();
 }
 function resetCurrencyPick(){ currencyPick = CURRENCY_DEFAULT_LIST.slice(); currencyPickMsg=''; saveCurrencyPick(); renderCurrencyWidget(); renderCurrencyDetail(); }
+// [추가] "현찰 살 때" 환율 — 위젯·환율 목록·계산기는 은행 간 기준환율(open.er-api.com)에 관리자가 입력한 통화별 "현찰 살 때 스프레드(%)"를 더한
+// 값으로 표시한다(현찰 살 때 = 은행이 고객에게 현찰을 파는 환율, 은행·통화마다 스프레드가 달라 임의 값을 쓰지 않고 입력한 값만 쓴다).
+// 스프레드를 입력하지 않은 통화는 기준환율 그대로 보여 준다. 관리자 패널 → 위젯 설정 → "💱 현찰 살 때 스프레드"에서 입력하며 모든 방문자에게 적용된다
+const CUR_SPREAD_KEY = 'kundo_currency_spread_v1';
+function curSpreadNorm(o){
+  const out = {};
+  Object.keys(o||{}).forEach(k=>{ const v = Number(o[k]); if (/^[A-Z]{3}$/.test(k) && isFinite(v) && v>0 && v<=30) out[k] = Math.round(v*100)/100; });
+  return out;
+}
+let currencySpread = {};
+try{ currencySpread = curSpreadNorm(JSON.parse(localStorage.getItem(CUR_SPREAD_KEY)||'{}')); }catch(e){}
+function curSpreadOf(code){ const v = currencySpread[code]; return v>0 ? v : 0; }
+function curAnySpread(){ return Object.keys(currencySpread).length>0; }
+// 1단위(KRW는 1) = 몇 원 — 스프레드가 있으면 기준환율 × (1 + 스프레드%)
+function curCashPerUnit(code){
+  const k = krwPerUnit(code); if (!k) return null;
+  const sp = curSpreadOf(code);
+  return sp ? k*(1+sp/100) : k;
+}
+function setCurrencySpread(code, raw){
+  const t = String(raw==null?'':raw).trim().replace(/%/g,'');
+  const next = Object.assign({}, currencySpread);
+  if (t==='') delete next[code]; else next[code] = Number(t);
+  currencySpread = curSpreadNorm(next);
+  try{ localStorage.setItem(CUR_SPREAD_KEY, JSON.stringify(currencySpread)); }catch(e){}
+  queueSiteStateSync();
+  renderCurrencyWidget(); renderCurrencyDetail();
+  const prev = document.getElementById('curSpreadPrev_'+code); if (prev) prev.textContent = curSpreadPreview(code);
+}
+function curSpreadPreview(code){
+  const base = krwPerUnit(code); if (!base) return '';
+  const per = (CURRENCY_LABELS[code]&&CURRENCY_LABELS[code].per)||1;
+  const fmt = v=>(v*per).toLocaleString('ko-KR',{maximumFractionDigits:2});
+  return curSpreadOf(code) ? `기준 ${fmt(base)}원 → 현찰 살 때 ${fmt(curCashPerUnit(code))}원` : `기준 ${fmt(base)}원 (스프레드 미입력 — 기준환율로 표시)`;
+}
 // 통화 이름·환율 표기 — per가 있는 통화는 "100동 5.7원"처럼 그 단위로
 function curDispName(code){ const l=CURRENCY_LABELS[code]||{name:code}; return (l.per>1 ? l.per : '')+l.name; }
 function curDispRate(code){
-  const k = krwPerUnit(code); if (!k) return '-';
+  const k = curCashPerUnit(code); if (!k) return '-';
   const per = (CURRENCY_LABELS[code]&&CURRENCY_LABELS[code].per)||1;
   return (k*per).toLocaleString('ko-KR',{maximumFractionDigits:2})+'원';
+}
+// 위젯·목록 한 줄의 환율 — 일부 통화에만 스프레드를 입력했다면 입력하지 않은 통화에는 "기준" 표시를 붙여 구분한다
+function curRateHTML(code){
+  const mid = curAnySpread() && !curSpreadOf(code) ? '<sup class="cur-mid" title="현찰 스프레드 미입력 — 은행 간 기준환율">기준</sup>' : '';
+  return curDispRate(code)+mid;
 }
 // [추가] 환율 계산기의 "기준 통화"(FROM) 선택지 — 목록의 외화뿐 아니라 원화(KRW)도 포함해,
 // 원화→외화·외화→원화·외화→외화(예: 달러→엔화) 어느 방향으로든 계산할 수 있게 한다. 참고용
@@ -10204,7 +10256,7 @@ function renderCurrencyWidget(){
   const show = currencyShowList();
   el.innerHTML = `
     <div class="cur-head">
-      <div class="cur-title">실시간 환율</div>
+      <div class="cur-title">실시간 환율${curAnySpread()?'<span class="cur-sub">현찰 살 때</span>':''}</div>
       <div class="cur-head-btns">
         <button type="button" class="cur-set-btn" onclick="toggleCurrencyDetail('pick')" title="위젯에 표시할 통화 선택" aria-label="위젯에 표시할 통화 선택">⚙</button>
         <button type="button" class="cur-calc-btn" onclick="toggleCurrencyDetail()">💱 환율 계산기</button>
@@ -10212,7 +10264,7 @@ function renderCurrencyWidget(){
     </div>
     <div class="cur-list cur-n${show.length}">${show.map(code=>{
       const lbl = CURRENCY_LABELS[code]||{name:code,flag:''};
-      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}</span><span class="cur-rate">${curDispRate(code)}</span></div>`;
+      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}</span><span class="cur-rate">${curRateHTML(code)}</span></div>`;
     }).join('')}</div>
   `;
   scheduleWidgetSync();
@@ -10236,11 +10288,12 @@ function setCurrencyCalcFrom(v){ currencyCalcFrom = v; renderCurrencyDetail(); }
 function setCurrencyCalcCode(v){ currencyCalcCode = v; renderCurrencyDetail(); }
 // [추가] KRW를 기준(pivot)으로 삼아 임의의 두 통화(원화 포함) 사이를 환산 — 달러→다른 외화,
 // 외화→달러처럼 목록의 어떤 통화 조합이든 계산할 수 있게 한다
+// 현찰 살 때 환율(스프레드를 입력한 통화) 기준으로 계산한다 — 스프레드가 없으면 기준환율과 같다
 function currencyConvert(amount, fromCode, toCode){
   if (!currencyData || !currencyData.rates) return null;
-  const rFrom = currencyData.rates[fromCode], rTo = currencyData.rates[toCode];
-  if (!rFrom || !rTo) return null;
-  return amount * (rTo/rFrom);
+  const pFrom = curCashPerUnit(fromCode), pTo = curCashPerUnit(toCode);
+  if (!pFrom || !pTo) return null;
+  return amount * (pFrom/pTo);
 }
 function renderCurrencyDetail(){
   const body = document.getElementById('currencyDetailBody');
@@ -10269,9 +10322,11 @@ function renderCurrencyDetail(){
     </div>
     <div class="cur-full-list">${allCodes.map(code=>{
       const lbl=CURRENCY_LABELS[code];
-      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}(${code})</span><span class="cur-rate">${curDispRate(code)}</span></div>`;
+      return `<div class="cur-row"><span class="cur-flag">${lbl.flag}</span><span class="cur-name">${curDispName(code)}(${code})</span><span class="cur-rate">${curRateHTML(code)}</span></div>`;
     }).join('')}</div>
-    <div class="cur-disclaimer">※ 은행 간 기준환율(${updated} 갱신)이며, 실제 환전 시 금융기관이 고시하는 매매기준율(스프레드 포함)과는 다를 수 있습니다.</div>
+    <div class="cur-disclaimer">${curAnySpread()
+      ? `※ 은행 간 기준환율(${updated} 갱신)에 통화별 현찰 살 때 스프레드를 더한 값입니다(‘기준’ 표시 통화는 스프레드 미입력으로 기준환율). 환율 계산기도 같은 환율로 계산하며, 실제 환전 시 금융기관이 고시하는 환율과는 다를 수 있습니다.`
+      : `※ 은행 간 기준환율(${updated} 갱신)이며, 실제 환전 시 금융기관이 고시하는 매매기준율(스프레드 포함)과는 다를 수 있습니다.`}</div>
   `;
 }
 function initWeatherCurrencyWidgets(){
@@ -11107,6 +11162,12 @@ function renderAdminWidgets(){
       </label>
       <span class="file-hint" id="popupOpacityVal">투명도 ${pOpacity}%</span>
       ${pChanged?`<button type="button" class="file-btn danger" onclick="resetPopupOpacity()" style="margin-top:6px">팝업창 초기화</button>`:''}
+    </div>
+    <div class="ai-logo-xform" style="margin-top:16px">
+      <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">💱 현찰 살 때 스프레드 (환율 위젯·목록·계산기)</span>
+      <span class="file-hint" style="display:block;margin-bottom:6px">위젯의 환율을 은행 간 기준환율이 아니라 <b>현찰 살 때</b> 환율로 표시합니다. 이용하는 은행이 고시하는 통화별 <b>현찰 살 때 스프레드(%)</b>를 입력하면 기준환율 × (1 + 스프레드)로 계산합니다. 입력하지 않은 통화는 기준환율 그대로 보이고(일부만 입력하면 "기준" 표시), 입력한 값만 쓰며 임의의 값을 넣지 않습니다. 모든 방문자에게 적용됩니다.</span>
+      <div class="cur-spread-grid">${Object.keys(CURRENCY_LABELS).map(code=>{ const l=CURRENCY_LABELS[code]; return `<label class="cur-spread-row"><span class="cs-name">${l.flag} ${escapeAttr(curDispName(code))}(${code})</span><span class="cs-in"><input type="number" min="0" max="30" step="0.01" inputmode="decimal" placeholder="예: 1.75" value="${currencySpread[code]!==undefined?currencySpread[code]:''}" onchange="setCurrencySpread('${code}',this.value)"><em>%</em></span><span class="cs-prev" id="curSpreadPrev_${code}">${escapeAttr(curSpreadPreview(code))}</span></label>`; }).join('')}</div>
+      ${curAnySpread()?`<button type="button" class="file-btn danger" onclick="if(confirm('입력한 스프레드를 모두 지우고 기준환율로 되돌릴까요?')){currencySpread={};try{localStorage.setItem(CUR_SPREAD_KEY,'{}')}catch(e){}queueSiteStateSync();renderCurrencyWidget();renderCurrencyDetail();renderAdminWidgets()}" style="margin-top:6px">스프레드 모두 지우기</button>`:''}
     </div>
     <details class="admin-info-collapse widget-group-collapse" id="widgetIndividualCollapse" style="margin-top:16px"${individualWasOpen?' open':''}>
       <summary>🎛️ 개별 위젯 설정 (환율 · 날씨 국내 · 날씨 해외)</summary>

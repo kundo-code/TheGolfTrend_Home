@@ -13978,11 +13978,12 @@ function fitProductCardsToScreen(grid){
   // 아래쪽 여백을 위한 예산을 뺀 나머지가 카드에 배정할 수 있는 높이다
   // [수정] 모바일 여행지 섹션은 메뉴바(54px) + 국가별/권역별·시즌별/월별 고정 바(약 93px) 아래에서 카드가 시작하므로, 그 두 영역과
   // 카드 위·아래 여백(약 20px)을 뺀 나머지 화면 높이 안에 카드(접힌 상태 기준)가 통째로 들어오도록 배율을 계산한다.
-  // 카드에 정보가 많아 길어져도 화면에 다 들어오게 하되, 글자가 너무 작아지지 않도록 최소 배율(0.6)은 둔다
+  // 카드에 정보가 많아 길어져도 화면에 다 들어오게 하되, 글자가 너무 작아지지 않도록 최소 배율(0.8)은 둔다
   const navEl = document.getElementById('mainNav');
   const navH = navEl ? navEl.getBoundingClientRect().height : 54;
   const available = window.innerHeight - navH - (typeof DEST_BAR_H==='number' ? DEST_BAR_H+1 : 93) - 28;
-  const minScale = 0.6;
+  // [수정] 최소 배율 0.6 → 0.8 — 카드에 정보가 늘면서(지역명·제목보조·요약 설명·박수·출발 지역) 사파리 주소창이 보이는 화면에서 글자가 9.6px까지 줄어 작게 보였다. 글자 크기를 우선해 카드가 화면보다 길면 아래를 조금 스크롤해서 본다
+  const minScale = 0.8;
   // [버그 수정] 예전에는 카드마다 따로 높이를 재서 각자 다른 zoom을 줬다 — 카드들이 한 줄에서 같은
   // 높이로 늘어나는(stretch) 탓에, 측정 순서에 따라(특히 모바일 주소창이 나타나고 사라질 때마다
   // 발생하는 resize 이후) 내용이 적은 카드는 덜 축소되고 많은 카드는 더 축소되어 카드끼리 가로 폭·
@@ -14141,13 +14142,30 @@ function mcfUpdate(container){
   cards.forEach((c,i)=>{ c.classList.toggle('m-center', i===best); c.classList.toggle('m-side', i!==best);
     c.classList.toggle('m-left', i<best); c.classList.toggle('m-right', i>best); });
 }
+// [추가] 펼쳐 둔 상품 카드는 좌우로 넘겨 다른 상품이 가운데로 오면(스크롤이 멈춘 뒤) 자동으로 접는다 — 이전 상품의 카드가 펼쳐진 채 남지 않게.
+// 가운데 카드가 그대로면(같은 카드에서 살짝만 움직인 경우) 접지 않는다
+function collapseCardsExcept(container, keep){
+  container.querySelectorAll('.product.expanded').forEach(c=>{
+    if (c===keep) return;
+    c.classList.remove('expanded');
+    const b = c.querySelector('.product-expand'); if (b) b.setAttribute('aria-expanded', 'false');
+  });
+}
+function settleCenterCollapse(container, center){
+  if (!container || !center) return;
+  if (container.__lastCenter===center) return;   // 처음(미정)이면 가운데가 아닌 펼친 카드를 접는다 — 아직 펼친 카드가 없으면 아무 일도 없음
+  container.__lastCenter = center;
+  collapseCardsExcept(container, center);
+}
 function initMobileCardFocus(container){
   if (!container) return;
   mcfUpdate(container);
   if (container.dataset.mcf) return;
   container.dataset.mcf = '1';
-  let raf = 0;
+  let raf = 0, settle = 0;
   container.addEventListener('scroll', ()=>{
+    clearTimeout(settle);
+    settle = setTimeout(()=>{ if (window.innerWidth<=780) settleCenterCollapse(container, container.querySelector(':scope > .product.m-center')); }, 160);
     if (raf) return;
     raf = requestAnimationFrame(()=>{ raf = 0; mcfUpdate(container); });
   }, {passive:true});
@@ -14194,6 +14212,10 @@ function initProductCarousel(regionKey){
     scrollTimer=setTimeout(()=>{
       pcUpdateDots(regionKey);
       pcUpdateCenterDim(regionKey);
+      if (window.innerWidth>780){   // 모바일은 initMobileCardFocus가 처리
+        const cs = Array.from(track.querySelectorAll(':scope > .product'));
+        if (cs.length>3) settleCenterCollapse(track, cs[pcNearestExtIndex(track)]);
+      }
     }, 80);
   });
   pcUpdateDots(regionKey);

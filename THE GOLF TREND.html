@@ -14498,7 +14498,14 @@ function spotKeepScroll(fn){
   const after = grid.getBoundingClientRect().bottom;
   const d = after - before;
   // 스포트라이트 하단이 화면 위쪽(이미 지나간 영역)에 있을 때만 보정 — 화면 안에서 보고 있을 때는 그대로 둔다
-  if (d && before <= 0 && window.scrollY > 0) window.scrollBy(0, d);
+  if (d && before <= 0 && window.scrollY > 0){
+    // [수정] html{scroll-behavior:smooth} 때문에 scrollBy가 부드럽게 이동하면, 높이가 바뀐 프레임에 화면이 먼저 밀렸다가 천천히 되돌아와
+    // 위아래로 출렁이는 것처럼 보인다 — 보정은 반드시 "즉시" 적용(잠깐 smooth를 끄고 이동한 뒤 복원)
+    const de = document.documentElement, prev = de.style.scrollBehavior;
+    de.style.scrollBehavior = 'auto';
+    window.scrollTo(window.scrollX, window.scrollY + d);
+    de.style.scrollBehavior = prev;
+  }
 }
 function cycleSpot(){
   if (_tgtBgFrozen) return;   // 관리자 창이 열려 있는 동안은 EDITOR'S PICK 카드를 교체하지 않는다

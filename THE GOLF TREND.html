@@ -1485,12 +1485,13 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .ch-view-tools .abc-input{flex:1;min-width:0}
 .ch-view-tools .abc-select{width:auto}
 .ch-view-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 0 2px;font-size:.8rem}
-.pc-chooser{position:fixed;inset:0;z-index:3600;display:flex;align-items:flex-start;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(10,23,48,.6);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.pc-chooser{--pc-pad:20px;position:fixed;inset:0;z-index:3600;display:flex;align-items:flex-start;justify-content:center;padding:var(--pc-pad);box-sizing:border-box;background:rgba(10,23,48,.6);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* [수정] 위치·링크가 많아도 화면에서 벗어나지 않고 위아래로 스크롤되도록, 카드가 아니라 바깥 오버레이(.pc-chooser)가 스크롤 영역이다(카드 안 스크롤 + backdrop-filter 조합은 iOS Safari에서 스크롤이 막혔다).
    카드는 margin:auto로 짧을 땐 가운데, 길면 맨 위부터 시작한다. 제목 줄(×)은 스크롤해도 위에 고정, 맨 아래에 닫기 버튼도 둔다 */
-.pc-chooser-card{width:min(360px,100%);margin:auto;box-sizing:border-box;background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 50px rgba(10,23,48,.35);display:flex;flex-direction:column;gap:10px}
+.pc-chooser-card{overflow:clip;width:min(360px,100%);margin:auto;box-sizing:border-box;background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 50px rgba(10,23,48,.35);display:flex;flex-direction:column;gap:10px}
 .pc-chooser-card>*{flex-shrink:0}
-.pc-chooser-card .pc-chooser-head{position:sticky;top:0;z-index:2;background:#fff;margin:-16px -16px 0;padding:14px 16px 8px;border-radius:18px 18px 0 0}
+/* [수정] 위로 스크롤하면 "어느 위치를 볼까요?" 바가 화면 맨 위(여백 없이)에 붙는다 — sticky 기준은 오버레이의 안쪽 여백(padding)을 뺀 영역이라 top을 여백만큼 음수로 둔다. 둥근 모서리는 카드(overflow:clip)가 잘라 주므로 바 자체는 각지게 둔다 */
+.pc-chooser-card .pc-chooser-head{position:sticky;top:calc(var(--pc-pad) * -1);z-index:2;background:#fff;margin:-16px -16px 0;padding:14px 16px 8px;border-radius:0;box-shadow:0 1px 0 rgba(10,23,48,.06)}
 .pc-chooser-close-b{border:1px solid rgba(10,23,48,.14);background:rgba(10,23,48,.05);color:var(--pine-deep);font-weight:800;font-size:.95rem;padding:12px;border-radius:12px;cursor:pointer;margin-top:4px}
 .pc-chooser-head{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--pine-deep);padding:2px 2px 4px}
 .pc-chooser-x{border:none;background:rgba(10,23,48,.06);width:28px;height:28px;border-radius:50%;font-size:1.1rem;line-height:1;cursor:pointer;color:var(--pine-deep)}

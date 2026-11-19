@@ -705,7 +705,7 @@ section.block{padding:100px 24px;position:relative}
 .product-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
 .product-metadesc{color:#3176bd;margin:2px 0 10px}
 .product-metadesc .pmd-line{color:#3176bd}
-.product-metadesc .pmd-dot{margin-right:.4em}
+.product-metadesc .pmd-dot{margin-right:.4em;color:#16a34a;font-weight:700}
 .product-metadesc .pmd-line a{color:inherit}
 /* 상세 페이지 상단: "영남권 · YEONGNAM" 줄의 오른쪽 끝에 배치 (글자 크기는 상품 카드의 표기와 동일) */
 .pd-top-title .cat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -1019,6 +1019,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-slot{margin-bottom:16px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);box-shadow:0 8px 24px rgba(10,23,48,.1)}
 /* [수정] "일정 요약 타임라인" 섹션 바로 위에 구분선을 두어 앞 섹션과의 경계를 명확히 함 */
 .pd-section-divider{border-top:1px dashed rgba(10,23,48,.16);margin:4px 0 16px}
+.pd-pros-body{padding:4px 20px 18px}
+.pd-pros-body .card-pros{font-size:.95rem;color:rgba(10,23,48,.82)}
+.pd-pros-body .card-pros li{margin-bottom:4px}
+.pd-pros-body .card-pros li::before{color:#16a34a}
 /* [수정] 제목을 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단 별도 박스로 분리 */
 .pd-top-title{padding:20px 20px 16px}
 .pd-top-title .cat{font-size:12pt;letter-spacing:.18em;color:var(--gold-deep);font-weight:600;text-transform:uppercase;margin-bottom:6px}
@@ -13490,6 +13494,12 @@ function cardProsListHTML(p){
   const ls = aiLinesHTML(t);   // 서식을 넣은 장점은 서식 그대로 카드에 보인다
   return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
 }
+// [수정] 상품 카드(펼쳐보기)·EDITOR'S PICK·팝업 카드의 ✓ 목록은 "제목·기본정보 › 요약 설명" 입력값을 쓴다.
+// (AI 추천정보 › 장점은 자세히 보기 페이지의 "일정 요약 타임라인" 위에서 노출 — cardProsListHTML)
+function cardSummaryListHTML(p){
+  const ls = aiLinesHTML(p && p.metaDesc);
+  return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
+}
 // 기본 정보(박수·라운드·숙박·식사·항공) 한 줄 — 히어로 카드와 팝업 카드가 같은 값을 쓴다
 function spotBasicMeta(p){
   const firstPe = (p.priceEntries && p.priceEntries.find(pe=>!pe.hidden)) || null;
@@ -13707,10 +13717,10 @@ function productCardHTML(p, catId, idx){
   const kickerHTML = productKickerHTML(p, 'product-kicker');
   // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
   const _metaLines = aiLinesHTML(p.metaDesc);
-  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">·</span>${l}</span></div>`).join('')}</div>` : '';
+  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">✓</span>${l}</span></div>`).join('')}</div>` : '';
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
-  const prosHTML = cardProsListHTML(p);
+  const prosHTML = cardSummaryListHTML(p);   // [수정] 펼쳐보기 안의 ✓ 목록 = 요약 설명(장점은 자세히 보기로 이동)
   const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length || prosHTML);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
   const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isRecommended?' data-label-recommend="1"':'') + (lblProfile.isSuggested?' data-label-suggest="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'') + (lblProfile.isPriceUp?' data-label-price="up"':'') + (lblProfile.isPriceDown?' data-label-price="down"':'');
@@ -14444,7 +14454,7 @@ function renderSpotlightSlot(slot, layer, entry){
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   // [추가] 🚘 교통 · ✈️ 비행 · 이동 정보 + 구분선 아래 "AI 추천 정보 › 장점" — 입력한 값이 있을 때만
   document.getElementById('spotMove'+sfx).innerHTML=cardMoveList(p, entry.catId).map(m=>`<span>${m.html}</span>`).join('');
-  document.getElementById('spotPros'+sfx).innerHTML=cardProsListHTML(p);
+  document.getElementById('spotPros'+sfx).innerHTML=cardSummaryListHTML(p);
   const displayPrice=getDisplayPrice(p);
   document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${priceWasHTML(p.fromOriginal, displayPrice)}${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
@@ -14488,7 +14498,14 @@ function spotKeepScroll(fn){
   const after = grid.getBoundingClientRect().bottom;
   const d = after - before;
   // 스포트라이트 하단이 화면 위쪽(이미 지나간 영역)에 있을 때만 보정 — 화면 안에서 보고 있을 때는 그대로 둔다
-  if (d && before <= 0 && window.scrollY > 0) window.scrollBy(0, d);
+  if (d && before <= 0 && window.scrollY > 0){
+    // [수정] html{scroll-behavior:smooth} 때문에 scrollBy가 부드럽게 이동하면, 높이가 바뀐 프레임에 화면이 먼저 밀렸다가 천천히 되돌아와
+    // 위아래로 출렁이는 것처럼 보인다 — 보정은 반드시 "즉시" 적용(잠깐 smooth를 끄고 이동한 뒤 복원)
+    const de = document.documentElement, prev = de.style.scrollBehavior;
+    de.style.scrollBehavior = 'auto';
+    window.scrollTo(window.scrollX, window.scrollY + d);
+    de.style.scrollBehavior = prev;
+  }
 }
 function cycleSpot(){
   if (_tgtBgFrozen) return;   // 관리자 창이 열려 있는 동안은 EDITOR'S PICK 카드를 교체하지 않는다
@@ -16562,6 +16579,10 @@ function renderProductDetail(p,cat,idx){
       </div>
     </div>`;
   }
+
+  // [수정] AI 추천정보 › 장점 — 상품 카드에서 옮겨 와 "일정 요약 타임라인" 바로 위에 ✓ 목록으로 노출(입력한 값이 있을 때만)
+  { const _prosList = cardProsListHTML(p);
+    if (_prosList) html += `<div class="pd-section-divider"></div><div class="pd-slot pd-pros-slot"><div class="pd-section-title">✅ 장점</div><div class="pd-pros-body">${_prosList}</div></div>`; }
 
   // [수정] 공통 일정 요약 타임라인 — 공통 일정(또는 모든 요금 항목이 같은 일정)을 여기서 한 번만
   // 보여준다. 공통과 다른 일정을 쓰는 요금 항목은 그 항목의 "상세보기" 안에서 따로 보여준다
@@ -23622,8 +23643,11 @@ function showEditorsPickPopup(){
   // [수정] 상품 이미지·레이블 이미지를 미리 받아 둬 슬라이드를 넘길 때 레이블이 늦게 뜨지 않게 한다
   epPopupItems.forEach(it=>{
     const tm = it.product.titleMedia;
-    if (tm && tm.type==='image' && tm.url){ try{ const im=new Image(); im.src=tm.url; }catch(e){} }
-    (it.product.cardLabels||[]).filter(l=>l.active&&l.url).forEach(l=>{ try{ const im=new Image(); im.src=l.url; }catch(e){} });
+    // [수정] 내려받기만이 아니라 디코딩(decode)까지 미리 해 둔다 — 아직 화면에 나온 적 없는 슬라이드는 visibility:hidden이라 그려지지 않아,
+    // 처음 넘어오는 순간 큰 이미지 디코딩·래스터 때문에 넘김 애니메이션이 끊기며 "툭 튀는" 현상이 생겼다
+    const _warm = (u)=>{ try{ const im=new Image(); im.src=u; if (im.decode) im.decode().catch(()=>{}); }catch(e){} };
+    if (tm && tm.type==='image' && tm.url) _warm(tm.url); else { try{ const g=getImage(it.cat.id); if (typeof g==='string' && g) _warm(g); }catch(e){} }
+    (it.product.cardLabels||[]).filter(l=>l.active&&l.url).forEach(l=>_warm(l.url));
   });
   renderEpPopup();
   const stage = document.getElementById('epPopupStage');
@@ -23648,7 +23672,7 @@ function epSlideCardHTML(item, active, di){
   const headline = pe ? richToPlain(pe.headline||'') : '';
   const basicMeta = headline ? [] : spotBasicMeta(p);
   const moveItems = cardMoveList(p, cat.id);
-  const prosHTML = cardProsListHTML(p);
+  const prosHTML = cardSummaryListHTML(p);
   const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);
@@ -23702,13 +23726,14 @@ function renderEpPopup(){
 }
 // [수정] 끝없이 이어지는(루프) 캐러셀 — 트랙 앞뒤에 마지막/첫 상품 복제본을 하나씩 두어, 마지막에서 다음으로 넘기면 첫 상품이 같은 방향(오른쪽에서
 // 왼쪽)으로 이어서 들어오고, 첫 상품에서 이전으로 넘기면 마지막 상품이 왼쪽에서 들어온다. 애니메이션이 끝나면 눈에 띄지 않게 진짜 슬라이드 위치로 되돌린다
-let epPopupWrapTimer = null;
+let epPopupWrapTimer = null, epPopupMoveTok = 0;
 // 슬라이드 사이에 간격(--ep-gap)을 두므로 한 칸 이동량은 "카드 폭 + 간격" — 카드 모서리 밖으로 나온 레이블·리본이 다음 상품 이미지 위에 겹쳐 보이지 않게 한다
 function epTx(pos, dx){ return `translateX(calc(${-pos} * (100% + var(--ep-gap, 40px))${dx ? ' + '+dx+'px' : ''}))`; }
 function epTrackPos(idx){ return idx + (epPopupItems.length>1 ? 1 : 0); }
 function epPopupFinishWrap(){
   if (!epPopupWrapTimer) return;
   clearTimeout(epPopupWrapTimer); epPopupWrapTimer = null;
+  epPopupMoveTok++;
   const track = document.getElementById('epPopupTrack'); if (!track) return;
   track.style.transition = 'none';
   track.style.transform = epTx(epTrackPos(epPopupIdx));
@@ -23722,9 +23747,16 @@ function epPopupUpdatePosition(pos){
     const vp = track.parentElement;
     vp.classList.add('ep-moving');
     clearTimeout(epPopupMoveTimer);
-    epPopupMoveTimer = setTimeout(()=>vp.classList.remove('ep-moving'), 480);
-    track.style.transform = epTx(typeof pos==='number' ? pos : epTrackPos(epPopupIdx));
     track.querySelectorAll('.ep-popup-slide').forEach(el=>el.classList.toggle('active', Number(el.dataset.i)===epPopupIdx));
+    // [수정] 새 슬라이드(처음 보이는 슬라이드는 아직 그려진 적이 없음)를 먼저 보이게 해 그려 둔 뒤, 두 프레임 뒤에 넘김 애니메이션을 시작한다.
+    // 곧바로 시작하면 첫 그리기·이미지 디코딩이 애니메이션 도중에 끼어들어 프레임이 건너뛰며 슬라이드가 한 번에 "툭" 튀었다
+    const target = typeof pos==='number' ? pos : epTrackPos(epPopupIdx), tok = ++epPopupMoveTok;
+    void vp.offsetWidth;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if (tok!==epPopupMoveTok || !track.isConnected) return;   // 그 사이 다른 이동·닫기가 있었으면 건너뜀
+      track.style.transform = epTx(target);
+      epPopupMoveTimer = setTimeout(()=>vp.classList.remove('ep-moving'), 480);
+    }));
   }
   document.querySelectorAll('#epPopupStage .ep-popup-dot').forEach((d,i)=>d.classList.toggle('active', i===epPopupIdx));
   const counter = document.querySelector('#epPopupStage .ep-popup-counter');
@@ -23746,7 +23778,7 @@ function epPopupMove(dir){
   epPopupIdx = (next + n) % n;
   epPopupUpdatePosition(dir>0 ? n+1 : 0);
   epPopupStartAuto();
-  epPopupWrapTimer = setTimeout(epPopupFinishWrap, 470);
+  epPopupWrapTimer = setTimeout(epPopupFinishWrap, 540);   // 두 프레임 지연 + 애니메이션(.45s)이 끝난 뒤
 }
 function epPopupStartAuto(){
   clearInterval(epPopupTimer);
@@ -23786,7 +23818,7 @@ function epPopupGoToProduct(catId, idx){
       if (Math.abs(x) > Math.abs(y)){
         mode = 'h';
         clearInterval(epPopupTimer); epPopupTimer = null;      // 드래그 중에는 자동 넘김 멈춤
-        clearTimeout(epPopupMoveTimer);
+        clearTimeout(epPopupMoveTimer); epPopupMoveTok++;       // 대기 중이던 넘김 시작이 드래그를 덮어쓰지 않게
         vp.classList.add('ep-moving');                          // 옆 슬라이드를 보이게 하고 카드 경계에서 자름
         track.style.transition = 'none';
       } else { mode = 'v'; }

@@ -694,6 +694,8 @@ section.block{padding:100px 24px;position:relative}
 /* [추가] 제목 위 한 줄(지역명 · 제목보조 — 같은 크기, 제목보다 작게) + "펼쳐보기" 위 요약 설명(좌측 정렬, 파란색) — 카드 폭을 넘으면 JS(fitCardLines)가 글자 크기만 줄여 한 줄을 유지 */
 .product-kicker,.pmd-line,.spot-kicker,.popup-kicker,.pd-kicker{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
 .product-metadesc{display:block;width:100%;min-width:0}
+/* [수정] 요약 설명은 기본 굵기(보통)로 — 굵게는 관리자 입력란에서 서식(B)을 준 글자만 굵게 보인다(.pmd-line은 다른 한 줄 문구와 공통 규칙이 굵게로 잡혀 있었음) */
+.product-metadesc .pmd-line{font-weight:400}
 .spot-kicker{color:rgba(255,255,255,.88);font-size:.95rem;margin:0 0 2px}
 .popup-kicker{color:rgba(255,255,255,.88);font-size:.92rem;margin:0 0 3px}
 .pd-kicker{color:var(--pine-deep);font-size:1rem;margin:0 0 4px}
@@ -14600,22 +14602,26 @@ function spotlightVisualUrl(entry){
   if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
   return getImage(entry.catId);
 }
-// [수정] 모바일 화면 자동 아래로 밀림 방지 — EDITOR'S PICK 카드는 8초마다 내용이 바뀌며 카드 높이(두 레이어 중 큰 쪽)가
-// 달라지는데, 그 영역이 현재 보고 있는 화면 "위쪽"에 있으면 iOS Safari(스크롤 앵커링 없음)에서는 아래 콘텐츠가 통째로
-// 밀려 내려온다. 교체 전후 스포트라이트 하단 위치 차이만큼 스크롤을 보정해 보고 있는 화면이 그대로 유지되게 한다.
+// [수정] 화면 자동 밀림 방지(스크롤 앵커링) — EDITOR'S PICK 카드는 8초마다 내용이 바뀌며 카드 높이가 달라지는데, 그 영역이 지금 보고 있는 화면
+// "위쪽"에 있으면 스크롤 앵커링이 없는 브라우저(iOS·맥 Safari)에서는 아래 내용이 통째로 밀려 내려온다. 반대로 카드 높이가 바뀌어도 아래 내용이
+// 안 움직이는 배치(데스크탑)에서 높이 차이만큼 스크롤을 보정하면 화면이 오히려 어긋난다. 그래서 "높이 차이"가 아니라, 화면 가운데에 보이는 요소가
+// 교체 전후로 실제로 얼마나 움직였는지를 재어 그만큼만 스크롤을 되돌린다(움직임이 없으면 아무것도 하지 않음).
+// 보정은 smooth가 아닌 즉시 적용 — html{scroll-behavior:smooth}에서는 scrollBy가 천천히 되돌아와 위아래로 출렁이는 것처럼 보인다
 function spotKeepScroll(fn){
-  // [수정] 스포트라이트 카드 자신의 하단이 아니라 히어로 섹션(#top)의 하단을 기준으로 잰다 — 데스크탑처럼 카드 높이가 바뀌어도 히어로(와 그 아래 내용)가
-  // 움직이지 않는 배치에서는 보정하면 오히려 화면이 그만큼 어긋난다
-  const grid = document.getElementById('top') || document.querySelector('.spotlight-grid');
-  if (!grid){ fn(); return; }
-  const before = grid.getBoundingClientRect().bottom;
+  const hero = document.getElementById('top');
+  let anchor = null;
+  try{
+    if (window.scrollY > 0){
+      const el = document.elementFromPoint(Math.round(window.innerWidth/2), Math.round(window.innerHeight/2));
+      // 히어로 안(지금 카드를 보고 있는 경우)이거나 화면 전체를 덮는 창(팝업·상세)이면 기준으로 쓰지 않는다
+      if (el && !(hero && hero.contains(el)) && !el.closest('.popup-stage,.pd-overlay,.adv-editor-overlay,#adminPanel,.notice-popup-overlay')) anchor = el;
+    }
+  }catch(e){}
+  const before = anchor ? anchor.getBoundingClientRect().top : 0;
   fn();
-  const after = grid.getBoundingClientRect().bottom;
-  const d = after - before;
-  // 스포트라이트 하단이 화면 위쪽(이미 지나간 영역)에 있을 때만 보정 — 화면 안에서 보고 있을 때는 그대로 둔다
-  if (d && before <= 0 && window.scrollY > 0){
-    // [수정] html{scroll-behavior:smooth} 때문에 scrollBy가 부드럽게 이동하면, 높이가 바뀐 프레임에 화면이 먼저 밀렸다가 천천히 되돌아와
-    // 위아래로 출렁이는 것처럼 보인다 — 보정은 반드시 "즉시" 적용(잠깐 smooth를 끄고 이동한 뒤 복원)
+  if (!anchor || !anchor.isConnected) return;
+  const d = anchor.getBoundingClientRect().top - before;
+  if (Math.abs(d) >= 0.5){
     const de = document.documentElement, prev = de.style.scrollBehavior;
     de.style.scrollBehavior = 'auto';
     window.scrollTo(window.scrollX, window.scrollY + d);

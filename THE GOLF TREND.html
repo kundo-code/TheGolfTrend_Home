@@ -1520,11 +1520,17 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .loc-group{margin:10px 0;padding:10px;border:1px solid rgba(10,23,48,.1);border-radius:10px;background:rgba(10,23,48,.02)}
 .loc-group-title{font-weight:700;font-size:.82rem;margin-bottom:8px}
 .loc-count{font-weight:500;font-size:.72rem;color:var(--nm-text-soft)}
-.loc-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) auto;gap:6px;align-items:center;margin-bottom:6px}
+.loc-row{display:grid;grid-template-columns:28px minmax(0,.8fr) minmax(0,1.6fr) auto;gap:6px;align-items:center;margin-bottom:6px;border-radius:8px}
+/* [추가] 위치 링크 줄을 손잡이(⠿)로 잡고 위아래로 끌어 순서 이동 — 마우스·터치 공통(포인터 이벤트) */
+.loc-drag{display:flex;align-items:center;justify-content:center;height:34px;border-radius:8px;cursor:grab;color:#8a94a6;font-size:1.15rem;line-height:1;user-select:none;-webkit-user-select:none;touch-action:none;background:rgba(10,23,48,.05)}
+.loc-drag:hover{background:rgba(10,23,48,.1);color:#0a1730}
+.loc-row.is-sorting{position:relative;z-index:30;background:#fff;box-shadow:0 8px 22px rgba(10,23,48,.25);outline:2px solid var(--nm-blue,#2F6FED);cursor:grabbing}
+.loc-rows.is-sorting-list .loc-row:not(.is-sorting){opacity:.75}
+body.tgt-sorting{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .loc-btns{display:flex;gap:4px}
 .loc-btns .apc-btn-sm[disabled]{opacity:.35;cursor:default}
 .loc-empty{font-size:.76rem;color:var(--nm-text-soft);padding:6px 2px}
-@media(max-width:780px){ .loc-row{grid-template-columns:1fr} .loc-btns{justify-content:flex-end} }
+@media(max-width:780px){ .loc-row{grid-template-columns:34px minmax(0,1fr)} .loc-row .loc-url,.loc-row .loc-btns{grid-column:1/-1} .loc-drag{height:44px;grid-row:1} .loc-btns{justify-content:flex-end} }
 .post-tag-red{background:#e64545}
 .post-tag-yellow{background:#dca82c}
 .post-tag-default{background:rgba(221,179,103,.9)}
@@ -4710,6 +4716,11 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-info-f:not(.filled) select,.ai-info-f:not(.filled) input[type=text],.ai-info-f:not(.filled) input[type=number]{color:#8a94a6;background:#fbfcfe;border-color:rgba(10,23,48,.12)}
 .ai-info-f select option{color:#0a1730}
 .ai-info-f.ai-wide{grid-column:1/-1}
+.ai-opt-desc:empty{display:none}
+.ai-combos{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.ai-combo-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr) minmax(0,1.2fr) auto;gap:6px;align-items:center}
+.ai-combo-row input[type=text]{width:100%;box-sizing:border-box;min-height:38px;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;font-size:.86rem;font-family:inherit}
+@media(max-width:780px){.ai-combo-row{grid-template-columns:1fr 1fr}.ai-combo-row .ai-combo-rating{grid-column:1/-1}}
 .ai-info-fnote{font-size:.74rem;line-height:1.45;color:var(--nm-text-soft,#667);font-weight:500}
 .ai-info-f .rtf-editable.ai-rtf{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:10px;border:1px solid rgba(10,23,48,.18);background:#fff;color:#0a1730;font-size:.86rem;font-family:inherit;line-height:1.5;font-weight:400;white-space:pre-wrap;overflow-wrap:anywhere;outline:none;resize:vertical;overflow:auto}
 .ai-info-f .rtf-editable.ai-rtf:focus{box-shadow:0 0 0 2px var(--nm-blue)}
@@ -11428,8 +11439,10 @@ function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodg
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
 function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x && x.turf && !x.turfFairway) x.turfFairway = x.turf; /* 예전 '잔디 상태'는 페어웨이 칸으로 이어받음(원본 값은 그대로 보존) */ if (x) aiCourseAutoLevel(x); return x; }
 // Slope → 난이도(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적). Slope를 찾지 못하면 ''
+// 종합 난이도 선택지(Lv.1~5) — 아래 Slope 자동 판정이 먼저 쓰므로 여기에 둔다
+const AI_LEVEL_OPTS = ['Lv.1 매우 쉬움 (입문·초급 추천)','Lv.2 쉬움 (무난함)','Lv.3 보통 (표준)','Lv.4 어려움 (상급자 추천)','Lv.5 매우 어려움 (챔피언십급)'];
 function aiSlopeOf(rating){ const nums = String(typeof rating==='string' && rating.indexOf('<')>=0 ? richToPlain(rating) : (rating||'')).match(/\d+(?:\.\d+)?/g); if (!nums) return null; const sl = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop(); return sl==null ? null : sl; }
-function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? '쉬움' : (sl<135 ? '보통' : '도전적')); }
+function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? AI_LEVEL_OPTS[1] : (sl<135 ? AI_LEVEL_OPTS[2] : AI_LEVEL_OPTS[3])); }   // 120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4(예전 쉬움·보통·도전적 기준을 그대로 옮김)
 // 난이도가 비어 있거나 자동 값(courseLevelAuto)이면 Course Rating · Slope로 다시 정한다. 관리자가 직접 고른 값은 그대로 둔다
 function aiCourseAutoLevel(x){
   if (x.courseLevel && !x.courseLevelAuto) return;
@@ -19502,18 +19515,35 @@ const AI_LODGE_FIELDS = [
   {k:'nearHospital', label:'병원·약국', type:'prox', help:AI_PROX_HELP+' 병원과 약국 중 가까운 곳 기준(진료·처방 가능한 곳).'},
   {k:'memo', label:'메모', type:'area', rows:3, max:600, wide:true, help:'기타 참고 사항(고객에게는 보이지 않음).'}
 ];
+// 코스 지형 유형(주 유형 · 단일 선택) / 세부 지형·설계 특성(다중 선택) / 종합 난이도(Lv.1~5) — 설명은 선택하면 입력칸 아래에 나타난다
+const AI_TERRAIN_OPTS = ['산악형 (Mountain)','구릉형 (Rolling / Hilly)','평지형 (Flat / Parkland)','해안·링크스형 (Coastal / Links)','수변·레이크형 (Lakeside / Riverside)','임간형 (Forest / Woodland)'];
+const AI_TERRAIN_TRAITS = ['강한 언듈레이션 (페어웨이·그린 기복 심함)','블라인드 홀 다수 (티샷 IP 또는 그린 시야 제한)','도그레그 홀 다수 (좌·우 굴절 홀 비중 높음)','포대 그린 / 2단 이상 티어드 그린 (그린 고저·단차 설계)','넓고 개방적인 페어웨이 (티샷 압박감이 적음)','좁고 타이트한 페어웨이 (정교한 샷이 요구됨)','워터 해저드 밀집 (연못·개울 등 물 장애물 비중 높음)','벙커·마운드 강조형 (모래 벙커와 인공 언덕 배치가 특징적임)','업다운이 심한 산악형 (오르막·내리막이 많고 체력 소모가 큼)','완만한 언덕의 구릉형 (적당한 오르내림과 굴곡이 어우러짐)','평탄하고 편안한 평지형 (고저차가 거의 없고 걷기 편함)','바다·바람이 느껴지는 해안형 (오션뷰와 해풍의 영향이 큼)','호수·연못이 많은 수변형 (물 장애물이 많아 정교함이 필요함)','페어웨이 굴곡(언듈레이션)이 심함 (경사 라이에서 치는 샷이 많음)','그린이 보이지 않는 블라인드 홀이 많음 (코스 파악과 거리 계산이 까다로움)','시야가 탁 트이고 페어웨이가 넓음 (티샷 부담이 적고 호쾌함)'];
+const AI_OPT_DESC = {
+  elevation:{'산악형 (Mountain)':'표고차 50m 이상, 급경사와 계곡 지형을 활용한 고저차가 큰 코스','구릉형 (Rolling / Hilly)':'표고차 20~50m 수준, 완만한 언덕과 자연 능선이 이어지는 코스','평지형 (Flat / Parkland)':'표고차 20m 미만, 평탄한 내륙 부지에 수목·연못·조형물로 난이도를 부여한 코스','해안·링크스형 (Coastal / Links)':'해안 사구·절벽에 위치하며 수목이 적고 해풍과 원지형 굴곡이 살아있는 코스','수변·레이크형 (Lakeside / Riverside)':'호수·강변·간척지 등 평탄한 수계 주변에 워터 해저드 비중이 높은 코스','임간형 (Forest / Woodland)':'울창한 산림을 따라 홀이 독립적으로 배치된 평탄·완경사 숲속 코스'},
+  courseLevel:{'Lv.1 매우 쉬움 (입문·초급 추천)':'페어웨이가 넓고 장애물이 적어 초보자나 명랑 골프에 적합한 코스','Lv.2 쉬움 (무난함)':'전반적으로 평탄하고 시야가 트여 있어 스코어를 내기 좋은 편안한 코스','Lv.3 보통 (표준)':'적당한 고저차와 해저드·벙커가 조화를 이루어 전략과 샷 정확도가 함께 요구되는 코스','Lv.4 어려움 (상급자 추천)':'좁은 페어웨이, 깊은 벙커, 빠른 그린, 강한 언듈레이션 등으로 정교한 코스 매니지먼트가 필수인 코스','Lv.5 매우 어려움 (챔피언십급)':'긴 전장과 가혹한 장애물·그린 난이도를 갖춘 토너먼트 수준의 도전적인 코스'}
+};
+function aiOptDescSync(sel, k){ const n = sel.closest('.ai-info-f').querySelector('.ai-opt-desc'); if (n) n.textContent = (AI_OPT_DESC[k]||{})[sel.value] || ''; }
+// 종합 난이도 구간 — 고객 조건(쉬운/보통/도전적 코스)용: Lv.1·2 = 쉬움, Lv.3 = 보통, Lv.4·5 = 도전적. 예전 값(쉬움·보통·도전적)도 같은 구간으로 읽는다
+function aiLevelBand(v){
+  const t = String(v||''), m = /^Lv\.?\s*([1-5])/.exec(t);
+  if (m){ const n = Number(m[1]); return n<=2 ? 'easy' : (n===3 ? 'normal' : 'hard'); }
+  return t==='쉬움' ? 'easy' : (t==='보통' ? 'normal' : (t==='도전적' ? 'hard' : ''));
+}
+function aiLevelShort(v){ return String(v||'').replace(/\s*\(.*\)\s*$/, ''); }
 // 골프장 등록부 항목
 const AI_COURSE_FIELDS = [
   {k:'name', label:'골프장(코스)명', type:'text', plain:true, help:'공식 명칭. 같은 골프장을 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
   {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 골프장을 고를 때 같은 국가·권역을 먼저 보여 줍니다.'},
   {k:'holes', label:'홀 수', type:'select', opts:['18','27','36','45+'], help:'골프장 전체 홀 수(27홀 골프장이면 27).'},
-  {k:'par', label:'PAR', type:'num', help:'정규 18홀 기준 PAR.'},
-  {k:'courseLength', label:'전장', type:'len', help:'레귤러(화이트) 티 기준. 숫자를 입력하고 단위를 고르세요 — 야드로 입력한 뒤 m를 고르면 미터로 자동 환산됩니다(1yd = 0.9144m, 반대도 동일).'},
-  {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'레귤러(남성 화이트) 티 기준, 골프장·협회가 공개한 값만(백 티 값만 있으면 비워 두고 메모에). 국내 골프장은 위 🔍 검색에서 고르면 KGA 값이 자동 입력됩니다. Slope가 있고 난이도를 비워 두면 Slope로 난이도를 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적).'},
+  {k:'par', label:'PAR(18홀 조합 기준)', type:'num', help:'18홀 한 바퀴(조합) 기준 PAR. 27홀 이상이면 가장 대표적인 18홀 조합의 PAR을 입력하세요.'},
+  {k:'courseLength', label:'전장', type:'len', help:'레귤러(화이트) 티 기준. 숫자를 입력하고 단위를 고르세요(기본 m) — 야드로 입력한 뒤 m를 고르면 미터로 자동 환산됩니다(1yd = 0.9144m, 반대도 동일). 27홀 이상은 아래 \'코스 조합별\'에서 조합마다 추가하세요.'},
+  {k:'rating', label:'Course Rating · Slope', type:'text', ph:'예: 72.4 / 131', help:'레귤러(남성 화이트) 티 기준, 골프장·협회가 공개한 값만(백 티 값만 있으면 비워 두고 메모에). 국내 골프장은 위 🔍 검색에서 고르면 KGA 값이 자동 입력됩니다. Slope가 있고 종합 난이도를 비워 두면 Slope로 자동 판정(120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4). 27홀 이상이면 위 값은 대표 조합으로, 나머지는 아래 \'코스 조합별\'에 추가.'},
+  {k:'courseCombos', label:'코스 조합별 전장 · Course Rating · Slope (27홀 이상)', type:'combos', wide:true, when:x=>!!x.holes && String(x.holes)!=='18', help:'27홀·36홀·45홀 이상이면 18홀 조합(예: EAST+WEST, WEST+SOUTH)마다 전장과 Course Rating · Slope가 다를 수 있어, 위 \'전장\'·\'Course Rating · Slope\'는 첫 번째(대표) 조합으로 쓰고 나머지 조합을 여기에 추가합니다. 공개된 값만 입력하세요.'},
   {k:'turfFairway', label:'잔디 상태 · 페어웨이', type:'text', ph:'예: 양잔디, 관리 우수', help:'페어웨이 잔디 종류와 최근 확인한 관리 상태.'},
   {k:'turfGreen', label:'잔디 상태 · 그린', type:'text', ph:'예: 벤트그라스, 그린 상태 양호', help:'그린 잔디 종류와 최근 확인한 관리 상태.'},
-  {k:'elevation', label:'고저차', type:'select', opts:['평탄','보통','큼'], help:'평탄: 대부분 평지 · 보통 · 큼: 오르막·내리막이 많아 카트 이동이 사실상 필수.'},
-  {k:'courseLevel', label:'난이도', type:'select', opts:['쉬움','보통','도전적'], help:'쉬움: 페어웨이 넓고 해저드·벙커가 적어 초보·시니어도 무난(Slope 약 120 미만) · 보통(120~134) · 도전적: 좁은 페어웨이·많은 해저드·빠른 그린, 대회 개최 수준(135 이상). Course Rating · Slope를 입력하면 이 기준으로 자동 선택됩니다(직접 고르면 그 값이 우선, \'미확인\'을 고르면 다시 자동).'},
+  {k:'elevation', label:'코스 지형 유형', type:'select', opts:AI_TERRAIN_OPTS, wide:true, help:'주 지형 유형(단일 선택 · 입지 및 표고차 기준). 선택하면 아래에 설명이 나타납니다. 예전에 고저차로 입력한 값(평탄·보통·큼)은 \'(예전 값)\'으로 남아 있습니다.'},
+  {k:'terrainTraits', label:'세부 지형·설계 특성', type:'multi', opts:AI_TERRAIN_TRAITS, wide:true, help:'플레이 체감 요소(다중 선택). 해당하는 특성만 체크하세요.'},
+  {k:'courseLevel', label:'종합 난이도', type:'select', opts:AI_LEVEL_OPTS, wide:true, help:'Lv.1 매우 쉬움: 페어웨이가 넓고 장애물이 적어 초보자나 명랑 골프에 적합 · Lv.2 쉬움: 전반적으로 평탄하고 시야가 트여 스코어를 내기 좋은 편안한 코스 · Lv.3 보통: 적당한 고저차와 해저드·벙커가 조화를 이루어 전략과 샷 정확도가 함께 요구 · Lv.4 어려움: 좁은 페어웨이, 깊은 벙커, 빠른 그린, 강한 언듈레이션 등으로 정교한 코스 매니지먼트가 필수 · Lv.5 매우 어려움: 긴 전장과 가혹한 장애물·그린 난이도를 갖춘 토너먼트 수준. Course Rating · Slope를 입력하면 Slope 기준(120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4)으로 자동 선택됩니다(직접 고르면 그 값이 우선, \'미확인\'을 고르면 다시 자동 · 예전 쉬움/보통/도전적 값은 \'(예전 값)\'으로 남아 판정에 그대로 쓰입니다).'},
   {k:'famous', label:'명문·대회 개최', type:'yn', help:'프로 투어(KPGA·KLPGA·JGTO·아시안투어·LPGA 등) 정규 대회 개최 이력이 있거나 공신력 있는 골프장 랭킹(국가별 100대 등)에 든 곳이면 \'예\'.'},
   {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통'], help:'우수: 최근 1년 안에 현장 확인 또는 고객 평가로 잔디·그린·시설 관리가 좋다고 확인됨. 근거가 없으면 미확인.'},
   {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','페어웨이 진입 불가'], note:'우천 및 골프 코스 상태에 따라 진입 여부 확인(현장체크)', help:'페어웨이 진입 불가: 카트 도로로만 이동. 평소 운영 기준(우천 등 예외 제외). 카트가 아예 없는 코스(도보)는 \'카트 이용\'에서 \'미운영\'을 고르세요. 예전에 \'카트 없음(도보)\'로 저장된 값은 \'(예전 값)\'으로 남아 판정에 그대로 쓰입니다.'},
@@ -19706,6 +19736,18 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     const legacyTxt = typeof v==='string' && v.trim() ? aiPlainText(v) : (obj && typeof obj[k+'Legacy']==='string' ? obj[k+'Legacy'] : '');
     return `<div ${box}>${lab}${legacyTxt ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고): ${escapeAttr(legacyTxt)}</small>` : ''}<div class="ai-info-multi">${fd.opts.map(o=>`<label><input type="checkbox" ${arr.includes(o)?'checked':''} onchange="${saveMulti(k, o)}">${escapeAttr(o)}</label>`).join('')}</div></div>`;
   }
+  // 27홀 이상 — 18홀 조합별 전장·Course Rating · Slope 추가 입력(첫 번째 조합은 위의 전장·Course Rating · Slope)
+  if (fd.type==='combos'){
+    const arr = (obj && Array.isArray(obj.courseCombos)) ? obj.courseCombos : [], id = obj ? obj.id : '';
+    const rows = arr.map((c,i)=>{
+      const L = aiLenParse(c.length);
+      const lenHTML = L.ok
+        ? `<div class="ai-len" data-unit="${L.u}"><input type="number" min="0" step="1" inputmode="numeric" value="${L.n===''?'':L.n}" placeholder="전장" oninput="updateAiCombo('${id}',${i},'length',aiLenVal(this))"><select data-nofill aria-label="전장 단위" onchange="aiLenUnit(this);updateAiCombo('${id}',${i},'length',aiLenVal(this))"><option value="yd" ${L.u==='yd'?'selected':''}>yd</option><option value="m" ${L.u==='m'?'selected':''}>m</option></select></div>`
+        : `<input type="text" value="${escapeAttr(c.length||'')}" placeholder="전장" oninput="updateAiCombo('${id}',${i},'length',this.value)">`;
+      return `<div class="ai-combo-row"><input type="text" data-nofill class="ai-combo-name" value="${escapeAttr(c.name||'')}" placeholder="조합명 (예: B+C)" oninput="updateAiCombo('${id}',${i},'name',this.value)">${lenHTML}<input type="text" data-nofill class="ai-combo-rating" value="${escapeAttr(c.rating||'')}" placeholder="Rating / Slope (예: 72.4 / 131)" oninput="updateAiCombo('${id}',${i},'rating',this.value)"><button type="button" class="apc-btn-sm apc-delete" onclick="removeAiCombo('${id}',${i})">삭제</button></div>`;
+    }).join('');
+    return `<div class="ai-info-f ai-wide${arr.length ? ' filled' : ''}" data-k="${k}">${lab}<small class="ai-inh">첫 번째(대표) 조합은 위 \'전장\'·\'Course Rating · Slope\' 칸에 입력하고, 나머지 18홀 조합을 여기에 추가하세요.</small><div class="ai-combos">${rows}<button type="button" class="apc-btn-sm" onclick="addAiCombo('${id}')">+ 조합 추가</button></div></div>`;
+  }
   if (fd.type==='len'){
     const L = aiLenParse(v);
     if (!L.ok) return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" oninput="${save(k,'this.value')}"><small class="ai-len-conv">예전에 글자로 입력한 값입니다. 지우고 숫자로 다시 입력하면 yd↔m 자동 환산을 쓸 수 있어요.</small></div>`;
@@ -19722,7 +19764,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
     const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
-    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(dv==null?'':dv)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
+    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}${AI_OPT_DESC[k] ? `;aiOptDescSync(this,'${k}')` : ''}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(dv==null?'':dv)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${AI_OPT_DESC[k] ? `<small class="ai-info-fnote ai-opt-desc">${escapeAttr(AI_OPT_DESC[k][String(dv==null?'':dv)]||'')}</small>` : ''}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
   }
   // 글·긴 글 입력란 — 공용 서식 도구(크기·글꼴·B·I·U·색상 등)를 쓸 수 있는 서식 입력란(.rtf-editable). 이름 칸(plain)은 일반 입력란 유지
   if (aiIsRichField(fd)){
@@ -19738,7 +19780,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
 // 전장 — "6,850yd" / "6,264m" 형식으로 저장. 숫자+단위가 아닌 예전 글자 값은 ok:false(그대로 글자 칸으로 표시)
 const AI_YD_M = 0.9144;
 function aiLenParse(v){
-  const t = String(v==null?'':v).trim(); if (!t) return {ok:true, n:'', u:'yd'};
+  const t = String(v==null?'':v).trim(); if (!t) return {ok:true, n:'', u:'m'};   // 비어 있으면 기본 단위는 m(미터)
   const m = /^([\d,]+(?:\.\d+)?)\s*(yds?|y|야드|m|미터|meters?)?$/i.exec(t); if (!m) return {ok:false};
   return {ok:true, n:Number(m[1].replace(/,/g,'')), u:/^(m|미터|meter)/i.test(m[2]||'') ? 'm' : 'yd'};
 }
@@ -19816,7 +19858,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
 document.addEventListener('input', aiFieldFillSync, true);
 document.addEventListener('change', aiFieldFillSync, true);
 function aiPlaceSummary(kind, x){
-  const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiInfoFilled(x.golfDistance) ? `골프장 ${x.golfDistance}분` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', x.courseLevel, x.famous==='y' ? '명문' : ''];
+  const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiInfoFilled(x.golfDistance) ? `골프장 ${x.golfDistance}분` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', aiLevelShort(x.courseLevel), x.famous==='y' ? '명문' : ''];
   return bits.filter(Boolean).join(' · ');
 }
 // 연결된 숙소·골프장 — 칩 목록 + 등록부에서 선택 + 새로 등록 + 각 항목 편집 카드(등록부 공용)
@@ -19845,7 +19887,7 @@ function aiPlaceLinkHTML(p, kind){
           <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
           ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
-          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom)).map(fd=>aiFieldHTML(fd, x[fd.k], fd.k==='cat' ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x)).join('')}</div>
+          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))).map(fd=>aiFieldHTML(fd, x[fd.k], (fd.k==='cat' || fd.k==='holes') ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x)).join('')}</div>
           ${aiPlaceRetiredNote(kind, x)}
           <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
         </details>`;
@@ -19944,17 +19986,35 @@ function updateAiPlace(kind, id, k, v){
 function aiLevelHint(x){
   if (x.courseLevelAuto) return `🔄 자동: Slope ${aiSlopeOf(x.rating)} 기준`;
   const lv = aiSlopeLevel(x.rating);
-  return (x.courseLevel && lv && lv!==x.courseLevel) ? `⚠ Slope ${aiSlopeOf(x.rating)} 기준은 '${lv}' — 직접 고른 값 사용 중('미확인'을 고르면 자동)` : '';
+  return (x.courseLevel && lv && aiLevelBand(lv)!==aiLevelBand(x.courseLevel)) ? `⚠ Slope ${aiSlopeOf(x.rating)} 기준은 '${aiLevelShort(lv)}' — 직접 고른 값 사용 중('미확인'을 고르면 자동)` : '';
 }
 // 다시 그리지 않고(입력 중인 칸 유지) 난이도 칸만 갱신
 function aiLevelDomSync(x){
   document.querySelectorAll(`#advBody details[data-ck="aiP-${x.id}"] .ai-info-f[data-k="courseLevel"]`).forEach(f=>{
-    const sel = f.querySelector('select'); if (sel) sel.value = x.courseLevel || '';
+    const sel = f.querySelector('select'); if (sel){ sel.value = x.courseLevel || ''; if (x.courseLevel && sel.value!==x.courseLevel){ const o = document.createElement('option'); o.value = x.courseLevel; o.textContent = x.courseLevel; sel.appendChild(o); sel.value = x.courseLevel; } aiOptDescSync(sel, 'courseLevel'); }
     f.classList.toggle('filled', !!x.courseLevel); f.classList.remove('has-auto');
     let h = f.querySelector('.ai-inh'); const t = aiLevelHint(x);
     if (t && !h && sel){ h = document.createElement('small'); h.className = 'ai-inh'; sel.parentNode.insertBefore(h, sel); }
     if (h){ h.textContent = t; if (!t) h.remove(); }
   });
+}
+// 27홀 이상 골프장 — 18홀 조합별 전장·Rating · Slope 추가 항목
+function updateAiCombo(id, i, key, val){
+  const x = aiFindPlace('course', id); if (!x || !Array.isArray(x.courseCombos) || !x.courseCombos[i]) return;
+  x.courseCombos[i][key] = String(val==null?'':val).slice(0, 200);
+  x.updatedAt = new Date().toISOString(); saveAiPlaces();
+}
+function addAiCombo(id){
+  const x = aiFindPlace('course', id); if (!x) return;
+  if (!Array.isArray(x.courseCombos)) x.courseCombos = [];
+  if (x.courseCombos.length>=12) return;
+  x.courseCombos.push({name:'', length:'', rating:''});
+  x.updatedAt = new Date().toISOString(); saveAiPlaces(); renderAdvBody();
+}
+function removeAiCombo(id, i){
+  const x = aiFindPlace('course', id); if (!x || !Array.isArray(x.courseCombos)) return;
+  x.courseCombos.splice(i,1); if (!x.courseCombos.length) delete x.courseCombos;
+  x.updatedAt = new Date().toISOString(); saveAiPlaces(); renderAdvBody();
 }
 function updateAiPlaceMulti(kind, id, k, opt, on){
   const x = aiFindPlace(kind, id); if (!x) return;
@@ -20367,7 +20427,8 @@ function locLinksEditorHTML(p, isDomestic){
       const list = locListOf(p, kind);
       return `<div class="loc-group">
         <div class="loc-group-title">${title} <span class="loc-count">${list.filter(x=>String(x.url||'').trim()).length}건</span></div>
-        ${list.length ? list.map((it,i)=>`<div class="loc-row">
+        ${list.length ? `<div class="loc-rows" data-kind="${kind}">` + list.map((it,i)=>`<div class="loc-row" data-i="${i}">
+          <span class="loc-drag" title="끌어서 순서 이동 (마우스·손가락)" aria-label="순서 이동 손잡이">⠿</span>
           <input type="text" class="loc-name" value="${escapeAttr(it.label||'')}" placeholder="이름 (예: ${LOC_NAME_EX[kind]||''})" oninput="updateLocLink('${kind}',${i},'label',this.value)">
           <input type="text" class="loc-url" value="${escapeAttr(it.url||'')}" placeholder="${ph}" oninput="updateLocLink('${kind}',${i},'url',this.value)">
           <div class="loc-btns">
@@ -20375,11 +20436,75 @@ function locLinksEditorHTML(p, isDomestic){
             <button type="button" class="apc-btn-sm" title="아래로 이동" onclick="moveLocLink('${kind}',${i},1)" ${i===list.length-1?'disabled':''}>▼</button>
             <button type="button" class="apc-btn-sm apc-delete" onclick="removeLocLink('${kind}',${i})">삭제</button>
           </div>
-        </div>`).join('') : `<div class="loc-empty">등록된 ${title.replace(/^\S+\s/,'')} 링크가 없습니다</div>`}
+        </div>`).join('') + `</div>` : `<div class="loc-empty">등록된 ${title.replace(/^\S+\s/,'')} 링크가 없습니다</div>`}
         <button type="button" class="apc-btn-sm" onclick="addLocLink('${kind}')">+ ${title.replace(/^\S+\s/,'')} 링크 추가 (${mapName})</button>
       </div>`;
     }).join('')}
   </div>`;
+}
+// [추가] 위아래로 끌어 순서를 바꾸는 공용 정렬 — 손잡이(handleSel)를 누른 채 끌면 그 줄이 포인터를 따라 움직이고, 다른 줄 중간선을 넘으면 자리를 바꾼다.
+// 마우스·터치(포인터 이벤트)를 함께 지원하고, 목록이 스크롤 영역보다 길면 가장자리에서 자동으로 스크롤한다. 놓으면 onDone(새 순서의 data-i 배열)을 부른다
+function tgtStartSort(e, handle, listEl, itemSel, onDone){
+  const item = handle.closest(itemSel); if (!item || !listEl.contains(item)) return;
+  e.preventDefault();
+  const pid = e.pointerId;
+  try{ handle.setPointerCapture(pid); }catch(_){}
+  const grab = e.clientY - item.getBoundingClientRect().top;
+  let curY = e.clientY, raf = 0;
+  // 스크롤 영역(위아래 가장자리 자동 스크롤용)
+  let sc = listEl.parentElement;
+  while (sc && sc!==document.body){ const oy = getComputedStyle(sc).overflowY; if ((oy==='auto' || oy==='scroll') && sc.scrollHeight>sc.clientHeight+2) break; sc = sc.parentElement; }
+  if (!sc || sc===document.body) sc = null;
+  item.classList.add('is-sorting'); listEl.classList.add('is-sorting-list'); document.body.classList.add('tgt-sorting');
+  const place = ()=>{
+    item.style.transform = '';
+    const sibs = [...listEl.querySelectorAll(':scope > '+itemSel)].filter(x=>x!==item);
+    // 포인터 높이가 다른 줄의 중간선을 넘었으면 그 줄과 자리를 바꾼다
+    const itemTop = curY - grab, itemMid = itemTop + item.offsetHeight/2;
+    for (const sb of sibs){
+      const r = sb.getBoundingClientRect(), mid = r.top + r.height/2;
+      const before = (item.compareDocumentPosition(sb) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;   // sb가 item 뒤에 있음
+      // 끄는 줄 자체를 옮기면(DOM 이동) 포인터 캡처가 풀리므로, 끄는 줄 대신 건너편 줄을 반대쪽으로 옮겨 같은 순서를 만든다
+      if (before && itemMid > mid){ item.before(sb); }
+      else if (!before && itemMid < mid){ item.after(sb); }
+    }
+    item.style.transform = '';
+    const nat = item.getBoundingClientRect().top;
+    item.style.transform = `translateY(${curY - grab - nat}px)`;
+  };
+  const autoScroll = ()=>{
+    raf = 0; if (!sc) return;
+    const r = sc.getBoundingClientRect(), edge = 56;
+    let dy = 0;
+    if (curY < r.top + edge) dy = -Math.ceil((r.top + edge - curY)/4);
+    else if (curY > r.bottom - edge) dy = Math.ceil((curY - (r.bottom - edge))/4);
+    if (dy){ sc.scrollTop += Math.max(-24, Math.min(24, dy)); place(); raf = requestAnimationFrame(autoScroll); }
+  };
+  const move = ev=>{ if (ev.pointerId!==pid) return; curY = ev.clientY; place(); if (!raf) raf = requestAnimationFrame(autoScroll); ev.preventDefault(); };
+  const end = ev=>{
+    if (ev && ev.pointerId!==pid) return;
+    handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', end); handle.removeEventListener('pointercancel', end);
+    cancelAnimationFrame(raf);
+    item.style.transform = ''; item.classList.remove('is-sorting'); listEl.classList.remove('is-sorting-list'); document.body.classList.remove('tgt-sorting');
+    const order = [...listEl.querySelectorAll(':scope > '+itemSel)].map(x=>Number(x.dataset.i));
+    if (order.some((v,i)=>v!==i)) onDone(order);
+  };
+  handle.addEventListener('pointermove', move); handle.addEventListener('pointerup', end); handle.addEventListener('pointercancel', end);
+  place();
+}
+document.addEventListener('pointerdown', e=>{
+  if (e.button>0) return;
+  const h = e.target.closest && e.target.closest('.loc-drag'); if (!h) return;
+  const list = h.closest('.loc-rows'); if (!list) return;
+  const kind = list.dataset.kind;
+  tgtStartSort(e, h, list, '.loc-row', order=>reorderLocLinks(kind, order));
+});
+function reorderLocLinks(kind, order){
+  const p=getAdvProduct(); if (!p) return;
+  const list = locListOf(p,kind);
+  if (order.length!==list.length || order.some(i=>!list[i])) { renderAdvBody(); return; }
+  p.locLinks[kind] = order.map(i=>list[i]);
+  saveAdvChange(); renderAdvBody();
 }
 function addLocLink(kind){
   const p=getAdvProduct(); if (!p) return;
@@ -22474,7 +22599,7 @@ function aiMulti(list, get, ok, fmt){
   return unknown.length ? {v:null, t:`${t} — ${unknown.map(nm).join(', ')} 정보 미등록`} : {v:false, t};
 }
 // 난이도 — 입력값이 없으면 Slope Rating으로 자동 판정(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적)
-function aiCourseLevel(c){ return c.courseLevel || aiSlopeLevel(c.rating); }
+function aiCourseLevel(c){ return c.courseLevel || aiSlopeLevel(c.rating); }   // 종합 난이도(Lv.1~5 또는 예전 쉬움·보통·도전적)
 function aiInfoTest(key, F){
   const ai = F.ai || {}, L = F.lodges || [], C = F.courses || [];
   const by = k => (ai.__src && ai.__src[k]) ? ai.__src[k]+' 기준' : '관리자 입력', sfx = k => (ai.__src && ai.__src[k]) ? ` (${ai.__src[k]} 기준)` : '';
@@ -22516,9 +22641,9 @@ function aiInfoTest(key, F){
     return isDef ? ((kw && kw.v===true) ? kw : {v:false, t:'기본값 기준: 연박(2박 이상) 불가'}) : kw;
   }
   if (key==='lodge:long'){ const v = aiYn(ai.longStay); if (v!==null) return {v, t:`${by('longStay')}: 장박 ${v?'가능':'불가'}`}; if (F.nights!=null && F.nights>=7) return {v:true, t:`${F.nights}박 일정`}; return aiKwRes(F, ['한달','장박','롱스테이','장기 체류','장기체류'], false, '장박 가능 여부 미등록 — 상담 시 확인'); }
-  const LEVEL = {'course:easy':'쉬움', 'course:normal':'보통', 'course:hard':'도전적'};
+  const LEVEL = {'course:easy':'easy', 'course:normal':'normal', 'course:hard':'hard'};
   if (LEVEL[key]){
-    const r = aiMulti(C, aiCourseLevel, v=>v===LEVEL[key], v=>`난이도 ${v}`); if (r) return r;
+    const r = aiMulti(C, aiCourseLevel, v=>aiLevelBand(v)===LEVEL[key], v=>`종합 난이도 ${aiLevelShort(v)}`); if (r) return r;
     if (key==='course:easy') return aiKwRes(F, ['쉬운 코스','쉬운','초보','평이'], false, '코스 난이도 미등록 — 상담 시 확인');
     if (key==='course:hard') return aiKwRes(F, ['챔피언','도전','난이도 높','토너먼트'], false, '코스 난이도 미등록 — 상담 시 확인');
     return {v:null, t:'코스 난이도 미등록 — 상담 시 확인'};

@@ -5034,6 +5034,8 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 
 
 /* [추가] 상품 카드(모바일·데스크탑 공통) — 📍숙소위치 위쪽 기본정보와 가격만 보이고, 그 아래(비행·이동 정보·체크포인트·태그)는 기본으로 접어 두며 "펼쳐보기"로 펼친다 */
+.product.expanded .pmd-main{display:none}   /* 펼치면 아래쪽 요약 설명은 숨기고 위쪽(항공·이동 정보 위)에서만 보인다 */
+.product-metadesc.pmd-fold{margin-top:4px}
 .product.has-cp:not(.expanded) .card-fold,
 .product.has-cp:not(.expanded) .product-checkpoint1,
 .product.has-cp:not(.expanded) .product-divider-cp1,
@@ -13643,6 +13645,7 @@ function toggleProductCard(e, btn){
   const card = btn.closest('.product'); if (!card) return;
   const open = card.classList.toggle('expanded');
   btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  try{ fitCardLines(card); }catch(err){}   // 펼치는 순간 나타난 요약 설명 줄의 글자 크기를 카드 폭에 맞춘다
 }
 function productCardClick(e, catId, idx, card){
   const t = e && e.target;
@@ -13718,10 +13721,13 @@ function productCardHTML(p, catId, idx){
   const kickerHTML = productKickerHTML(p, 'product-kicker');
   // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
   const _metaLines = aiLinesHTML(p.metaDesc);
-  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">✓</span>${l}</span></div>`).join('')}</div>` : '';
+  const _metaInner = _metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">✓</span>${l}</span></div>`).join('');
+  // 접힌 상태: 카드 아래쪽(펼쳐보기 버튼 위)에 노출. 펼친 상태: 아래쪽은 숨기고(.pmd-main) 항공·이동 정보 위의 같은 서식 목록(.pmd-fold)으로 옮겨 한 번만 보이게 한다
+  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc pmd-main">${_metaInner}</div>` : '';
+  const metaDescFoldHTML = _metaLines.length ? `<div class="product-metadesc pmd-fold card-fold">${_metaInner}</div>` : '';
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
-  const prosHTML = cardSummaryListHTML(p);   // [수정] 펼쳐보기 안의 ✓ 목록 = 요약 설명(장점은 자세히 보기로 이동)
+  const prosHTML = metaDescFoldHTML;   // [수정] 펼쳐보기 안(항공·이동 정보 위)의 요약 설명 — 접힌 상태와 같은 서식, 장점은 자세히 보기로 이동
   const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length || prosHTML);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
   const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isRecommended?' data-label-recommend="1"':'') + (lblProfile.isSuggested?' data-label-suggest="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'') + (lblProfile.isPriceUp?' data-label-price="up"':'') + (lblProfile.isPriceDown?' data-label-price="down"':'');
@@ -13747,7 +13753,7 @@ function productCardHTML(p, catId, idx){
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
-    ${prosHTML ? `<div class="product-divider card-pros-div card-fold"></div>${prosHTML.replace('<ul class="card-pros">','<ul class="card-pros card-fold">')}` : ''}
+    ${prosHTML ? `<div class="product-divider card-pros-div card-fold"></div>${prosHTML}` : ''}
     ${cpTopHTML}
     ${cardTags.length?`<div class="product-tag-row card-fold">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     ${cp2HTML}

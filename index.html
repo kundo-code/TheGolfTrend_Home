@@ -272,10 +272,8 @@ header{padding-top:var(--topbar-h,108px)}
 .spot-pros:empty{display:none}
 .spot-pros .card-pros{font-size:.88rem;color:rgba(247,245,240,.88)}
 .card-pros{list-style:none;margin:0;padding:0;line-height:1.5}
-.card-pros li{position:relative;padding-left:15px;word-break:keep-all;overflow-wrap:anywhere}
-.card-pros li::before{content:'✓';position:absolute;left:0;top:0;color:var(--gold);font-weight:700}
+.card-pros li{position:relative;padding-left:0;word-break:keep-all;overflow-wrap:anywhere}   /* [수정] 구분점(✓)은 자동으로 붙이지 않는다 — 입력란에 직접 넣은 기호(·, 1., ✓, ➣, ※ 등)가 그대로 보인다 */
 .product .card-pros{font-size:.78rem;color:rgba(10,23,48,.78);margin-bottom:12px}
-.product .card-pros li::before{color:#16a34a}
 .product .card-pros-div{margin-top:-4px}
 /* EDITOR'S PICK 팝업 카드 */
 .popup-meta{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:.8rem;color:rgba(247,245,240,.8);margin:0 0 12px;line-height:1.4}
@@ -689,12 +687,15 @@ section.block{padding:100px 24px;position:relative}
 .pt-months{white-space:nowrap;color:var(--gold-deep);font-weight:700}
 /* [수정] 상품 카드의 추천 판매 시기 "【 10월 】" — 제목 뒤 하이픈(-) 제거, 제목의 마지막 줄(제목이 2~3줄이면 마지막 글자가 있는 줄) 오른쪽 끝에 배치, 글자 크기는 제목보다 2pt 작게 */
 /* [수정] 시기 태그를 제목 안(끝)에 오른쪽 float로 넣어, 제목 첫째·둘째 줄도 카드 오른쪽 끝까지 쓰고 태그는 마지막 글자가 있는 줄의 오른쪽 끝에 놓인다 */
-/* [수정] iOS Safari에서는 -webkit-box(줄수 제한) 안의 float가 무시돼 국내 카드의 시기 태그가 제목 바로 뒤에 붙었다 — 제목 밖 flex 형제로 두고 항상 오른쪽 끝(제목 마지막 줄 높이)에 정렬 */
-.product-visual-title .pt-months{flex:0 0 auto;margin-left:auto;padding-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
-.product-visual-title h4{flex:0 1 auto;min-width:0}
+/* [수정] 시기 태그는 제목(h4) 안 끝에 오른쪽 float — 제목이 2~3줄이어도 앞 줄은 카드 폭을 모두 쓰고, 태그는 마지막 줄 오른쪽 끝에 놓인다.
+   줄수 제한을 -webkit-box(line-clamp)로 하면 iOS Safari에서 그 안의 float가 무시되므로, h4는 일반 블록으로 둔다(줄 수 제한을 두면 4줄 이상일 때 마지막 줄의 시기 태그가 잘려 보이지 않는다) */
+.product-visual-title .pt-months{float:right;margin-left:10px;line-height:calc((1.25rem + 2pt) * 1.2);font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt)}
+.product-visual-title h4{flex:1;min-width:0}
 /* [추가] 제목 위 한 줄(지역명 · 제목보조 — 같은 크기, 제목보다 작게) + "펼쳐보기" 위 요약 설명(좌측 정렬, 파란색) — 카드 폭을 넘으면 JS(fitCardLines)가 글자 크기만 줄여 한 줄을 유지 */
 .product-kicker,.pmd-line,.spot-kicker,.popup-kicker,.pd-kicker{display:block;width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;line-height:1.35}
 .product-metadesc{display:block;width:100%;min-width:0}
+/* [수정] 요약 설명은 기본 굵기(보통)로 — 굵게는 관리자 입력란에서 서식(B)을 준 글자만 굵게 보인다(.pmd-line은 다른 한 줄 문구와 공통 규칙이 굵게로 잡혀 있었음) */
+.product-metadesc .pmd-line{font-weight:400}
 .spot-kicker{color:rgba(255,255,255,.88);font-size:.95rem;margin:0 0 2px}
 .popup-kicker{color:rgba(255,255,255,.88);font-size:.92rem;margin:0 0 3px}
 .pd-kicker{color:var(--pine-deep);font-size:1rem;margin:0 0 4px}
@@ -712,7 +713,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-top-title .cat-row .cat{margin-bottom:0;min-width:0}
 .pd-top-title .cat-row .pt-months{flex-shrink:0;margin-left:auto;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem - 2pt);line-height:1.2}
 .product-visual-title{margin-bottom:12px;min-height:6px;display:flex;align-items:flex-end}
-.product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem + 2pt);font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.product-visual-title h4{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:calc(1.25rem + 2pt);font-weight:700;color:var(--pine-deep);line-height:1.2;margin:0;display:block}
 /* [수정] 타이틀 바로 아래 줄에 "🌙 박수"(좌측)와 "🗓 기간 · Nights"(우측)를 함께 배치 —
    최소인원(👥)은 그대로 meta 아래 product-period-row에 남는다. 두 배지 중 하나만 있어도
    각자의 자리(좌/우)를 유지하도록 prt-left/prt-right 래퍼로 감싸 justify-content:space-between.
@@ -1022,7 +1023,6 @@ section.block{padding:100px 24px;position:relative}
 .pd-pros-body{padding:4px 20px 18px}
 .pd-pros-body .card-pros{font-size:.95rem;color:rgba(10,23,48,.82)}
 .pd-pros-body .card-pros li{margin-bottom:4px}
-.pd-pros-body .card-pros li::before{color:#16a34a}
 /* [수정] 제목을 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단 별도 박스로 분리 */
 .pd-top-title{padding:20px 20px 16px}
 .pd-top-title .cat{font-size:12pt;letter-spacing:.18em;color:var(--gold-deep);font-weight:600;text-transform:uppercase;margin-bottom:6px}
@@ -2213,7 +2213,7 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-btn{width:32px;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);cursor:pointer;font-size:.8rem;box-shadow:var(--nm-shadow-raised-sm)}
 .rtf-btn:hover{box-shadow:var(--nm-shadow-hover)}
 .rtf-btn.rtf-clear{width:auto;padding:0 8px;font-size:.68rem}
-.rtf-toolbar select.rtf-size-sel,.rtf-toolbar select.rtf-font-sel,.rtf-toolbar select.rtf-lh-sel,.rtf-toolbar select.rtf-ind-sel{width:auto;flex:0 0 auto;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.68rem;padding:0 3px;box-shadow:var(--nm-shadow-raised-sm)}
+.rtf-toolbar select.rtf-size-sel,.rtf-toolbar select.rtf-font-sel,.rtf-toolbar select.rtf-lh-sel,.rtf-toolbar select.rtf-sym-sel,.rtf-toolbar select.rtf-ind-sel{width:auto;flex:0 0 auto;min-width:0;height:32px;border:none;border-radius:8px;background:var(--nm-surface-light);color:var(--nm-text);font-size:.68rem;padding:0 3px;box-shadow:var(--nm-shadow-raised-sm)}
 /* [수정] 색상 아이콘 높이를 다른 아이콘(32px)과 정확히 맞춤 — 확대 후 잘라내는 방식 대신
    input[type=color] 내부의 브라우저 기본 여백(swatch-wrapper padding)을 직접 제거해 32px를 꽉 채움 */
 /* [수정] 색상 아이콘을 툴바 맨 우측 끝으로 고정 배치하고, 스와치 위에 흰색 "T" 글자를 올려
@@ -5033,6 +5033,8 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 
 
 /* [추가] 상품 카드(모바일·데스크탑 공통) — 📍숙소위치 위쪽 기본정보와 가격만 보이고, 그 아래(비행·이동 정보·체크포인트·태그)는 기본으로 접어 두며 "펼쳐보기"로 펼친다 */
+.product.expanded .pmd-main{display:none}   /* 펼치면 아래쪽 요약 설명은 숨기고 위쪽(항공·이동 정보 위)에서만 보인다 */
+.product-metadesc.pmd-fold{margin-top:4px}
 .product.has-cp:not(.expanded) .card-fold,
 .product.has-cp:not(.expanded) .product-checkpoint1,
 .product.has-cp:not(.expanded) .product-divider-cp1,
@@ -11794,6 +11796,21 @@ function rtfToolbarHTML(opts){
       <button type="button" class="rtf-btn" title="굵게" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'bold')"><b>B</b></button>
       <button type="button" class="rtf-btn" title="기울임" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'italic')"><i>I</i></button>
       <button type="button" class="rtf-btn" title="밑줄" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'underline')"><u>U</u></button>
+      <select class="rtf-sym-sel" title="구분점 적용 — 커서가 있는(또는 선택한) 줄 맨 앞에 기호를 넣습니다. 상품 카드에는 여기서 넣은(직접 입력한) 기호만 보입니다. 같은 기호를 다시 고르면 해제, 다른 기호를 고르면 바뀝니다" onchange="rtfBullet(this,this.value);this.value=''">
+        <option value="">구분점</option>
+        <option value="·">· 구분점</option>
+        <option value="num">1. 번호</option>
+        <option value="✓">✓ 체크</option>
+        <option value="➣">➣ 화살표</option>
+        <option value="※">※ 참고</option>
+        <option value="●">● 동그라미</option>
+        <option value="▶">▶ 삼각형</option>
+        <option value="◆">◆ 마름모</option>
+        <option value="★">★ 별</option>
+        <option value="☞">☞ 손가락</option>
+        <option value="-">- 하이픈</option>
+        <option value="off">구분점 해제</option>
+      </select>
       <button type="button" class="rtf-btn" title="표 넣기" onmousedown="event.preventDefault()" onclick="rtfInsertTable(this)">⊞표</button>
       <span class="rtf-tbl-group" title="표 편집 — 표 안에 커서를 두면 나타납니다">
         <button type="button" class="rtf-btn rtf-tbl-btn" title="셀 병합 — 여러 칸을 드래그로 선택하면 한 칸으로 합치고, 칸 하나에 커서가 있으면 오른쪽 칸과 합칩니다" onmousedown="event.preventDefault()" onclick="rtfTblAct(this,'merge')">셀병합</button>
@@ -12600,6 +12617,66 @@ function plainSubLinesHTML(text){
 // 줄간격 조절 — execCommand에 해당 기능이 없어 선택영역을 <span style="line-height:...">로 직접 감싼다.
 // 단, 선택영역이 <br>(줄바꿈)을 포함하면 bulletRowsRich()의 문자열 기반 줄 분리 로직이 깨질 수 있어
 // 그 경우엔 적용을 막고 안내한다(한 줄 내에서만 사용 가능)
+// [추가] 구분점 적용 — 커서가 있는(또는 선택한) 줄 맨 앞에 · / 1. / ✓ / ➣ / ※ 같은 기호를 글자로 직접 넣는다.
+// 상품 카드·EDITOR'S PICK·팝업·상세의 요약 설명·장점 목록은 더 이상 구분점을 자동으로 붙이지 않고, 여기서 넣은 기호가 그대로 보인다.
+// 같은 기호가 이미 있는 줄에서 다시 고르면 지우고(해제), 다른 기호가 있으면 바꾼다. 번호(1. 2. 3.)는 윗줄 번호에 이어서 매긴다
+const RTF_SYM_RE = /^[ ​ ]*(?:[·•●◆▶★☞✓✔➣※]|-(?=[\s ])|\d{1,2}\.(?=[\s ]))[  ]?/;
+function rtfSymKind(text){ const m = RTF_SYM_RE.exec(text||''); if (!m) return null; const t = m[0].replace(/[\s ​]/g,''); return {len:m[0].length, kind:/^\d/.test(t)?'num':t, num:/^\d/.test(t)?parseInt(t,10):0}; }
+function rtfBlockFirstText(b){ const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())){ if (n.data.length) return n; } return null; }
+function rtfBullet(selEl, val){
+  if (!val) return;
+  const wrap = selEl.closest('.rtf-wrap');
+  const editable = rtfTarget(wrap);
+  if (!editable){ rtfNoTargetHint(); return; }
+  editable.focus();
+  rtfRestoreSelection(editable);
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const r0 = sel.getRangeAt(0);
+  if (!editable.contains(r0.commonAncestorContainer)) return;
+  const anc = r0.commonAncestorContainer.nodeType===1 ? r0.commonAncestorContainer : r0.commonAncestorContainer.parentNode;
+  // 표 칸 안에서는 줄 단위로 바꾸지 않고 커서 자리에 기호만 넣는다
+  if (anc && anc.closest && anc.closest('td,th') && editable.contains(anc.closest('td,th'))){
+    if (val!=='off'){ document.execCommand('insertText', false, (val==='num' ? '1.' : val) + ' '); editable.dispatchEvent(new Event('input', {bubbles:true})); }
+    return;
+  }
+  rtfNormalizeLines(editable);
+  const range = sel.getRangeAt(0);
+  if (!editable.contains(range.commonAncestorContainer) && range.commonAncestorContainer!==editable) return;
+  Array.from(editable.children).forEach(n=>{ if (n.tagName==='DIV' && !n.firstChild) n.remove(); });   // 줄 정리 때 남은 빈 껍데기 줄 제거
+  const all = Array.from(editable.children).filter(n=>n.tagName==='DIV');
+  const textBefore = (b)=>{ const pre = document.createRange(); pre.selectNodeContents(b); try{ pre.setEnd(range.endContainer, range.endOffset); }catch(e){ return null; } return pre; };
+  let blocks = all.filter(b=>range.intersectsNode(b));
+  if (!range.collapsed && blocks.length>1){
+    // 한 줄 전체를 선택(끝이 다음 줄 맨 앞)했을 때 다음 줄까지 포함하지 않도록
+    const lastB = blocks[blocks.length-1];
+    if (lastB.contains(range.endContainer) || lastB===range.endContainer){ const pre = textBefore(lastB); if (pre && pre.toString()==='') blocks = blocks.slice(0,-1); }
+  }
+  if (!blocks.length){ const lb = rtfLineBlock(editable, range.startContainer); if (lb && lb.tagName==='DIV') blocks = [lb]; }
+  // 여러 줄을 한꺼번에 고를 때는 빈 줄에는 기호를 넣지 않는다
+  if (blocks.length>1){ const nz = blocks.filter(b=>b.textContent.replace(/[\u200B\s]/g,'')!==''); if (nz.length) blocks = nz; }
+  if (!blocks.length) return;
+  const atLineStart = range.collapsed && (()=>{ const pre = textBefore(blocks[0]); return !!pre && pre.toString().replace(/[​]/g,'')===''; })();
+  const kinds = blocks.map(b=>rtfSymKind(b.textContent));
+  const want = val==='num' ? 'num' : val;
+  const removeAll = val==='off' || kinds.every(k=>k && k.kind===want);
+  // 번호는 바로 윗줄이 번호 줄이면 그 다음 번호부터
+  let nextNum = 1;
+  if (val==='num'){ const idx = all.indexOf(blocks[0]); const pk = idx>0 ? rtfSymKind(all[idx-1].textContent) : null; if (pk && pk.kind==='num') nextNum = pk.num+1; }
+  let caretNode = null;
+  blocks.forEach((b,i)=>{
+    const k = kinds[i];
+    if (k){ let len = k.len; const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let n; while (len>0 && (n = w.nextNode())){ const d = Math.min(len, n.data.length); n.deleteData(0, d); len -= d; } }
+    if (removeAll) return;
+    const txt = (val==='num' ? (nextNum++)+'.' : val) + ' ';
+    const first = rtfBlockFirstText(b);
+    if (first){ first.insertData(0, txt); if (i===0) caretNode = {n:first, len:txt.length}; }
+    else { const t = document.createTextNode(txt); b.insertBefore(t, b.firstChild); if (i===0) caretNode = {n:t, len:txt.length}; }
+  });
+  // 줄 맨 앞에 커서가 있었다면 기호 뒤로 옮겨 바로 이어서 입력할 수 있게 한다
+  if (atLineStart && caretNode){ try{ const r = document.createRange(); r.setStart(caretNode.n, caretNode.len); r.collapse(true); sel.removeAllRanges(); sel.addRange(r); }catch(e){} }
+  editable.dispatchEvent(new Event('input', {bubbles:true}));
+}
 function rtfLineHeight(selEl, val){
   if (!val) return;
   const wrap = selEl.closest('.rtf-wrap');
@@ -13048,6 +13125,7 @@ function pickDestCategory(id){
   const cur = isOverseas ? selectedOverseasId : selectedDomesticId;
   if (cur===id){
     if (window.innerWidth<=780 && scrollToDestCard(isOverseas?'overseas':'domestic')) return;
+    if (window.innerWidth>780 && scrollToDestPanel(isOverseas?'overseas':'domestic')) return;
     const panel = document.getElementById(isOverseas?'categoryPanelOverseas':'categoryPanelDomestic');
     if (panel) smoothScrollToEl(panel, 400, -(DEST_BAR_H+8));
     return;
@@ -13419,8 +13497,41 @@ function scrollToDestCard(regionKey, tries){
   requestAnimationFrame(step);
   return true;
 }
+// [수정] 데스크탑 — 권역/국가를 고르면 그 권역·국가의 상품 카드 섹션(패널)이 화면(고정 상단 메뉴 아래) 세로 가운데에 오도록 이동한다.
+// 패널이 화면보다 크면 패널 위쪽을 메뉴 바로 아래에 맞춘다
+function destPanelTargetY(regionKey){
+  const panel = document.getElementById(regionKey==='overseas'?'categoryPanelOverseas':'categoryPanelDomestic');
+  if (!panel || !(panel.getBoundingClientRect().height>0)) return null;
+  const nav = document.getElementById('mainNav');
+  const navBottom = nav ? nav.getBoundingClientRect().bottom : 108;
+  const r = panel.getBoundingClientRect();
+  const avail = window.innerHeight - navBottom;
+  const gap = r.height >= avail - 24 ? 12 : (avail - r.height)/2;
+  return Math.max(0, r.top + window.scrollY - navBottom - gap);
+}
+function scrollToDestPanel(regionKey, tries){
+  const y = destPanelTargetY(regionKey);
+  if (y===null) return false;
+  const startY = window.scrollY, dur = tries ? 160 : 500, t0 = performance.now();
+  const ease = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  const de = document.documentElement, prevSb = de.style.scrollBehavior;
+  const step = now => {
+    const t = Math.min(1, (now-t0)/dur);
+    de.style.scrollBehavior = 'auto';
+    window.scrollTo({top: startY + (y-startY)*ease(t), behavior:'instant'});
+    de.style.scrollBehavior = prevSb;
+    if (t<1) requestAnimationFrame(step);
+    else setTimeout(()=>{   // 이미지·카드가 늦게 그려져 패널 높이가 바뀌면 다시 가운데로 맞춘다
+      const want = destPanelTargetY(regionKey);
+      if (want!==null && (tries||0) < 3 && Math.abs(window.scrollY - want) > 3) scrollToDestPanel(regionKey, (tries||0)+1);
+    }, 220);
+  };
+  requestAnimationFrame(step);
+  return true;
+}
 function scrollToDestTiles(regionKey, tries){
   if (window.innerWidth<=780 && scrollToDestCard(regionKey, tries)) return;
+  if (window.innerWidth>780 && scrollToDestPanel(regionKey, tries)) return;
   const grid = document.getElementById(regionKey==='overseas'?'catGridOverseas':'catGridDomestic');
   if (!grid) return;
   const tiles = grid.querySelector('.cat-card.open') || grid; // 방금 고른 국가/권역 카드(그 카드가 있는 줄)가 고정 영역 바로 아래에 오게
@@ -13642,6 +13753,7 @@ function toggleProductCard(e, btn){
   const card = btn.closest('.product'); if (!card) return;
   const open = card.classList.toggle('expanded');
   btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  try{ fitCardLines(card); }catch(err){}   // 펼치는 순간 나타난 요약 설명 줄의 글자 크기를 카드 폭에 맞춘다
 }
 function productCardClick(e, catId, idx, card){
   const t = e && e.target;
@@ -13717,10 +13829,13 @@ function productCardHTML(p, catId, idx){
   const kickerHTML = productKickerHTML(p, 'product-kicker');
   // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
   const _metaLines = aiLinesHTML(p.metaDesc);
-  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">✓</span>${l}</span></div>`).join('')}</div>` : '';
+  const _metaInner = _metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit">${l}</span></div>`).join('');
+  // 접힌 상태: 카드 아래쪽(펼쳐보기 버튼 위)에 노출. 펼친 상태: 아래쪽은 숨기고(.pmd-main) 항공·이동 정보 위의 같은 서식 목록(.pmd-fold)으로 옮겨 한 번만 보이게 한다
+  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc pmd-main">${_metaInner}</div>` : '';
+  const metaDescFoldHTML = _metaLines.length ? `<div class="product-metadesc pmd-fold card-fold">${_metaInner}</div>` : '';
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
-  const prosHTML = cardSummaryListHTML(p);   // [수정] 펼쳐보기 안의 ✓ 목록 = 요약 설명(장점은 자세히 보기로 이동)
+  const prosHTML = metaDescFoldHTML;   // [수정] 펼쳐보기 안(항공·이동 정보 위)의 요약 설명 — 접힌 상태와 같은 서식, 장점은 자세히 보기로 이동
   const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length || prosHTML);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
   const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isRecommended?' data-label-recommend="1"':'') + (lblProfile.isSuggested?' data-label-suggest="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'') + (lblProfile.isPriceUp?' data-label-price="up"':'') + (lblProfile.isPriceDown?' data-label-price="down"':'');
@@ -13737,7 +13852,7 @@ function productCardHTML(p, catId, idx){
     </div>
     <div class="product-country">${escapeAttr(cat.ko)} · ${escapeAttr(cat.en)}</div>
     ${kickerHTML}
-    <div class="product-visual-title"><h4>${p.title}</h4>${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</div>
+    <div class="product-visual-title"><h4>${p.title}${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</h4></div>
     <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
     <div class="product-period-row-top">
@@ -13746,7 +13861,7 @@ function productCardHTML(p, catId, idx){
     </div>
     <div class="product-divider"></div>
     <div class="meta">${metaHTML}</div>
-    ${prosHTML ? `<div class="product-divider card-pros-div card-fold"></div>${prosHTML.replace('<ul class="card-pros">','<ul class="card-pros card-fold">')}` : ''}
+    ${prosHTML ? `<div class="product-divider card-pros-div card-fold"></div>${prosHTML}` : ''}
     ${cpTopHTML}
     ${cardTags.length?`<div class="product-tag-row card-fold">${cardTags.map(t=>`<span class="tag-inline"${t.bg?` style="${cardTagBoxStyle(t.bg)}"`:''}>${t.html}</span>`).join('')}</div>`:''}
     ${cp2HTML}
@@ -14487,20 +14602,26 @@ function spotlightVisualUrl(entry){
   if (p && p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url) return p.titleMedia.url;
   return getImage(entry.catId);
 }
-// [수정] 모바일 화면 자동 아래로 밀림 방지 — EDITOR'S PICK 카드는 8초마다 내용이 바뀌며 카드 높이(두 레이어 중 큰 쪽)가
-// 달라지는데, 그 영역이 현재 보고 있는 화면 "위쪽"에 있으면 iOS Safari(스크롤 앵커링 없음)에서는 아래 콘텐츠가 통째로
-// 밀려 내려온다. 교체 전후 스포트라이트 하단 위치 차이만큼 스크롤을 보정해 보고 있는 화면이 그대로 유지되게 한다.
+// [수정] 화면 자동 밀림 방지(스크롤 앵커링) — EDITOR'S PICK 카드는 8초마다 내용이 바뀌며 카드 높이가 달라지는데, 그 영역이 지금 보고 있는 화면
+// "위쪽"에 있으면 스크롤 앵커링이 없는 브라우저(iOS·맥 Safari)에서는 아래 내용이 통째로 밀려 내려온다. 반대로 카드 높이가 바뀌어도 아래 내용이
+// 안 움직이는 배치(데스크탑)에서 높이 차이만큼 스크롤을 보정하면 화면이 오히려 어긋난다. 그래서 "높이 차이"가 아니라, 화면 가운데에 보이는 요소가
+// 교체 전후로 실제로 얼마나 움직였는지를 재어 그만큼만 스크롤을 되돌린다(움직임이 없으면 아무것도 하지 않음).
+// 보정은 smooth가 아닌 즉시 적용 — html{scroll-behavior:smooth}에서는 scrollBy가 천천히 되돌아와 위아래로 출렁이는 것처럼 보인다
 function spotKeepScroll(fn){
-  const grid = document.querySelector('.spotlight-grid');
-  if (!grid){ fn(); return; }
-  const before = grid.getBoundingClientRect().bottom;
+  const hero = document.getElementById('top');
+  let anchor = null;
+  try{
+    if (window.scrollY > 0){
+      const el = document.elementFromPoint(Math.round(window.innerWidth/2), Math.round(window.innerHeight/2));
+      // 히어로 안(지금 카드를 보고 있는 경우)이거나 화면 전체를 덮는 창(팝업·상세)이면 기준으로 쓰지 않는다
+      if (el && !(hero && hero.contains(el)) && !el.closest('.popup-stage,.pd-overlay,.adv-editor-overlay,#adminPanel,.notice-popup-overlay')) anchor = el;
+    }
+  }catch(e){}
+  const before = anchor ? anchor.getBoundingClientRect().top : 0;
   fn();
-  const after = grid.getBoundingClientRect().bottom;
-  const d = after - before;
-  // 스포트라이트 하단이 화면 위쪽(이미 지나간 영역)에 있을 때만 보정 — 화면 안에서 보고 있을 때는 그대로 둔다
-  if (d && before <= 0 && window.scrollY > 0){
-    // [수정] html{scroll-behavior:smooth} 때문에 scrollBy가 부드럽게 이동하면, 높이가 바뀐 프레임에 화면이 먼저 밀렸다가 천천히 되돌아와
-    // 위아래로 출렁이는 것처럼 보인다 — 보정은 반드시 "즉시" 적용(잠깐 smooth를 끄고 이동한 뒤 복원)
+  if (!anchor || !anchor.isConnected) return;
+  const d = anchor.getBoundingClientRect().top - before;
+  if (Math.abs(d) >= 0.5){
     const de = document.documentElement, prev = de.style.scrollBehavior;
     de.style.scrollBehavior = 'auto';
     window.scrollTo(window.scrollX, window.scrollY + d);

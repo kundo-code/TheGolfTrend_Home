@@ -1520,11 +1520,17 @@ html.pa-open,html.pa-open body{overflow:hidden}
 .loc-group{margin:10px 0;padding:10px;border:1px solid rgba(10,23,48,.1);border-radius:10px;background:rgba(10,23,48,.02)}
 .loc-group-title{font-weight:700;font-size:.82rem;margin-bottom:8px}
 .loc-count{font-weight:500;font-size:.72rem;color:var(--nm-text-soft)}
-.loc-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) auto;gap:6px;align-items:center;margin-bottom:6px}
+.loc-row{display:grid;grid-template-columns:28px minmax(0,.8fr) minmax(0,1.6fr) auto;gap:6px;align-items:center;margin-bottom:6px;border-radius:8px}
+/* [추가] 위치 링크 줄을 손잡이(⠿)로 잡고 위아래로 끌어 순서 이동 — 마우스·터치 공통(포인터 이벤트) */
+.loc-drag{display:flex;align-items:center;justify-content:center;height:34px;border-radius:8px;cursor:grab;color:#8a94a6;font-size:1.15rem;line-height:1;user-select:none;-webkit-user-select:none;touch-action:none;background:rgba(10,23,48,.05)}
+.loc-drag:hover{background:rgba(10,23,48,.1);color:#0a1730}
+.loc-row.is-sorting{position:relative;z-index:30;background:#fff;box-shadow:0 8px 22px rgba(10,23,48,.25);outline:2px solid var(--nm-blue,#2F6FED);cursor:grabbing}
+.loc-rows.is-sorting-list .loc-row:not(.is-sorting){opacity:.75}
+body.tgt-sorting{cursor:grabbing;-webkit-user-select:none;user-select:none}
 .loc-btns{display:flex;gap:4px}
 .loc-btns .apc-btn-sm[disabled]{opacity:.35;cursor:default}
 .loc-empty{font-size:.76rem;color:var(--nm-text-soft);padding:6px 2px}
-@media(max-width:780px){ .loc-row{grid-template-columns:1fr} .loc-btns{justify-content:flex-end} }
+@media(max-width:780px){ .loc-row{grid-template-columns:34px minmax(0,1fr)} .loc-row .loc-url,.loc-row .loc-btns{grid-column:1/-1} .loc-drag{height:44px;grid-row:1} .loc-btns{justify-content:flex-end} }
 .post-tag-red{background:#e64545}
 .post-tag-yellow{background:#dca82c}
 .post-tag-default{background:rgba(221,179,103,.9)}
@@ -20367,7 +20373,8 @@ function locLinksEditorHTML(p, isDomestic){
       const list = locListOf(p, kind);
       return `<div class="loc-group">
         <div class="loc-group-title">${title} <span class="loc-count">${list.filter(x=>String(x.url||'').trim()).length}건</span></div>
-        ${list.length ? list.map((it,i)=>`<div class="loc-row">
+        ${list.length ? `<div class="loc-rows" data-kind="${kind}">` + list.map((it,i)=>`<div class="loc-row" data-i="${i}">
+          <span class="loc-drag" title="끌어서 순서 이동 (마우스·손가락)" aria-label="순서 이동 손잡이">⠿</span>
           <input type="text" class="loc-name" value="${escapeAttr(it.label||'')}" placeholder="이름 (예: ${LOC_NAME_EX[kind]||''})" oninput="updateLocLink('${kind}',${i},'label',this.value)">
           <input type="text" class="loc-url" value="${escapeAttr(it.url||'')}" placeholder="${ph}" oninput="updateLocLink('${kind}',${i},'url',this.value)">
           <div class="loc-btns">
@@ -20375,11 +20382,75 @@ function locLinksEditorHTML(p, isDomestic){
             <button type="button" class="apc-btn-sm" title="아래로 이동" onclick="moveLocLink('${kind}',${i},1)" ${i===list.length-1?'disabled':''}>▼</button>
             <button type="button" class="apc-btn-sm apc-delete" onclick="removeLocLink('${kind}',${i})">삭제</button>
           </div>
-        </div>`).join('') : `<div class="loc-empty">등록된 ${title.replace(/^\S+\s/,'')} 링크가 없습니다</div>`}
+        </div>`).join('') + `</div>` : `<div class="loc-empty">등록된 ${title.replace(/^\S+\s/,'')} 링크가 없습니다</div>`}
         <button type="button" class="apc-btn-sm" onclick="addLocLink('${kind}')">+ ${title.replace(/^\S+\s/,'')} 링크 추가 (${mapName})</button>
       </div>`;
     }).join('')}
   </div>`;
+}
+// [추가] 위아래로 끌어 순서를 바꾸는 공용 정렬 — 손잡이(handleSel)를 누른 채 끌면 그 줄이 포인터를 따라 움직이고, 다른 줄 중간선을 넘으면 자리를 바꾼다.
+// 마우스·터치(포인터 이벤트)를 함께 지원하고, 목록이 스크롤 영역보다 길면 가장자리에서 자동으로 스크롤한다. 놓으면 onDone(새 순서의 data-i 배열)을 부른다
+function tgtStartSort(e, handle, listEl, itemSel, onDone){
+  const item = handle.closest(itemSel); if (!item || !listEl.contains(item)) return;
+  e.preventDefault();
+  const pid = e.pointerId;
+  try{ handle.setPointerCapture(pid); }catch(_){}
+  const grab = e.clientY - item.getBoundingClientRect().top;
+  let curY = e.clientY, raf = 0;
+  // 스크롤 영역(위아래 가장자리 자동 스크롤용)
+  let sc = listEl.parentElement;
+  while (sc && sc!==document.body){ const oy = getComputedStyle(sc).overflowY; if ((oy==='auto' || oy==='scroll') && sc.scrollHeight>sc.clientHeight+2) break; sc = sc.parentElement; }
+  if (!sc || sc===document.body) sc = null;
+  item.classList.add('is-sorting'); listEl.classList.add('is-sorting-list'); document.body.classList.add('tgt-sorting');
+  const place = ()=>{
+    item.style.transform = '';
+    const sibs = [...listEl.querySelectorAll(':scope > '+itemSel)].filter(x=>x!==item);
+    // 포인터 높이가 다른 줄의 중간선을 넘었으면 그 줄과 자리를 바꾼다
+    const itemTop = curY - grab, itemMid = itemTop + item.offsetHeight/2;
+    for (const sb of sibs){
+      const r = sb.getBoundingClientRect(), mid = r.top + r.height/2;
+      const before = (item.compareDocumentPosition(sb) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;   // sb가 item 뒤에 있음
+      // 끄는 줄 자체를 옮기면(DOM 이동) 포인터 캡처가 풀리므로, 끄는 줄 대신 건너편 줄을 반대쪽으로 옮겨 같은 순서를 만든다
+      if (before && itemMid > mid){ item.before(sb); }
+      else if (!before && itemMid < mid){ item.after(sb); }
+    }
+    item.style.transform = '';
+    const nat = item.getBoundingClientRect().top;
+    item.style.transform = `translateY(${curY - grab - nat}px)`;
+  };
+  const autoScroll = ()=>{
+    raf = 0; if (!sc) return;
+    const r = sc.getBoundingClientRect(), edge = 56;
+    let dy = 0;
+    if (curY < r.top + edge) dy = -Math.ceil((r.top + edge - curY)/4);
+    else if (curY > r.bottom - edge) dy = Math.ceil((curY - (r.bottom - edge))/4);
+    if (dy){ sc.scrollTop += Math.max(-24, Math.min(24, dy)); place(); raf = requestAnimationFrame(autoScroll); }
+  };
+  const move = ev=>{ if (ev.pointerId!==pid) return; curY = ev.clientY; place(); if (!raf) raf = requestAnimationFrame(autoScroll); ev.preventDefault(); };
+  const end = ev=>{
+    if (ev && ev.pointerId!==pid) return;
+    handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', end); handle.removeEventListener('pointercancel', end);
+    cancelAnimationFrame(raf);
+    item.style.transform = ''; item.classList.remove('is-sorting'); listEl.classList.remove('is-sorting-list'); document.body.classList.remove('tgt-sorting');
+    const order = [...listEl.querySelectorAll(':scope > '+itemSel)].map(x=>Number(x.dataset.i));
+    if (order.some((v,i)=>v!==i)) onDone(order);
+  };
+  handle.addEventListener('pointermove', move); handle.addEventListener('pointerup', end); handle.addEventListener('pointercancel', end);
+  place();
+}
+document.addEventListener('pointerdown', e=>{
+  if (e.button>0) return;
+  const h = e.target.closest && e.target.closest('.loc-drag'); if (!h) return;
+  const list = h.closest('.loc-rows'); if (!list) return;
+  const kind = list.dataset.kind;
+  tgtStartSort(e, h, list, '.loc-row', order=>reorderLocLinks(kind, order));
+});
+function reorderLocLinks(kind, order){
+  const p=getAdvProduct(); if (!p) return;
+  const list = locListOf(p,kind);
+  if (order.length!==list.length || order.some(i=>!list[i])) { renderAdvBody(); return; }
+  p.locLinks[kind] = order.map(i=>list[i]);
+  saveAdvChange(); renderAdvBody();
 }
 function addLocLink(kind){
   const p=getAdvProduct(); if (!p) return;

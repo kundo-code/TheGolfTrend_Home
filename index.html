@@ -3539,6 +3539,8 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .cur-mode-row>span{font-size:.8rem;font-weight:700;margin-right:4px}
 .cur-mid{margin-left:2px;font-size:.58em;font-weight:700;opacity:.65}
 .cur-spread-grid{display:grid;gap:8px}
+.cur-hana-use{display:block;margin:0 0 10px!important;padding:8px 10px;border-radius:8px;background:rgba(49,118,189,.07);font-size:.78rem;line-height:1.5}
+.cur-hana-use span{display:block;margin-top:3px;color:var(--nm-text-soft,#667);font-size:.74rem}
 .cur-spread-row{display:grid;grid-template-columns:150px 112px 1fr;align-items:center;gap:8px;margin:0!important}
 .cur-spread-row .cs-name{font-weight:700;font-size:.82rem}
 .cur-spread-row .cs-in{display:flex;align-items:center;gap:4px}
@@ -9216,7 +9218,7 @@ function collectSiteState(){
     reviewsOverride, channelsOverride, channelPostOverrides, imageHiddenOverrides, calHiddenOverrides,
     noticesOverride, themeOverride, customLinkItems, linkHiddenOverrides,
     collectorEndpoint: collectorEndpointOverride,
-    aiPlaces, chatHours: chatHoursOverride, currencySpread, currencyBank,
+    aiPlaces, chatHours: chatHoursOverride, currencySpread, currencyBank, currencyUseHana,
   };
 }
 function applySiteState(state){
@@ -9249,6 +9251,7 @@ function applySiteState(state){
   if (state.collectorEndpoint !== undefined){ collectorEndpointOverride = state.collectorEndpoint; try{ localStorage.setItem(COLLECTOR_KEY, JSON.stringify(collectorEndpointOverride)); }catch(e){} }
   if (state.noticesOverride !== undefined) noticesOverride = state.noticesOverride;
   if (state.themeOverride !== undefined) themeOverride = state.themeOverride;
+  if (typeof state.currencyUseHana==='boolean'){ currencyUseHana = state.currencyUseHana; try{ localStorage.setItem(CUR_HANA_KEY, currencyUseHana ? '1' : '0'); }catch(e){} try{ renderCurrencyWidget(); }catch(e){} }
   if (typeof state.currencyBank==='string'){ currencyBank = state.currencyBank.slice(0,20); try{ localStorage.setItem(CUR_BANK_KEY, currencyBank); }catch(e){} }
   if (state.currencySpread && typeof state.currencySpread==='object'){ currencySpread = curSpreadNorm(state.currencySpread); try{ localStorage.setItem(CUR_SPREAD_KEY, JSON.stringify(currencySpread)); }catch(e){} try{ renderCurrencyWidget(); }catch(e){} }
   if (state.chatHours && typeof state.chatHours==='object'){ chatHoursOverride = state.chatHours; try{ localStorage.setItem(CHAT_HOURS_KEY, JSON.stringify(chatHoursOverride)); }catch(e){} try{ renderChatHoursLabels(); }catch(e){} }
@@ -10210,7 +10213,7 @@ function curMode(){
   if (m==='cash' || m==='base') return curAnySpread() ? m : 'base';
   return curAnySpread() ? 'cash' : 'base';
 }
-function curModeLabel(m){ return m==='cash' ? `현찰 살 때${currencyBank ? '('+escapeAttr(currencyBank)+' 기준)' : ''}` : '기준환율'; }
+function curModeLabel(m){ return m==='cash' ? `현찰 살 때${curBankName() ? '('+escapeAttr(curBankName())+' 기준)' : ''}` : '기준환율'; }
 function setCurrencyMode(m){
   try{ localStorage.setItem(CUR_MODE_KEY, m==='base' ? 'base' : 'cash'); }catch(e){}
   renderCurrencyWidget(); renderCurrencyDetail();
@@ -10221,8 +10224,22 @@ function setCurrencyBank(v){
   try{ localStorage.setItem(CUR_BANK_KEY, currencyBank); }catch(e){}
   queueSiteStateSync(); renderCurrencyWidget(); renderCurrencyDetail();
 }
-function curSpreadOf(code){ const v = currencySpread[code]; return v>0 ? v : 0; }
-function curAnySpread(){ return Object.keys(currencySpread).length>0; }
+// 하나은행 현찰 살 때 스프레드 참고값 — 하나은행 고시를 정리한 제3자 자료(2026년 8월 26일·10월 8일 고시 기준, 통화별 수치가 서로 일치)에서 확인된 통화만 넣었다.
+// 링깃·동·페소·루피아·대만달러·투그릭은 확인하지 못해 비워 두었다(기준환율로 표시, "기준" 표시). 하나은행 공식 고시와 다를 수 있어 안내 문구를 함께 보여 주며,
+// 관리자가 입력한 스프레드가 있으면 그 통화는 입력값이 우선한다. 관리자 패널에서 "하나은행 참고값 사용"을 끄면 입력한 값만 쓴다
+const CUR_HANA_SPREAD = {USD:1.75, JPY:1.75, EUR:1.99, CNY:5, SGD:1.99, HKD:1.97, THB:5, GBP:1.97, AUD:1.97};
+const CUR_HANA_KEY = 'kundo_currency_usehana_v1';
+let currencyUseHana = true;
+try{ if (localStorage.getItem(CUR_HANA_KEY)==='0') currencyUseHana = false; }catch(e){}
+function curBankName(){ return currencyBank || (currencyUseHana ? '하나은행' : ''); }
+function curSpreadOf(code){ const v = currencySpread[code]; if (v>0) return v; return (currencyUseHana && CUR_HANA_SPREAD[code]) || 0; }
+function curAdminSpreadCount(){ return Object.keys(currencySpread).length; }
+function curAnySpread(){ return curAdminSpreadCount()>0 || currencyUseHana; }
+function setCurrencyUseHana(on){
+  currencyUseHana = !!on;
+  try{ localStorage.setItem(CUR_HANA_KEY, currencyUseHana ? '1' : '0'); }catch(e){}
+  queueSiteStateSync(); renderCurrencyWidget(); renderCurrencyDetail(); try{ renderAdminWidgets(); }catch(e){}
+}
 // 1단위(KRW는 1) = 몇 원 — 스프레드가 있으면 기준환율 × (1 + 스프레드%)
 function curCashPerUnit(code){
   const k = krwPerUnit(code); if (!k) return null;
@@ -10245,7 +10262,8 @@ function curSpreadPreview(code){
   const base = krwPerUnit(code); if (!base) return '';
   const per = (CURRENCY_LABELS[code]&&CURRENCY_LABELS[code].per)||1;
   const fmt = v=>(v*per).toLocaleString('ko-KR',{maximumFractionDigits:2});
-  return curSpreadOf(code) ? `기준 ${fmt(base)}원 → 현찰 살 때 ${fmt(curCashPerUnit(code))}원` : `기준 ${fmt(base)}원 (스프레드 미입력 — 기준환율로 표시)`;
+  const own = currencySpread[code]>0;
+  return curSpreadOf(code) ? `기준 ${fmt(base)}원 → 현찰 살 때 ${fmt(curCashPerUnit(code))}원 (${curSpreadOf(code)}%${own ? '' : ' · 하나은행 참고값'})` : `기준 ${fmt(base)}원 (스프레드 없음 — 기준환율로 표시)`;
 }
 // 통화 이름·환율 표기 — per가 있는 통화는 "100동 5.7원"처럼 그 단위로
 function curDispName(code){ const l=CURRENCY_LABELS[code]||{name:code}; return (l.per>1 ? l.per : '')+l.name; }
@@ -10347,7 +10365,7 @@ function renderCurrencyDetail(){
   const updated = currencyData.time_last_update_utc ? new Date(currencyData.time_last_update_utc).toLocaleDateString('ko-KR') : '';
   const calcOptions = (selected)=>calcCodes.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${CALC_CURRENCY_LABELS[c].flag} ${CALC_CURRENCY_LABELS[c].name}(${c})</option>`).join('');
   body.innerHTML = `
-    ${curAnySpread() ? `<div class="cur-mode-row" role="group" aria-label="환율 기준"><span>환율 기준</span><button type="button" class="cur-chip${curMode()==='cash'?' on':''}" aria-pressed="${curMode()==='cash'}" onclick="setCurrencyMode('cash')">현찰 살 때${currencyBank?`(${escapeAttr(currencyBank)})`:''}</button><button type="button" class="cur-chip${curMode()==='base'?' on':''}" aria-pressed="${curMode()==='base'}" onclick="setCurrencyMode('base')">기준환율</button></div>` : ''}
+    ${curAnySpread() ? `<div class="cur-mode-row" role="group" aria-label="환율 기준"><span>환율 기준</span><button type="button" class="cur-chip${curMode()==='cash'?' on':''}" aria-pressed="${curMode()==='cash'}" onclick="setCurrencyMode('cash')">현찰 살 때${curBankName()?`(${escapeAttr(curBankName())})`:''}</button><button type="button" class="cur-chip${curMode()==='base'?' on':''}" aria-pressed="${curMode()==='base'}" onclick="setCurrencyMode('base')">기준환율</button></div>` : ''}
     <div class="cur-calc-row">
       <input type="number" min="0" step="1" value="${currencyCalcAmount}" oninput="setCurrencyCalcAmount(this.value)">
       <select onchange="setCurrencyCalcFrom(this.value)">${calcOptions(currencyCalcFrom)}</select>
@@ -10366,7 +10384,7 @@ function renderCurrencyDetail(){
     }).join('')}</div>
     <div class="cur-disclaimer">${curAnySpread()
       ? (curMode()==='cash'
-        ? `※ 은행 간 기준환율(${updated} 갱신)에 통화별 현찰 살 때 스프레드${currencyBank?`(${escapeAttr(currencyBank)} 기준)`:''}를 더한 값입니다(‘기준’ 표시 통화는 스프레드 미입력으로 기준환율). 환율 계산기도 같은 환율로 계산하며, 실제 환전 시 금융기관이 고시하는 환율·우대율과는 다를 수 있습니다.`
+        ? `※ 은행 간 기준환율(${updated} 갱신)에 통화별 현찰 살 때 스프레드${curBankName()?`(${escapeAttr(curBankName())} 기준 참고값)`:''}를 더한 값입니다(‘기준’ 표시 통화는 스프레드 정보가 없어 기준환율). 환율 계산기도 같은 환율로 계산하며, 실제 환전 시 금융기관이 고시하는 환율·우대율과는 다를 수 있으니 환전 전 은행 앱에서 확인해 주세요.`
         : `※ 은행 간 기준환율(${updated} 갱신)입니다. 위 \'환율 기준\'에서 현찰 살 때로 바꿔 볼 수 있으며, 실제 환전 시 금융기관이 고시하는 환율과는 다를 수 있습니다.`)
       : `※ 은행 간 기준환율(${updated} 갱신)이며, 실제 환전 시 금융기관이 고시하는 매매기준율(스프레드 포함)과는 다를 수 있습니다.`}</div>
   `;
@@ -11208,9 +11226,10 @@ function renderAdminWidgets(){
     <div class="ai-logo-xform" style="margin-top:16px">
       <span class="tc-label" style="display:block;font-weight:700;margin-bottom:4px">💱 현찰 살 때 스프레드 (환율 위젯·목록·계산기)</span>
       <span class="file-hint" style="display:block;margin-bottom:6px">위젯의 환율을 은행 간 기준환율이 아니라 <b>현찰 살 때</b> 환율로 표시합니다. 이용하는 은행이 고시하는 통화별 <b>현찰 살 때 스프레드(%)</b>를 입력하면 기준환율 × (1 + 스프레드)로 계산합니다. 입력하지 않은 통화는 기준환율 그대로 보이고(일부만 입력하면 "기준" 표시), 입력한 값만 쓰며 임의의 값을 넣지 않습니다. 모든 방문자에게 적용됩니다.</span>
+      <label class="cur-hana-use"><input type="checkbox" ${currencyUseHana?'checked':''} onchange="setCurrencyUseHana(this.checked)"> <b>하나은행 현찰 살 때 스프레드 참고값 사용</b> <span>달러·엔화 1.75% · 유로 1.99% · 위안·바트 5.00% · 싱가포르달러 1.99% · 홍콩달러·파운드·호주달러 1.97% (하나은행 고시를 정리한 제3자 자료, 2026년 8~10월 기준). 링깃·동·페소·루피아·대만달러·투그릭은 확인하지 못해 비워 두었고 "기준환율"로 표시됩니다. 아래 입력칸에 값을 적으면 그 통화는 입력값이 우선합니다.</span></label>
       <label class="cur-spread-row" style="margin-bottom:6px!important"><span class="cs-name">🏦 기준 은행 이름</span><span class="cs-in"><input type="text" maxlength="20" placeholder="예: 하나은행" value="${escapeAttr(currencyBank)}" onchange="setCurrencyBank(this.value)" style="width:150px"></span><span class="cs-prev">적으면 위젯에 "현찰 살 때(하나은행 기준)"으로 표시됩니다. 입력하는 스프레드는 이 은행의 고시값이어야 합니다.</span></label>
-      <div class="cur-spread-grid">${Object.keys(CURRENCY_LABELS).map(code=>{ const l=CURRENCY_LABELS[code]; return `<label class="cur-spread-row"><span class="cs-name">${l.flag} ${escapeAttr(curDispName(code))}(${code})</span><span class="cs-in"><input type="number" min="0" max="30" step="0.01" inputmode="decimal" placeholder="예: 1.75" value="${currencySpread[code]!==undefined?currencySpread[code]:''}" onchange="setCurrencySpread('${code}',this.value)"><em>%</em></span><span class="cs-prev" id="curSpreadPrev_${code}">${escapeAttr(curSpreadPreview(code))}</span></label>`; }).join('')}</div>
-      ${curAnySpread()?`<button type="button" class="file-btn danger" onclick="if(confirm('입력한 스프레드를 모두 지우고 기준환율로 되돌릴까요?')){currencySpread={};try{localStorage.setItem(CUR_SPREAD_KEY,'{}')}catch(e){}queueSiteStateSync();renderCurrencyWidget();renderCurrencyDetail();renderAdminWidgets()}" style="margin-top:6px">스프레드 모두 지우기</button>`:''}
+      <div class="cur-spread-grid">${Object.keys(CURRENCY_LABELS).map(code=>{ const l=CURRENCY_LABELS[code]; return `<label class="cur-spread-row"><span class="cs-name">${l.flag} ${escapeAttr(curDispName(code))}(${code})</span><span class="cs-in"><input type="number" min="0" max="30" step="0.01" inputmode="decimal" placeholder="${currencyUseHana && CUR_HANA_SPREAD[code] ? '하나 '+CUR_HANA_SPREAD[code] : '예: 1.75'}" value="${currencySpread[code]!==undefined?currencySpread[code]:''}" onchange="setCurrencySpread('${code}',this.value)"><em>%</em></span><span class="cs-prev" id="curSpreadPrev_${code}">${escapeAttr(curSpreadPreview(code))}</span></label>`; }).join('')}</div>
+      ${curAdminSpreadCount()?`<button type="button" class="file-btn danger" onclick="if(confirm('직접 입력한 스프레드를 모두 지울까요?')){currencySpread={};try{localStorage.setItem(CUR_SPREAD_KEY,'{}')}catch(e){}queueSiteStateSync();renderCurrencyWidget();renderCurrencyDetail();renderAdminWidgets()}" style="margin-top:6px">스프레드 모두 지우기</button>`:''}
     </div>
     <details class="admin-info-collapse widget-group-collapse" id="widgetIndividualCollapse" style="margin-top:16px"${individualWasOpen?' open':''}>
       <summary>🎛️ 개별 위젯 설정 (환율 · 날씨 국내 · 날씨 해외)</summary>

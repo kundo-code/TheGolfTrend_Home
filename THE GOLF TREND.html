@@ -705,7 +705,7 @@ section.block{padding:100px 24px;position:relative}
 .product-kicker .pk-dot{color:var(--gold-deep);margin:0 .4em}
 .product-metadesc{color:#3176bd;margin:2px 0 10px}
 .product-metadesc .pmd-line{color:#3176bd}
-.product-metadesc .pmd-dot{margin-right:.4em}
+.product-metadesc .pmd-dot{margin-right:.4em;color:#16a34a;font-weight:700}
 .product-metadesc .pmd-line a{color:inherit}
 /* 상세 페이지 상단: "영남권 · YEONGNAM" 줄의 오른쪽 끝에 배치 (글자 크기는 상품 카드의 표기와 동일) */
 .pd-top-title .cat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -1019,6 +1019,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-slot{margin-bottom:16px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.85);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid rgba(10,23,48,.08);box-shadow:0 8px 24px rgba(10,23,48,.1)}
 /* [수정] "일정 요약 타임라인" 섹션 바로 위에 구분선을 두어 앞 섹션과의 경계를 명확히 함 */
 .pd-section-divider{border-top:1px dashed rgba(10,23,48,.16);margin:4px 0 16px}
+.pd-pros-body{padding:4px 20px 18px}
+.pd-pros-body .card-pros{font-size:.95rem;color:rgba(10,23,48,.82)}
+.pd-pros-body .card-pros li{margin-bottom:4px}
+.pd-pros-body .card-pros li::before{color:#16a34a}
 /* [수정] 제목을 타이틀 이미지 위에 겹쳐 쓰지 않고 최상단 별도 박스로 분리 */
 .pd-top-title{padding:20px 20px 16px}
 .pd-top-title .cat{font-size:12pt;letter-spacing:.18em;color:var(--gold-deep);font-weight:600;text-transform:uppercase;margin-bottom:6px}
@@ -13490,6 +13494,12 @@ function cardProsListHTML(p){
   const ls = aiLinesHTML(t);   // 서식을 넣은 장점은 서식 그대로 카드에 보인다
   return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
 }
+// [수정] 상품 카드(펼쳐보기)·EDITOR'S PICK·팝업 카드의 ✓ 목록은 "제목·기본정보 › 요약 설명" 입력값을 쓴다.
+// (AI 추천정보 › 장점은 자세히 보기 페이지의 "일정 요약 타임라인" 위에서 노출 — cardProsListHTML)
+function cardSummaryListHTML(p){
+  const ls = aiLinesHTML(p && p.metaDesc);
+  return ls.length ? `<ul class="card-pros">${ls.map(l=>`<li>${l}</li>`).join('')}</ul>` : '';
+}
 // 기본 정보(박수·라운드·숙박·식사·항공) 한 줄 — 히어로 카드와 팝업 카드가 같은 값을 쓴다
 function spotBasicMeta(p){
   const firstPe = (p.priceEntries && p.priceEntries.find(pe=>!pe.hidden)) || null;
@@ -13707,10 +13717,10 @@ function productCardHTML(p, catId, idx){
   const kickerHTML = productKickerHTML(p, 'product-kicker');
   // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
   const _metaLines = aiLinesHTML(p.metaDesc);
-  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">·</span>${l}</span></div>`).join('')}</div>` : '';
+  const metaDescHTML = _metaLines.length ? `<div class="product-metadesc">${_metaLines.map(l=>`<div class="pmd-line"><span class="pmd-fit"><span class="pmd-dot">✓</span>${l}</span></div>`).join('')}</div>` : '';
   // [추가] 모바일: 📍숙소위치 아래(비행·이동 정보·체크포인트1·태그·체크포인트2)부터 요금 영역 앞까지는 기본으로 접어 두고 "펼쳐보기" 버튼으로 펼친다
   // [수정] 장점(card-pros)도 접어 두고 "펼쳐보기"에서만 보인다 — 장점만 있는 카드도 펼쳐보기 버튼이 생기도록 hasCp에 포함
-  const prosHTML = cardProsListHTML(p);
+  const prosHTML = cardSummaryListHTML(p);   // [수정] 펼쳐보기 안의 ✓ 목록 = 요약 설명(장점은 자세히 보기로 이동)
   const cpTopHTML = cardCpTopHTML(p), cp2HTML = cardCp2HTML(p), hasCp = !!(cpTopHTML || cp2HTML || cardTags.length || prosHTML);   // [수정] 교통·비행·이동 정보는 항상 보이므로 펼쳐보기 대상에서 뺐다
   const lblProfile = productLabelProfile(p); // 등급·신상품·특가 — 카드에 data 속성으로도 남겨 둬 통계·AI 추천 등에서 쓸 수 있게 한다
   const lblAttrs = ` data-label-grade="${lblProfile.grade}"` + (lblProfile.gradeIsDefault?' data-label-grade-default="1"':'') + (lblProfile.isNew?' data-label-new="1"':'') + (lblProfile.isRecommended?' data-label-recommend="1"':'') + (lblProfile.isSuggested?' data-label-suggest="1"':'') + (lblProfile.isSpecial?' data-label-special="1"':'') + (lblProfile.isPriceUp?' data-label-price="up"':'') + (lblProfile.isPriceDown?' data-label-price="down"':'');
@@ -14444,7 +14454,7 @@ function renderSpotlightSlot(slot, layer, entry){
   document.getElementById('spotMeta'+sfx).innerHTML=meta.map(m=>`<span>${m}</span>`).join('');
   // [추가] 🚘 교통 · ✈️ 비행 · 이동 정보 + 구분선 아래 "AI 추천 정보 › 장점" — 입력한 값이 있을 때만
   document.getElementById('spotMove'+sfx).innerHTML=cardMoveList(p, entry.catId).map(m=>`<span>${m.html}</span>`).join('');
-  document.getElementById('spotPros'+sfx).innerHTML=cardProsListHTML(p);
+  document.getElementById('spotPros'+sfx).innerHTML=cardSummaryListHTML(p);
   const displayPrice=getDisplayPrice(p);
   document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${priceWasHTML(p.fromOriginal, displayPrice)}${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
@@ -16562,6 +16572,10 @@ function renderProductDetail(p,cat,idx){
       </div>
     </div>`;
   }
+
+  // [수정] AI 추천정보 › 장점 — 상품 카드에서 옮겨 와 "일정 요약 타임라인" 바로 위에 ✓ 목록으로 노출(입력한 값이 있을 때만)
+  { const _prosList = cardProsListHTML(p);
+    if (_prosList) html += `<div class="pd-section-divider"></div><div class="pd-slot pd-pros-slot"><div class="pd-section-title">✅ 장점</div><div class="pd-pros-body">${_prosList}</div></div>`; }
 
   // [수정] 공통 일정 요약 타임라인 — 공통 일정(또는 모든 요금 항목이 같은 일정)을 여기서 한 번만
   // 보여준다. 공통과 다른 일정을 쓰는 요금 항목은 그 항목의 "상세보기" 안에서 따로 보여준다
@@ -23648,7 +23662,7 @@ function epSlideCardHTML(item, active, di){
   const headline = pe ? richToPlain(pe.headline||'') : '';
   const basicMeta = headline ? [] : spotBasicMeta(p);
   const moveItems = cardMoveList(p, cat.id);
-  const prosHTML = cardProsListHTML(p);
+  const prosHTML = cardSummaryListHTML(p);
   const bgStyle = (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
     ? `background-image:url('${escapeAttr(p.titleMedia.url)}');background-size:cover;background-position:center`
     : getCatBgStyle(cat);

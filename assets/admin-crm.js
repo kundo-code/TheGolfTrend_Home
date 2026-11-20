@@ -42,6 +42,8 @@
   const CHANNELS = ['전화','카카오톡','문자','홈페이지','방문','기타','실시간 채팅'];
   const GROUP_TYPES = ['일반','가족·부부','친목','동호회','기업','기타'];
   const FLEX = ['가능','어려움','미확인'];
+  const STAY_SUGGEST = ['2박3일','3박4일','3박5일','4박5일','4박6일','5박6일','6박7일'];
+  const ISO_BY_CAT = {japan:'JP', china:'CN', vietnam:'VN', thailand:'TH', philippines:'PH', malaysia:'MY', indonesia:'ID', mongolia:'MN', guam:'US'};
   const JOIN_PREF = ['합류 가능','단독 희망','미확인'];
   const PARTY_BARRIERS = ['최소 출발 인원 미달','소인원 추가요금','객실 배정(홀수 인원)','인원 확정 지연','기타'];
   // 고객 핵심 취향 — 홈페이지 AI 추천의 스타일 14종을 그대로 쓰고, 상담에서 자주 나오는 표현을 더한다
@@ -217,6 +219,58 @@
       .crm-grp.g-req{--g:#c0262d}.crm-grp.g-date{--g:#0f766e}.crm-grp.g-party{--g:#7c3aed}.crm-grp.g-budget{--g:#b45309}.crm-grp.g-cust{--g:#1d4ed8}.crm-grp.g-memo{--g:#475569}
       .crm-grp .crm-field input,.crm-grp .crm-field select,.crm-grp .crm-field textarea{border:1px dashed #cbd5e1;background:#f8fafc;box-shadow:none}
       .crm-grp .crm-field.is-filled input,.crm-grp .crm-field.is-filled select,.crm-grp .crm-field.is-filled textarea{border:1px solid #60a5fa;background:#eff6ff;color:#0a1730;font-weight:600}
+      /* 빠른 기록 — 거래처·담당자·분류, 선택 목록(콤보), 관리 패널, 공통 서식 도구 */
+      .crm-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0 14px}
+      .crm-cat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 14px}
+      .crm-date-grid > div > .crm-field:first-child{margin-top:12px}
+      .crm-rtf-bar{position:sticky;top:0;z-index:12;background:var(--nm-surface,#eef1f6);border-radius:12px;box-shadow:var(--nm-shadow-raised-sm);margin-bottom:10px}
+      .crm-rtf-scope .rtf-global .rtf-toolbar{padding:6px 10px}
+      .crm-rtf-scope .rtf-global-hint{padding:0 12px 6px}
+      .crm-rtf-scope .rtf-editable.crm-rich{min-height:48px;padding:9px 11px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font-size:.86rem;line-height:1.55}
+      .crm-rtf-scope .crm-field.is-filled .rtf-editable.crm-rich{border:1px solid #60a5fa;background:#eff6ff}
+      .crm-rtf-scope .rtf-editable.rtf-active-target{box-shadow:0 0 0 2px var(--nm-blue,#2F6FED)}
+      .crm-rtf-scope .rtf-editable:empty:before{content:attr(data-placeholder);color:#94a3b8;pointer-events:none}
+      .crm-rich-view{white-space:normal}
+      .crm-rich-view .rtf-sub{padding-left:1.5em}.crm-rich-view .rtf-sub.rtf-sub2{padding-left:3em}
+      .crm-item-req{background:#fffbeb;border-radius:8px;padding:6px 9px}
+      .crm-tag.cat{background:#EDE9FE;color:#5B21B6}
+      .crm-linkbtn{border:none;background:none;color:#1d4ed8;font-size:.78rem;font-weight:800;cursor:pointer;padding:6px 0}
+      .crm-mgr-link{margin-top:6px}
+      .crm-combo{position:relative}
+      .crm-combo-row{display:flex;gap:4px;align-items:stretch}
+      .crm-combo-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left;padding:9px 11px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font:inherit;font-size:.86rem;cursor:pointer;color:#94a3b8}
+      .crm-combo-btn.has{border:1px solid #60a5fa;background:#eff6ff;color:#0a1730;font-weight:600}
+      .crm-combo-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .crm-combo-x{border:none;background:#eef1f6;border-radius:10px;padding:0 9px;cursor:pointer;font-weight:800;color:#64748b}
+      .crm-combo-pop{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;min-width:230px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(10,23,48,.28);border:1px solid #dbe1ea;padding:8px}
+      .crm-combo-top{display:flex;gap:6px;margin-bottom:6px}
+      .crm-combo-top input{flex:1;min-width:0;padding:7px 9px;border:1px solid #dbe1ea;border-radius:8px;font-size:.82rem}
+      .crm-mini{border:1px solid #dbe1ea;background:#f4f6f9;border-radius:8px;padding:5px 8px;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap;color:#334155}
+      .crm-mini.danger{color:#C0262D}.crm-mini:disabled{opacity:.4;cursor:default}
+      .crm-combo-list{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+      .crm-combo-it{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:none;background:none;border-radius:8px;padding:7px 9px;font:inherit;font-size:.84rem;cursor:pointer;color:#0a1730}
+      .crm-combo-it:hover{background:#eef3fd}.crm-combo-it.on{background:#dbeafe;font-weight:800}
+      .crm-combo-it small{font-size:.7rem;color:#64748b}
+      .crm-combo-empty{padding:10px;font-size:.78rem;color:#64748b}
+      .crm-mgr{margin-top:8px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0}
+      .crm-mgr-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+      .crm-mgr-tab{border:1px solid #dbe1ea;background:#fff;border-radius:100px;padding:6px 12px;font-size:.78rem;font-weight:700;cursor:pointer;color:#475569}
+      .crm-mgr-tab.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}.crm-mgr-tab b{margin-left:3px}
+      .crm-mgr-tools,.crm-mgr-add{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+      .crm-mgr-tools input,.crm-mgr-add input,.crm-mgr-add select,.crm-mgr-tools select{padding:7px 9px;border:1px solid #dbe1ea;border-radius:8px;font-size:.8rem;background:#fff;min-width:0}
+      .crm-mgr-tools input[type=search]{flex:1;min-width:140px}
+      .crm-mgr-add input[type=text]{flex:1;min-width:120px}
+      .crm-mgr-list{display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto;padding-right:2px}
+      .crm-mgr-row{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:5px 8px}
+      .crm-mgr-row .crm-drag{cursor:grab;font-size:1.1rem;color:#64748b;padding:0 4px;touch-action:none;user-select:none}
+      .crm-mgr-row .crm-drag.off{opacity:.3;cursor:not-allowed}
+      .crm-mgr-no{flex:0 0 24px;text-align:right;font-size:.7rem;color:#94a3b8}
+      .crm-mgr-name{flex:1;min-width:90px;padding:6px 8px;border:1px solid transparent;border-radius:8px;font-size:.84rem;background:transparent}
+      .crm-mgr-name:focus,.crm-mgr-phone:focus{border-color:#93c5fd;background:#fff;outline:none}
+      .crm-mgr-sel{flex:0 1 140px;min-width:0;padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:.78rem;background:#fff}
+      .crm-mgr-phone{flex:0 1 130px;min-width:0;padding:6px 8px;border:1px solid transparent;border-radius:8px;font-size:.8rem;background:transparent}
+      .crm-mgr-row.is-sorting{position:relative;z-index:40;background:#fff;box-shadow:0 8px 22px rgba(10,23,48,.25);outline:2px solid #2F6FED;cursor:grabbing}
+      .crm-mgr-list.is-sorting-list .crm-mgr-row:not(.is-sorting){opacity:.75}
       .crm-opt{margin-top:12px;border-top:1px dashed rgba(10,23,48,.15);padding-top:6px}
       .crm-opt > summary{cursor:pointer;font-size:.8rem;font-weight:800;color:var(--nm-text,#0a1730);padding:6px 0}
       .crm-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:14px}
@@ -427,11 +481,289 @@
     return out;
   }
 
+  // ══ 거래처 · 담당자 · 상담 분류 (DB에 따로 저장 · 추가/삭제 · 드래그 순서 · 검색/정렬) ══════════════════════
+  // docs/sql/2026-11-20_crm_quick_v2.sql 의 tgt_partners · tgt_partner_contacts · tgt_consult_categories 테이블을 쓴다.
+  // SQL을 실행하기 전에는 아래 기본 목록으로 "선택"만 가능하고(추가·삭제·순서 변경은 SQL 실행 후), 상담·예약에 새 항목은 저장되지 않는다.
+  const DEFAULT_PARTNERS = ['골프트렌드','가예약','예약취소','골프와사람','꿈에그린','부산그린','블루밍','와골프','엘리트골프','SGL(김영훈)',
+    'OK버디(선경)','자이언트','캐슬투어','OK투어','가자골프','권우현골프','골프로','골프스토리(엄창용)','골프어때','골프여행닷컴',
+    '나이스골프','다음여행사','다해드림','대원투어','더블엠(권미순)','보물섬','소현투어','에버그린','인그립','골프스케치',
+    '프리미엄','투어몬','에이온투어','컴팩트투어','조희준','밀리토피아투어','에이플러스'];
+  const DEFAULT_CATEGORIES = ['예약확정','예약진행중','보류','견적문의','미예약','단순문의','단체문의','기업문의','예약취소·변경','결제 · 환급 · 환불'];
+  const REG_TABLES = {partner:'tgt_partners', contact:'tgt_partner_contacts', category:'tgt_consult_categories'};
+  const REG_SORT_KEY = 'tgt_crm_reg_sort_v1';
+  const REG_LABEL = {partner:'거래처', contact:'담당자', category:'상담 분류'};
+  state.reg = {loaded:false, loading:false, missing:false, error:'', partners:[], contacts:[], categories:[],
+               mgrOpen:false, mgrTab:'partner', mgrQ:'', mgrPartner:'', combo:null, msg:'', busy:false};
+  state.v2 = {checked:false, ok:false};
+  function regSortMode(kind){ try{ return (JSON.parse(localStorage.getItem(REG_SORT_KEY)||'{}')[kind]) || 'manual'; }catch(e){ return 'manual'; } }
+  function regSetSortMode(kind, mode){ try{ const o = JSON.parse(localStorage.getItem(REG_SORT_KEY)||'{}'); o[kind] = mode; localStorage.setItem(REG_SORT_KEY, JSON.stringify(o)); }catch(e){} }
+  const regList = kind => kind==='partner' ? state.reg.partners : (kind==='contact' ? state.reg.contacts : state.reg.categories);
+  const regName = (kind, x) => kind==='category' ? x.value : x.name;
+  // 화면에 보이는 순서 — 등록순(드래그로 정한 순서) 또는 가나다순
+  function regSorted(kind, list){
+    const arr = (list || regList(kind)).slice();
+    if (regSortMode(kind)==='name') arr.sort((a,b)=>String(regName(kind,a)).localeCompare(String(regName(kind,b)), 'ko'));
+    else arr.sort((a,b)=>(a.sort_order-b.sort_order) || (a.id-b.id));
+    return arr;
+  }
+  function applyRegDefaults(){
+    const r = state.reg;
+    r.partners = DEFAULT_PARTNERS.map((name,i)=>({id:-(i+1), name, sort_order:i+1, _local:true}));
+    r.categories = DEFAULT_CATEGORIES.map((value,i)=>({id:-(i+1), value, sort_order:i+1, _local:true}));
+    r.contacts = [];
+  }
+  async function probeV2(){
+    if (state.v2.checked) return state.v2.ok;
+    await checkReady();
+    if (!isUsable()){ state.v2 = {checked:false, ok:false}; return false; }
+    try{
+      const a = await sb().from(TABLES.consultations).select('partner_name,contact_name,contact_phone,consult_category,request_note,stay_period').limit(1);
+      const b = await sb().from(TABLES.bookings).select('partner_name,contact_name,contact_phone,consult_category,request_note,stay_period').limit(1);
+      state.v2 = {checked:true, ok:!a.error && !b.error, err:(a.error||b.error) ? errText(a.error||b.error) : ''};
+    }catch(e){ state.v2 = {checked:true, ok:false, err:errText(e)}; }
+    return state.v2.ok;
+  }
+  async function loadReg(force){
+    const r = state.reg;
+    if (r.loading || (r.loaded && !force)) return;
+    r.loading = true;
+    try{
+      await checkReady();
+      if (!isUsable()){ applyRegDefaults(); r.missing = true; r.loaded = true; return; }
+      const c = sb();
+      const [p, ct, k] = await Promise.all([
+        c.from(REG_TABLES.partner).select('*').order('sort_order', {ascending:true}).order('id', {ascending:true}),
+        c.from(REG_TABLES.contact).select('*').order('sort_order', {ascending:true}).order('id', {ascending:true}),
+        c.from(REG_TABLES.category).select('*').order('sort_order', {ascending:true}).order('id', {ascending:true}),
+      ]);
+      const all = [p, ct, k];
+      if (all.some(x=>x.error && isMissingTableError(x.error))){ applyRegDefaults(); r.missing = true; r.error = ''; }
+      else if (all.some(x=>x.error)){ applyRegDefaults(); r.missing = false; r.error = errText(all.find(x=>x.error).error); }
+      else { r.partners = p.data||[]; r.contacts = ct.data||[]; r.categories = k.data||[]; r.missing = false; r.error = ''; }
+      r.loaded = true;
+      await probeV2();
+    }catch(e){ applyRegDefaults(); r.error = errText(e); r.loaded = true; }
+    finally{ r.loading = false; }
+  }
+  // 양식·관리 화면이 처음 그려질 때 한 번 불러온다
+  function ensureReg(){ if (!state.reg.loaded && !state.reg.loading) loadReg().then(()=>renderBody()); }
+  const regEditable = () => !!(state.reg.loaded && !state.reg.missing && !state.reg.error);
+  function regMsg(html, kind){ state.reg.msg = html ? `<div class="crm-banner ${kind||'ok'}" style="margin:8px 0">${html}</div>` : ''; }
+
+  // ── 선택(콤보) — 거래처·담당자 ──
+  function comboItems(kind, q){
+    const f = ensureForm();
+    let list = regSorted(kind);
+    if (kind==='contact' && f.partner_name){
+      const p = state.reg.partners.find(x=>x.name===f.partner_name);
+      if (p) list = list.filter(c=>c.partner_id===p.id);
+    }
+    q = String(q||'').trim().toLowerCase();
+    if (q) list = list.filter(x=>(regName(kind,x)+' '+(x.phone||'')+' '+partnerNameOf(x.partner_id)).toLowerCase().includes(q));
+    return list;
+  }
+  const partnerNameOf = id => { const p = state.reg.partners.find(x=>x.id===id); return p ? p.name : ''; };
+  function comboItemsHTML(kind, q){
+    const f = ensureForm();
+    const list = comboItems(kind, q);
+    if (!list.length){
+      const hint = kind==='contact' ? (f.partner_name ? `"${esc(f.partner_name)}"에 등록된 담당자가 없습니다 — 아래 "관리"에서 추가하세요.` : '등록된 담당자가 없습니다 — 아래 "관리"에서 추가하세요.') : '검색 결과가 없습니다.';
+      return `<div class="crm-combo-empty">${hint}</div>`;
+    }
+    const cur = kind==='partner' ? f.partner_name : f.contact_name;
+    return list.map(x=>`<button type="button" class="crm-combo-it ${regName(kind,x)===cur?'on':''}" onclick="TGT_CRM.comboPick('${kind}', ${x.id})"><span>${esc(regName(kind,x))}</span>${kind==='contact' ? `<small>${esc([!f.partner_name ? partnerNameOf(x.partner_id) : '', x.phone||''].filter(Boolean).join(' · '))}</small>` : ''}</button>`).join('');
+  }
+  function comboHTML(kind, value, placeholder){
+    const open = state.reg.combo===kind;
+    const sortLabel = regSortMode(kind)==='name' ? '가나다순' : '등록순';
+    return `<div class="crm-combo ${open?'open':''}">
+      <div class="crm-combo-row">
+        <button type="button" class="crm-combo-btn ${value?'has':''}" onclick="TGT_CRM.comboToggle('${kind}')"><span>${esc(value || placeholder)}</span><i>▾</i></button>
+        ${value ? `<button type="button" class="crm-combo-x" title="선택 해제" onclick="TGT_CRM.comboClear('${kind}')">✕</button>` : ''}
+      </div>
+      ${open ? `<div class="crm-combo-pop"><div class="crm-combo-top"><input type="search" id="crmComboQ" data-nofill="1" placeholder="${REG_LABEL[kind]} 검색" autocomplete="off" oninput="TGT_CRM.comboSearch('${kind}', this.value)">
+        <button type="button" class="crm-mini" title="목록 정렬 방식 바꾸기" onclick="TGT_CRM.regSort('${kind}')">정렬: ${sortLabel}</button></div>
+        <div class="crm-combo-list" id="crmComboList">${comboItemsHTML(kind, '')}</div></div>` : ''}
+    </div>`;
+  }
+  function comboToggle(kind){
+    const r = state.reg;
+    r.combo = r.combo===kind ? null : kind;
+    renderBody();
+    if (r.combo){ const q = qEl('crmComboQ'); if (q) q.focus(); }
+  }
+  function comboSearch(kind, q){ const box = qEl('crmComboList'); if (box) box.innerHTML = comboItemsHTML(kind, q); }
+  function comboClear(kind){
+    const f = ensureForm();
+    if (kind==='partner'){ f.partner_name = ''; }
+    else { f.contact_name = ''; f.contact_phone = ''; }
+    state.reg.combo = null; saveDraft(); renderBody();
+  }
+  function comboPick(kind, id){
+    const f = ensureForm(), r = state.reg;
+    if (kind==='partner'){
+      const p = r.partners.find(x=>x.id===id); if (!p) return;
+      f.partner_name = p.name;
+      // 다른 거래처의 담당자가 이미 골라져 있으면 비운다
+      const cur = r.contacts.find(c=>c.name===f.contact_name);
+      if (cur && cur.partner_id && cur.partner_id!==p.id){ f.contact_name = ''; f.contact_phone = ''; }
+    } else {
+      const c = r.contacts.find(x=>x.id===id); if (!c) return;
+      f.contact_name = c.name;
+      f.contact_phone = c.phone || '';           // 등록된 담당자의 연락처를 자동으로 채운다
+      if (!f.partner_name && c.partner_id){ const p = r.partners.find(x=>x.id===c.partner_id); if (p) f.partner_name = p.name; }
+    }
+    r.combo = null; saveDraft(); renderBody();
+  }
+  function regSort(kind){
+    regSetSortMode(kind, regSortMode(kind)==='name' ? 'manual' : 'name');
+    renderBody();
+    if (state.reg.combo===kind){ const q = qEl('crmComboQ'); if (q) q.focus(); }
+  }
+
+  // ── 관리(추가·삭제·이름/연락처 수정·드래그 순서·검색·정렬) ──
+  function mgrDisplayList(){
+    const r = state.reg, kind = r.mgrTab;
+    let list = regSorted(kind);
+    if (kind==='contact' && r.mgrPartner) list = list.filter(c=>String(c.partner_id)===String(r.mgrPartner));
+    const q = String(r.mgrQ||'').trim().toLowerCase();
+    if (q) list = list.filter(x=>(regName(kind,x)+' '+(x.phone||'')+' '+(kind==='contact'?partnerNameOf(x.partner_id):'')).toLowerCase().includes(q));
+    return list;
+  }
+  function mgrRowsHTML(){
+    const r = state.reg, kind = r.mgrTab, list = mgrDisplayList();
+    const canDrag = regEditable() && regSortMode(kind)==='manual' && !String(r.mgrQ||'').trim();
+    const ro = regEditable() ? '' : 'disabled';
+    if (!list.length) return `<div class="crm-empty">${String(r.mgrQ||'').trim() ? '검색 결과가 없습니다.' : '등록된 항목이 없습니다.'}</div>`;
+    return list.map((x,i)=>`<div class="crm-mgr-row" data-i="${i}" data-id="${x.id}">
+      <span class="crm-drag ${canDrag?'':'off'}" title="${canDrag?'위아래로 끌어 순서 바꾸기':(regSortMode(kind)==='name'?'가나다순 보기에서는 순서를 바꿀 수 없습니다(등록순으로 바꾸세요)':(regEditable()?'검색 중에는 순서를 바꿀 수 없습니다':'SQL 실행 후 사용할 수 있습니다'))}">⠿</span>
+      <span class="crm-mgr-no">${i+1}</span>
+      <input type="text" class="crm-mgr-name" ${ro} value="${esc(regName(kind,x))}" maxlength="80" onchange="TGT_CRM.regRename('${kind}', ${x.id}, this.value)">
+      ${kind==='contact' ? `<select class="crm-mgr-sel" ${ro} onchange="TGT_CRM.regContactField(${x.id}, 'partner_id', this.value)"><option value="">거래처 없음</option>${regSorted('partner').map(p=>`<option value="${p.id}" ${p.id===x.partner_id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+        <input type="tel" class="crm-mgr-phone" ${ro} value="${esc(x.phone||'')}" placeholder="연락처" maxlength="40" onchange="TGT_CRM.regContactField(${x.id}, 'phone', this.value)">` : ''}
+      <button type="button" class="crm-mini danger" ${ro} title="삭제" onclick="TGT_CRM.regDelete('${kind}', ${x.id})">🗑</button>
+    </div>`).join('');
+  }
+  function mgrHTML(){
+    const r = state.reg, kind = r.mgrTab;
+    const tabs = ['partner','contact','category'].map(k=>`<button type="button" class="crm-mgr-tab ${k===kind?'on':''}" onclick="TGT_CRM.mgrTab('${k}')">${REG_LABEL[k]} <b>${regList(k).length}</b></button>`).join('');
+    const sortLabel = regSortMode(kind)==='name' ? '가나다순' : '등록순(드래그)';
+    const ro = regEditable() ? '' : 'disabled';
+    const addRow = kind==='contact'
+      ? `<select id="crmMgrAddPartner" ${ro}><option value="">거래처 선택</option>${regSorted('partner').map(p=>`<option value="${p.id}" ${String(p.id)===String(r.mgrPartner)?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+         <input type="text" id="crmMgrAddName" data-nofill="1" ${ro} placeholder="담당자 이름" maxlength="80" onkeydown="if(event.key==='Enter'){event.preventDefault();TGT_CRM.regAdd();}">
+         <input type="tel" id="crmMgrAddPhone" data-nofill="1" ${ro} placeholder="연락처" maxlength="40" onkeydown="if(event.key==='Enter'){event.preventDefault();TGT_CRM.regAdd();}">`
+      : `<input type="text" id="crmMgrAddName" data-nofill="1" ${ro} placeholder="새 ${REG_LABEL[kind]} 이름" maxlength="80" onkeydown="if(event.key==='Enter'){event.preventDefault();TGT_CRM.regAdd();}">`;
+    return `<div class="crm-mgr">
+      ${r.missing ? `<div class="crm-banner warn">🛠 거래처·담당자·분류를 저장할 DB가 아직 준비되지 않았습니다. Supabase SQL Editor에서 <code>docs/sql/2026-11-20_crm_quick_v2.sql</code>을 한 번 실행하면 추가·삭제·순서 변경이 가능해집니다. (지금은 기본 목록에서 고르기만 가능)</div>` : ''}
+      ${r.error ? `<div class="crm-banner err">목록을 불러오지 못했습니다: ${esc(r.error)}</div>` : ''}
+      <div class="crm-mgr-tabs">${tabs}</div>
+      <div class="crm-mgr-tools">
+        <input type="search" id="crmMgrQ" data-nofill="1" placeholder="${REG_LABEL[kind]} 검색" value="${esc(r.mgrQ)}" oninput="TGT_CRM.mgrSearch(this.value)">
+        ${kind==='contact' ? `<select onchange="TGT_CRM.mgrPartnerFilter(this.value)"><option value="">전체 거래처</option>${regSorted('partner').map(p=>`<option value="${p.id}" ${String(p.id)===String(r.mgrPartner)?'selected':''}>${esc(p.name)}</option>`).join('')}</select>` : ''}
+        <button type="button" class="crm-btn" onclick="TGT_CRM.regSort('${kind}')" title="목록 정렬 방식(선택 목록에도 적용)">정렬: ${sortLabel}</button>
+      </div>
+      <div class="crm-mgr-add">${addRow}<button type="button" class="crm-btn primary" ${ro} onclick="TGT_CRM.regAdd()">+ 추가</button></div>
+      ${r.msg||''}
+      <div class="crm-mgr-list" id="crmMgrList">${mgrRowsHTML()}</div>
+      <p class="crm-note" style="margin-top:8px">· 이름을 바꾸거나 삭제해도 이미 저장된 상담·예약 기록의 거래처·담당자·분류는 기록 당시 이름 그대로 남습니다.${kind==='partner' ? ' · 거래처를 삭제하면 그 거래처의 담당자도 함께 삭제됩니다.' : ''}${kind==='contact' ? ' · 담당자를 고르면 여기 등록한 연락처가 자동으로 입력됩니다.' : ''}</p>
+    </div>`;
+  }
+  function mgrToggle(){ state.reg.mgrOpen = !state.reg.mgrOpen; state.reg.msg = ''; renderBody(); }
+  function mgrTab(k){ state.reg.mgrTab = k; state.reg.mgrQ = ''; state.reg.msg = ''; renderBody(); }
+  function mgrOpenTab(k){ state.reg.mgrOpen = true; state.reg.mgrTab = k; state.reg.mgrQ = ''; state.reg.msg = ''; state.reg.combo = null; renderBody(); const el = qEl('crmMgrList'); if (el && el.scrollIntoView) el.scrollIntoView({block:'center'}); }
+  function mgrSearch(q){ state.reg.mgrQ = q; const box = qEl('crmMgrList'); if (box) box.innerHTML = mgrRowsHTML(); }
+  function mgrPartnerFilter(v){ state.reg.mgrPartner = v; renderBody(); }
+  const regDup = (kind, name, exceptId) => regList(kind).some(x=>x.id!==exceptId && regName(kind,x).trim().toLowerCase()===name.trim().toLowerCase());
+  async function regAdd(){
+    const r = state.reg, kind = r.mgrTab;
+    if (!regEditable()) return;
+    const nameEl = qEl('crmMgrAddName'); const name = String(nameEl ? nameEl.value : '').trim();
+    if (!name){ regMsg('이름을 입력하세요.', 'warn'); renderBody(); return; }
+    if (kind!=='contact' && regDup(kind, name)){ regMsg(`"${esc(name)}"은(는) 이미 등록되어 있습니다.`, 'warn'); renderBody(); return; }
+    const list = regList(kind), max = list.reduce((m,x)=>Math.max(m, x.sort_order||0), 0);
+    const row = kind==='category' ? {value:name, sort_order:max+1} : {name, sort_order:max+1};
+    if (kind==='contact'){
+      const pe = qEl('crmMgrAddPartner'), phe = qEl('crmMgrAddPhone');
+      row.partner_id = pe && pe.value ? Number(pe.value) : (r.mgrPartner ? Number(r.mgrPartner) : null);
+      row.phone = phe ? (phe.value.trim() || null) : null;
+    }
+    const { data, error } = await sb().from(REG_TABLES[kind]).insert(row).select().single();
+    if (error){ regMsg(`추가 실패: ${esc(errText(error))}`, 'err'); renderBody(); return; }
+    list.push(data);
+    regMsg(`✅ ${esc(REG_LABEL[kind])} "${esc(name)}"을(를) 추가했습니다.`, 'ok');
+    renderBody();
+    const again = qEl('crmMgrAddName'); if (again) again.focus();
+  }
+  async function regRename(kind, id, value){
+    if (!regEditable()) return;
+    const x = regList(kind).find(i=>i.id===id); if (!x) return;
+    const name = String(value||'').trim();
+    if (!name){ regMsg('이름은 비워 둘 수 없습니다.', 'warn'); renderBody(); return; }
+    if (name===regName(kind,x)) return;
+    if (regDup(kind, name, id)){ regMsg(`"${esc(name)}"은(는) 이미 등록되어 있습니다.`, 'warn'); renderBody(); return; }
+    const patch = kind==='category' ? {value:name} : {name};
+    const { error } = await sb().from(REG_TABLES[kind]).update(patch).eq('id', id);
+    if (error){ regMsg(`수정 실패: ${esc(errText(error))}`, 'err'); renderBody(); return; }
+    Object.assign(x, patch); regMsg('✅ 이름을 바꿨습니다.', 'ok'); renderBody();
+  }
+  async function regContactField(id, field, value){
+    if (!regEditable()) return;
+    const x = state.reg.contacts.find(i=>i.id===id); if (!x) return;
+    const patch = field==='partner_id' ? {partner_id: value ? Number(value) : null} : {phone: String(value||'').trim() || null};
+    const { error } = await sb().from(REG_TABLES.contact).update(patch).eq('id', id);
+    if (error){ regMsg(`수정 실패: ${esc(errText(error))}`, 'err'); renderBody(); return; }
+    Object.assign(x, patch); regMsg('✅ 저장했습니다.', 'ok'); renderBody();
+  }
+  async function regDelete(kind, id){
+    if (!regEditable()) return;
+    const x = regList(kind).find(i=>i.id===id); if (!x) return;
+    const extra = kind==='partner' ? state.reg.contacts.filter(c=>c.partner_id===id).length : 0;
+    if (!confirm(`${REG_LABEL[kind]} "${regName(kind,x)}"을(를) 삭제할까요?${extra ? `\n이 거래처의 담당자 ${extra}명도 함께 삭제됩니다.` : ''}\n(이미 저장된 상담·예약 기록의 이름은 그대로 남습니다)`)) return;
+    const { error } = await sb().from(REG_TABLES[kind]).delete().eq('id', id);
+    if (error){ regMsg(`삭제 실패: ${esc(errText(error))}`, 'err'); renderBody(); return; }
+    const arr = regList(kind), i = arr.findIndex(v=>v.id===id); if (i>=0) arr.splice(i,1);
+    if (kind==='partner') state.reg.contacts = state.reg.contacts.filter(c=>c.partner_id!==id);
+    regMsg(`🗑 "${esc(regName(kind,x))}"을(를) 삭제했습니다.`, 'ok'); renderBody();
+  }
+  // 드래그로 순서 바꾸기 — 지금 보이는 항목들이 가지고 있던 순서 값을 새 배치대로 다시 나눠 준다(보이지 않는 항목의 순서는 그대로)
+  async function regReorder(order){
+    if (!regEditable()) return;
+    const kind = state.reg.mgrTab, shown = mgrDisplayList();
+    if (order.length!==shown.length) { renderBody(); return; }
+    const slots = shown.map(x=>x.sort_order).sort((a,b)=>a-b);
+    const next = order.map(i=>shown[i]);
+    // 같은 값이 겹치면 1씩 올려 서로 다른 값으로 만든다
+    for (let i=1;i<slots.length;i++) if (slots[i]<=slots[i-1]) slots[i] = slots[i-1]+1;
+    const updates = [];
+    next.forEach((x,i)=>{ if (x.sort_order!==slots[i]){ updates.push({x, v:slots[i]}); } });
+    updates.forEach(u=>{ u.old = u.x.sort_order; u.x.sort_order = u.v; });
+    renderBody();
+    const results = await Promise.all(updates.map(u=>sb().from(REG_TABLES[kind]).update({sort_order:u.v}).eq('id', u.x.id)));
+    const bad = results.find(r=>r.error);
+    if (bad){ updates.forEach(u=>{ u.x.sort_order = u.old; }); regMsg(`순서 저장 실패: ${esc(errText(bad.error))}`, 'err'); renderBody(); return; }
+    regMsg('✅ 순서를 저장했습니다.', 'ok'); renderBody();
+  }
+  // 손잡이(⠿)를 끌어 순서 바꾸기 — index.html의 공용 정렬(tgtStartSort)을 쓴다
+  document.addEventListener('pointerdown', e=>{
+    if (e.button>0) return;
+    const h = e.target.closest && e.target.closest('.crm-drag'); if (!h || h.classList.contains('off')) return;
+    const list = h.closest('.crm-mgr-list'); if (!list || typeof tgtStartSort!=='function') return;
+    tgtStartSort(e, h, list, '.crm-mgr-row', order=>regReorder(order));
+  });
+  // 바깥을 누르면 열린 선택 목록 닫기
+  document.addEventListener('click', e=>{
+    if (!state.reg.combo) return;
+    if (e.target.closest && e.target.closest('.crm-combo')) return;
+    state.reg.combo = null; renderBody();
+  });
+
   // ══ 빠른 기록 폼 ══════════════════════════════════════════════
   function emptyForm(){
     return {product:'', preferences:[], result:'', channel:'전화', preferred_departure_month:'', preferred_departure_date:'', date_flexibility:'',
             requested_party_size:'', party_flexibility:'', join_group_preference:'', group_type:'', party_booking_barrier:'', budget_man:'',
-            unbooked_reason:'', customer_name:'', customer_phone:'', preference_note:'', memo:'', ai_memo:'', first_inquiry_at:null};
+            unbooked_reason:'', customer_name:'', customer_phone:'', preference_note:'', memo:'', ai_memo:'', first_inquiry_at:null,
+            partner_name:'', contact_name:'', contact_phone:'', consult_category:'', request_note:'', stay_period:''};
   }
   function loadDraft(){ try{ const d = JSON.parse(localStorage.getItem(draftKey())||'null'); return d && typeof d==='object' ? Object.assign(emptyForm(), d) : null; }catch(e){ return null; } }
   function saveDraft(){ if (state.editId) return; try{ localStorage.setItem(draftKey(), JSON.stringify(state.form)); }catch(e){} }
@@ -471,14 +803,26 @@
 
   function quickHTML(){
     const f = ensureForm(), chat = inChat();
+    ensureReg();
     const has = v => Array.isArray(v) ? v.length > 0 : (v != null && String(v).trim() !== '');
+    // 서식 입력란(요청사항·취향 메모·상담 메모) — 값이 HTML이면 그대로, 일반 글자면 줄바꿈만 살려 보여준다. 입력은 상단 공통 서식 도구로
+    const rv = v => (v && typeof richToPlain==='function' && richToPlain(v)) ? v : '';
+    const richField = (name, val, minH, ph) => richTextFieldHTML(val||'', `TGT_CRM.setRich('${name}', __HTML__)`, {raw:/<[a-z][\s\S]*>/i.test(val||''), minHeight:minH, placeholder:ph||'', cls:'crm-rich'});
+    const cats = regSorted('category').map(x=>x.value);
+    if (f.consult_category && !cats.includes(f.consult_category)) cats.push(f.consult_category);   // 목록에서 지운 분류가 기록에 남아 있으면 그대로 보여준다
     // 항목 하나: 값이 있으면 is-filled(파란 테두리·"✓ 입력됨"), 없으면 점선 칸
     const fld = (label, inner, val, o) => { o = o || {}; return `<div class="crm-field ${has(val)?'is-filled':''}"><label>${label}${o.req?'<span class="req">*</span>':''}${o.note?` <span class="crm-note" style="font-weight:500">${o.note}</span>`:''}</label>${inner}</div>`; };
     // 그룹: 색 띠 + "입력한 개수/전체"
     const grp = (key, icon, title, vals, body) => { const n = vals.filter(has).length; return `<section class="crm-grp g-${key}"><div class="crm-grp-h"><span>${icon} ${title}</span><span class="crm-grp-n ${n?'on':''}">${n}/${vals.length} 입력</span></div>${body}</section>`; };
     const parse = state.lastParse;
     const mode = state.editId ? `✏️ 상담 수정 중 (#${state.editId})` : (state.parentId ? `↪ 후속 상담 (최초 상담 #${state.parentId}의 최초 문의일 유지)` : (state.leadId ? `🌐 홈페이지 문의(리드 #${state.leadId})에서 시작한 상담` : (state.chatId ? '💬 실시간 채팅 상담에서 시작한 기록' : '')));
-    return `<div class="crm-card">
+    const holidayCountry = holidayCountryOf(f.product);
+    return `<div class="crm-rtf-scope" data-holiday-country="${holidayCountry}">
+    <div class="rtf-wrap rtf-global crm-rtf-bar">
+      ${rtfToolbarHTML()}
+      <span class="rtf-global-hint">✏️ 요청사항·취향 메모·상담 메모 입력란을 먼저 클릭하세요 · 선택한 글자(또는 커서 줄)에 서식이 적용됩니다</span>
+    </div>
+    <div class="crm-card">
       ${mode?`<div class="crm-mode">${mode}</div>`:''}
       <h5>🤖 AI 상담 메모 <span class="crm-note" style="font-weight:500">— ${chat ? '고객이 채팅에 남긴 말이 채워져 있어요. "분류하기"를 누르면 아래 항목이 자동으로 채워집니다.' : '통화 직후 한 줄로 말하거나 입력하면 아래 항목이 자동으로 채워집니다.'} 확인 후 저장하세요.</span></h5>
       <div class="crm-memo-row">
@@ -490,12 +834,22 @@
       </div>
       <div class="crm-parse" id="crmParse">${parse ? (parse.hits.length ? parse.hits.map(h=>`<span class="pc">${esc(h)}</span>`).join('') : '<span class="pc miss">인식된 항목이 없습니다 — 아래에서 직접 선택하세요</span>') : ''}</div>
 
-      ${grp('cust','👤','고객 · 상담 경로', [f.customer_name, f.customer_phone, f.channel], `<div class="crm-grid2">
+      ${grp('cust','👤','고객 · 상담 경로 및 분류', [f.customer_name, f.customer_phone, f.partner_name, f.contact_name, f.contact_phone, f.consult_category, f.channel, rv(f.request_note)], `<div class="crm-grid2">
         ${fld('고객명', `<input type="text" value="${esc(f.customer_name)}" oninput="TGT_CRM.set('customer_name', this.value, true)">`, f.customer_name, {note:'(선택)'})}
         ${fld('연락처', `<input type="tel" value="${esc(f.customer_phone)}" placeholder="010-0000-0000" oninput="TGT_CRM.set('customer_phone', this.value, true)">`, f.customer_phone, {note:'(예약 자동 연결용)'})}</div>
-        ${fld('상담 경로', chipGroup('channel', CHANNELS, f.channel, false), f.channel)}`)}
-      ${grp('date','📅','희망 일정', [f.preferred_departure_month, f.preferred_departure_date, f.date_flexibility], `<div class="crm-grid2">
-        ${fld('희망 출발 월', `<input type="month" value="${esc(f.preferred_departure_month)}" onchange="TGT_CRM.set('preferred_departure_month', this.value)">`, f.preferred_departure_month)}
+        <div class="crm-grid3">
+        ${fld('거래처', comboHTML('partner', f.partner_name, '거래처 선택'), f.partner_name)}
+        ${fld('담당자', comboHTML('contact', f.contact_name, '담당자 선택'), f.contact_name)}
+        ${fld('연락처', `<input type="tel" value="${esc(f.contact_phone)}" placeholder="담당자 선택 시 자동 입력" oninput="TGT_CRM.set('contact_phone', this.value, true)">`, f.contact_phone, {note:'(담당자)'})}</div>
+        <div class="crm-mgr-link"><button type="button" class="crm-linkbtn" onclick="TGT_CRM.mgrToggle()">🗂 거래처 · 담당자 · 상담 분류 관리 (추가/삭제 · 순서 · 검색) ${state.reg.mgrOpen?'▲':'▼'}</button></div>
+        ${state.reg.mgrOpen ? mgrHTML() : ''}
+        <div class="crm-cat-row">
+        ${fld('상담 분류', chipGroup('consult_category', cats, f.consult_category, false) + `<div><button type="button" class="crm-linkbtn" onclick="TGT_CRM.mgrOpenTab('category')">⚙ 분류 옵션 추가/삭제</button></div>`, f.consult_category)}
+        ${fld('상담 경로', chipGroup('channel', CHANNELS, f.channel, false), f.channel)}</div>
+        ${fld('요청사항 간단메모', richField('request_note', f.request_note, '64px', '예: 오전 티타임 선호, 같은 팀 4명 라운드, 늦은 입금 예정'), rv(f.request_note))}`)}
+      ${grp('date','📅','희망 일정 · 체류기간', [f.preferred_departure_month, f.preferred_departure_date, f.stay_period, f.date_flexibility], `<div class="crm-grid2">
+        <div>${fld('희망 출발 월', `<input type="month" value="${esc(f.preferred_departure_month)}" onchange="TGT_CRM.set('preferred_departure_month', this.value)">`, f.preferred_departure_month)}
+        ${fld('체류기간', `<input type="text" list="crmStayList" value="${esc(f.stay_period)}" placeholder="예: 3박4일, 3박5일" oninput="TGT_CRM.set('stay_period', this.value, true)"><datalist id="crmStayList">${STAY_SUGGEST.map(x=>`<option value="${x}"></option>`).join('')}</datalist>`, f.stay_period)}</div>
         ${fld('희망 출발일', `<input type="date" value="${esc(f.preferred_departure_date)}" onchange="TGT_CRM.set('preferred_departure_date', this.value)">`, f.preferred_departure_date)}</div>
         ${fld('출발일 변경 가능', chipGroup('date_flexibility', FLEX, f.date_flexibility, false), f.date_flexibility)}`)}
       ${grp('party','👥','인원 · 단체', [f.requested_party_size, f.party_flexibility, f.join_group_preference, f.group_type, f.party_booking_barrier], `<div class="crm-grid2">
@@ -504,23 +858,42 @@
         ${fld('다른 팀 합류 의사', chipGroup('join_group_preference', JOIN_PREF, f.join_group_preference, false), f.join_group_preference)}
         ${fld('단체 유형', chipGroup('group_type', GROUP_TYPES, f.group_type, false), f.group_type)}
         ${fld('인원 관련 예약 장애', chipGroup('party_booking_barrier', PARTY_BARRIERS, f.party_booking_barrier, false), f.party_booking_barrier, {note:'(확인된 경우만)'})}`)}
-      ${grp('budget','💰','예산 · 취향 메모', [f.budget_man, f.preference_note], `<div class="crm-grid2">
+      ${grp('budget','💰','예산 · 취향 메모', [f.budget_man, rv(f.preference_note)], `<div class="crm-grid2">
         ${fld('예산 (1인, 만원)', `<input type="number" min="0" step="1" value="${esc(f.budget_man)}" placeholder="예: 120" oninput="TGT_CRM.set('budget_man', this.value, true)">`, f.budget_man)}
-        ${fld('취향 메모', `<input type="text" value="${esc(f.preference_note)}" placeholder="예: 그린 관리 좋은 곳, 바다 전망" oninput="TGT_CRM.set('preference_note', this.value, true)">`, f.preference_note)}</div>`)}
+        ${fld('취향 메모', richField('preference_note', f.preference_note, '48px', '예: 그린 관리 좋은 곳, 바다 전망'), rv(f.preference_note))}</div>`)}
       ${grp('req','✅','필수 3가지 — 상품 · 취향 · 결과', [f.product, f.preferences, f.result], `
         ${fld('상담 상품', `<select onchange="TGT_CRM.set('product', this.value)">${productOptionsHTML(f.product)}</select>`, f.product, {req:true})}
         ${fld('고객 핵심 취향', `${prefChipsHTML(f.preferences)}
           <input type="text" data-nofill="1" placeholder="직접 입력 후 Enter (예: 바다 보이는 코스)" onkeydown="if(event.key==='Enter'){event.preventDefault();TGT_CRM.addPref(this.value);this.value='';}">`, f.preferences, {req:true, note:'(복수 선택 · ${(f.preferences||[]).length}개)'})}
         ${fld('상담 결과', chipGroup('result', RESULTS, f.result, false, o=>'r-'+RESULT_CLS[o]), f.result, {req:true})}
         ${(f.result==='보류'||f.result==='미예약') ? fld('미예약·보류 사유', chipGroup('unbooked_reason', REASONS, f.unbooked_reason, false), f.unbooked_reason) : ''}`)}
-      ${grp('memo','📝','상담 메모', [f.memo], fld('상담 메모', `<textarea rows="${chat?4:2}" oninput="TGT_CRM.set('memo', this.value, true)">${esc(f.memo)}</textarea>`, f.memo))}
+      ${grp('memo','📝','상담 메모', [rv(f.memo)], fld('상담 메모', richField('memo', f.memo, chat?'110px':'72px', '상담 내용을 자유롭게 적어 두세요'), rv(f.memo)))}
       ${state.flash ? state.flash : ''}
       <div class="crm-actions">
         ${state.editId || state.parentId || state.leadId || state.chatId ? `<button type="button" class="crm-btn" onclick="TGT_CRM.resetForm()">취소</button>` : `<button type="button" class="crm-btn" onclick="TGT_CRM.resetForm()">비우기</button>`}
         <button type="button" class="crm-btn primary" ${state.saving?'disabled':''} onclick="TGT_CRM.save()">${state.saving?'저장 중...':(state.editId?'수정 저장':'저장')}</button>
       </div>
-    </div>`;
+    </div></div>`;
   }
+  // 상담 상품의 국가 → 달력의 공휴일 국가(국내·상품 미선택은 대한민국)
+  function holidayCountryOf(v){
+    let catId = null;
+    if (v && v.startsWith('cat:')) catId = v.slice(4);
+    else if (v && v.startsWith('uid:')){ const x = productByUid(v.slice(4)); if (x) catId = x.catId; }
+    const ci = catId ? catInfo(catId) : null;
+    return ci && ci.region==='overseas' ? (ISO_BY_CAT[catId] || 'KR') : 'KR';
+  }
+  // 서식 입력란 값을 상태에 보관(다시 그리지 않음)
+  function setRich(field, html){ ensureForm()[field] = html; saveDraft(); }
+  // 서식 입력란 저장값 — 비어 있으면 null, 서식이 있으면 안전하게 정리한 HTML, 서식이 없으면 일반 글자 그대로
+  function richClean(v){
+    v = String(v==null ? '' : v); if (!v.trim()) return null;
+    if (/<[a-z][\s\S]*>/i.test(v)){ const c = sanitizeRichHTML(v); return (richToPlain(c) || /<table|<img/i.test(c)) ? c : null; }
+    return v.trim() || null;
+  }
+  // 목록·예약 화면에서 보여줄 때: 서식(HTML)이면 정리해서 그대로, 일반 글자면 이스케이프
+  function richView(v){ v = String(v==null ? '' : v); return /<[a-z][\s\S]*>/i.test(v) ? sanitizeRichHTML(v) : esc(v); }
+  const plainOf = v => { v = String(v==null ? '' : v); return /<[a-z][\s\S]*>/i.test(v) ? richToPlain(v) : v; };
   // 칩 선택(단일: 다시 누르면 해제 / 복수: 토글)
   function pick(field, value, multi){
     const f = ensureForm();
@@ -597,11 +970,18 @@
       unbooked_reason: (f.result==='보류'||f.result==='미예약') ? (f.unbooked_reason || null) : null,
       customer_name: (f.customer_name||'').trim() || null,
       customer_phone: (f.customer_phone||'').trim() || null,
-      preference_note: (f.preference_note||'').trim() || null,
-      memo: (f.memo||'').trim() || null,
+      preference_note: richClean(f.preference_note),
+      memo: richClean(f.memo),
       ai_memo: (f.ai_memo||'').trim() || null,
       ai_parse: state.lastParse && Object.keys(state.lastParse.fields).length ? state.lastParse.fields : null,
     };
+    // 거래처·담당자·분류·요청사항·체류기간 — SQL(2026-11-20_crm_quick_v2.sql)을 실행해 칸이 생긴 뒤부터 저장한다(없으면 나머지 항목만 저장)
+    if (state.v2 && state.v2.ok){
+      Object.assign(row, {
+        partner_name: (f.partner_name||'').trim() || null, contact_name: (f.contact_name||'').trim() || null, contact_phone: (f.contact_phone||'').trim() || null,
+        consult_category: (f.consult_category||'').trim() || null, request_note: richClean(f.request_note), stay_period: (f.stay_period||'').trim() || null,
+      });
+    }
     if (!row.ai_parse && state.editId) delete row.ai_parse;   // 수정할 때 새로 분류하지 않았으면 처음 분류 결과를 그대로 둔다
     // 상품 스냅샷(이름·국가·권역) — 이후 상품명이 바뀌어도 당시 상담 내용이 남도록
     const v = f.product || '';
@@ -639,8 +1019,10 @@
     await checkReady();
     if (!isUsable()){ state.flash = `<div class="crm-banner warn" style="margin-top:12px">저장할 수 없습니다 — 위의 안내(DB 준비·관리자 권한)를 먼저 확인하세요. 입력한 내용은 이 기기에 임시 저장되어 있습니다.</div>`; renderBody(); return; }
     state.saving = true; renderBody();
+    await probeV2();
     const row = formToRow(f);
     const client = sb();
+    const newFilled = !!(f.partner_name || f.contact_name || f.contact_phone || f.consult_category || (f.request_note && richToPlain(f.request_note)) || f.stay_period);
     try{
       let saved;
       if (state.editId){
@@ -659,7 +1041,9 @@
       const i = state.list.findIndex(x=>x.id===saved.id);
       if (i>=0) state.list[i] = saved; else if (state.listLoaded) state.list.unshift(saved);
       const wasEdit = !!state.editId;
-      const done = `✅ ${wasEdit?'수정했습니다':'저장했습니다'} — #${saved.id} ${esc(saved.product_title||saved.destination||'')} · ${esc(saved.result)}${saved.lead_id?' · AI 리드 상태도 함께 갱신':''}`;
+      const goBtns = `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="crm-btn" onclick="TGT_CRM.go('list')">📋 상담 목록에서 보기</button><button type="button" class="crm-btn" onclick="TGT_CRM.go('bookings')">🧾 예약 탭에서 보기</button></div>`;
+      const v2warn = (!state.v2.ok && newFilled) ? `<br>⚠ 거래처·담당자·상담 분류·요청사항·체류기간은 아직 DB 칸이 없어 저장되지 않았습니다 — <code>docs/sql/2026-11-20_crm_quick_v2.sql</code>을 실행해 주세요(나머지 항목은 저장됨).` : '';
+      const done = `✅ ${wasEdit?'수정했습니다':'저장했습니다'} — #${saved.id} ${esc(saved.product_title||saved.destination||'')} · ${esc(saved.result)}${saved.consult_category?` · 분류 ${esc(saved.consult_category)}`:''}${saved.lead_id?' · AI 리드 상태도 함께 갱신':''}${v2warn}${goBtns}`;
       clearDraft();
       if (inChat()){
         // 채팅창에서는 저장한 기록을 그대로 띄워 두고 이어서 고칠 수 있게 한다(채팅에 상담 번호 연결)
@@ -695,7 +1079,8 @@
       if (result && c.result!==result) return false;
       if (since && new Date(c.consulted_at).getTime() < since) return false;
       if (qq){
-        const hay = [c.product_title, c.destination, c.country, c.customer_name, c.customer_phone, c.memo, c.ai_memo, (c.preferences||[]).join(' '), c.unbooked_reason].join(' ').toLowerCase();
+        const hay = [c.product_title, c.destination, c.country, c.customer_name, c.customer_phone, plainOf(c.memo), c.ai_memo, (c.preferences||[]).join(' '), c.unbooked_reason,
+          c.partner_name, c.contact_name, c.contact_phone, c.consult_category, plainOf(c.request_note), c.stay_period].join(' ').toLowerCase();
         if (!hay.includes(qq)) return false;
       }
       return true;
@@ -704,7 +1089,8 @@
   const FIELD_LABELS = {product_uid:'상품', product_title:'상품명', product_cat:'국가/권역', travel_region:'국내/해외', country:'국가', destination:'목적지', preferences:'취향', result:'상담 결과',
     channel:'상담 경로', preferred_departure_month:'희망 출발 월', preferred_departure_date:'희망 출발일', date_flexibility:'출발일 변경 가능', requested_party_size:'희망 인원',
     party_flexibility:'인원 변경 가능', join_group_preference:'합류 의사', group_type:'단체 유형', party_booking_barrier:'인원 장애', budget_per_person:'예산(1인)', unbooked_reason:'미예약 사유',
-    customer_name:'고객명', customer_phone:'연락처', preference_note:'취향 메모', memo:'메모', ai_memo:'AI 메모', booking_id:'연결 예약', is_deleted:'삭제', consulted_at:'상담 일시', lead_id:'리드', parent_id:'최초 상담'};
+    customer_name:'고객명', customer_phone:'연락처', preference_note:'취향 메모', memo:'메모', ai_memo:'AI 메모', booking_id:'연결 예약', is_deleted:'삭제', consulted_at:'상담 일시', lead_id:'리드', parent_id:'최초 상담',
+    partner_name:'거래처', contact_name:'담당자', contact_phone:'담당자 연락처', consult_category:'상담 분류', request_note:'요청사항', stay_period:'체류기간'};
   function fmtVal(k, v){
     if (v==null || v==='') return '—';
     if (Array.isArray(v)) return v.join(', ') || '—';
@@ -743,14 +1129,18 @@
       c.budget_per_person ? `1인 ${Math.round(c.budget_per_person/10000)}만원` : '',
       c.unbooked_reason ? `사유: ${c.unbooked_reason}` : '',
       c.customer_name ? `고객 ${c.customer_name}` : '',
+      c.partner_name ? `거래처 ${c.partner_name}` : '',
+      c.contact_name ? `담당 ${c.contact_name}${c.contact_phone?' '+c.contact_phone:''}` : (c.contact_phone ? `담당 연락처 ${c.contact_phone}` : ''),
+      c.stay_period ? `체류 ${c.stay_period}` : '',
       c.lead_id ? `🌐 리드 #${c.lead_id}` : '',
       c.parent_id ? `↪ 후속(#${c.parent_id})` : '',
     ].filter(Boolean).map(esc).join(' · ');
     return `<div class="crm-item">
-      <div class="crm-item-top"><span class="crm-tag ${RESULT_CLS[c.result]||'info'}">${esc(c.result)}</span><b>${esc(c.product_title || ((c.destination||'')+' (상품 미정)'))}</b><span class="crm-note">#${c.id}</span></div>
+      <div class="crm-item-top"><span class="crm-tag ${RESULT_CLS[c.result]||'info'}">${esc(c.result)}</span>${c.consult_category ? `<span class="crm-tag cat">${esc(c.consult_category)}</span>` : ''}<b>${esc(c.product_title || ((c.destination||'')+' (상품 미정)'))}</b><span class="crm-note">#${c.id}</span></div>
       <div class="crm-item-meta">${meta}</div>
       ${(c.preferences||[]).length ? `<div class="crm-item-prefs">${c.preferences.map(p=>`<span>${esc(p)}</span>`).join('')}</div>` : ''}
-      ${c.memo || c.ai_memo ? `<div class="crm-item-memo">${esc(c.memo || c.ai_memo)}</div>` : ''}
+      ${c.request_note ? `<div class="crm-item-memo crm-item-req"><b>요청사항</b> ${richView(c.request_note)}</div>` : ''}
+      ${c.memo || c.ai_memo ? `<div class="crm-item-memo crm-rich-view">${c.memo ? richView(c.memo) : esc(c.ai_memo)}</div>` : ''}
       <div class="crm-item-acts">
         <button type="button" class="crm-btn" onclick="TGT_CRM.edit(${c.id})">✏️ 수정</button>
         <button type="button" class="crm-btn" onclick="TGT_CRM.followUp(${c.id})">↪ 후속 상담</button>
@@ -778,6 +1168,7 @@
       join_group_preference: c.join_group_preference||'', group_type: c.group_type||'', party_booking_barrier: c.party_booking_barrier||'',
       budget_man: c.budget_per_person==null ? '' : String(Math.round(c.budget_per_person/10000)), unbooked_reason: c.unbooked_reason||'',
       customer_name: c.customer_name||'', customer_phone: c.customer_phone||'', preference_note: c.preference_note||'', memo: c.memo||'', ai_memo: c.ai_memo||'',
+      partner_name: c.partner_name||'', contact_name: c.contact_name||'', contact_phone: c.contact_phone||'', consult_category: c.consult_category||'', request_note: c.request_note||'', stay_period: c.stay_period||'',
     });
   }
   function edit(id){
@@ -1202,13 +1593,14 @@
   function bookingFormFromConsult(c){
     return {booking_no:'', product: c.product_uid ? 'uid:'+c.product_uid : (c.product_cat ? 'cat:'+c.product_cat : ''), booking_status:'예약확정',
       departure_date: c.preferred_departure_date || '', confirmed_party_size: c.requested_party_size==null ? '' : String(c.requested_party_size),
-      customer_name: c.customer_name||'', customer_phone: c.customer_phone||'', source_channel: c.channel||'', memo:'', consultation_id: c.id};
+      customer_name: c.customer_name||'', customer_phone: c.customer_phone||'', source_channel: c.channel||'', memo:'', consultation_id: c.id,
+      partner_name: c.partner_name||'', contact_name: c.contact_name||'', contact_phone: c.contact_phone||'', consult_category: c.consult_category||'', request_note: c.request_note||'', stay_period: c.stay_period||''};
   }
   function newBookingFromConsult(id){
     const c = state.list.find(x=>x.id===id); if (!c) return;
     state.bookingForm = bookingFormFromConsult(c); state.bookingView = 'form'; go('bookings');
   }
-  function newBooking(){ state.bookingForm = {booking_no:'', product:'', booking_status:'예약확정', departure_date:'', confirmed_party_size:'', customer_name:'', customer_phone:'', source_channel:'', memo:'', consultation_id:null}; state.bookingView = 'form'; renderBody(); }
+  function newBooking(){ state.bookingForm = {booking_no:'', product:'', booking_status:'예약확정', departure_date:'', confirmed_party_size:'', customer_name:'', customer_phone:'', source_channel:'', memo:'', consultation_id:null, partner_name:'', contact_name:'', contact_phone:'', consult_category:'', request_note:'', stay_period:''}; state.bookingView = 'form'; renderBody(); }
   function bfSet(k, v){ state.bookingForm[k] = v; }
   async function saveBooking(){
     const f = state.bookingForm; if (!f) return;
@@ -1218,6 +1610,9 @@
     const row = {booking_no:no, booking_status:f.booking_status, departure_date:f.departure_date||null, confirmed_party_size: f.confirmed_party_size==='' ? null : (parseInt(f.confirmed_party_size,10)||null),
       customer_name:(f.customer_name||'').trim()||null, customer_phone:(f.customer_phone||'').trim()||null, source_channel:f.source_channel||null, memo:(f.memo||'').trim()||null,
       consultation_id:f.consultation_id||null, product_uid:base.product_uid||null, product_title:base.product_title||null, product_cat:base.product_cat||null, travel_region:base.travel_region||null, country:base.country||null, destination:base.destination||null};
+    await probeV2();
+    if (state.v2.ok) Object.assign(row, {partner_name:(f.partner_name||'').trim()||null, contact_name:(f.contact_name||'').trim()||null, contact_phone:(f.contact_phone||'').trim()||null,
+      consult_category:(f.consult_category||'').trim()||null, request_note:richClean(f.request_note), stay_period:(f.stay_period||'').trim()||null});
     const { data, error } = await sb().from(TABLES.bookings).insert(row).select().single();
     if (error){ alert('예약 저장 실패: '+errText(error)); return; }
     if (data.consultation_id) await syncConsultFromBooking(data);
@@ -1253,7 +1648,7 @@
   function bookingsHTML(){
     if (!isUsable()) return `<div class="crm-card"><div class="crm-empty">${state.ready ? '위 안내에 따라 DB 준비와 관리자 권한을 먼저 확인하세요.' : '확인 중...'}</div></div>`;
     if (state.bookingView==='form' && state.bookingForm) return bookingFormHTML();
-    return importHTML() + bookingListHTML();
+    return candidatesHTML() + importHTML() + bookingListHTML();
   }
   function bookingFormHTML(){
     const f = state.bookingForm;
@@ -1271,9 +1666,28 @@
         <div class="crm-field"><label>예약 경로</label><input type="text" value="${esc(f.source_channel)}" oninput="TGT_CRM.bfSet('source_channel', this.value)"></div>
         <div class="crm-field"><label>비고</label><input type="text" value="${esc(f.memo)}" oninput="TGT_CRM.bfSet('memo', this.value)"></div>
       </div>
+      ${(f.partner_name||f.contact_name||f.contact_phone||f.consult_category||f.stay_period||f.request_note) ? `<div class="crm-banner ok" style="margin-top:10px"><b>상담에서 가져온 항목</b><br>${[f.partner_name?`거래처 ${esc(f.partner_name)}`:'', f.contact_name?`담당자 ${esc(f.contact_name)}${f.contact_phone?' '+esc(f.contact_phone):''}`:(f.contact_phone?`담당자 연락처 ${esc(f.contact_phone)}`:''), f.consult_category?`분류 ${esc(f.consult_category)}`:'', f.stay_period?`체류 ${esc(f.stay_period)}`:''].filter(Boolean).join(' · ')}${f.request_note?`<div class="crm-rich-view" style="margin-top:4px"><b>요청사항</b> ${richView(f.request_note)}</div>`:''}${state.v2.ok?'':'<br><span class="crm-note">⚠ SQL(2026-11-20_crm_quick_v2.sql) 실행 전에는 예약에 저장되지 않습니다.</span>'}</div>` : ''}
       <p class="crm-note" style="margin-top:10px">예약 확정일과 최초 출발일은 저장할 때 자동으로 기록되며, 이후 출발일을 바꿔도 최초 값은 그대로 남습니다.</p>
       <div class="crm-actions"><button type="button" class="crm-btn" onclick="TGT_CRM.bookingCancelForm()">취소</button><button type="button" class="crm-btn primary" onclick="TGT_CRM.saveBooking()">예약 저장</button></div>
     </div>`;
+  }
+  // 빠른 기록에서 "예약확정·예약진행중"으로 저장했지만 아직 예약으로 등록하지 않은 상담 — 예약 탭에서 바로 보고 예약으로 등록한다
+  const BOOKING_RESULTS = ['예약확정','예약진행중'];
+  function bookingCandidates(){
+    return state.list.filter(c=>!c.booking_id && !c.is_deleted && (BOOKING_RESULTS.includes(c.result) || BOOKING_RESULTS.includes(c.consult_category)));
+  }
+  function candidatesHTML(){
+    if (!state.listLoaded) return '';
+    const cands = bookingCandidates();
+    if (!cands.length) return '';
+    return `<div class="crm-card"><h5>💬 상담에서 넘어온 예약 건 <span class="crm-note" style="font-weight:500">${cands.length}건 — 상담 결과·분류가 예약확정/예약진행중이고 아직 예약으로 등록하지 않은 기록</span></h5>
+      <div class="crm-list">${cands.slice(0,50).map(c=>`<div class="crm-item">
+        <div class="crm-item-top"><span class="crm-tag ${RESULT_CLS[c.result]||'info'}">${esc(c.result)}</span>${c.consult_category?`<span class="crm-tag cat">${esc(c.consult_category)}</span>`:''}<b>${esc(c.product_title || ((c.destination||'')+' (상품 미정)'))}</b><span class="crm-note">상담 #${c.id}</span></div>
+        <div class="crm-item-meta">${[c.partner_name?`거래처 ${c.partner_name}`:'', c.contact_name?`담당 ${c.contact_name}${c.contact_phone?' '+c.contact_phone:''}`:'', c.customer_name?`고객 ${c.customer_name}`:'', c.requested_party_size?`${c.requested_party_size}명`:'',
+          c.preferred_departure_date?`출발 ${fmtDate(c.preferred_departure_date)}`:(c.preferred_departure_month?`출발 ${fmtMonth(c.preferred_departure_month)}`:''), c.stay_period?`체류 ${c.stay_period}`:'', `상담 ${fmtKst(c.consulted_at)}`].filter(Boolean).map(esc).join(' · ')}</div>
+        ${c.request_note ? `<div class="crm-item-memo crm-item-req"><b>요청사항</b> ${richView(c.request_note)}</div>` : ''}
+        <div class="crm-item-acts"><button type="button" class="crm-btn primary" onclick="TGT_CRM.newBookingFromConsult(${c.id})">🧾 예약으로 등록</button><button type="button" class="crm-btn" onclick="TGT_CRM.edit(${c.id})">✏️ 상담 수정</button></div>
+      </div>`).join('')}</div></div>`;
   }
   function bookingCancelForm(){ state.bookingForm = null; state.bookingView = 'list'; renderBody(); }
   function importHTML(){
@@ -1333,7 +1747,7 @@
     const bf = state.bookingFilter;
     const qq = bf.q.trim().toLowerCase();
     const items = state.bookings.filter(b=>(!bf.status || b.booking_status===bf.status) && (!bf.month || String(b.departure_date||'').startsWith(bf.month))
-      && (!qq || [b.booking_no,b.product_title,b.destination,b.customer_name,b.customer_phone,b.memo].join(' ').toLowerCase().includes(qq)));
+      && (!qq || [b.booking_no,b.product_title,b.destination,b.customer_name,b.customer_phone,b.memo,b.partner_name,b.contact_name,b.contact_phone,b.consult_category,plainOf(b.request_note),b.stay_period].join(' ').toLowerCase().includes(qq)));
     return `<div class="crm-card"><h5>🧾 예약 목록 <span class="crm-note" style="font-weight:500">${items.length}건 / 전체 ${state.bookings.length}건</span></h5>
       ${state.bookingFlash||''}
       <div class="crm-filter">
@@ -1354,7 +1768,9 @@
         b.departure_date ? `출발 ${fmtDate(b.departure_date)}${changed?` (최초 ${fmtDate(b.original_departure_date)})`:''}` : '출발일 미정',
         b.confirmed_party_size!=null ? `확정 인원 ${b.confirmed_party_size}명` : '', b.actual_party_size!=null ? `실제 출발 ${b.actual_party_size}명` : '',
         b.confirmed_at ? `예약확정일 ${fmtKst(b.confirmed_at)}` : '', b.cancelled_at ? `취소 ${fmtKst(b.cancelled_at)}${b.cancellation_reason?` (${b.cancellation_reason})`:''}` : '',
-        b.customer_name ? `고객 ${b.customer_name}` : '', b.source_channel || '', b.consultation_id ? `💬 상담 #${b.consultation_id}` : '🔗 상담 미연결'].filter(Boolean).map(esc).join(' · ')}</div>
+        b.customer_name ? `고객 ${b.customer_name}` : '', b.partner_name ? `거래처 ${b.partner_name}` : '', b.contact_name ? `담당 ${b.contact_name}${b.contact_phone?' '+b.contact_phone:''}` : (b.contact_phone ? `담당 연락처 ${b.contact_phone}` : ''),
+        b.stay_period ? `체류 ${b.stay_period}` : '', b.consult_category ? `분류 ${b.consult_category}` : '', b.source_channel || '', b.consultation_id ? `💬 상담 #${b.consultation_id}` : '🔗 상담 미연결'].filter(Boolean).map(esc).join(' · ')}</div>
+      ${b.request_note ? `<div class="crm-item-memo crm-item-req"><b>요청사항</b> ${richView(b.request_note)}</div>` : ''}
       <div class="crm-item-acts">
         <select onchange="TGT_CRM.changeBooking(${b.id}, 'booking_status', this.value)">${BOOKING_STATUSES.map(s=>`<option ${b.booking_status===s?'selected':''}>${s}</option>`).join('')}</select>
         <input type="date" value="${esc(b.departure_date||'')}" onchange="TGT_CRM.changeBooking(${b.id}, 'departure_date', this.value)" title="출발일 변경">
@@ -2365,8 +2781,9 @@
     checkReady().then(r=>{
       const b = document.getElementById('crmReadyBanner'); if (b) b.innerHTML = readyBanner(r);
       if (state.sub==='list' && !state.listLoaded) loadList().then(renderBody);
-      else if (state.sub==='bookings' && !state.bookingsLoaded) loadBookings().then(renderBody);
+      else if (state.sub==='bookings' && !state.bookingsLoaded) Promise.all([loadBookings(), loadList()]).then(renderBody);
       else if (state.sub==='links' && !state.linksLoaded) loadLinks().then(renderBody);
+      else if (state.sub==='bookings' && !state.listLoaded) loadList().then(renderBody);
       else if (state.sub==='stats' && !state.stats.loaded) loadStats().then(renderBody);
       else if (state.sub==='ops' && !state.ops.loaded) loadOps().then(renderBody);
       else if (state.sub==='intel' && !(state.stats.loaded && state.ops.loaded)) Promise.all([loadStats(), loadOps()]).then(renderBody);
@@ -2378,7 +2795,8 @@
     state.sub = sub; if (sub!=='bookings') state.bookingFlash = '';
     render();
     if (sub==='list') loadList().then(renderBody);
-    if (sub==='bookings') loadBookings().then(renderBody);
+    if (sub==='check') loadReg().then(renderBody);
+    if (sub==='bookings') Promise.all([loadBookings(), loadList()]).then(renderBody);
     if (sub==='links') loadLinks(true).then(renderBody);
     if (sub==='stats') loadStats(true).then(renderBody);
     if (sub==='ops') loadOps(true).then(renderBody);
@@ -2407,12 +2825,19 @@
   // 입력하는 즉시 칸 색과 "✓ 입력됨"·그룹의 입력 개수를 바꾼다(다시 그리지 않고)
   function wireFilled(el){
     if (el._crmFilled) return; el._crmFilled = true;
-    el.addEventListener('input', e=>{
-      const fld = e.target.closest && e.target.closest('.crm-field'); if (!fld || !e.target.matches('input,textarea,select')) return;
-      if (e.target.dataset.nofill) return;   // 취향 직접 입력칸은 Enter로 칩을 더할 때 반영된다
-      fld.classList.toggle('is-filled', String(e.target.value||'').trim() !== '');
+    const recount = fld=>{
       const g = fld.closest('.crm-grp'), n = g && g.querySelector('.crm-grp-n');
       if (n){ const all = g.querySelectorAll('.crm-field'), on = g.querySelectorAll('.crm-field.is-filled').length; n.textContent = `${on}/${all.length} 입력`; n.classList.toggle('on', on > 0); }
+    };
+    el.addEventListener('input', e=>{
+      const t = e.target, fld = t.closest && t.closest('.crm-field'); if (!fld) return;
+      if (t.classList && t.classList.contains('rtf-editable')){   // 서식 입력란
+        fld.classList.toggle('is-filled', !!(typeof richToPlain==='function' ? richToPlain(t.innerHTML) : t.textContent.trim())); recount(fld); return;
+      }
+      if (!t.matches('input,textarea,select')) return;
+      if (t.dataset.nofill) return;   // 취향 직접 입력칸·검색칸은 입력 개수에 넣지 않는다
+      fld.classList.toggle('is-filled', String(t.value||'').trim() !== '');
+      recount(fld);
     });
   }
 
@@ -2472,6 +2897,8 @@
         ${row(r && r.session ? (r.isAdmin===true ? true : (r.isAdmin===null ? null : false)) : null, '상담·예약 관리자 권한',
               r && r.isAdmin==='missing' ? 'SQL 실행 필요' : (r && r.isAdmin===false ? '관리자 목록에 없음' : ''))}
         ${tables}
+        ${r && r.session ? row(state.v2.checked ? state.v2.ok : null, '빠른 기록 새 항목 칸(거래처·담당자·상담 분류·요청사항·체류기간)', state.v2.checked && !state.v2.ok ? 'SQL 실행 필요 — docs/sql/2026-11-20_crm_quick_v2.sql' : '') : ''}
+        ${r && r.session ? row(state.reg.loaded ? (!state.reg.missing && !state.reg.error) : null, '거래처·담당자·상담 분류 목록', state.reg.loaded ? (state.reg.missing ? 'SQL 실행 필요 — docs/sql/2026-11-20_crm_quick_v2.sql' : (state.reg.error ? esc(state.reg.error) : `거래처 ${state.reg.partners.length} · 담당자 ${state.reg.contacts.length} · 분류 ${state.reg.categories.length}`)) : '') : ''}
         ${row(saved===prods.length ? true : false, '상품 고유번호', `${saved} / ${prods.length}개 저장됨` + (saved===prods.length ? '' : ' — 한 번도 수정하지 않은 기본(샘플) 상품은 위치 기반 번호를 쓰고, 처음 수정할 때 같은 번호로 저장됩니다'))}
       </ul>
       <p class="crm-note" style="margin-top:10px">상담·예약 데이터는 공개 사이트 설정(상품 정보)과 분리된 별도 테이블에 저장되며, tgt_admins에 등록된 관리자 계정만 읽고 쓸 수 있습니다.</p>
@@ -2510,11 +2937,12 @@
     }catch(e){ if (msg) msg.textContent = '⚠️ 백업 실패: ' + errText(e); }
     if (btn) btn.disabled = false;
   }
-  async function recheck(){ await checkReady(true); render(); }
+  async function recheck(){ await checkReady(true); state.v2 = {checked:false, ok:false}; state.reg.loaded = false; await loadReg(true); render(); }
 
   window.TGT_CRM = {
     render, go, recheck,
-    pick, set:setField, addPref, memoInput, applyMemo, mic, resetForm, save,
+    pick, set:setField, addPref, memoInput, applyMemo, mic, resetForm, save, setRich,
+    comboToggle, comboSearch, comboPick, comboClear, regSort, mgrToggle, mgrTab, mgrOpenTab, mgrSearch, mgrPartnerFilter, regAdd, regRename, regContactField, regDelete,
     filter, edit, followUp, history, remove, reloadList, fromLead, fromChat, mountChat,
     impPickFile, impSetSheet, impSetHeaderRow, impSetMap, impBuildPreview, impRun, impDownloadErrors, impReset:()=>{ impReset(); renderBody(); },
     statFilter, statSeason, reloadStats,

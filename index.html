@@ -2451,6 +2451,34 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .popup-cta.ghost:hover{background:rgba(255,255,255,.08);color:#fff}
 @media(max-width:780px){.popup-card{width:100%;max-width:340px}}
 
+/* ===== [추가] 관리자 날짜 선택 — 오늘 기준 3개월 달력(일·공휴일 빨강 / 토 파랑 / 금 자주, 선택 국가 공휴일은 작은 글씨) ===== */
+#tgtDpBack{position:fixed;inset:0;z-index:100000;background:rgba(10,23,48,.5);display:flex;align-items:flex-start;justify-content:center;padding:3vh 12px;overflow:auto;-webkit-overflow-scrolling:touch}
+.tgt-dp{background:#fff;color:#0a1730;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.4);width:min(1000px,100%);font-family:'Pretendard','Noto Sans KR',sans-serif}
+.tgt-dp-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid rgba(10,23,48,.1)}
+.tgt-dp-head .ttl{font-size:1rem;font-weight:800;margin-right:auto}
+.tgt-dp-head select{padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;font-size:.8rem;background:#fff;color:#0a1730}
+.tgt-dp-btn{padding:6px 11px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;color:#0a1730}
+.tgt-dp-btn:hover{background:#eef2f9}
+.tgt-dp-btn.x{background:#0a1730;color:#fff;border-color:#0a1730}
+.tgt-dp-note{padding:6px 16px 0;font-size:.72rem;color:#64748b}
+.tgt-dp-note.warn{color:#b45309}
+.tgt-dp-months{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:12px 16px 16px}
+@media(max-width:860px){.tgt-dp-months{grid-template-columns:1fr}}
+.tgt-dp-m h6{margin:0 0 8px;text-align:center;font-size:.98rem;font-weight:800}
+.tgt-dp-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.tgt-dp-wd{text-align:center;font-size:.72rem;font-weight:800;padding:3px 0;color:#0a1730}
+.tgt-dp-wd.sun{color:#d6293e}.tgt-dp-wd.sat{color:#2563eb}.tgt-dp-wd.fri{color:#7c3aed}
+.tgt-dp-d{min-height:52px;border:none;background:#f6f8fb;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 1px 2px;cursor:pointer;font:inherit;color:#0a1730}
+.tgt-dp-d:hover{background:#e3ebfb}
+.tgt-dp-d .n{font-size:.92rem;font-weight:700;line-height:1.3}
+.tgt-dp-d .h{font-size:.58rem;line-height:1.15;color:#d6293e;text-align:center;overflow:hidden;max-height:2.4em;word-break:keep-all;overflow-wrap:anywhere;font-weight:600}
+.tgt-dp-d.sun .n,.tgt-dp-d.hol .n{color:#d6293e}
+.tgt-dp-d.sat .n{color:#2563eb}
+.tgt-dp-d.fri .n{color:#7c3aed}
+.tgt-dp-d.today{outline:2px solid #1d4ed8;outline-offset:-2px}
+.tgt-dp-d.sel{background:#1d4ed8}.tgt-dp-d.sel .n,.tgt-dp-d.sel .h{color:#fff!important}
+.tgt-dp-d.dis{opacity:.28;cursor:not-allowed}
+.tgt-dp-d.empty{visibility:hidden;pointer-events:none}
 /* ===== EDITOR'S PICK 팝업 (슬라이드 캐러셀) ===== */
 /* [수정] 상품 카드별 독립 카드 — 팝업 틀(.ep-card)은 상품마다 따로 갖고(테두리·배경·상세 보기/닫기 버튼 포함), .ep-popup-box는 카드 폭만 잡아 주는 투명 래퍼.
    이전·다음 버튼·점·카운터(.ep-popup-footer)만 카드 아래에 하나로 공유한다 */
@@ -2717,7 +2745,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .ind-line{display:flex;align-items:center;gap:6px}
 .ind-line .rtf-editable{flex:1;min-width:0}
 .ind-line select.rtf-ind-sel{display:none} /* 들여쓰기 단계는 상단 공용 서식 도구의 하위서식(+1단계)·들여쓰기 없음 버튼으로 조절 — 입력란 폭을 넓게 쓰기 위해 줄 안에는 두지 않는다(값 저장용으로만 유지) */
-.adv-editor-overlay .rtf-wrap:not(.rtf-global) > .rtf-toolbar{display:none!important}
+.adv-editor-overlay .rtf-wrap:not(.rtf-global) > .rtf-toolbar,.crm-rtf-scope .rtf-wrap:not(.rtf-global) > .rtf-toolbar{display:none!important}
 .adv-editor-overlay .rtf-editable.rtf-active-target{box-shadow:0 0 0 2px var(--nm-blue)}
 @media(max-width:640px){ .rtf-global .rtf-toolbar{flex-wrap:nowrap;overflow-x:auto;padding:6px 14px} .rtf-global .rtf-toolbar::-webkit-scrollbar{height:0} }
 .adv-quicknav button{border:none;background:var(--nm-white);color:var(--nm-text);font-family:inherit;font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:var(--nm-r-pill);cursor:pointer;box-shadow:var(--nm-shadow-raised-sm);white-space:nowrap;transition:all .15s}
@@ -11962,7 +11990,7 @@ window.addEventListener('resize', ()=>rtfCloseColorPops());
 document.addEventListener('selectionchange', ()=>{
   const ae = document.activeElement;
   if (!ae || !ae.classList || !ae.classList.contains('rtf-editable')) return;
-  const wrap = ae.closest('.rtf-wrap'); const selEl = (ae.closest('.adv-editor-overlay') && document.querySelector('.rtf-global .rtf-size-sel')) || (wrap && wrap.querySelector('.rtf-size-sel'));
+  const wrap = ae.closest('.rtf-wrap'); const _sc = ae.closest(RTF_SCOPE_SEL); const selEl = (_sc && _sc.querySelector('.rtf-global .rtf-size-sel')) || (wrap && wrap.querySelector('.rtf-size-sel'));
   if (!selEl || !selEl.options.length) return;
   const sel = window.getSelection(); let n = sel && sel.anchorNode;
   if (n && n.nodeType===3) n = n.parentNode;
@@ -11985,6 +12013,8 @@ document.addEventListener('selectionchange', ()=>{
 // mousedown이 발생하는 즉시(포커스가 옮겨가기 전) 현재 선택영역을 저장해두고,
 // 이후 rtfCmd 실행 시 그 선택영역을 편집영역에 복원한 뒤 명령을 적용한다
 let _rtfSavedRange = null, _rtfActiveEditable = null;
+// 공용 서식 도구(.rtf-global)를 쓰는 영역 — 고급편집 창, 상담·예약 빠른 기록
+const RTF_SCOPE_SEL = '.adv-editor-overlay,.crm-rtf-scope';
 function rtfSaveSelection(){
   const sel = window.getSelection();
   if (sel && sel.rangeCount > 0){
@@ -11997,7 +12027,7 @@ function rtfSaveSelection(){
 }
 // [추가] 공용 서식 도구 — 입력란을 클릭하지 않은 채 서식 버튼을 눌렀을 때 안내를 잠깐 강조한다
 function rtfNoTargetHint(msg){
-  const h = document.querySelector('.rtf-global-hint'); if (!h) return;
+  const h = [...document.querySelectorAll('.rtf-global-hint')].find(x=>x.offsetParent) || document.querySelector('.rtf-global-hint'); if (!h) return;
   const orig = h.dataset.orig || (h.dataset.orig = h.textContent);
   h.textContent = msg || orig;
   h.classList.add('flash'); setTimeout(()=>{ h.classList.remove('flash'); h.textContent = orig; }, 1800);
@@ -12010,8 +12040,9 @@ function rtfSingleBlocked(editable){
 const RTF_SINGLE_SEL = '.ctag-edit,.pe-headline-edit,.inq-edit,.dp-title-edit,.ai-rtf-line'; // 한 줄 입력란 — 표·하위서식·줄간격은 해당 없음
 document.addEventListener('focusin', e=>{
   const ed = e.target && e.target.closest ? e.target.closest('.rtf-editable') : null;
-  const bar = document.querySelector('.rtf-global');
-  if (!ed || !bar || !ed.closest('.adv-editor-overlay')) return;
+  const scope = ed ? ed.closest(RTF_SCOPE_SEL) : null;   // 고급편집 창 또는 상담·예약 빠른 기록(.crm-rtf-scope)
+  const bar = scope ? scope.querySelector('.rtf-global') : null;
+  if (!ed || !bar) return;
   document.querySelectorAll('.rtf-active-target').forEach(x=>{ if (x!==ed) x.classList.remove('rtf-active-target'); });
   ed.classList.add('rtf-active-target');
   _rtfActiveEditable = ed;
@@ -12864,7 +12895,7 @@ function rtfTblSyncGroups(){
   if (!ed) return; // 서식 도구(선택 상자 등)로 포커스가 옮겨간 동안에는 상태를 그대로 둔다
   const inTbl = !!rtfTblCellOf(n, ed);
   document.querySelectorAll('.rtf-wrap').forEach(w=>{
-    const mine = w.classList.contains('rtf-global') ? !!w.closest('.adv-editor-overlay') && !!ed.closest('.adv-editor-overlay') : w.contains(ed);
+    const mine = w.classList.contains('rtf-global') ? (!!w.closest(RTF_SCOPE_SEL) && w.closest(RTF_SCOPE_SEL)===ed.closest(RTF_SCOPE_SEL)) : w.contains(ed);
     w.classList.toggle('rtf-in-table', inTbl && mine);
   });
 }
@@ -18263,7 +18294,7 @@ function switchTab(tab){
   });
   refreshCurrentAdminTab();
 }
-const TGT_CRM_VERSION='2026111102';
+const TGT_CRM_VERSION='2026112001';
 // [추가] 실시간 상담(채팅) — 방문자 화면(assets/live-chat.js)은 상담 버튼을 처음 누를 때, 상담원 화면(assets/admin-chat.js)은 관리자 로그인 후 불러온다
 const TGT_CHAT_VERSION='2026102904';
 let _tgtChatLoading = null, _tgtChatAdminLoading = null;
@@ -24017,6 +24048,166 @@ document.addEventListener('keydown', e=>{
   if(e.key==='ArrowLeft')  pdMove(-1);
   if(e.key==='ArrowRight') pdMove(1);
 });
+// ══ [추가] 관리자 날짜 선택 — 관리자 패널·고급편집·상담·예약의 모든 날짜 칸을 누르면 오늘 기준 3개월 달력이 한 번에 뜬다 ══
+// · 일요일·공휴일 = 빨강, 토요일 = 파랑, 금요일 = 자주 글자. 공휴일 이름은 날짜 아래 작은 글씨로 함께 표시
+// · 공휴일은 선택한 국가 기준(기본: 칸이 속한 상품·상담의 국가, 없으면 대한민국 — 달력 위에서 바꿀 수 있음)이며 date.nager.at 공개 자료를 불러와 쓴다.
+//   불러오지 못하면 대한민국만 법정 고정 공휴일 일부를 보여주고, 그 외 국가는 "공휴일 자료 없음"으로 표시한다(없는 휴일을 만들어 넣지 않는다)
+// · 값은 그대로 YYYY-MM-DD로 칸에 들어가고 input·change 이벤트를 발생시켜 기존 저장 동작이 그대로 작동한다
+const TGT_DP_COUNTRIES = [['KR','대한민국'],['JP','일본'],['CN','중국'],['VN','베트남'],['TH','태국'],['PH','필리핀'],['MY','말레이시아'],['ID','인도네시아'],['MN','몽골'],['US','미국(괌·사이판, 연방 공휴일)']];
+const TGT_DP_CAT_ISO = {japan:'JP', china:'CN', vietnam:'VN', thailand:'TH', philippines:'PH', malaysia:'MY', indonesia:'ID', mongolia:'MN', guam:'US'};
+const TGT_DP_SCOPE = '#adminPanel,.adv-editor-overlay';
+// 대한민국 — 자동 조회가 안 될 때만 쓰는 법정 고정 공휴일(양력)과 2026·2027년 음력 공휴일. 대체공휴일은 포함하지 않는다
+const TGT_DP_KR_FIXED = {'01-01':'신정','03-01':'삼일절','05-05':'어린이날','06-06':'현충일','08-15':'광복절','10-03':'개천절','10-09':'한글날','12-25':'성탄절'};
+const TGT_DP_KR_LUNAR = {'2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴','2026-05-24':'부처님오신날','2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴',
+                         '2027-02-06':'설날 연휴','2027-02-07':'설날','2027-02-08':'설날 연휴','2027-05-13':'부처님오신날','2027-09-14':'추석 연휴','2027-09-15':'추석','2027-09-16':'추석 연휴'};
+const _tgtDp = {input:null, start:null, country:'KR', hol:{}, note:''};
+const _tgtDpCache = {};   // "KR-2026" → {map, source}
+function tgtDpCountryFor(input){
+  const holder = input.closest && input.closest('[data-holiday-country]');
+  if (holder && holder.dataset.holidayCountry) return holder.dataset.holidayCountry;
+  try{
+    if (input.closest('.adv-editor-overlay') && typeof currentAdv!=='undefined' && currentAdv && CATEGORIES.overseas.some(c=>c.id===currentAdv.catId)) return TGT_DP_CAT_ISO[currentAdv.catId] || 'KR';
+  }catch(e){}
+  return 'KR';
+}
+function tgtDpKrFallback(year){
+  const map = {};
+  Object.entries(TGT_DP_KR_FIXED).forEach(([md, nm])=>{ map[year+'-'+md] = nm; });
+  Object.entries(TGT_DP_KR_LUNAR).forEach(([d, nm])=>{ if (d.startsWith(year+'-')) map[d] = nm; });
+  return map;
+}
+function tgtDpLoadHolidays(code, year){
+  const key = code+'-'+year;
+  if (_tgtDpCache[key]) return Promise.resolve(_tgtDpCache[key]);
+  try{
+    const c = JSON.parse(localStorage.getItem('tgt_dp_hol_'+key)||'null');
+    if (c && c.map && Date.now()-c.t < 45*86400000){ _tgtDpCache[key] = {map:c.map, source:'api'}; return Promise.resolve(_tgtDpCache[key]); }
+  }catch(e){}
+  return fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`)
+    .then(r=>{ if (!r.ok) throw new Error('holiday '+r.status); return r.json(); })
+    .then(list=>{
+      const map = {};
+      (Array.isArray(list)?list:[]).forEach(h=>{
+        if (!h || !h.date) return;
+        if (Array.isArray(h.types) && h.types.length && !h.types.includes('Public')) return;
+        const nm = code==='KR' ? (h.localName||h.name) : (h.name||h.localName);
+        map[h.date] = map[h.date] ? map[h.date]+' · '+nm : nm;
+      });
+      _tgtDpCache[key] = {map, source:'api'};
+      try{ localStorage.setItem('tgt_dp_hol_'+key, JSON.stringify({t:Date.now(), map})); }catch(e){}
+      return _tgtDpCache[key];
+    })
+    .catch(()=>{ _tgtDpCache[key] = code==='KR' ? {map:tgtDpKrFallback(year), source:'fallback'} : {map:{}, source:'none'}; return _tgtDpCache[key]; });
+}
+function tgtDpOpen(input){
+  if (!input || input.disabled) return;
+  _tgtDp.input = input;
+  _tgtDp.country = tgtDpCountryFor(input);
+  const now = new Date(), today = {y:now.getFullYear(), m:now.getMonth()+1};
+  let start = {y:today.y, m:today.m};
+  const mm = /^(\d{4})-(\d{2})/.exec(input.value||'');
+  if (mm){   // 이미 고른 날짜가 앞으로 3개월 밖이면 그 달부터 보여준다
+    const v = {y:+mm[1], m:+mm[2]}, diff = (v.y-today.y)*12 + (v.m-today.m);
+    if (diff<0 || diff>2) start = v;
+  }
+  _tgtDp.start = start;
+  tgtDpRender(true);
+  tgtScrollLock && tgtScrollLock('tgtdp', true);
+}
+function tgtDpClose(){
+  const b = document.getElementById('tgtDpBack'); if (b) b.remove();
+  _tgtDp.input = null;
+  try{ tgtScrollLock('tgtdp', false); }catch(e){}
+}
+function tgtDpShift(n){
+  let {y, m} = _tgtDp.start; m += n; while (m>12){ m-=12; y++; } while (m<1){ m+=12; y--; }
+  _tgtDp.start = {y, m}; tgtDpRender(true);
+}
+function tgtDpToday(){ const n = new Date(); _tgtDp.start = {y:n.getFullYear(), m:n.getMonth()+1}; tgtDpRender(true); }
+function tgtDpCountry(code){ _tgtDp.country = code; tgtDpRender(true); }
+function tgtDpPick(iso){
+  const i = _tgtDp.input; if (!i) return;
+  i.value = iso;
+  i.dispatchEvent(new Event('input', {bubbles:true}));
+  i.dispatchEvent(new Event('change', {bubbles:true}));
+  tgtDpClose();
+}
+function tgtDpClear(){ tgtDpPick(''); }
+function tgtDpRender(fetchHol){
+  const inp = _tgtDp.input; if (!inp) return;
+  const {y:sy, m:sm} = _tgtDp.start;
+  const months = [0,1,2].map(k=>{ let y=sy, m=sm+k; while (m>12){ m-=12; y++; } return {y, m}; });
+  const years = [...new Set(months.map(x=>x.y))];
+  // 공휴일 자료(캐시된 것부터 즉시, 없으면 불러온 뒤 다시 그림)
+  const code = _tgtDp.country;
+  const hol = {}; let source = 'api', pending = false;
+  years.forEach(yr=>{
+    const c = _tgtDpCache[code+'-'+yr];
+    if (c){ Object.assign(hol, c.map); if (c.source!=='api') source = c.source; } else pending = true;
+  });
+  if (pending && fetchHol){
+    Promise.all(years.map(yr=>tgtDpLoadHolidays(code, yr))).then(()=>{ if (_tgtDp.input===inp && _tgtDp.country===code && document.getElementById('tgtDpBack')) tgtDpRender(false); });
+  }
+  const cur = inp.value || '';
+  const mn = inp.min || '', mx = inp.max || '';
+  const n = new Date(), todayIso = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  const WD = ['일','월','화','수','목','금','토'], WDC = ['sun','','','','','fri','sat'];
+  const monthHTML = ({y,m})=>{
+    const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate();
+    let cells = WD.map((w,i)=>`<div class="tgt-dp-wd ${WDC[i]}">${w}</div>`).join('');
+    for (let i=0;i<first;i++) cells += '<button type="button" class="tgt-dp-d empty" tabindex="-1" aria-hidden="true"></button>';
+    for (let d=1; d<=days; d++){
+      const iso = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`, dow = (first+d-1)%7, hn = hol[iso];
+      const dis = (mn && iso<mn) || (mx && iso>mx);
+      cells += `<button type="button" class="tgt-dp-d ${WDC[dow]} ${hn?'hol':''} ${iso===todayIso?'today':''} ${iso===cur?'sel':''} ${dis?'dis':''}" ${dis?'disabled':`onclick="tgtDpPick('${iso}')"`} ${hn?`title="${escapeAttr(hn)}"`:''}><span class="n">${d}</span>${hn?`<span class="h">${escapeAttr(hn)}</span>`:''}</button>`;
+    }
+    return `<div class="tgt-dp-m"><h6>${y}년 ${m}월</h6><div class="tgt-dp-grid">${cells}</div></div>`;
+  };
+  const note = pending ? '공휴일 불러오는 중…' : (source==='fallback' ? '⚠ 공휴일 자동 조회에 실패해 법정 고정 공휴일(양력)·2026~2027 음력 공휴일만 표시합니다(대체공휴일 제외).' : (source==='none' ? '⚠ 이 국가의 공휴일 자료를 불러오지 못했습니다(공휴일 표시 없음).' : (Object.keys(hol).length ? '' : '')));
+  const html = `<div class="tgt-dp" role="dialog" aria-label="날짜 선택" onclick="event.stopPropagation()">
+    <div class="tgt-dp-head">
+      <span class="ttl">📅 날짜 선택 <small style="font-weight:600;color:#64748b">· 오늘 기준 3개월</small></span>
+      <label style="font-size:.76rem;color:#475569">공휴일 국가 <select onchange="tgtDpCountry(this.value)">${TGT_DP_COUNTRIES.map(([c,nm])=>`<option value="${c}" ${c===code?'selected':''}>${nm}</option>`).join('')}</select></label>
+      <button type="button" class="tgt-dp-btn" onclick="tgtDpShift(-1)">◀ 이전 달</button>
+      <button type="button" class="tgt-dp-btn" onclick="tgtDpToday()">오늘</button>
+      <button type="button" class="tgt-dp-btn" onclick="tgtDpShift(1)">다음 달 ▶</button>
+      <button type="button" class="tgt-dp-btn" onclick="tgtDpClear()">지우기</button>
+      <button type="button" class="tgt-dp-btn x" onclick="tgtDpClose()">닫기</button>
+    </div>
+    ${note?`<div class="tgt-dp-note ${source==='api'?'':'warn'}">${note}</div>`:''}
+    <div class="tgt-dp-months">${months.map(monthHTML).join('')}</div>
+  </div>`;
+  let back = document.getElementById('tgtDpBack');
+  if (!back){ back = document.createElement('div'); back.id = 'tgtDpBack'; back.onclick = tgtDpClose; document.body.appendChild(back); }
+  back.innerHTML = html;
+}
+// 관리자 영역의 날짜 칸을 누르면(또는 Enter·Space) 기본 달력 대신 위 달력을 연다. 칸은 읽기 전용으로 두어 브라우저 기본 달력이 함께 뜨지 않게 한다
+(function tgtDpInit(){
+  const isDp = el => !!(el && el.matches && el.matches('input[type="date"]') && el.closest(TGT_DP_SCOPE) && !el.disabled && !el.dataset.nativeDate);
+  document.addEventListener('pointerdown', e=>{ const i = e.target.closest && e.target.closest('input[type="date"]'); if (isDp(i)) i.readOnly = true; }, true);
+  document.addEventListener('mousedown', e=>{ const i = e.target.closest && e.target.closest('input[type="date"]'); if (isDp(i)){ i.readOnly = true; e.preventDefault(); } }, true);
+  let _tp = null;   // 손가락이 거의 움직이지 않은 "탭"일 때만 연다(스크롤하다 닿은 경우는 제외)
+  document.addEventListener('touchstart', e=>{ const t = e.touches && e.touches[0]; _tp = t ? {x:t.clientX, y:t.clientY} : null; }, {capture:true, passive:true});
+  document.addEventListener('touchend', e=>{
+    const i = e.target.closest && e.target.closest('input[type="date"]'); if (!isDp(i)) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (_tp && t && (Math.abs(t.clientX-_tp.x) > 10 || Math.abs(t.clientY-_tp.y) > 10)) return;
+    i.readOnly = true; if (e.cancelable) e.preventDefault(); tgtDpOpen(i);
+  }, {capture:true, passive:false});
+  document.addEventListener('click', e=>{
+    const i = e.target.closest && e.target.closest('input[type="date"]');
+    if (!isDp(i)) return;
+    i.readOnly = true; e.preventDefault(); e.stopPropagation();
+    tgtDpOpen(i);
+  }, true);
+  document.addEventListener('keydown', e=>{
+    if (e.key==='Escape' && document.getElementById('tgtDpBack')){ tgtDpClose(); e.stopPropagation(); return; }
+    const i = e.target;
+    if (isDp(i) && (e.key==='Enter' || e.key===' ' || e.key==='ArrowDown')){ e.preventDefault(); i.readOnly = true; tgtDpOpen(i); }
+  }, true);
+  // 새로 그려지는 날짜 칸도 처음부터 읽기 전용(키보드로 먼저 들어와도 기본 달력이 뜨지 않게)
+  new MutationObserver(ms=>{ ms.forEach(m=>m.addedNodes.forEach(n=>{ if (n.nodeType!==1) return; const list = n.matches && n.matches('input[type="date"]') ? [n] : (n.querySelectorAll ? [...n.querySelectorAll('input[type="date"]')] : []); list.forEach(i=>{ if (isDp(i)) i.readOnly = true; }); })); }).observe(document.body, {childList:true, subtree:true});
+})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 </body>

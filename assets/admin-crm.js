@@ -223,7 +223,10 @@
       .crm-grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0 14px}
       .crm-cat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 14px}
       .crm-date-grid > div > .crm-field:first-child{margin-top:12px}
-      .crm-rtf-bar{position:sticky;top:0;z-index:12;background:var(--nm-surface,#eef1f6);border-radius:12px;box-shadow:var(--nm-shadow-raised-sm);margin-bottom:10px}
+      /* 공통 서식 도구 — 위로 스크롤해도 아래 내용과 겹쳐 보이지 않게 불투명 바탕을 깐다(.rtf-global 기본값이 투명이라 우선순위를 높임) */
+      .crm-rtf-scope .rtf-wrap.rtf-global.crm-rtf-bar{position:sticky;top:0;z-index:40;background:#f4f6fb;border-radius:12px;border-top:none;box-shadow:0 4px 14px rgba(10,23,48,.16),0 0 0 1px rgba(10,23,48,.06);margin-bottom:10px;overflow:visible}
+      .crm-rtf-scope .crm-rtf-bar .rtf-toolbar{background:#f4f6fb;border-radius:12px 12px 0 0}
+      .crm-rtf-scope .crm-rtf-bar .rtf-global-hint{background:#f4f6fb;border-radius:0 0 12px 12px;padding-bottom:7px}
       .crm-rtf-scope .rtf-global .rtf-toolbar{padding:6px 10px}
       .crm-rtf-scope .rtf-global-hint{padding:0 12px 6px}
       .crm-rtf-scope .rtf-editable.crm-rich{min-height:48px;padding:9px 11px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font-size:.86rem;line-height:1.55}

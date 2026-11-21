@@ -2900,7 +2900,7 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 
 /* RESPONSIVE */
 @media(max-width:1024px){
-  .hero-inner{grid-template-columns:1fr}
+  .hero-inner{grid-template-columns:minmax(0,1fr)}
   .cat-grid,.product-grid,.blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .category-view{padding:36px}
   .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
@@ -5260,7 +5260,13 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 
 /* [수정] 히어로 레이아웃 — "필드에서 시작되는 완벽한 여행" 소개 박스를 위(가로로 긴 형태), "Editor's Pick · 이번 주 추천" 카드는 아래에 배치.
    (소개 박스 안의 "국내외 여행지·해외 골프 운영·B2B 파트너" 숫자 요약은 삭제) */
-.hero-inner{grid-template-columns:1fr;gap:28px}
+/* [수정] 1fr은 minmax(auto,1fr)이라 안쪽에 줄바꿈이 안 되는 긴 글자(띄어쓰기 없는 한글 상품명·가격 줄 등)가 있으면 칸 자체가 화면보다 넓어져
+   히어로 소개 박스와 EDITOR'S PICK 카드가 오른쪽으로 잘려 보였다(폰트가 넓은 iPhone에서 발생) — 칸 폭을 화면에 고정(minmax(0,1fr))하고 안쪽 글자가 줄바꿈되게 한다 */
+.hero-inner{grid-template-columns:minmax(0,1fr);gap:28px}
+.hero-main,.hero-side,.spotlight-grid,.spotlight,.spot-stack,.spot-content{min-width:0;max-width:100%}
+.spotlight h3,.spot-meta,.spot-move,.spot-pros{overflow-wrap:anywhere}
+.spot-cta{flex-wrap:wrap;gap:4px 12px}
+.spotlight-header .kicker{flex-wrap:wrap;min-width:0;overflow-wrap:anywhere}
 .hero-actions{margin-bottom:0}
 .hero-main{padding-bottom:28px}
 @media(min-width:781px){

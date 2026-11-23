@@ -2329,7 +2329,10 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .dp-row-holiday .dp-pw select.dp-cur{grid-area:cur;width:100%;min-width:0}
 .dp-row-holiday .pee-del{grid-area:del;justify-self:end;width:auto;padding:5px 16px}
 /* 외화(추가요금) 행: 정가 칸 없이 금액 한 칸 + 화폐 선택, 아래 줄에 원화 환산 미리보기와 삭제 */
-.dp-row-holiday.dp-fx{grid-template-areas:"type start end" "price price cur" "note note del"!important}
+.dp-row-holiday.dp-fx{grid-template-areas:"type start end" "price price cur" "show show show" "note note del"!important}
+.dp-row-holiday .dp-show{grid-area:show;min-width:0;width:100%;font-size:.76rem}
+.dp-bulk .dp-show{flex:1 1 100%;min-width:0;font-size:.76rem}
+.dp-fxnote b.ok{color:var(--nm-blue-deep)}
 .dp-row-holiday .dp-fxnote{grid-area:note;font-size:.74rem;line-height:1.45;color:var(--nm-text-soft);align-self:center;min-width:0}
 .dp-row-holiday.dp-bulked{grid-template-areas:"type start end" "note note del"!important}
 .dp-row-holiday .dp-bulknote{color:var(--nm-blue-deep)}
@@ -7281,7 +7284,7 @@ function normDayDates(v){
 function _peDatesKey(v){ const o=normDayDates(v); return o.dates.length ? o.dates.join('|')+'#'+o.sep+'#'+o.merge : ''; }
 function _peHolKey(list){
   const l=holResolve(list); if (!l.some(h=>h.date && h.price)) return '';
-  return l.map(h=>{ const m=_dpMarkKey(h); return m!==null ? m : ((h.date && h.price) ? [h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':')+(Number(h.original)>0 ? '^'+Number(h.original) : '')+(h.currency && h.currency!=='KRW' ? '$'+h.currency : '') : ''); }).filter(Boolean).join('|');
+  return l.map(h=>{ const m=_dpMarkKey(h); return m!==null ? m : ((h.date && h.price) ? [h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':')+(Number(h.original)>0 ? '^'+Number(h.original) : '')+(h.currency && h.currency!=='KRW' ? '$'+h.currency : '')+(h.show==='local'?'L':'') : ''); }).filter(Boolean).join('|');
 }
 // ── 출발 요일별 요금 · 공휴일 요금 표시(구분선 · 부제목 지원) ─────────────────────────────
 // 구분선을 기준으로 묶음을 나눠 간격을 두고, 부제목이 있으면 그 묶음 위에 작은 제목으로 노출한다.
@@ -7464,6 +7467,7 @@ function dayPriceSectionsHTML(list, cls, dd){
 }
 // 공휴일 요금 한 칸의 금액 부분(외화 추가요금은 원화 환산 값, 할인 표시 포함)
 function holValueHTML(h){
+  if (holIsFx(h) && h.show==='local') return `<span class="v">+${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span>`; // 현지 통화 그대로(환산 안 함)
   if (holIsFx(h)) return `<span class="v hol-fx" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}" title="${escapeAttr(holFxTitle(h.price, h.currency))}">${holFxValueHTML(h.price, h.currency)}</span>`;
   return `<span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtMoney(h.original, h.currency)}</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span>`;
 }
@@ -7474,7 +7478,7 @@ function holidaySectionsHTML(list, cls, lead){
     return {h, label, range:!!(h.type==='range' && h.endDate), v:holValueHTML(h)};
   }, h=>h.date && h.price, items=>{
     // [수정] 이 묶음의 금액이 모두 같으면(2개 이상) 날짜는 월별로 줄을 나눠 모으고 요금은 한 번만 보여 준다
-    const amtKey = it=>[Number(it.h.price)||0, curOf(it.h.currency), Number(it.h.original)||0].join('|');
+    const amtKey = it=>[Number(it.h.price)||0, curOf(it.h.currency), Number(it.h.original)||0, it.h.show==='local'?'L':''].join('|');
     if (items.length>=2 && items.every(it=>amtKey(it)===amtKey(items[0]))){
       const byM = {}, order = [];
       items.slice().sort((x,y)=>String(x.h.date).localeCompare(String(y.h.date))).forEach(it=>{
@@ -11737,7 +11741,7 @@ function holBulkOf(list, i){
 }
 function holResolve(list){
   if (!Array.isArray(list) || !list.some(x=>x && x.kind==='group' && x.bulk)) return list||[];
-  return list.map((x,i)=>{ if (!x || x.kind) return x; const b=holBulkOf(list, i); return b ? Object.assign({}, x, {price:Number(b.bulkPrice)||0, currency:curOf(b.bulkCurrency), original:0}) : x; });
+  return list.map((x,i)=>{ if (!x || x.kind) return x; const b=holBulkOf(list, i); return b ? Object.assign({}, x, {price:Number(b.bulkPrice)||0, currency:curOf(b.bulkCurrency), original:0, show:b.bulkShow==='local'?'local':''}) : x; });
 }
 function holIsFx(h){ return !!h && curOf(h.currency)!=='KRW'; }
 function holFxKrw(amount, cur){
@@ -11754,9 +11758,10 @@ function holFxTitle(amount, cur){
   return k==null ? '' : `추가요금 ${fmtMoney(amount, cur)} → 현찰 살 때 환율(1${curUnit(cur)} = ${(r).toLocaleString('ko-KR',{maximumFractionDigits:4})}원) 기준, 천원 단위 반올림(500원 미만 버림·500원 이상 올림)`;
 }
 // 관리자 입력칸 아래 미리보기 한 줄
-function holFxNoteHTML(amount, cur){
+function holFxNoteHTML(amount, cur, show){
   cur = curOf(cur); const a = Number(amount)||0;
-  if (!a) return '금액을 입력하면 원화 환산액이 표시됩니다';
+  if (!a) return '금액을 입력하면 요금표에 표시될 금액이 나타납니다';
+  if (show==='local') return `→ 요금표에 <b class="ok">+${fmtMoney(a, cur)}</b> 로 표시됩니다 <em>(현지 통화 그대로 · 원화 환산 안 함)</em>`;
   const r = curCashPerUnit(cur);
   if (!r) return currencyFetchFailed ? '환율 정보를 불러오지 못했습니다 — 불러오면 원화로 표시됩니다' : '환율 정보를 불러오는 중…';
   const sp = curSpreadOf(cur);
@@ -11764,21 +11769,26 @@ function holFxNoteHTML(amount, cur){
 }
 function holFxNoteSync(inp){
   const row = inp.closest('.dp-row, .dp-bulk'), n = row && row.querySelector('.dp-fxnote'); if (!n) return;
-  n.dataset.amt = inp.value; n.innerHTML = holFxNoteHTML(inp.value, n.dataset.cur);
+  n.dataset.amt = inp.value; n.innerHTML = holFxNoteHTML(inp.value, n.dataset.cur, n.dataset.show);
 }
 // 환율을 불러왔거나 스프레드가 바뀌면 화면에 이미 그려진 공휴일 추가요금 값을 새로 계산
 function holFxRefresh(){
   document.querySelectorAll('.hol-fx[data-amt]').forEach(e=>{ e.innerHTML = holFxValueHTML(e.dataset.amt, e.dataset.cur); e.title = holFxTitle(e.dataset.amt, e.dataset.cur); });
-  document.querySelectorAll('.dp-fxnote[data-cur]').forEach(e=>{ e.innerHTML = holFxNoteHTML(e.dataset.amt, e.dataset.cur); });
+  document.querySelectorAll('.dp-fxnote[data-cur]').forEach(e=>{ e.innerHTML = holFxNoteHTML(e.dataset.amt, e.dataset.cur, e.dataset.show); });
 }
 // 공휴일 요금 행의 금액 칸(정가·적용가·화폐 선택·환산 미리보기) — call 예: updateCommonHolidayPrice(0
+// 요금표(방문자 화면)에 외화 추가요금을 원화로 환산해 보여 줄지, 입력한 현지 통화(엔화 등) 그대로 보여 줄지 고르는 선택창
+function holShowSelHTML(onchange, show){
+  return `<select class="curr-sel dp-show" title="방문자에게 보이는 요금표 표시 방식" aria-label="요금표 표시 방식" onchange="${onchange}"><option value="krw" ${show!=='local'?'selected':''}>요금표 표시: 원화로 환산</option><option value="local" ${show==='local'?'selected':''}>요금표 표시: 현지 통화 그대로</option></select>`;
+}
 function holPriceCellsHTML(h, call, bulk){
   if (bulk) return '<span class="dp-fxnote dp-bulknote">↳ 위 부제목의 <b>통합 금액</b>이 적용됩니다 <em>(이 행에 입력해 둔 개별 금액은 보관되며, 통합을 끄면 다시 쓰입니다)</em></span>';
   const fx = holIsFx(h);
   const orig = fx ? '' : `<input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="${call},'original',this.value,'number')">`;
   const price = `<input type="number" value="${h.price||''}" placeholder="${fx?'추가요금 (+)':'적용가'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 천원 단위로 반올림(500원 미만 버림·500원 이상 올림)하여 표시됩니다':'적용(할인 후) 금액'}" oninput="${call},'price',this.value,'number')${fx?';holFxNoteSync(this)':''}">`;
-  const note = fx ? `<span class="dp-fxnote" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}">${holFxNoteHTML(h.price, h.currency)}</span>` : '';
-  return orig + `<span class="dp-pw">${price}${curSelHTML(`${call},'currency',this.value)`, h.currency, {compact:true})}</span>` + note;
+  const note = fx ? `<span class="dp-fxnote" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}" data-show="${h.show==='local'?'local':''}">${holFxNoteHTML(h.price, h.currency, h.show)}</span>` : '';
+  const showSel = fx ? holShowSelHTML(`${call},'show',this.value)`, h.show) : '';
+  return orig + `<span class="dp-pw">${price}${curSelHTML(`${call},'currency',this.value)`, h.currency, {compact:true})}</span>` + showSel + note;
 }
 // 관리자 입력칸 우측 화폐 선택 — compact:true면 코드+기호만(좁은 요금표 행용), 아니면 전체 이름
 function curSelHTML(onchange, val, opts){
@@ -19781,7 +19791,7 @@ function advBasicHTML(p){
 
             ${dayDatesEditorHTML(p, -1)}
 
-            <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
+            <label style="margin-top:16px">📌 공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
             <div class="dp-list">
               ${(p.commonHolidayPrices||[]).map((h,hi)=>dpItemWrap(-1,'hol',hi, dpIsMarker(h) ? dpMarkerRowHTML(h,-1,'hol',hi) : `
               <div class="dp-row dp-row-holiday${holIsFx(h)?' dp-fx':''}${holBulkOf(p.commonHolidayPrices,hi)?' dp-bulked':''}">
@@ -21364,7 +21374,7 @@ function priceEntryHTML(pe, i, popupCount, p){
 
         ${dayDatesEditorHTML(p, i)}
 
-        <label style="margin-top:16px">공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
+        <label style="margin-top:16px">📌 공휴일 지정 요금 <span style="color:var(--gold);font-size:.7rem;letter-spacing:.05em">(빨간색으로 자동 표시 · "기간 지정" 선택 시 시작일~종료일로 안내)</span></label>
         ${peInhHintHTML(p,pe,i,'holidayPrices',true)}
         <div class="dp-list">
           ${(pe.holidayPrices||[]).map((h,hi)=>dpItemWrap(i,'hol',hi, dpIsMarker(h) ? dpMarkerRowHTML(h,i,'hol',hi) : `
@@ -21865,7 +21875,7 @@ function dpBulkCtlHTML(m, peIdx, kind, i){
   const call = `setDpGroupBulkField(${peIdx},'${kind}',${i}`;
   return `<div class="dp-bulk">
     <label class="popup-toggle" title="켜면 이 부제목 아래(다음 부제목·구분선 전까지)의 공휴일 지정일·기간에 모두 아래 금액 하나를 적용합니다"><input type="checkbox" ${m.bulk?'checked':''} onchange="setDpGroupBulk(${peIdx},'${kind}',${i},this.checked)"><span class="toggle-slider"></span><span class="pt-lbl">통합 금액 (아래 모든 지정일에 하나의 금액)</span></label>
-    ${m.bulk ? `<span class="dp-pw"><input type="number" value="${m.bulkPrice||''}" placeholder="${fx?'추가요금 (+)':'금액'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 천원 단위로 반올림(500원 미만 버림·500원 이상 올림)하여 표시됩니다':'이 부제목 아래 모든 지정일에 적용되는 금액'}" oninput="${call},'bulkPrice',this.value,'number');holFxNoteSync(this)">${curSelHTML(`${call},'bulkCurrency',this.value)`, m.bulkCurrency, {compact:true})}</span>${fx ? `<span class="dp-fxnote" data-amt="${Number(m.bulkPrice)||0}" data-cur="${curOf(m.bulkCurrency)}">${holFxNoteHTML(m.bulkPrice, m.bulkCurrency)}</span>` : ''}` : ''}
+    ${m.bulk ? `<span class="dp-pw"><input type="number" value="${m.bulkPrice||''}" placeholder="${fx?'추가요금 (+)':'금액'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 천원 단위로 반올림(500원 미만 버림·500원 이상 올림)하여 표시됩니다':'이 부제목 아래 모든 지정일에 적용되는 금액'}" oninput="${call},'bulkPrice',this.value,'number');holFxNoteSync(this)">${curSelHTML(`${call},'bulkCurrency',this.value)`, m.bulkCurrency, {compact:true})}</span>${fx ? `${holShowSelHTML(`${call},'bulkShow',this.value)`, m.bulkShow)}<span class="dp-fxnote" data-amt="${Number(m.bulkPrice)||0}" data-cur="${curOf(m.bulkCurrency)}" data-show="${m.bulkShow==='local'?'local':''}">${holFxNoteHTML(m.bulkPrice, m.bulkCurrency, m.bulkShow)}</span>` : ''}` : ''}
   </div>`;
 }
 function setDpGroupBulk(peIdx, kind, i, on){
@@ -21879,7 +21889,7 @@ function setDpGroupBulkField(peIdx, kind, i, field, val, type){
   const m=dpListOf(p,peIdx,kind)[i]; if (!m) return;
   if (type==='number') val=parseInt(val)||0;
   m[field]=val; saveAdvChange();
-  if (field==='bulkCurrency') renderAdvBody(); // 화폐 변경 시 안내 줄·입력칸 안내가 바뀐다
+  if (field==='bulkCurrency' || field==='bulkShow') renderAdvBody(); // 화폐 변경 시 안내 줄·입력칸 안내가 바뀐다
 }
 function dpListOf(p, peIdx, kind){
   if (peIdx<0) return kind==='hol' ? p.commonHolidayPrices : p.commonDayPrices;
@@ -22112,7 +22122,7 @@ function updateHolidayPrice(peIdx, i, field, val, vtype){
   if (field==='type' && val==='single') h.endDate='';
   saveAdvChange();
   // 유형(단일/기간) 변경 시에는 종료일 입력란 노출 여부가, 화폐 변경 시에는 정가 칸·환산 미리보기가 바뀌므로 다시 그려야 한다
-  if (field==='type' || field==='currency') renderAdvBody();
+  if (field==='type' || field==='currency' || field==='show') renderAdvBody();
 }
 // [추가] 공통(요금 항목과 무관) 출발 요일별 · 공휴일 요금 — "+요금 항목 추가" 전에도 입력할 수
 // 있도록 요금 항목(pe.dayPrices/holidayPrices)과 별개로 상품 자신(p.commonDayPrices/
@@ -22150,7 +22160,7 @@ function updateCommonHolidayPrice(i, field, val, vtype){
   h[field]=val;
   if (field==='type' && val==='single') h.endDate='';
   saveAdvChange();
-  if (field==='type' || field==='currency') renderAdvBody();
+  if (field==='type' || field==='currency' || field==='show') renderAdvBody();
 }
 
 // ===== 미디어 탭 (타이틀 이미지/동영상 + 갤러리) =====

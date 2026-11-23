@@ -307,7 +307,7 @@ const regionName = r => r === 'overseas' ? '해외 골프여행' : '국내 골�
 // 화폐가 섞여 있으면 환율 환산 없이 비교할 수 없으므로 원화 금액을 우선하고, 원화가 없으면 처음 나온 화폐 안에서만 비교한다
 function lowestInfo(p) {
   if (p.priceInquiry) return { n: 0, cur: 'KRW' };
-  const items = [[p.from, p.fromCur]].concat(p.entries.map(e => [e.price, e.currency]), p.entries.reduce((a, e) => a.concat(e.dayPrices.map(d => [d.price || 0, d.cur]).concat((e.holidayPrices || []).map(h => [h.price || 0, h.cur]))), []), p.commonDayPrices.map(d => [d.price || 0, d.cur]), (p.commonHolidayPrices || []).map(h => [h.price || 0, h.cur])).filter(x => x[0] > 0);
+  const items = [[p.from, p.fromCur]].concat(p.entries.map(e => [e.price, e.currency]), p.entries.reduce((a, e) => a.concat(e.dayPrices.map(d => [d.price || 0, d.cur])), []), p.commonDayPrices.map(d => [d.price || 0, d.cur])).filter(x => x[0] > 0);
   if (!items.length) return { n: 0, cur: 'KRW' };
   const cur = items.some(x => curOf(x[1]) === 'KRW') ? 'KRW' : curOf(items[0][1]);
   return { n: Math.min(...items.filter(x => curOf(x[1]) === cur).map(x => x[0])), cur };
@@ -394,7 +394,7 @@ function productPage(p, data, stateDate) {
       const per = hasPeriod(day), cols = per ? 3 : 2;
       out.push(`<table class="rate"><thead><tr><th>출발 요일</th>${per ? '<th>적용 기간</th>' : ''}<th>1인 요금</th></tr></thead><tbody>${day.map(d => d.g ? `<tr><th colspan="${cols}">${esc(d.g)}</th></tr>` : `<tr><td>${esc(d.day)}</td>${per ? `<td>${esc([d.start, d.end].filter(Boolean).join(' ~ ').replace(/-/g, '.'))}</td>` : ''}<td>${money(d.price, d.cur)}</td></tr>`).join('')}</tbody></table>`);
     }
-    if (hol.length) out.push(`<table class="rate"><thead><tr><th>공휴일·지정일</th><th>1인 요금</th></tr></thead><tbody>${hol.map(h => `<tr><td>${esc(h.date + (h.end ? ' ~ ' + h.end : ''))}</td><td>${money(h.price, h.cur)}</td></tr>`).join('')}</tbody></table>`);
+    if (hol.length) out.push(`<table class="rate"><thead><tr><th>공휴일·지정일</th><th>1인 요금</th></tr></thead><tbody>${hol.map(h => `<tr><td>${esc(h.date + (h.end ? ' ~ ' + h.end : ''))}</td><td>${h.cur !== 'KRW' ? '+' : ''}${money(h.price, h.cur)}</td></tr>`).join('')}</tbody></table>`);
     if (dates.length) out.push(`<p class="muted">지정 출발일: ${esc(dates.join(', '))}</p>`);
     return out.join('');
   };

@@ -1213,10 +1213,10 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-row.hol-same .hs-m{font-size:.68rem;font-weight:700;color:#fff;background:#DC2626;border-radius:10px;padding:1px 8px;line-height:1.5}
 .pd-holiday-price-row.hol-same .dt{font-size:.86rem;font-weight:600;color:#DC2626;white-space:nowrap}
 .pd-holiday-price-row.hol-same .hs-price{flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;text-align:right;padding-left:14px;border-left:1px dashed rgba(10,23,48,.22)} /* 날짜와 금액 사이 구분선 */
-.pd-holiday-price-row.hol-same .hs-price .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.05rem;line-height:1.1;font-weight:500;color:#DC2626;white-space:nowrap}
+.pd-holiday-price-row.hol-same .hs-price .v{min-width:5.4em;text-align:right;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.05rem;line-height:1.1;font-weight:500;color:#DC2626;white-space:nowrap}
 .pd-holiday-price-row.hol-same .hs-price .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.93rem;color:#DC2626;font-weight:500;margin-left:2px}
 .pd-holiday-price-row.hol-same .hs-price .v .was{display:block;font-size:.8rem}
-@media(max-width:560px){.pd-holiday-price-row.hol-same .hs-line{flex-direction:column;align-items:flex-start;gap:2px}.pd-holiday-price-row.hol-same .hs-price .v{font-size:1.725rem}.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:.8rem}.pd-holiday-price-row.hol-same .hs-price{padding-left:10px}.pd-holiday-price-row.hol-same .dt{font-size:.78rem}}
+@media(max-width:560px){.pd-holiday-price-row.hol-same .dt{white-space:normal}.pd-holiday-price-row.hol-same .hs-line{flex-direction:column;align-items:flex-start;gap:2px}.pd-holiday-price-row.hol-same .hs-price .v{font-size:1.725rem}.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:.8rem}.pd-holiday-price-row.hol-same .hs-price{padding-left:10px}.pd-holiday-price-row.hol-same .dt{font-size:.78rem}}
 .pd-holiday-price-row.hol-lines{display:block}
 .pd-holiday-price-row.hol-lines .pd-holiday-price-item{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 14px;border-right:none;border-bottom:1px dashed rgba(10,23,48,.14);white-space:normal}
 .pd-holiday-price-row.hol-lines .pd-holiday-price-item:last-child{border-bottom:none}
@@ -7486,7 +7486,7 @@ function holidaySectionsHTML(list, cls, lead){
         if (!byM[m]){ byM[m]=[]; order.push(m); }
         byM[m].push(it);
       });
-      const lines = order.map(m=>`<div class="hs-line"><span class="hs-m">${m}월</span><span class="hs-ds">${byM[m].map(it=>`<span class="dt">${escapeAttr(it.label)}</span>`).join('')}</span></div>`).join('');
+      const lines = order.map(m=>`<div class="hs-line"><span class="hs-m">${m}월</span><span class="hs-ds">${byM[m].map(it=>`<span class="dt">${escapeAttr(it.label).replace('~','~<wbr>')}</span>`).join('')}</span></div>`).join('');
       return `<div class="pd-holiday-price-row hol-same${cls?' '+cls:''}"><div class="hs-dates">${lines}</div><div class="hs-price">${items[0].v}</div></div>`;
     }
     return `<div class="pd-holiday-price-row${items.some(it=>it.range)?' hol-lines':''}${cls?' '+cls:''}">${items.map(it=>`<div class="pd-holiday-price-item${it.range?' is-range':''}"><span class="dt">${escapeAttr(it.label)}</span>${it.v}</div>`).join('')}</div>`;

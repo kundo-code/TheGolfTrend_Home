@@ -2301,12 +2301,18 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .pd-holiday-price-item .v .was{display:block}
 .from-disc-hint{font-weight:600;color:var(--coral,#e5654b);margin-left:6px;font-size:.74rem}
 .dp-row-multi{grid-template-columns:1fr 1fr auto!important}
-.dp-row-holiday{grid-template-columns:90px 1fr 1fr 1fr 1fr auto!important}
+/* [수정] 공휴일 요금 행 — 금액 옆에 화폐 선택이 들어가 좁아지므로, 관리자 패널 폭(약 600px)에서도 읽히도록 항상 두 줄(종류·시작·종료 / 정가·적용가+화폐 / 삭제)로 배치 */
+.dp-row-holiday{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"type type" "start end" "orig price" "del del"!important}
+.dp-row-holiday>select{grid-area:type}
+.dp-row-holiday>input[type=date]:nth-of-type(1){grid-area:start}
+.dp-row-holiday>input[type=date]:nth-of-type(2){grid-area:end}
+.dp-row-holiday .pee-del{grid-area:del}
 .dp-row input.dp-orig{color:rgba(10,23,48,.6)}
-@media(max-width:780px){
-  .dp-row-holiday{grid-template-columns:1fr 1fr!important;grid-template-areas:"type type" "start end" "orig price" "del del"!important}
-  .dp-row-holiday input.dp-orig[type=number]{grid-area:orig!important}
-}
+.dp-pw{display:flex;gap:4px;align-items:center;min-width:0}
+.dp-pw input{flex:1 1 0;min-width:0}
+.dp-pw select.dp-cur{flex:0 0 auto;min-width:0;width:88px;padding:9px 6px;font-size:.72rem}
+.dp-row-holiday input.dp-orig[type=number]{grid-area:orig!important}
+.dp-row-holiday .dp-pw{grid-area:price!important}
 .cardprice-box .from-days{margin-bottom:10px}
 .cardprice-box .from-period{margin-bottom:12px}
 .row-table table{border-collapse:collapse;width:100%;max-width:100%;table-layout:auto;margin:0}
@@ -7223,7 +7229,7 @@ function _peTextKey(v){
 function _dpMarkKey(x){ return x.kind==='divider' ? (x.showLine ? '#L' : '#') : (x.kind==='group' ? '@'+(Number(x.indent)||0)+(x.box?'B'+(x.bg||'')+(x.shadow?'S':''):'')+String(x.title||'').trim() : null); }
 function _peDayKey(list){
   const l=list||[]; if (!l.some(d=>d.day && d.price)) return '';
-  return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price)+(Number(d.original)>0 ? '^'+Number(d.original) : '')+(d.start||d.end ? '~'+(d.start||'')+'~'+(d.end||'') : '') : ''); }).filter(Boolean).join('|');
+  return l.map(d=>{ const m=_dpMarkKey(d); return m!==null ? m : ((d.day && d.price) ? d.day+':'+Number(d.price)+(Number(d.original)>0 ? '^'+Number(d.original) : '')+(d.currency && d.currency!=='KRW' ? '$'+d.currency : '')+(d.start||d.end ? '~'+(d.start||'')+'~'+(d.end||'') : '') : ''); }).filter(Boolean).join('|');
 }
 // 특정일 지정 — 날짜 목록(정렬) 자체가 비교 키
 // 값 형태: {dates:['YYYY-MM-DD',..], sep:'none'|'br'|'line'(요일 묶음 사이 줄 나눔/구분선), merge:'화수'(바로 다음 요일과 한 묶음으로 합칠 요일들)}
@@ -7236,7 +7242,7 @@ function normDayDates(v){
 function _peDatesKey(v){ const o=normDayDates(v); return o.dates.length ? o.dates.join('|')+'#'+o.sep+'#'+o.merge : ''; }
 function _peHolKey(list){
   const l=list||[]; if (!l.some(h=>h.date && h.price)) return '';
-  return l.map(h=>{ const m=_dpMarkKey(h); return m!==null ? m : ((h.date && h.price) ? [h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':')+(Number(h.original)>0 ? '^'+Number(h.original) : '') : ''); }).filter(Boolean).join('|');
+  return l.map(h=>{ const m=_dpMarkKey(h); return m!==null ? m : ((h.date && h.price) ? [h.type==='range'?'r':'s', h.date, h.type==='range'?(h.endDate||''):'', Number(h.price)].join(':')+(Number(h.original)>0 ? '^'+Number(h.original) : '')+(h.currency && h.currency!=='KRW' ? '$'+h.currency : '') : ''); }).filter(Boolean).join('|');
 }
 // ── 출발 요일별 요금 · 공휴일 요금 표시(구분선 · 부제목 지원) ─────────────────────────────
 // 구분선을 기준으로 묶음을 나눠 간격을 두고, 부제목이 있으면 그 묶음 위에 작은 제목으로 노출한다.
@@ -7414,13 +7420,13 @@ function specificDatesHTML(dayVal, dd, item){
 function dayPriceSectionsHTML(list, cls, dd){
   return dpRenderSections(list, d=>{
     const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)·여러 요일은 요일 글자만 각자 색
-    return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">원</span></div>${priceDiscountPct(d.original, d.price) ? `<div class="was"><s>${fmtPrice(d.original)}원</s><em>${priceDiscountPct(d.original, d.price)}% ↓</em></div>` : ''}${specificDatesHTML(d.day, dd, d)}</div>`;
+    return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">${curUnit(d.currency)}</span></div>${priceDiscountPct(d.original, d.price) ? `<div class="was"><s>${fmtMoney(d.original, d.currency)}</s><em>${priceDiscountPct(d.original, d.price)}% ↓</em></div>` : ''}${specificDatesHTML(d.day, dd, d)}</div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table dp-n${cells.length>=3?'m':cells.length}${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
 function holidaySectionsHTML(list, cls, lead){
   return dpRenderSections(list, h=>{
     const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
-    return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtPrice(h.original)}원</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">원</span></span></div>`;
+    return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtMoney(h.original, h.currency)}</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span></div>`;
   }, h=>h.date && h.price, cells=>`<div class="pd-holiday-price-row${cls?' '+cls:''}">${cells.join('')}</div>`, lead);
 }
 // 일정은 Tee Off Time(레이블에 저장됨)과 한 묶음으로 비교한다. 노출 체크를 끈 일정은 "값 없음"
@@ -11438,7 +11444,7 @@ function buildProductJsonLd(catId, idx, pageUrl){
   if (!cat || !p) return null;
   const priceEntry = (p.priceEntries && p.priceEntries[0]) || null;
   const price = (priceEntry && priceEntry.salePrice) || p.from || 0;
-  const currency = (priceEntry && priceEntry.saleCurrency) || 'KRW';
+  const currency = (priceEntry && priceEntry.salePrice) ? curOf(priceEntry.saleCurrency) : curOf(p.fromCurrency);
   const image = (p.gallery && p.gallery[0] && p.gallery[0].url)
     || (p.titleMedia && p.titleMedia.type==='image' && p.titleMedia.url)
     || getImage(catId);
@@ -11653,6 +11659,19 @@ function getLinkUrl(key){
 function setLinkUrl(key,url){linkOverrides[key]=url;saveLinks();renderLinks();renderFootSocials()}
 
 function fmtPrice(n){return Number(n||0).toLocaleString('ko-KR')}
+// [추가] 화폐 단위 — 금액 입력칸 우측에서 고른다. 값이 없으면(기존 데이터) 모두 원화(KRW)로 본다.
+// 환율 환산은 하지 않고 입력한 금액에 단위만 붙여 보여 준다(등록된 값만 사용).
+const CURRENCIES = [['KRW','KRW ₩ 원'],['USD','USD $ 달러'],['SGD','SGD S$ 싱가포르 달러'],['THB','THB ฿ 밧'],['VND','VND ₫ 동'],['PHP','PHP ₱ 페소'],['MYR','MYR RM 링깃'],['IDR','IDR Rp 루피아'],['KHR','KHR ៛ 리엘'],['LAK','LAK ₭ 킵'],['MMK','MMK K 짯'],['BND','BND B$ 브루나이 달러'],['JPY','JPY ¥ 엔'],['EUR','EUR € 유로'],['CNY','CNY ¥ 위안']];
+const CURRENCY_SYMBOL = {KRW:'원',USD:'$',SGD:'S$',THB:'฿',VND:'₫',PHP:'₱',MYR:'RM',IDR:'Rp',KHR:'៛',LAK:'₭',MMK:'K',BND:'B$',JPY:'¥',EUR:'€',CNY:'¥'};
+function curOf(c){ return CURRENCY_SYMBOL[c] ? c : 'KRW'; }
+function curUnit(c){ return CURRENCY_SYMBOL[curOf(c)]; }
+function fmtMoney(n, c){ return fmtPrice(n) + curUnit(c); }
+// 관리자 입력칸 우측 화폐 선택 — compact:true면 코드+기호만(좁은 요금표 행용), 아니면 전체 이름
+function curSelHTML(onchange, val, opts){
+  opts = opts||{}; const cur = curOf(val);
+  const label = o => opts.compact ? o[1].split(' ').slice(0,2).join(' ') : o[1];
+  return `<select class="curr-sel${opts.compact?' dp-cur':''}"${opts.attrs?' '+opts.attrs:''} title="금액 화폐 단위 — 환율 환산 없이 입력한 금액에 이 단위가 붙습니다" aria-label="화폐 단위" onchange="${onchange}">${CURRENCIES.map(o=>`<option value="${o[0]}" ${cur===o[0]?'selected':''}>${label(o)}</option>`).join('')}</select>`;
+}
 function fmtDateDot(s){return (s||'').replace(/-/g,'.')} // [수정] 날짜 입력값(YYYY-MM-DD)을 "YYYY.MM.DD"로 보기 좋게 표시
 // [수정] 공휴일 지정 요금 날짜 표기 — 연도는 생략하고 날짜 끝에 (요일)을 붙인다. 예: "2026-09-24" → "09.24(목)"
 // new Date(문자열)의 UTC 해석에 따른 시간대별 하루 밀림을 피하기 위해 연/월/일을 직접 분해해 로컬 날짜로 구성한다
@@ -13684,10 +13703,10 @@ function priceDiscountPct(orig, sale){
   const o=Number(orig)||0, s=Number(sale)||0;
   return (o>s && s>0) ? Math.round((1-s/o)*100) : 0;
 }
-function priceWasHTML(orig, sale, tag){
+function priceWasHTML(orig, sale, tag, cur){
   const o=Number(orig)||0, s=Number(sale)||0; if (!(o>s && s>0)) return '';
   const pct=priceDiscountPct(o, s);
-  return `<${tag||'span'} class="price-was"><s>${fmtPrice(o)}원</s>${pct>0?`<em>${pct}% ↓</em>`:''}</${tag||'span'}>`;
+  return `<${tag||'span'} class="price-was"><s>${fmtMoney(o, cur)}</s>${pct>0?`<em>${pct}% ↓</em>`:''}</${tag||'span'}>`;
 }
 // 상품 카드/스팟라이트 공통: 관리자가 입력한 "카드 표시 최저가(from)"만 그대로 노출한다.
 // 요금표 항목(항목1/2...)의 판매가는 상세페이지 요금표에만 쓰이며, 카드 노출가에는 영향을 주지 않는다.
@@ -13924,7 +13943,7 @@ function productCardHTML(p, catId, idx){
     ${metaDescHTML}
     ${hasCp?`<button type="button" class="product-expand" aria-expanded="false" onclick="toggleProductCard(event,this)"><span class="pe-open">펼쳐보기 ▾</span><span class="pe-close">접기 ▴</span></button>`:''}
     <div class="product-foot">
-      ${priceInquiryText(p) ? `<span class="price price-inquiry">${priceInquiryHTML(p)}</span>` : `<span class="price">${priceWasHTML(p.fromOriginal, displayPrice)}${fmtPrice(displayPrice)}<span class="unit">원</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>`}
+      ${priceInquiryText(p) ? `<span class="price price-inquiry">${priceInquiryHTML(p)}</span>` : `<span class="price">${priceWasHTML(p.fromOriginal, displayPrice, '', p.fromCurrency)}${fmtPrice(displayPrice)}<span class="unit">${curUnit(p.fromCurrency)}</span>${p.fromLabel!==false?'<span class="from"> ~부터</span>':''}</span>`}
       <span class="details">자세히 →</span>
     </div>
   </article>`;
@@ -14627,7 +14646,7 @@ function renderSpotlightSlot(slot, layer, entry){
   document.getElementById('spotMove'+sfx).innerHTML=cardMoveList(p, entry.catId).map(m=>`<span>${m.html}</span>`).join('');
   document.getElementById('spotPros'+sfx).innerHTML=cardSummaryListHTML(p, true);
   const displayPrice=getDisplayPrice(p);
-  document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${priceWasHTML(p.fromOriginal, displayPrice)}${fmtPrice(displayPrice)}<small><span class="price-unit">원</span>${p.fromLabel!==false?' ~부터':''}</small>`;
+  document.getElementById('spotPrice'+sfx).innerHTML = priceInquiryText(p) ? priceInquiryHTML(p) : `${priceWasHTML(p.fromOriginal, displayPrice, '', p.fromCurrency)}${fmtPrice(displayPrice)}<small><span class="price-unit">${curUnit(p.fromCurrency)}</span>${p.fromLabel!==false?' ~부터':''}</small>`;
   document.getElementById('spotLink'+sfx).onclick=(e)=>{e.preventDefault();openProductDetail(entry.catId, idx)};
 }
 function renderSpotlight(){
@@ -16530,7 +16549,7 @@ function renderProductDetail(p,cat,idx){
       const fbDays = dpDayList(p.fromDay);
       const fbPeriod = (p.fromStart||p.fromEnd) ? [p.fromStart, p.fromEnd].filter(Boolean).map(x=>String(x).replace(/-/g,'.')).join(' ~ ') : '';
     const fbTopHTML = `<div class="prices">
-            ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">원${p.fromLabel!==false?' ~부터':''}</span></span>${priceDiscountPct(p.fromOriginal, fbFrom) ? `<span class="price-original">${fmtPrice(p.fromOriginal)}원${p.fromLabel!==false?' ~부터':''}</span><span class="discount">${priceDiscountPct(p.fromOriginal, fbFrom)}% ↓</span>` : ''}` : '')}
+            ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">${curUnit(p.fromCurrency)}${p.fromLabel!==false?' ~부터':''}</span></span>${priceDiscountPct(p.fromOriginal, fbFrom) ? `<span class="price-original">${fmtMoney(p.fromOriginal, p.fromCurrency)}${p.fromLabel!==false?' ~부터':''}</span><span class="discount">${priceDiscountPct(p.fromOriginal, fbFrom)}% ↓</span>` : ''}` : '')}
           </div>
           ${(!fbInquiry && fbFrom>0 && (fbDays.length || fbPeriod)) ? `<div class="pd-pe-departure-day-label">
             ${fbDays.length?`<span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span>`:''}
@@ -18747,7 +18766,7 @@ function renderProductAdmin(catId){
       </summary>
       <div class="apc-fields">
         <div class="full"><label>제목 · Title</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateProduct(${i},'title',this.value)"></div>
-        <div class="full"><label>최저가 (원) · Starting Price</label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
+        <div class="full"><label>최저가 · Starting Price <span style="font-weight:400;opacity:.7">(화폐 단위는 고급편집 › 가격·태그에서 선택)</span></label><input type="number" min="0" step="10000" value="${p.from}" oninput="updateProduct(${i},'from',this.value)"></div>
         <div><label>🗓 기간 · Nights <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.nights)}" placeholder="예: 2박 3일" oninput="updateProduct(${i},'nights',this.value)"></div>
         <div><label>🛫 출발 지역 <span class="bf-chip bf-gray">카드 박스</span></label><input type="text" class="bf-input bf-gray" value="${escapeAttr(p.depRegion||'')}" placeholder="예: 부산" oninput="updateProduct(${i},'depRegion',this.value)"></div>
         <div><div class="mw-label-row"><label>라운드 · Rounds <span style="color:rgba(247,245,240,.5);font-weight:400">(카드 하단 meta 영역에 노출)</span></label>${mwToggleHTML(!!(p.metaWide&&p.metaWide.rounds),`toggleMetaWide(${i},'rounds',this.checked)`)}</div><input type="text" value="${escapeAttr(p.rounds)}" placeholder="예: 2R" oninput="updateProduct(${i},'rounds',this.value)"></div>
@@ -19241,8 +19260,7 @@ function updateEditorsPick(checked){
   saveAdvChange(); renderAdvBody();
 }
 // 화폐 단위 옵션
-const CURRENCIES = [['KRW','KRW ₩ 원'],['USD','USD $ 달러'],['JPY','JPY ¥ 엔'],['EUR','EUR € 유로'],['THB','THB ฿ 밧'],['VND','VND ₫ 동'],['PHP','PHP ₱ 페소'],['MYR','MYR RM 링깃'],['IDR','IDR Rp 루피아'],['CNY','CNY ¥ 위안']];
-const CURRENCY_SYMBOL = {KRW:'원',USD:'$',JPY:'¥',EUR:'€',THB:'฿',VND:'₫',PHP:'₱',MYR:'RM',IDR:'Rp',CNY:'¥'};
+// (화폐 단위 목록·기호는 위쪽 fmtPrice 근처의 CURRENCIES / CURRENCY_SYMBOL 참고)
 // 출발 공항 (국내 8개 공항)
 const DEPARTURE_AIRPORTS = ['인천-T1','인천-T2','김포','김해','제주','청주','대구','무안','양양'];
 // 도착 국가별 취항 항공사 (IATA 코드)
@@ -19456,11 +19474,12 @@ function advBasicHTML(p){
           <!-- [추가] 카드 표시 최저가가 적용되는 출발 요일·적용 기간(선택) — 요일별 요금과 같은 방식. 요금 항목이 없는 상품의 자세히 보기 요금표에 함께 노출된다 -->
           ${fromDayChipsHTML(p)}
           <!-- [추가] 정가(할인 전) — 적용 금액(아래 카드 표시 최저가)보다 클 때만 카드·스팟라이트·팝업·자세히 보기에 "정가(취소선) · N% ↓"로 노출 -->
-          <label>정가 (원, 할인 전 금액 · 선택) <span id="fromDiscHint" class="from-disc-hint">${priceDiscountPct(p.fromOriginal, p.from) ? `→ ${priceDiscountPct(p.fromOriginal, p.from)}% 할인으로 표시` : ''}</span></label>
-          <div class="price-row"><input type="number" value="${p.fromOriginal||''}" placeholder="예: 1890000 (비우면 할인 표시 없음)" oninput="updateAdvField('fromOriginal',this.value,'number');fromDiscHintSync()"></div>
-          <label>카드 표시 최저가 (원, 할인 적용 금액 · 상품카드·스팟라이트에 노출되는 금액)</label>
+          <label>정가 (할인 전 금액 · 선택) <span id="fromDiscHint" class="from-disc-hint">${priceDiscountPct(p.fromOriginal, p.from) ? `→ ${priceDiscountPct(p.fromOriginal, p.from)}% 할인으로 표시` : ''}</span></label>
+          <div class="price-row"><input type="number" value="${p.fromOriginal||''}" placeholder="예: 1890000 (비우면 할인 표시 없음)" oninput="updateAdvField('fromOriginal',this.value,'number');fromDiscHintSync()">${curSelHTML("fromCurSet(this.value)", p.fromCurrency, {attrs:'data-fromcur'})}</div>
+          <label>카드 표시 최저가 (할인 적용 금액 · 상품카드·스팟라이트에 노출되는 금액)</label>
           <div class="price-row">
             <input type="number" value="${p.from}" oninput="updateAdvField('from',this.value,'number');fromDiscHintSync()">
+            ${curSelHTML("fromCurSet(this.value)", p.fromCurrency, {attrs:'data-fromcur'})}
             <label class="from-toggle" title="'~부터' 표시 여부">
               <input type="checkbox" ${p.fromLabel!==false?'checked':''} onchange="updateAdvField('fromLabel',this.checked)">
               <span>~부터</span>
@@ -19636,7 +19655,7 @@ function advBasicHTML(p){
               <div class="dp-row dp-row-multi">
                 ${dpDayChipsHTML(d, -1, di)}
                 <input type="number" class="dp-orig" value="${d.original||''}" placeholder="정가(선택)" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateCommonDayPrice(${di},'original',this.value,'number')">
-                <input type="number" value="${d.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">
+                <span class="dp-pw"><input type="number" value="${d.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateCommonDayPrice(${di},'price',this.value,'number')">${curSelHTML(`updateCommonDayPrice(${di},'currency',this.value)`, d.currency, {compact:true})}</span>
                 <button class="pee-del" onclick="removeCommonDayPrice(${di})">삭제</button>
               </div>`)).join('')}
             </div>
@@ -19659,7 +19678,7 @@ function advBasicHTML(p){
                 <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateCommonHolidayPrice(${hi},'date',this.value)">
                 <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateCommonHolidayPrice(${hi},'endDate',this.value)">
                 <input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가(선택)" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateCommonHolidayPrice(${hi},'original',this.value,'number')">
-                <input type="number" value="${h.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">
+                <span class="dp-pw"><input type="number" value="${h.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">${curSelHTML(`updateCommonHolidayPrice(${hi},'currency',this.value)`, h.currency, {compact:true})}</span>
                 <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
               </div>`)).join('')}
             </div>
@@ -20957,10 +20976,10 @@ function peInhPreview(f, v){
     case 'airfare': return AIRFARE_TXT[v]||'';
     case 'stayNights': return stayText(v);
     case 'airPattern': case 'departureAirport': case 'departureDay': return (v||[]).filter(Boolean).join(', ');
-    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${dpDayList(d.day).join(' ㅣ ')}${d.start||d.end?` (${d.start||''}~${d.end||''})`:''} ${fmtPrice(d.price)}원`).join(' / ');
+    case 'dayPrices': return (v||[]).filter(d=>d.day && d.price).map(d=>`${dpDayList(d.day).join(' ㅣ ')}${d.start||d.end?` (${d.start||''}~${d.end||''})`:''} ${fmtMoney(d.price, d.currency)}`).join(' / ');
     case 'dayDates': return normDayDates(v).dates.map(fmtHolidayDate).join(', ');
     case 'holidayPrices': return (v||[]).filter(h=>h.date && h.price)
-      .map(h=>`${(h.type==='range' && h.endDate) ? fmtHolidayDate(h.date)+'~'+fmtHolidayDate(h.endDate) : fmtHolidayDate(h.date)} ${fmtPrice(h.price)}원`).join(' / ');
+      .map(h=>`${(h.type==='range' && h.endDate) ? fmtHolidayDate(h.date)+'~'+fmtHolidayDate(h.endDate) : fmtHolidayDate(h.date)} ${fmtMoney(h.price, h.currency)}`).join(' / ');
     case 'included': case 'notIncluded': case 'precautions': {
       const lines = _peTextKey(v).split('\n').filter(Boolean);
       const s = lines.slice(0,2).join(' · ');
@@ -21220,7 +21239,7 @@ function priceEntryHTML(pe, i, popupCount, p){
           <div class="dp-row dp-row-multi">
             ${dpDayChipsHTML(d, i, di)}
             <input type="number" class="dp-orig" value="${d.original||''}" placeholder="정가(선택)" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateDayPrice(${i},${di},'original',this.value,'number')">
-            <input type="number" value="${d.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateDayPrice(${i},${di},'price',this.value,'number')">
+            <span class="dp-pw"><input type="number" value="${d.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateDayPrice(${i},${di},'price',this.value,'number')">${curSelHTML(`updateDayPrice(${i},${di},'currency',this.value)`, d.currency, {compact:true})}</span>
             <button class="pee-del" onclick="removeDayPrice(${i},${di})">삭제</button>
           </div>`)).join('')}
         </div>
@@ -21244,7 +21263,7 @@ function priceEntryHTML(pe, i, popupCount, p){
             <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateHolidayPrice(${i},${hi},'date',this.value)">
             <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateHolidayPrice(${i},${hi},'endDate',this.value)">
             <input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가(선택)" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateHolidayPrice(${i},${hi},'original',this.value,'number')">
-            <input type="number" value="${h.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateHolidayPrice(${i},${hi},'price',this.value,'number')">
+            <span class="dp-pw"><input type="number" value="${h.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateHolidayPrice(${i},${hi},'price',this.value,'number')">${curSelHTML(`updateHolidayPrice(${i},${hi},'currency',this.value)`, h.currency, {compact:true})}</span>
             <button class="pee-del" onclick="removeHolidayPrice(${i},${hi})">삭제</button>
           </div>`)).join('')}
         </div>
@@ -21893,6 +21912,11 @@ function fromDayChipsHTML(p){
   return `<div class="dp-days from-days"><span class="dp-days-lab">출발 요일 <em>(선택 · 여러 개 선택 가능${on.length?` · ${on.length}개`:''})</em></span><div class="adv-chip-group">${DAY_OPTS.map(o=>`<button type="button" class="adv-chip ${on.includes(o[0])?'active':''}" onclick="toggleFromDay('${o[0]}')">${o[1]}</button>`).join('')}</div></div>
     <div class="dp-period from-period"><span class="dp-days-lab">적용 기간 <em>(선택 · 비우면 전체 기간)</em></span>
       <div class="dp-period-in"><input type="date" value="${escapeAttr(p.fromStart||'')}" aria-label="기간 시작일" onchange="updateAdvField('fromStart',this.value)"><span>~</span><input type="date" value="${escapeAttr(p.fromEnd||'')}" aria-label="기간 종료일" onchange="updateAdvField('fromEnd',this.value)"></div></div>`;
+}
+// [추가] 카드 표시 최저가·정가는 같은 화폐 단위를 쓴다 — 어느 쪽 선택을 바꿔도 두 선택창을 함께 맞춘다
+function fromCurSet(v){
+  updateAdvField('fromCurrency', curOf(v));
+  document.querySelectorAll('#advBody select[data-fromcur]').forEach(el=>{ el.value = curOf(v); });
 }
 function fromDiscHintSync(){
   const p=getAdvProduct(); const el=document.getElementById('fromDiscHint'); if (!p || !el) return;
@@ -23110,7 +23134,11 @@ function aiScoreProduct(catId, idx, p, cat, criteria){
   return best;
 }
 function aiScoreOne(catId, idx, p, cat, criteria, onlyPe){
-  const price = onlyPe ? (Number(onlyPe.salePrice) || p.from || 0) : ((p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0);
+  // [수정] 외화(달러·동남아 화폐) 금액은 원화 예산과 비교하지 않는다(환율 환산 없음) — 표시용 priceRaw/priceCur만 따로 보관
+  const _pe0 = onlyPe || (p.priceEntries && p.priceEntries[0]);
+  const priceRaw = onlyPe ? (Number(onlyPe.salePrice) || p.from || 0) : ((p.priceEntries && p.priceEntries[0] && p.priceEntries[0].salePrice) || p.from || 0);
+  const priceCur = (_pe0 && Number(_pe0.salePrice)) ? curOf(_pe0.saleCurrency) : curOf(p.fromCurrency);
+  const price = priceCur==='KRW' ? priceRaw : 0;
   const nightsMatch = /([0-9]+)\s*박/.exec(p.nights||'');
   const nights = nightsMatch ? Number(nightsMatch[1]) : 3;
   const bucket = nights<=2 ? 'short' : (nights<=4 ? 'mid' : 'long');
@@ -23123,6 +23151,7 @@ function aiScoreOne(catId, idx, p, cat, criteria, onlyPe){
   if (criteria.budget!=='any'){
     const bl = AI_BUDGET_LABEL[criteria.budget]||'';
     if (p.priceInquiry) why.push({ok:null, t:`희망 예산 ${bl} — 요금 별도 문의 상품이라 예산 비교는 상담 시 확인`});
+    else if (priceRaw>0 && priceCur!=='KRW') why.push({ok:null, t:`희망 예산 ${bl} — 판매가 ${fmtMoney(priceRaw, priceCur)}부터 (원화가 아닌 상품이라 예산 비교는 상담 시 확인)`});
     else if (price>0) why.push({ok:bScore>=25, t:`희망 예산 ${bl} — 판매가 ${fmtPrice(price)}원부터${bScore>=25?'':' (예산보다 높음)'}`});
     else why.push({ok:null, t:`희망 예산 ${bl} — 판매가 미등록`});
     const cap = Number(criteria.budget)*10000;
@@ -23174,7 +23203,7 @@ function aiScoreOne(catId, idx, p, cat, criteria, onlyPe){
   }
   const rm = /(\d+)\s*R/i.exec(p.rounds||'');
   return {catId, idx, p, cat, score, fit: maxScore ? Math.min(1, score/maxScore) : 1, reasons, why, fails, haystack,
-    price: p.priceInquiry ? 0 : price, nights: nightsMatch ? Number(nightsMatch[1]) : null, rounds: rm ? Number(rm[1]) : null,
+    price: p.priceInquiry ? 0 : price, priceRaw: p.priceInquiry ? 0 : priceRaw, priceCur, nights: nightsMatch ? Number(nightsMatch[1]) : null, rounds: rm ? Number(rm[1]) : null,
     tier: AI_TIER_LABEL[p.salesTier] ? p.salesTier : 'standard', labelProfile: productLabelProfile(p)};
 }
 function aiThemeAffinity(key, r, pool){
@@ -23352,7 +23381,7 @@ function aiCompareTableHTML(results){
     const move = [(!isDomesticCat(r.catId) && r.p.flightTime) ? '비행 '+r.p.flightTime : '', r.p.transferTime ? '이동 '+r.p.transferTime : ''].filter(Boolean).join(' · ');
     const period = productPeriodBadgeText(r.p, r.catId);
     return `<tr><td>${i+1}</td><td class="ai-cmp-t">${esc(r.p.title||'')}${r.entryCount>1 && r.entryLabel ? `<br><small>${esc(r.entryLabel)}</small>` : ''}</td><td>${esc(r.cat.ko)}</td><td>${r.p.nights?esc(r.p.nights):dash}</td><td>${r.p.rounds?esc(r.p.rounds):dash}</td>
-      <td>${r.p.priceInquiry ? '별도 문의' : (r.price>0 ? fmtPrice(r.price)+'원~' : dash)}</td><td>${move?esc(move):dash}</td><td>${esc(period||'')}</td><td>${posts?posts+'건':dash}</td></tr>`;
+      <td>${r.p.priceInquiry ? '별도 문의' : (r.priceRaw>0 ? fmtMoney(r.priceRaw, r.priceCur)+'~' : dash)}</td><td>${move?esc(move):dash}</td><td>${esc(period||'')}</td><td>${posts?posts+'건':dash}</td></tr>`;
   }).join('');
   return `<details class="ai-cmp"><summary>📊 추천 상품 한눈에 비교</summary>
     <div class="ai-cmp-wrap"><table><thead><tr><th>순위</th><th>상품</th><th>지역</th><th>일정</th><th>라운드</th><th>판매가</th><th>비행·이동</th><th>판매 시기</th><th>현장 정보</th></tr></thead><tbody>${rows}</tbody></table></div>
@@ -23398,7 +23427,7 @@ function renderAiResults(results, criteria){
         <div class="ai-cur-theme">${escapeAttr(r.themeLabel||'')}</div>
         <h4>${escapeAttr(r.p.title||'')}</h4>
         ${r.themeNote ? `<div class="ai-cur-note">${escapeAttr(r.themeNote)}</div>` : ''}
-        <div class="ai-result-meta">${[r.p.nights, r.p.rounds, priceInquiryText(r.p) || (r.price>0 ? fmtPrice(r.price)+'원~' : '')].filter(Boolean).map(escapeAttr).join(' · ')}</div>
+        <div class="ai-result-meta">${[r.p.nights, r.p.rounds, priceInquiryText(r.p) || (r.priceRaw>0 ? fmtMoney(r.priceRaw, r.priceCur)+'~' : '')].filter(Boolean).map(escapeAttr).join(' · ')}</div>
         ${r.entryCount>1 && r.entryLabel ? `<div class="ai-cur-entry">🏷 추천 요금 항목: <b>${escapeAttr(r.entryLabel)}</b> <span>(요금 항목 ${r.entryCount}개 중 조건에 가장 잘 맞는 구성)</span></div>` : ''}
         ${r.reasons.length ? `<div class="ai-result-reasons">${r.reasons.map(x=>`<span class="ai-reason-chip">${escapeAttr(x)}</span>`).join('')}</div>` : ''}
         ${aiWhyHTML(r, main.length ? main : results, false)}
@@ -23856,7 +23885,7 @@ function epSlideCardHTML(item, active, di){
   const fromPrice = Number(getDisplayPrice(p))||0;
   const priceHTML = priceInquiryText(p) ? `<div class="popup-price popup-price-inquiry">${priceInquiryHTML(p)}</div>`
     : (sale ? `<div class="popup-price">${(pe.saleCurrency||'KRW')===(pe.originalCurrency||'KRW') ? priceWasHTML(pe.originalPrice, sale, 'div') : ''}<b>${fmtPrice(sale)}</b><span>${saleSym}${saleFrom}</span></div>`
-    : (fromPrice>0 ? `<div class="popup-price">${priceWasHTML(p.fromOriginal, fromPrice, 'div')}<b>${fmtPrice(fromPrice)}</b><span>원${p.fromLabel!==false?' ~부터':''}</span></div>` : ''));
+    : (fromPrice>0 ? `<div class="popup-price">${priceWasHTML(p.fromOriginal, fromPrice, 'div', p.fromCurrency)}<b>${fmtPrice(fromPrice)}</b><span>${curUnit(p.fromCurrency)}${p.fromLabel!==false?' ~부터':''}</span></div>` : ''));
   // [수정] 대표 문구 — 요금 항목에 없으면 기본 정보(박수·라운드·숙박·식사·항공)를 노출
   const headline = pe ? richToPlain(pe.headline||'') : '';
   const basicMeta = headline ? [] : spotBasicMeta(p);

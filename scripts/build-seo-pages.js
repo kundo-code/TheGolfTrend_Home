@@ -29,6 +29,10 @@ const SOURCE_HTML = 'index.html';
 // ── 도우미 ──────────────────────────────────────────────────
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const won = n => Number(n).toLocaleString('ko-KR') + '원';
+// 화폐 단위 — 관리자에서 금액 옆에 고른 단위(없으면 원화). 환율 환산 없이 등록된 금액에 단위만 붙인다
+const CUR_SYM = { KRW: '원', USD: '$', SGD: 'S$', THB: '฿', VND: '₫', PHP: '₱', MYR: 'RM', IDR: 'Rp', KHR: '៛', LAK: '₭', MMK: 'K', BND: 'B$', JPY: '¥', EUR: '€', CNY: '¥' };
+const curOf = c => (CUR_SYM[c] ? c : 'KRW');
+const money = (n, c) => Number(n).toLocaleString('ko-KR') + CUR_SYM[curOf(c)];
 const clip = (s, n) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; };
 const kstDate = iso => { const d = new Date(new Date(iso).getTime() + 9 * 3600000); return d.toISOString().slice(0, 10); };
 const codeOf = uid => String(uid || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -129,11 +133,11 @@ function extractInPage() {
       if (!d) return;
       if (d.kind === 'group') { const g = plain(d.title); if (g) pending.push({ g }); return; }
       if (d.kind === 'divider') { pending = []; return; }          // 금액 없이 구분선으로 끝난 구간의 부제목은 뺀다
-      if (Number(d.price) > 0) { out.push(...pending, { day: String(d.day || '').trim(), price: Number(d.price), start: d.start || '', end: d.end || '' }); pending = []; }
+      if (Number(d.price) > 0) { out.push(...pending, { day: String(d.day || '').trim(), price: Number(d.price), cur: curOf(d.currency), start: d.start || '', end: d.end || '' }); pending = []; }
     });
     return out;
   };
-  const holRows = list => (list || []).filter(h => h && !dpIsMarker(h) && Number(h.price) > 0).map(h => ({ date: ymd(h.date), end: h.endDate ? ymd(h.endDate) : '', price: Number(h.price) })).filter(h => h.date);
+  const holRows = list => (list || []).filter(h => h && !dpIsMarker(h) && Number(h.price) > 0).map(h => ({ date: ymd(h.date), end: h.endDate ? ymd(h.endDate) : '', price: Number(h.price), cur: curOf(h.currency) })).filter(h => h.date);
   const dateList = v => normDayDates(v).dates.map(ymd).filter(Boolean);
   const placeById = (kind, id) => (kind === 'lodge' ? aiPlaces.lodges : aiPlaces.courses).find(x => x.id === id);
   const res = [];
@@ -145,7 +149,7 @@ function extractInPage() {
       const entries = (p.priceEntries || []).filter(e => !e.hidden).map(e => {
         const price = Number(e.salePrice) || 0;
         return {
-          headline: plain(e.headline), price, currency: e.saleCurrency || 'KRW', fromLabel: e.saleFromLabel !== false,
+          headline: plain(e.headline), price, currency: curOf(e.saleCurrency), fromLabel: e.saleFromLabel !== false,
           rounds: plain(e.rounds), stay: plain(e.stay), meals: plain(e.meals), minPeople: plain(e.minPeople),
           dayPrices: dayRows(peEff(p, e, 'dayPrices')), holidayPrices: holRows(peEff(p, e, 'holidayPrices')), dates: dateList(peEff(p, e, 'dayDates')),
           included: lines(e.included), notIncluded: lines(e.notIncluded), precautions: lines(e.precautions),
@@ -175,7 +179,7 @@ function extractInPage() {
         departureDay: Array.isArray(lab.departureDay) ? lab.departureDay : [], stayDuration: plain(stayNightsText(lab.stayNights)),
         tags: cardTagEntries(p).map(t => t.plain).filter(Boolean),
         checkpoints: [].concat(lines(p.checkpoint1), lines(p.checkpoint2)),
-        priceInquiry: strip(priceInquiry), from, fromLabel: p.fromLabel !== false,
+        priceInquiry: strip(priceInquiry), from, fromCur: curOf(p.fromCurrency), fromLabel: p.fromLabel !== false,
         entries, commonDayPrices: dayRows(p.commonDayPrices), commonHolidayPrices: holRows(p.commonHolidayPrices), commonDates: dateList(p.commonDayDates),
         included: lines(p.commonIncluded), notIncluded: lines(p.commonNotIncluded), precautions: lines(p.commonPrecautions), notes: lines(p.notes), booking: lines(p.bookingPolicy),
         aiFacts: { packageType: info.packageType || '', mealsIncl: info.mealsIncl || [], mealCount: plain(info.mealCount), paxOk: info.paxOk || [],
@@ -300,16 +304,21 @@ const kickerOf = p => [p.titleRegion, p.titleSub].filter(Boolean).join(' · ');
 const titleSeo = p => [kickerOf(p), titleFull(p)].filter(Boolean).join(' ');
 const regionName = r => r === 'overseas' ? '해외 골프여행' : '국내 골프여행';
 // 최저가 — 페이지에 보이는 모든 금액(홈페이지 표시가·요금 항목·요일별 요금) 중 가장 낮은 값. 가격 문의 상품은 금액을 쓰지 않는다
-function lowestPrice(p) {
-  if (p.priceInquiry) return 0;
-  const nums = [p.from].concat(p.entries.map(e => e.price), p.entries.reduce((a, e) => a.concat(e.dayPrices.map(d => d.price || 0)), []), p.commonDayPrices.map(d => d.price || 0)).filter(n => n > 0);
-  return nums.length ? Math.min(...nums) : 0;
+// 화폐가 섞여 있으면 환율 환산 없이 비교할 수 없으므로 원화 금액을 우선하고, 원화가 없으면 처음 나온 화폐 안에서만 비교한다
+function lowestInfo(p) {
+  if (p.priceInquiry) return { n: 0, cur: 'KRW' };
+  const items = [[p.from, p.fromCur]].concat(p.entries.map(e => [e.price, e.currency]), p.entries.reduce((a, e) => a.concat(e.dayPrices.map(d => [d.price || 0, d.cur]).concat((e.holidayPrices || []).map(h => [h.price || 0, h.cur]))), []), p.commonDayPrices.map(d => [d.price || 0, d.cur]), (p.commonHolidayPrices || []).map(h => [h.price || 0, h.cur])).filter(x => x[0] > 0);
+  if (!items.length) return { n: 0, cur: 'KRW' };
+  const cur = items.some(x => curOf(x[1]) === 'KRW') ? 'KRW' : curOf(items[0][1]);
+  return { n: Math.min(...items.filter(x => curOf(x[1]) === cur).map(x => x[0])), cur };
 }
-const priceText = p => { if (p.priceInquiry) return p.priceInquiry; const lo = lowestPrice(p); return lo > 0 ? `${won(lo)}${p.fromLabel ? ' ~부터' : ''}` : ''; };
+function lowestPrice(p) { return lowestInfo(p).n; }
+const lowestCur = p => lowestInfo(p).cur;
+const priceText = p => { if (p.priceInquiry) return p.priceInquiry; const lo = lowestPrice(p); return lo > 0 ? `${money(lo, lowestCur(p))}${p.fromLabel ? ' ~부터' : ''}` : ''; };
 
 function descOf(p) {
   const lo = lowestPrice(p);
-  const bits = [p.nightsCount, p.rounds, p.lodge, p.airfare, p.monthsTag ? `추천 시기 ${p.monthsTag}` : '', lo > 0 ? `${won(lo)}${p.fromLabel ? '~' : ''}` : ''].filter(Boolean);
+  const bits = [p.nightsCount, p.rounds, p.lodge, p.airfare, p.monthsTag ? `추천 시기 ${p.monthsTag}` : '', lo > 0 ? `${money(lo, lowestCur(p))}${p.fromLabel ? '~' : ''}` : ''].filter(Boolean);
   // 관리자가 '요약 설명(Meta Description)'을 입력했으면 그 문장을 맨 앞에 둔다(150자 안에서 잘리지 않게)
   if (p.metaDesc) return clip(`${p.metaDesc} | ${p.title} — ${bits.join(' · ')}. ${p.catKo} 골프 패키지 THE GOLF TREND.`, 150);
   return clip(`${p.title} — ${bits.join(' · ')}. ${p.catKo} 골프 패키지 상담·예약 THE GOLF TREND.`, 150);
@@ -325,7 +334,7 @@ function faqFor(p, data) {
   const lo = lowestPrice(p);
   // 1) 요금
   if (p.priceInquiry) add('요금은 얼마인가요?', `이 상품의 요금은 "${tidy(p.priceInquiry)}"로 등록되어 있습니다. 상담 시 안내해 드립니다.`);
-  else if (lo > 0) add('요금은 얼마인가요?', `이 페이지에 등록된 요금 중 가장 낮은 금액은 ${won(lo)}${p.fromLabel ? ' ~부터' : ''}입니다. 출발 요일·시기·구성에 따라 달라지므로 아래 요금 안내를 확인해 주세요.`);
+  else if (lo > 0) add('요금은 얼마인가요?', `이 페이지에 등록된 요금 중 가장 낮은 금액은 ${money(lo, lowestCur(p))}${p.fromLabel ? ' ~부터' : ''}입니다. 출발 요일·시기·구성에 따라 달라지므로 아래 요금 안내를 확인해 주세요.`);
   // 2) 출발 인원 (예: 2인 출발)
   const pax = p.aiFacts.paxOk || [];
   if (pax.length) {
@@ -371,7 +380,7 @@ function productPage(p, data, stateDate) {
   add('상품 구성', p.aiFacts.packageType); add('포함 식사', p.aiFacts.mealsIncl.join(', ')); add('포함 식사 횟수', p.aiFacts.mealCount); add('출발 가능 인원', p.aiFacts.paxOk.join(', '));
   add('추천 대상', p.aiFacts.audience.join(', ')); add('추천 연령대', p.aiFacts.ageGroups.join(', ')); add('카트·캐디 방식', p.aiFacts.cartCaddie);
   add(p.priceInquiry ? '요금' : '최저가', priceText(p));
-  if (!p.priceInquiry && p.from > 0 && p.from !== lowestPrice(p)) add('홈페이지 표시 대표가', `${won(p.from)}${p.fromLabel ? ' ~부터' : ''}`);
+  if (!p.priceInquiry && p.from > 0 && (p.from !== lowestPrice(p) || p.fromCur !== lowestCur(p))) add('홈페이지 표시 대표가', `${money(p.from, p.fromCur)}${p.fromLabel ? ' ~부터' : ''}`);
 
   const priced = p.entries.filter(e => e.price > 0);
   // 같은 문장이 "참고 사항"과 "유의 사항"에 두 번 나오지 않게(체크포인트에 이미 있는 줄은 뺀다)
@@ -383,9 +392,9 @@ function productPage(p, data, stateDate) {
     const out = [];
     if (day.length) {
       const per = hasPeriod(day), cols = per ? 3 : 2;
-      out.push(`<table class="rate"><thead><tr><th>출발 요일</th>${per ? '<th>적용 기간</th>' : ''}<th>1인 요금</th></tr></thead><tbody>${day.map(d => d.g ? `<tr><th colspan="${cols}">${esc(d.g)}</th></tr>` : `<tr><td>${esc(d.day)}</td>${per ? `<td>${esc([d.start, d.end].filter(Boolean).join(' ~ ').replace(/-/g, '.'))}</td>` : ''}<td>${won(d.price)}</td></tr>`).join('')}</tbody></table>`);
+      out.push(`<table class="rate"><thead><tr><th>출발 요일</th>${per ? '<th>적용 기간</th>' : ''}<th>1인 요금</th></tr></thead><tbody>${day.map(d => d.g ? `<tr><th colspan="${cols}">${esc(d.g)}</th></tr>` : `<tr><td>${esc(d.day)}</td>${per ? `<td>${esc([d.start, d.end].filter(Boolean).join(' ~ ').replace(/-/g, '.'))}</td>` : ''}<td>${money(d.price, d.cur)}</td></tr>`).join('')}</tbody></table>`);
     }
-    if (hol.length) out.push(`<table class="rate"><thead><tr><th>공휴일·지정일</th><th>1인 요금</th></tr></thead><tbody>${hol.map(h => `<tr><td>${esc(h.date + (h.end ? ' ~ ' + h.end : ''))}</td><td>${won(h.price)}</td></tr>`).join('')}</tbody></table>`);
+    if (hol.length) out.push(`<table class="rate"><thead><tr><th>공휴일·지정일</th><th>1인 요금</th></tr></thead><tbody>${hol.map(h => `<tr><td>${esc(h.date + (h.end ? ' ~ ' + h.end : ''))}</td><td>${money(h.price, h.cur)}</td></tr>`).join('')}</tbody></table>`);
     if (dates.length) out.push(`<p class="muted">지정 출발일: ${esc(dates.join(', '))}</p>`);
     return out.join('');
   };
@@ -396,7 +405,7 @@ function productPage(p, data, stateDate) {
     parts.push(priceTables(e.dayPrices, e.holidayPrices, e.dates));
     const block = (label, ls) => ls.length ? `<h3>${label}</h3>${ls.map(l => `<p class="l">${esc(l)}</p>`).join('')}` : '';
     parts.push(block('포함 사항', e.included), block('불포함 사항', e.notIncluded), block('유의 사항', e.precautions));
-    return `<div class="entry"><h3>${esc(e.headline || '요금 항목')}${e.price > 0 ? ` — <span class="price">${won(e.price)}<small>${e.fromLabel ? ' ~부터' : ''}</small></span>` : ''}</h3>${parts.join('')}</div>`;
+    return `<div class="entry"><h3>${esc(e.headline || '요금 항목')}${e.price > 0 ? ` — <span class="price">${money(e.price, e.currency)}<small>${e.fromLabel ? ' ~부터' : ''}</small></span>` : ''}</h3>${parts.join('')}</div>`;
   }).join('');
 
   const kv = (label, facts) => facts.length ? `<table class="facts"><tbody>${facts.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>` : '';
@@ -428,7 +437,7 @@ ${cta(p, data)}`;
   const image = p.images[0] ? p.images[0].url : '/assets/og-thumbnail.jpg';
   const low = lowestPrice(p);
   const offers = low > 0 ? {
-    '@type': 'AggregateOffer', priceCurrency: 'KRW', lowPrice: low, offerCount: Math.max(1, priced.length),
+    '@type': 'AggregateOffer', priceCurrency: lowestCur(p), lowPrice: low, offerCount: Math.max(1, priced.length),
     ...(priced.length ? { offers: priced.map(e => ({ '@type': 'Offer', name: e.headline || '요금 항목', price: e.price, priceCurrency: e.currency, url })) } : {}),
     seller: { '@type': 'Organization', name: '(주)더골프트렌드', url: ORIGIN + '/' }
   } : undefined;

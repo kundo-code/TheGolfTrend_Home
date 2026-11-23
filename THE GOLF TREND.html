@@ -2751,6 +2751,11 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 /* [Phase 3 상품등록 개선] 관리자 패널 복수 선택 칩(다중 선택 항목 공용) */
 .adv-chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 /* [수정] 박수(복수 선택) 아래, 선택한 박수마다 출발 공항 칩 줄 */
+.ai-prox-range{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:nowrap}
+.ai-prox-range[hidden]{display:none}
+.ai-prox-range input{flex:1 1 0;width:0;min-width:0;padding:8px 6px;font-size:.85rem;text-align:center}
+.ai-prox-range em{font-style:normal;color:var(--nm-text-soft,#667)}
+.ai-prox-range span:last-child{flex:0 0 auto;font-size:.8rem;color:var(--nm-text-soft,#667);white-space:nowrap}
 .ai-meals3{display:flex;flex-wrap:wrap;gap:8px}
 .ai-meal-cell{flex:1 1 90px;min-width:0;display:flex;flex-direction:column;gap:3px}
 .ai-meal-cell>span{font-size:.74rem;font-weight:700;color:var(--nm-text-soft,#667)}
@@ -19902,12 +19907,37 @@ function advBasicHTML(p){
 const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['w10','도보 10분 이내'], ['w15','도보 15분 이내'], ['v15','차량 15분 이내'], ['v20','차량 20분 이내'], ['v30','차량 30분 이내'], ['v60','차량 1시간 이내'], ['far60','차량 1시간 초과'], ['none','없음']];
 // 예전 단계 '30분 초과'(far)로 저장된 값은 '차량 1시간 초과'(far60)로 바꿔 저장한다(aiPlacesNorm이 불러올 때 변환, 다음 저장 때 반영)
 const AI_PROX_NEAR = ['in','w10','w15','v15'];
-const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 도보 10분·15분 이내 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 20분·30분 이내는 \'조금 떨어짐\'으로 안내합니다. 확인 안 되면 미확인.';
+const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 도보 10분·15분 이내 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 20분·30분 이내는 \'조금 떨어짐\'으로 안내합니다. 시간이 범위로 알려진 곳은 \'차량/도보 몇 분~몇 분 소요\'를 고르고 분을 직접 입력하세요(최대 15분 이내면 \'가까움\'). 확인 안 되면 미확인.';
 // 식사제공(숙소) 선택지 — 포함 / 호텔식 / 클럽식 / 자유식(불포함) / 불포함. 포함·호텔식·클럽식은 '식사 제공', 자유식·불포함은 '식사 미제공'으로 판정
 const AI_MEAL_OPTS = [['y','포함'], ['hotel','호텔식'], ['club','클럽식'], ['free','자유식(불포함)'], ['n','불포함']];
 const AI_MEAL_GIVEN = ['y','hotel','club'];
 function aiMealLabel(v){ const o = AI_MEAL_OPTS.find(x=>x[0]===v); return o ? o[1] : String(v); }
-function aiProxLabel(v){ const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (v==='far' ? '차량 1시간 초과' : v); }
+// [추가] 소요 시간 범위 — "차량 또는 도보 몇 분~몇 분 소요"를 직접 입력한다. 값은 'vr:10-15'(차량 10~15분) · 'wr:5-10'(도보 5~10분) 형태로 같은 칸에 저장하고,
+// 분을 다 입력하기 전('vr:')에는 미확인으로 본다. 가까움 판정은 기존 기준과 같이 최대 시간이 15분 이내일 때(차량·도보 모두)
+const AI_PROX_RANGE_OPTS = [['vr','차량 몇 분~몇 분 소요'], ['wr','도보 몇 분~몇 분 소요']];
+function aiProxBase(v){ const s = String(v==null?'':v); return /^(vr|wr)(:|$)/.test(s) ? s.slice(0,2) : s; }
+function aiProxRange(v){
+  const m = /^(vr|wr):(\d{1,3})-(\d{1,3})$/.exec(String(v==null?'':v)); if (!m) return null;
+  const a = Number(m[2]), b = Number(m[3]);
+  return {code:m[1], mode:m[1]==='vr'?'차량':'도보', min:Math.min(a,b), max:Math.max(a,b)};
+}
+function aiProxClean(v){ const b = aiProxBase(v); return (b==='vr'||b==='wr') && !aiProxRange(v) ? '' : v; }   // 분을 다 입력하지 않은 범위값은 미확인
+function aiProxIsNear(v){ const r = aiProxRange(v); return r ? r.max<=15 : AI_PROX_NEAR.includes(v); }
+function aiProxLabel(v){
+  const r = aiProxRange(v); if (r) return r.min===r.max ? `${r.mode} ${r.min}분 소요` : `${r.mode} ${r.min}~${r.max}분 소요`;
+  const b = aiProxBase(v); if (b==='vr'||b==='wr') return (b==='vr'?'차량':'도보')+' 소요 시간 미입력';
+  const o = AI_PROX_OPTS.find(x=>x[0]===v); return o ? o[1] : (v==='far' ? '차량 1시간 초과' : v);
+}
+// 선택·분 입력 칸에서 저장할 값 만들기 — 선택이 차량/도보 범위일 때만 분 입력 칸을 읽는다
+function aiProxCompose(el){
+  const f = el.closest('.ai-info-f'), sel = f.querySelector('select'), base = sel.value;
+  if (base!=='vr' && base!=='wr') return base;
+  const mi = f.querySelector('.ai-prox-min'), ma = f.querySelector('.ai-prox-max');
+  return (mi.value!=='' && ma.value!=='') ? `${base}:${Math.max(0,Math.round(Number(mi.value)))}-${Math.max(0,Math.round(Number(ma.value)))}` : base+':';
+}
+function aiProxRangeShow(sel){
+  const r = sel.closest('.ai-info-f').querySelector('.ai-prox-range'); if (r) r.hidden = !(sel.value==='vr' || sel.value==='wr');
+}
 // 숙소 등록부 항목
 const AI_LODGE_FIELDS = [
   {k:'name', label:'숙소명', type:'text', plain:true, help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
@@ -20186,7 +20216,7 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
   const dv = (!aiInfoFilled(v) && fd.defShow!==undefined) ? fd.defShow : v;   // 기본값 — 저장된 값이 없을 때 화면에만 미리 보여 준다(판정은 aiMergedInfo가 같은 기본값을 씀)
   if (fd.type==='select' || fd.type==='yn' || fd.type==='prox' || fd.type==='cat'){
     const opts = fd.type==='yn' ? [['y', fd.yes||'예'], ['n', fd.no||'아니오']]
-      : fd.type==='prox' ? AI_PROX_OPTS.slice()
+      : fd.type==='prox' ? AI_PROX_OPTS.slice(0, AI_PROX_OPTS.findIndex(o=>o[0]==='far60')).concat(AI_PROX_RANGE_OPTS, AI_PROX_OPTS.slice(AI_PROX_OPTS.findIndex(o=>o[0]==='far60')))
       : fd.type==='cat' ? CATEGORIES.domestic.concat(CATEGORIES.overseas).map(c=>[c.id, c.ko])
       : fd.opts.map(o=>[o,o]);
     // 옵션에서 빠진 예전 값이 저장돼 있으면 사라지지 않게 '(예전 값)' 항목으로 남겨 둔다
@@ -20194,7 +20224,10 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     // 보조 체크 항목(예: 연습 시설 종류) — 하나라도 체크하면 '있음', '없음'을 고르면 체크를 모두 해제
     const subHTML = fd.sub ? `<div class="ai-info-multi ai-sub">${fd.subOpts.map(o=>`<label><input type="checkbox" ${subArr.includes(o)?'checked':''} onchange="${saveMulti(fd.sub, o)};if(this.checked){const s=this.closest('.ai-info-f').querySelector('select');if(s.value!=='y'){s.value='y';${save(k,"'y'")}}}">${escapeAttr(o)}</label>`).join('')}</div>` : '';
     const subClr = fd.sub ? `;if(this.value!=='y'){this.closest('.ai-info-f').querySelectorAll('.ai-sub input:checked').forEach(c=>{c.checked=false})}` : '';   // 저장값 정리는 updateAiPlace
-    return `<div ${box}>${lab}<select onchange="${save(k,'this.value')}${subClr}${AI_OPT_DESC[k] ? `;aiOptDescSync(this,'${k}')` : ''}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(dv==null?'':dv)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${subHTML}${AI_OPT_DESC[k] ? `<small class="ai-info-fnote ai-opt-desc">${escapeAttr(AI_OPT_DESC[k][String(dv==null?'':dv)]||'')}</small>` : ''}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
+    const selV = fd.type==='prox' ? aiProxBase(dv) : dv;
+    const PR = fd.type==='prox' ? aiProxRange(dv) : null;
+    const proxRange = fd.type==='prox' ? `<div class="ai-prox-range" ${(selV==='vr'||selV==='wr') ? '' : 'hidden'}><input type="number" data-nofill class="ai-prox-min" min="0" max="999" step="1" inputmode="numeric" placeholder="최소" aria-label="최소 소요 시간(분)" value="${PR?PR.min:''}" oninput="${save(k,'aiProxCompose(this)')}"><em>~</em><input type="number" data-nofill class="ai-prox-max" min="0" max="999" step="1" inputmode="numeric" placeholder="최대" aria-label="최대 소요 시간(분)" value="${PR?PR.max:''}" oninput="${save(k,'aiProxCompose(this)')}"><span>분 소요</span></div>` : '';
+    return `<div ${box}>${lab}<select onchange="${save(k, fd.type==='prox' ? 'aiProxCompose(this)' : 'this.value')}${fd.type==='prox' ? ';aiProxRangeShow(this)' : ''}${subClr}${AI_OPT_DESC[k] ? `;aiOptDescSync(this,'${k}')` : ''}"><option value="">${fd.type==='cat'?'선택 안 함':'미확인'}</option>${opts.map(([ov,ol])=>`<option value="${escapeAttr(ov)}" ${String(selV==null?'':selV)===ov?'selected':''}>${escapeAttr(ol)}</option>`).join('')}</select>${proxRange}${subHTML}${AI_OPT_DESC[k] ? `<small class="ai-info-fnote ai-opt-desc">${escapeAttr(AI_OPT_DESC[k][String(dv==null?'':dv)]||'')}</small>` : ''}${fd.note ? `<small class="ai-info-fnote">${escapeAttr(fd.note)}</small>` : ''}</div>`;
   }
   // 글·긴 글 입력란 — 공용 서식 도구(크기·글꼴·B·I·U·색상 등)를 쓸 수 있는 서식 입력란(.rtf-editable). 이름 칸(plain)은 일반 입력란 유지
   if (aiIsRichField(fd)){
@@ -23067,7 +23100,7 @@ function aiInfoTest(key, F){
   if (key==='meal:korean' && F.dom) return {v:true, t:'국내 상품'};
   if (PROX[key]){
     const [f, label, words] = PROX[key];
-    return aiMulti(L, x=>x[f], v=>AI_PROX_NEAR.includes(v), v=>`${label}: ${aiProxLabel(v)}`) || aiKwRes(F, words, key==='spa', `${label} 거리 정보 미등록 — 상담 시 확인`);
+    return aiMulti(L, x=>aiProxClean(x[f]), v=>aiProxIsNear(v), v=>`${label}: ${aiProxLabel(v)}`) || aiKwRes(F, words, key==='spa', `${label} 거리 정보 미등록 — 상담 시 확인`);
   }
   const LODGE = {'lodge:golftel':'골프텔', 'lodge:resort':'리조트', 'lodge:poolvilla':'풀빌라', 'lodge:city':'시내호텔'};
   if (LODGE[key]){

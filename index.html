@@ -2301,18 +2301,28 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .pd-holiday-price-item .v .was{display:block}
 .from-disc-hint{font-weight:600;color:var(--coral,#e5654b);margin-left:6px;font-size:.74rem}
 .dp-row-multi{grid-template-columns:1fr 1fr auto!important}
-/* [수정] 공휴일 요금 행 — 금액 옆에 화폐 선택이 들어가 좁아지므로, 관리자 패널 폭(약 600px)에서도 읽히도록 항상 두 줄(종류·시작·종료 / 정가·적용가+화폐 / 삭제)로 배치 */
-.dp-row-holiday{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"type type" "start end" "orig price" "del del"!important}
+/* [수정] 공휴일 요금 행 — 두 줄로 배치: ① 기간 옵션(종류 · 시작일 · 종료일) ② 요금 옵션(정가 · 적용가 · 화폐 단위). 삭제는 오른쪽 아래 작은 버튼.
+   세 칸 모두 같은 폭(1/3)이라 좁은 휴대폰 화면에서도 두 줄이 어긋나지 않는다 */
+.dp-row-holiday{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-areas:"type start end" "orig price cur" "del del del"!important;row-gap:7px}
 .dp-row-holiday>select{grid-area:type}
 .dp-row-holiday>input[type=date]:nth-of-type(1){grid-area:start}
 .dp-row-holiday>input[type=date]:nth-of-type(2){grid-area:end}
-.dp-row-holiday .pee-del{grid-area:del}
+.dp-row-holiday .dp-pw{display:contents}
+.dp-row-holiday .dp-pw input[type=number]{grid-area:price;min-width:0}
+.dp-row-holiday .dp-pw select.dp-cur{grid-area:cur;width:100%;min-width:0}
+.dp-row-holiday .pee-del{grid-area:del;justify-self:end;width:auto;padding:5px 16px}
+.dp-row-holiday input,.dp-row-holiday select{font-size:.8rem;padding-left:8px;padding-right:8px}
+@media(max-width:560px){ /* 휴대폰: 순서 이동 버튼을 행 위쪽 줄로 올려, 기간·요금 두 줄이 화면 폭을 모두 쓰게 한다(날짜가 잘리지 않도록) */
+  .dp-item:has(.dp-row-holiday){flex-direction:column;align-items:stretch;gap:4px}
+  .dp-item:has(.dp-row-holiday)>.dp-move{align-self:flex-start}
+  .dp-row-holiday input,.dp-row-holiday select{font-size:.76rem;padding-left:6px;padding-right:6px}
+  .dp-row-holiday input[type=date]::-webkit-calendar-picker-indicator{display:none}
+}
 .dp-row input.dp-orig{color:rgba(10,23,48,.6)}
 .dp-pw{display:flex;gap:4px;align-items:center;min-width:0}
 .dp-pw input{flex:1 1 0;min-width:0}
 .dp-pw select.dp-cur{flex:0 0 auto;min-width:0;width:88px;padding:9px 6px;font-size:.72rem}
 .dp-row-holiday input.dp-orig[type=number]{grid-area:orig!important}
-.dp-row-holiday .dp-pw{grid-area:price!important}
 .cardprice-box .from-days{margin-bottom:10px}
 .cardprice-box .from-period{margin-bottom:12px}
 .row-table table{border-collapse:collapse;width:100%;max-width:100%;table-layout:auto;margin:0}
@@ -19677,8 +19687,8 @@ function advBasicHTML(p){
                 </select>
                 <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateCommonHolidayPrice(${hi},'date',this.value)">
                 <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateCommonHolidayPrice(${hi},'endDate',this.value)">
-                <input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가(선택)" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateCommonHolidayPrice(${hi},'original',this.value,'number')">
-                <span class="dp-pw"><input type="number" value="${h.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">${curSelHTML(`updateCommonHolidayPrice(${hi},'currency',this.value)`, h.currency, {compact:true})}</span>
+                <input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateCommonHolidayPrice(${hi},'original',this.value,'number')">
+                <span class="dp-pw"><input type="number" value="${h.price||''}" placeholder="적용가" title="적용(할인 후) 금액" oninput="updateCommonHolidayPrice(${hi},'price',this.value,'number')">${curSelHTML(`updateCommonHolidayPrice(${hi},'currency',this.value)`, h.currency, {compact:true})}</span>
                 <button class="pee-del" onclick="removeCommonHolidayPrice(${hi})">삭제</button>
               </div>`)).join('')}
             </div>
@@ -21262,8 +21272,8 @@ function priceEntryHTML(pe, i, popupCount, p){
             </select>
             <input type="date" value="${escapeAttr(h.date||'')}" onchange="updateHolidayPrice(${i},${hi},'date',this.value)">
             <input type="date" value="${escapeAttr(h.endDate||'')}" placeholder="종료일" ${h.type==='range'?'':'disabled'} onchange="updateHolidayPrice(${i},${hi},'endDate',this.value)">
-            <input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가(선택)" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateHolidayPrice(${i},${hi},'original',this.value,'number')">
-            <span class="dp-pw"><input type="number" value="${h.price||''}" placeholder="적용가 890000" title="적용(할인 후) 금액" oninput="updateHolidayPrice(${i},${hi},'price',this.value,'number')">${curSelHTML(`updateHolidayPrice(${i},${hi},'currency',this.value)`, h.currency, {compact:true})}</span>
+            <input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="updateHolidayPrice(${i},${hi},'original',this.value,'number')">
+            <span class="dp-pw"><input type="number" value="${h.price||''}" placeholder="적용가" title="적용(할인 후) 금액" oninput="updateHolidayPrice(${i},${hi},'price',this.value,'number')">${curSelHTML(`updateHolidayPrice(${i},${hi},'currency',this.value)`, h.currency, {compact:true})}</span>
             <button class="pee-del" onclick="removeHolidayPrice(${i},${hi})">삭제</button>
           </div>`)).join('')}
         </div>

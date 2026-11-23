@@ -16769,7 +16769,8 @@ function renderProductDetail(p,cat,idx){
   // [수정] 일정 요약 타임라인에서 분리한 "상단 개요 문구"·"안내 박스" — 요금표 바로 위 별도 박스로 노출
   {
     const ovTxt = richToPlain(p.scheduleOverview||'') ? String(p.scheduleOverview).trim() : '';
-    const noteRows = bulletRowsRich(scheduleNoteRich(p.scheduleNoteCommon!==false ? p.checkpoint1 : p.scheduleNote), '');
+    // 공통값(체크포인트1 - 주의사항)을 쓰는 안내 박스는 아래 "⚠️ 주의사항"과 같은 내용이라 위쪽에서는 보여 주지 않는다(중복 노출 방지). 이 상품 전용으로 직접 입력한 안내 박스만 위쪽에 노출
+    const noteRows = p.scheduleNoteCommon!==false ? '' : bulletRowsRich(scheduleNoteRich(p.scheduleNote), '');
     if (ovTxt || noteRows){
       html += `<div class="pd-slot pd-guide-slot">
         ${ovTxt?`<div class="pd-guide-overview">${schActivityHTML(ovTxt)}</div>`:''}
@@ -19854,9 +19855,9 @@ function advBasicHTML(p){
             <label>상단 개요 문구</label>
             ${richTextFieldHTML(scheduleNoteRich(p.scheduleOverview), "updateAdvField('scheduleOverview',__HTML__)", {cls:'white-field', raw:true, placeholder:'예: 임기 빈하CC 18홀 매일 라운드 · 호텔: 임기 데이즈 원덤호텔 또는 동급(준5성급) · 미팅보드: 고객명 표기', minHeight:'110px'})}
             <label>안내 박스 ${hint('(예: 시즌별 항공편 설명)')}</label>
-            <label class="sn-common-toggle" title="켜면 체크포인트1 - 주의사항에 입력한 내용을 그대로 씁니다. 끄면 이 상품의 안내 박스에만 다른 내용을 넣을 수 있습니다">
+            <label class="sn-common-toggle" title="켜면 체크포인트1 - 주의사항에 입력한 내용을 그대로 쓰며, 자세히 보기에는 아래쪽 주의사항에서 한 번만 보입니다. 끄면 이 상품의 안내 박스에만 다른 내용을 넣을 수 있고 요금표 위쪽에 노출됩니다">
               <input type="checkbox" ${p.scheduleNoteCommon!==false?'checked':''} onchange="toggleScheduleNoteCommon(this.checked)">
-              <span>공통값 사용</span> <em>체크포인트1 - 주의사항과 같은 내용</em>
+              <span>공통값 사용</span> <em>체크포인트1 - 주의사항과 같은 내용 — 자세히 보기에는 아래쪽 "⚠️ 주의사항"에서 한 번만 노출(이 위쪽 박스에는 중복 표시 안 함)</em>
             </label>
             ${p.scheduleNoteCommon!==false
               ? `<div class="adv-cp2-note"><div class="adv-cp2-preview"${cpBoxStyleAttr(p.checkpoint1Bg)}>${richToPlain(p.checkpoint1||'') ? cpBodyHTML(p.checkpoint1) : '<span style="opacity:.6">체크포인트1 - 주의사항에 입력된 내용이 없습니다</span>'}</div><button type="button" class="apc-btn-sm" onclick="advJumpCp('checkpoint1')">체크포인트1 - 주의사항에서 수정 →</button></div>`
@@ -20030,7 +20031,7 @@ const AI_INFO_SCHEMA = [
     {k:'tourShuttle', label:'관광 송영', type:'yn', only:'overseas', help:'관광지·시내 이동 차량을 제공하면 \'예\'.'},
     {k:'minWalk', label:'도보 이동 최소', type:'yn', help:'숙소↔골프장·식당 이동 시 도보로 10분이 넘으면 \'아니오\', 10분 이내면 \'예\'.'}]},
   {key:'party', label:'⑤ 동반자·서비스·가격', note:'최소 출발 인원과 포함·불포함 항목은 기존 입력값(상품 카드의 최소 인원 · 자세히 보기의 포함/불포함)을 그대로 씁니다.', fields:[
-    {k:'paxOk', label:'출발 가능 인원', type:'multi', opts:['2인','3인','4인','단체'], help:'추가요금이 있어도 출발 가능하면 체크. 단체: 8인 이상.'},
+    {k:'paxOk', label:'출발 가능 인원', type:'multi', opts:['2인','3인','4인','8인','단체'], help:'추가요금이 있어도 출발 가능하면 체크. 8인: 8명 출발 가능 · 단체: 8인 이상.'},
     {k:'singleSurcharge', label:'1인실 추가요금', type:'text', help:'1인실 사용 시 추가요금.'},
     {k:'packageType', label:'상품 구성', type:'select', opts:['올인원','일반형','실속형','할인적용'], help:'올인원: 그린피·숙박·식사·카트·캐디피 포함 · 일반형: 기본 패키지 · 실속형: 그린피·숙박·조식 중심 · 할인적용: 할인이 적용된 상품. \'특가\'는 상품 카드의 \'특가\' 레이블로 정하며(예전에 상품 구성 \'특가\'로 저장한 값은 \'(예전 값)\'으로 남아 판정에 그대로 쓰입니다).'},
     {k:'vip', label:'VIP 전용', type:'yn', help:'고급 숙박에 전담 가이드·의전 등이 포함된 상품이면 \'예\'.'},
@@ -20093,7 +20094,7 @@ function aiAutoInfo(p, pe, dom){
   }
   // 출발 가능 인원 — 최소 인원
   const mp = /(\d+)/.exec(String(eff('minPeople')||''));
-  if (mp){ const n = Number(mp[1]); set('paxOk', ['2인','3인','4인'].filter(x=>parseInt(x,10)>=n), '최소 출발 인원'); }
+  if (mp){ const n = Number(mp[1]); set('paxOk', ['2인','3인','4인','8인'].filter(x=>parseInt(x,10)>=n), '최소 출발 인원'); }
   // 상품 구성 — 요금 항목 강조 태그(실속·특가·일반) 또는 상품 문구의 '올인원'
   const emphOf = e => Array.isArray(e.emphasis) ? e.emphasis : (e.emphasis ? [e.emphasis] : []);
   const pkgOf = ems => ems.some(t=>String(t).startsWith('특가')) ? '특가' : (ems.includes('실속') ? '실속형' : (ems.includes('일반') ? '일반형' : ''));

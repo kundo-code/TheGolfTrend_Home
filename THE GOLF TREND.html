@@ -1206,6 +1206,16 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-item:nth-child(3n),.pd-holiday-price-item:last-child{border-right:none}
 .pd-holiday-price-item .dt{font-size:.86rem;font-weight:600;color:#DC2626}
 /* [수정] 기간(시작일~종료일)처럼 날짜가 긴 항목이 있으면 날짜와 금액이 겹치지 않도록 한 줄에 하나씩(날짜 왼쪽 · 금액 오른쪽) 보여 준다 */
+.pd-holiday-price-row.hol-same{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 14px}
+.pd-holiday-price-row.hol-same .hs-dates{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 auto}
+.pd-holiday-price-row.hol-same .hs-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.pd-holiday-price-row.hol-same .hs-m{font-size:.68rem;font-weight:700;color:#fff;background:#DC2626;border-radius:10px;padding:1px 8px;line-height:1.5}
+.pd-holiday-price-row.hol-same .dt{font-size:.86rem;font-weight:600;color:#DC2626;white-space:nowrap}
+.pd-holiday-price-row.hol-same .hs-price{flex:0 0 auto;text-align:right}
+.pd-holiday-price-row.hol-same .hs-price .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:#DC2626;white-space:nowrap}
+.pd-holiday-price-row.hol-same .hs-price .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:#DC2626;font-weight:500;margin-left:1px}
+.pd-holiday-price-row.hol-same .hs-price .v .was{display:block}
+@media(max-width:560px){.pd-holiday-price-row.hol-same .hs-price .v{font-size:1.15rem}.pd-holiday-price-row.hol-same .dt{font-size:.78rem}}
 .pd-holiday-price-row.hol-lines{display:block}
 .pd-holiday-price-row.hol-lines .pd-holiday-price-item{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 14px;border-right:none;border-bottom:1px dashed rgba(10,23,48,.14);white-space:normal}
 .pd-holiday-price-row.hol-lines .pd-holiday-price-item:last-child{border-bottom:none}
@@ -7451,14 +7461,31 @@ function dayPriceSectionsHTML(list, cls, dd){
     return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">${curUnit(d.currency)}</span></div>${priceDiscountPct(d.original, d.price) ? `<div class="was"><s>${fmtMoney(d.original, d.currency)}</s><em>${priceDiscountPct(d.original, d.price)}% ↓</em></div>` : ''}${specificDatesHTML(d.day, dd, d)}</div>`;
   }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table dp-n${cells.length>=3?'m':cells.length}${cls?' '+cls:''}">${cells.join('')}</div>`);
 }
+// 공휴일 요금 한 칸의 금액 부분(외화 추가요금은 원화 환산 값, 할인 표시 포함)
+function holValueHTML(h){
+  if (holIsFx(h)) return `<span class="v hol-fx" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}" title="${escapeAttr(holFxTitle(h.price, h.currency))}">${holFxValueHTML(h.price, h.currency)}</span>`;
+  return `<span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtMoney(h.original, h.currency)}</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span>`;
+}
 function holidaySectionsHTML(list, cls, lead){
   list = holResolve(list);
   return dpRenderSections(list, h=>{
     const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
-    const isRange = (h.type==='range' && h.endDate) ? ' is-range' : '';
-    if (holIsFx(h)) return `<div class="pd-holiday-price-item${isRange}"><span class="dt">${escapeAttr(label)}</span><span class="v hol-fx" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}" title="${escapeAttr(holFxTitle(h.price, h.currency))}">${holFxValueHTML(h.price, h.currency)}</span></div>`;
-    return `<div class="pd-holiday-price-item${isRange}"><span class="dt">${escapeAttr(label)}</span><span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtMoney(h.original, h.currency)}</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span></div>`;
-  }, h=>h.date && h.price, cells=>`<div class="pd-holiday-price-row${cells.some(c=>c.includes('is-range'))?' hol-lines':''}${cls?' '+cls:''}">${cells.join('')}</div>`, lead);
+    return {h, label, range:!!(h.type==='range' && h.endDate), v:holValueHTML(h)};
+  }, h=>h.date && h.price, items=>{
+    // [수정] 이 묶음의 금액이 모두 같으면(2개 이상) 날짜는 월별로 줄을 나눠 모으고 요금은 한 번만 보여 준다
+    const amtKey = it=>[Number(it.h.price)||0, curOf(it.h.currency), Number(it.h.original)||0].join('|');
+    if (items.length>=2 && items.every(it=>amtKey(it)===amtKey(items[0]))){
+      const byM = {}, order = [];
+      items.slice().sort((x,y)=>String(x.h.date).localeCompare(String(y.h.date))).forEach(it=>{
+        const m = Number(String(it.h.date).split('-')[1])||0; // 시작일의 달 기준(기간이 다음 달로 이어져도 시작일 줄에 표시)
+        if (!byM[m]){ byM[m]=[]; order.push(m); }
+        byM[m].push(it);
+      });
+      const lines = order.map(m=>`<div class="hs-line"><span class="hs-m">${m}월</span>${byM[m].map(it=>`<span class="dt">${escapeAttr(it.label)}</span>`).join('')}</div>`).join('');
+      return `<div class="pd-holiday-price-row hol-same${cls?' '+cls:''}"><div class="hs-dates">${lines}</div><div class="hs-price">${items[0].v}</div></div>`;
+    }
+    return `<div class="pd-holiday-price-row${items.some(it=>it.range)?' hol-lines':''}${cls?' '+cls:''}">${items.map(it=>`<div class="pd-holiday-price-item${it.range?' is-range':''}"><span class="dt">${escapeAttr(it.label)}</span>${it.v}</div>`).join('')}</div>`;
+  }, lead);
 }
 // 일정은 Tee Off Time(레이블에 저장됨)과 한 묶음으로 비교한다. 노출 체크를 끈 일정은 "값 없음"
 function _peSchKey(v){

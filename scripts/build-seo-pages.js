@@ -137,7 +137,7 @@ function extractInPage() {
     });
     return out;
   };
-  const holRows = list => (list || []).filter(h => h && !dpIsMarker(h) && Number(h.price) > 0).map(h => ({ date: ymd(h.date), end: h.endDate ? ymd(h.endDate) : '', price: Number(h.price), cur: curOf(h.currency) })).filter(h => h.date);
+  const holRows = list => holResolve(list).filter(h => h && !dpIsMarker(h) && Number(h.price) > 0).map(h => ({ date: ymd(h.date), end: h.endDate ? ymd(h.endDate) : '', price: Number(h.price), cur: curOf(h.currency) })).filter(h => h.date);
   const dateList = v => normDayDates(v).dates.map(ymd).filter(Boolean);
   const placeById = (kind, id) => (kind === 'lodge' ? aiPlaces.lodges : aiPlaces.courses).find(x => x.id === id);
   const res = [];

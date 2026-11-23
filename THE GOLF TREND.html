@@ -1217,6 +1217,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-row.hol-same .hs-price .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.93rem;color:#DC2626;font-weight:500;margin-left:2px}
 .pd-holiday-price-row.hol-same .hs-price .v .was{display:block;font-size:.8rem}
 @media(max-width:560px){.pd-holiday-price-row.hol-same .dt{white-space:normal}.pd-holiday-price-row.hol-same .hs-line{flex-direction:column;align-items:flex-start;gap:2px}.pd-holiday-price-row.hol-same .hs-price .v{font-size:1.725rem}.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:.8rem}.pd-holiday-price-row.hol-same .hs-price{padding-left:10px}.pd-holiday-price-row.hol-same .dt{font-size:.78rem}}
+/* [수정] 공휴일 요금의 화폐 기호(원·¥·$ 등)를 요금표 요일별 금액의 "원"과 같은 색상(금색)·글자 크기로 통일 */
+.pd-holiday-price-row .pd-holiday-price-item .v .unit,.pd-holiday-price-row.hol-same .hs-price .v .unit{color:var(--gold-deep);font-size:calc(.775rem * 1.2)}
+@media(max-width:560px){.pd-holiday-price-row .pd-holiday-price-item .v .unit,.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:calc(.675rem + 1.25pt)}}
 .pd-holiday-price-row.hol-lines{display:block}
 .pd-holiday-price-row.hol-lines .pd-holiday-price-item{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 14px;border-right:none;border-bottom:1px dashed rgba(10,23,48,.14);white-space:normal}
 .pd-holiday-price-row.hol-lines .pd-holiday-price-item:last-child{border-bottom:none}

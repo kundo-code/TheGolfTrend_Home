@@ -1205,6 +1205,12 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-item{display:flex;align-items:baseline;gap:6px;padding:4px 18px;white-space:nowrap;border-right:1px dashed rgba(10,23,48,.16)}
 .pd-holiday-price-item:nth-child(3n),.pd-holiday-price-item:last-child{border-right:none}
 .pd-holiday-price-item .dt{font-size:.86rem;font-weight:600;color:#DC2626}
+/* [수정] 기간(시작일~종료일)처럼 날짜가 긴 항목이 있으면 날짜와 금액이 겹치지 않도록 한 줄에 하나씩(날짜 왼쪽 · 금액 오른쪽) 보여 준다 */
+.pd-holiday-price-row.hol-lines{display:block}
+.pd-holiday-price-row.hol-lines .pd-holiday-price-item{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 14px;border-right:none;border-bottom:1px dashed rgba(10,23,48,.14);white-space:normal}
+.pd-holiday-price-row.hol-lines .pd-holiday-price-item:last-child{border-bottom:none}
+.pd-holiday-price-row.hol-lines .pd-holiday-price-item .dt{flex:1 1 auto;min-width:0}
+.pd-holiday-price-row.hol-lines .pd-holiday-price-item .v{flex:0 0 auto;white-space:nowrap;text-align:right}
 .pd-holiday-price-item .v{font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:1.365rem;font-weight:500;color:#DC2626}
 .pd-holiday-price-item .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.62rem;color:#DC2626;font-weight:500;margin-left:1px}
 /* [수정] "연결 링크·URL" 버튼(상품 공통·항목별 공통) — 옅은 회색 요금 카드와 구분되도록 로고
@@ -7449,9 +7455,10 @@ function holidaySectionsHTML(list, cls, lead){
   list = holResolve(list);
   return dpRenderSections(list, h=>{
     const label = (h.type==='range' && h.endDate) ? `${fmtHolidayDate(h.date)}~${fmtHolidayDate(h.endDate)}` : fmtHolidayDate(h.date);
-    if (holIsFx(h)) return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v hol-fx" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}" title="${escapeAttr(holFxTitle(h.price, h.currency))}">${holFxValueHTML(h.price, h.currency)}</span></div>`;
-    return `<div class="pd-holiday-price-item"><span class="dt">${escapeAttr(label)}</span><span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtMoney(h.original, h.currency)}</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span></div>`;
-  }, h=>h.date && h.price, cells=>`<div class="pd-holiday-price-row${cls?' '+cls:''}">${cells.join('')}</div>`, lead);
+    const isRange = (h.type==='range' && h.endDate) ? ' is-range' : '';
+    if (holIsFx(h)) return `<div class="pd-holiday-price-item${isRange}"><span class="dt">${escapeAttr(label)}</span><span class="v hol-fx" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}" title="${escapeAttr(holFxTitle(h.price, h.currency))}">${holFxValueHTML(h.price, h.currency)}</span></div>`;
+    return `<div class="pd-holiday-price-item${isRange}"><span class="dt">${escapeAttr(label)}</span><span class="v">${priceDiscountPct(h.original, h.price) ? `<span class="was"><s>${fmtMoney(h.original, h.currency)}</s><em>${priceDiscountPct(h.original, h.price)}% ↓</em></span>` : ''}${fmtPrice(h.price)}<span class="unit">${curUnit(h.currency)}</span></span></div>`;
+  }, h=>h.date && h.price, cells=>`<div class="pd-holiday-price-row${cells.some(c=>c.includes('is-range'))?' hol-lines':''}${cls?' '+cls:''}">${cells.join('')}</div>`, lead);
 }
 // 일정은 Tee Off Time(레이블에 저장됨)과 한 묶음으로 비교한다. 노출 체크를 끈 일정은 "값 없음"
 function _peSchKey(v){
@@ -11692,7 +11699,7 @@ function curOf(c){ return CURRENCY_SYMBOL[c] ? c : 'KRW'; }
 function curUnit(c){ return CURRENCY_SYMBOL[curOf(c)]; }
 function fmtMoney(n, c){ return fmtPrice(n) + curUnit(c); }
 // [추가] 공휴일 지정 요금 — 화폐 단위가 원화가 아니면 "추가요금(+)"으로 보고, 입력한 외화 금액을 "현찰 살 때" 환율(은행 간 기준환율 + 관리자가
-// 입력한 현찰 스프레드, 위젯의 환율과 같은 값)로 원화로 환산해 원 단위로 반올림해서 보여 준다. 환율을 아직 못 불러왔으면 입력한 외화 금액을 그대로 보여 주고,
+// 입력한 현찰 스프레드, 위젯의 환율과 같은 값)로 원화로 환산해 천원 단위로 반올림(500원 미만 버림·500원 이상 올림)해서 보여 준다. 환율을 아직 못 불러왔으면 입력한 외화 금액을 그대로 보여 주고,
 // 불러오면 화면의 값을 자동으로 바꾼다(금액을 임의로 만들어 내지 않음). 원화 행은 예전과 똑같이 정가·적용가를 그대로 보여 준다
 // [추가] 공휴일 "통합 금액" — 부제목(group) 항목에서 켜면, 그 부제목 아래(다음 부제목·구분선 전까지)의 공휴일 지정일·기간 모두에 같은 금액·화폐 단위를 적용한다.
 // 각 행의 개별 금액은 지우지 않고 보관만 하므로 통합을 끄면 그대로 되살아난다. 표시·비교·검색엔진 페이지는 이 함수로 "적용 금액이 채워진 목록"을 만들어 쓴다
@@ -11708,7 +11715,7 @@ function holIsFx(h){ return !!h && curOf(h.currency)!=='KRW'; }
 function holFxKrw(amount, cur){
   const r = curCashPerUnit(curOf(cur)); if (!r) return null;
   const a = Number(amount)||0; if (!a) return 0;
-  return Math.round(+(a*r).toFixed(6)); // 원 단위 반올림(부동소수 오차가 반올림 결과를 바꾸지 않도록 먼저 다듬는다)
+  return Math.floor((+(a*r).toFixed(6) + 500) / 1000) * 1000; // 천원 단위 반올림 — 1,000원 미만 끝자리가 500원 미만이면 버림, 500원 이상이면 올림(부동소수 오차가 결과를 바꾸지 않도록 먼저 다듬는다)
 }
 function holFxValueHTML(amount, cur){
   const k = holFxKrw(amount, cur);
@@ -11716,7 +11723,7 @@ function holFxValueHTML(amount, cur){
 }
 function holFxTitle(amount, cur){
   const k = holFxKrw(amount, cur), r = curCashPerUnit(curOf(cur));
-  return k==null ? '' : `추가요금 ${fmtMoney(amount, cur)} → 현찰 살 때 환율(1${curUnit(cur)} = ${(r).toLocaleString('ko-KR',{maximumFractionDigits:4})}원) 기준, 원 단위 반올림`;
+  return k==null ? '' : `추가요금 ${fmtMoney(amount, cur)} → 현찰 살 때 환율(1${curUnit(cur)} = ${(r).toLocaleString('ko-KR',{maximumFractionDigits:4})}원) 기준, 천원 단위 반올림(500원 미만 버림·500원 이상 올림)`;
 }
 // 관리자 입력칸 아래 미리보기 한 줄
 function holFxNoteHTML(amount, cur){
@@ -11725,7 +11732,7 @@ function holFxNoteHTML(amount, cur){
   const r = curCashPerUnit(cur);
   if (!r) return currencyFetchFailed ? '환율 정보를 불러오지 못했습니다 — 불러오면 원화로 표시됩니다' : '환율 정보를 불러오는 중…';
   const sp = curSpreadOf(cur);
-  return `→ +${fmtPrice(holFxKrw(a, cur))}원 <em>(${fmtMoney(a, cur)} × 현찰 살 때 ${r.toLocaleString('ko-KR',{maximumFractionDigits:4})}원, 원 단위 반올림)</em>${sp ? '' : ' <b>⚠ 현찰 스프레드 미입력 — 기준환율로 계산됨(위젯 설정에서 입력)</b>'}`;
+  return `→ +${fmtPrice(holFxKrw(a, cur))}원 <em>(${fmtMoney(a, cur)} × 현찰 살 때 ${r.toLocaleString('ko-KR',{maximumFractionDigits:4})}원, 천원 단위 반올림)</em>${sp ? '' : ' <b>⚠ 현찰 스프레드 미입력 — 기준환율로 계산됨(위젯 설정에서 입력)</b>'}`;
 }
 function holFxNoteSync(inp){
   const row = inp.closest('.dp-row, .dp-bulk'), n = row && row.querySelector('.dp-fxnote'); if (!n) return;
@@ -11741,7 +11748,7 @@ function holPriceCellsHTML(h, call, bulk){
   if (bulk) return '<span class="dp-fxnote dp-bulknote">↳ 위 부제목의 <b>통합 금액</b>이 적용됩니다 <em>(이 행에 입력해 둔 개별 금액은 보관되며, 통합을 끄면 다시 쓰입니다)</em></span>';
   const fx = holIsFx(h);
   const orig = fx ? '' : `<input type="number" class="dp-orig" value="${h.original||''}" placeholder="정가" title="정가(할인 전) — 비우면 할인 표시 없음" oninput="${call},'original',this.value,'number')">`;
-  const price = `<input type="number" value="${h.price||''}" placeholder="${fx?'추가요금 (+)':'적용가'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 원 단위로 반올림하여 표시됩니다':'적용(할인 후) 금액'}" oninput="${call},'price',this.value,'number')${fx?';holFxNoteSync(this)':''}">`;
+  const price = `<input type="number" value="${h.price||''}" placeholder="${fx?'추가요금 (+)':'적용가'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 천원 단위로 반올림(500원 미만 버림·500원 이상 올림)하여 표시됩니다':'적용(할인 후) 금액'}" oninput="${call},'price',this.value,'number')${fx?';holFxNoteSync(this)':''}">`;
   const note = fx ? `<span class="dp-fxnote" data-amt="${Number(h.price)||0}" data-cur="${curOf(h.currency)}">${holFxNoteHTML(h.price, h.currency)}</span>` : '';
   return orig + `<span class="dp-pw">${price}${curSelHTML(`${call},'currency',this.value)`, h.currency, {compact:true})}</span>` + note;
 }
@@ -21830,7 +21837,7 @@ function dpBulkCtlHTML(m, peIdx, kind, i){
   const call = `setDpGroupBulkField(${peIdx},'${kind}',${i}`;
   return `<div class="dp-bulk">
     <label class="popup-toggle" title="켜면 이 부제목 아래(다음 부제목·구분선 전까지)의 공휴일 지정일·기간에 모두 아래 금액 하나를 적용합니다"><input type="checkbox" ${m.bulk?'checked':''} onchange="setDpGroupBulk(${peIdx},'${kind}',${i},this.checked)"><span class="toggle-slider"></span><span class="pt-lbl">통합 금액 (아래 모든 지정일에 하나의 금액)</span></label>
-    ${m.bulk ? `<span class="dp-pw"><input type="number" value="${m.bulkPrice||''}" placeholder="${fx?'추가요금 (+)':'금액'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 원 단위로 반올림하여 표시됩니다':'이 부제목 아래 모든 지정일에 적용되는 금액'}" oninput="${call},'bulkPrice',this.value,'number');holFxNoteSync(this)">${curSelHTML(`${call},'bulkCurrency',this.value)`, m.bulkCurrency, {compact:true})}</span>${fx ? `<span class="dp-fxnote" data-amt="${Number(m.bulkPrice)||0}" data-cur="${curOf(m.bulkCurrency)}">${holFxNoteHTML(m.bulkPrice, m.bulkCurrency)}</span>` : ''}` : ''}
+    ${m.bulk ? `<span class="dp-pw"><input type="number" value="${m.bulkPrice||''}" placeholder="${fx?'추가요금 (+)':'금액'}" title="${fx?'요금표 금액에 더해지는 추가요금 — 현찰 살 때 환율로 원화 환산해 천원 단위로 반올림(500원 미만 버림·500원 이상 올림)하여 표시됩니다':'이 부제목 아래 모든 지정일에 적용되는 금액'}" oninput="${call},'bulkPrice',this.value,'number');holFxNoteSync(this)">${curSelHTML(`${call},'bulkCurrency',this.value)`, m.bulkCurrency, {compact:true})}</span>${fx ? `<span class="dp-fxnote" data-amt="${Number(m.bulkPrice)||0}" data-cur="${curOf(m.bulkCurrency)}">${holFxNoteHTML(m.bulkPrice, m.bulkCurrency)}</span>` : ''}` : ''}
   </div>`;
 }
 function setDpGroupBulk(peIdx, kind, i, on){

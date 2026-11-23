@@ -11751,7 +11751,7 @@ function holFxKrw(amount, cur){
 }
 function holFxValueHTML(amount, cur){
   const k = holFxKrw(amount, cur);
-  return k==null ? `+${fmtMoney(amount, cur)}` : `+${fmtPrice(k)}<span class="unit">원</span>`;
+  return k==null ? `+${fmtPrice(amount)}<span class="unit">${curUnit(cur)}</span>` : `+${fmtPrice(k)}<span class="unit">원</span>`; // 환율 전에는 현지 통화 단위도 "원"과 같은 단위 서식
 }
 function holFxTitle(amount, cur){
   const k = holFxKrw(amount, cur), r = curCashPerUnit(curOf(cur));

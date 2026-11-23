@@ -11620,12 +11620,13 @@ const AI_PROX_KEYS = ['nearFood','nearCity','nearSpot','nearMall','nearMarket','
 function aiProxNorm(x){ if (x) AI_PROX_KEYS.forEach(k=>{ if (x[k]==='far') x[k] = 'far60'; }); return x; }
 function aiPlacesNorm(v){ return {lodges:(v && Array.isArray(v.lodges)) ? v.lodges.filter(x=>x && x.id).map(aiProxNorm) : [], courses:(v && Array.isArray(v.courses)) ? v.courses.filter(x=>x && x.id).map(aiCourseNorm) : []}; }
 // 예전 값 이름 변경 — 카트 진입 규정 '카트 도로만' → '페어웨이 진입 불가'(뜻은 같음)
-function aiCourseNorm(x){ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x && x.turf && !x.turfFairway) x.turfFairway = x.turf; /* 예전 '잔디 상태'는 페어웨이 칸으로 이어받음(원본 값은 그대로 보존) */ if (x) aiCourseAutoLevel(x); return x; }
+function aiCourseNorm(x){ if (x && x.courseLevel==='Lv.3 보통 (표준)') x.courseLevel = 'Lv.3 보통 (중급)'; /* 이름 변경: 표준 → 중급(뜻은 같음) */ if (x && x.cartRule==='카트 도로만') x.cartRule = '페어웨이 진입 불가'; if (x && x.turf && !x.turfFairway) x.turfFairway = x.turf; /* 예전 '잔디 상태'는 페어웨이 칸으로 이어받음(원본 값은 그대로 보존) */ if (x) aiCourseAutoLevel(x); return x; }
 // Slope → 난이도(120 미만 쉬움 · 120~134 보통 · 135 이상 도전적). Slope를 찾지 못하면 ''
 // 종합 난이도 선택지(Lv.1~5) — 아래 Slope 자동 판정이 먼저 쓰므로 여기에 둔다
-const AI_LEVEL_OPTS = ['Lv.1 매우 쉬움 (입문·초급 추천)','Lv.2 쉬움 (무난함)','Lv.3 보통 (표준)','Lv.4 어려움 (상급자 추천)','Lv.5 매우 어려움 (챔피언십급)'];
+const AI_LEVEL_OPTS = ['Lv.1 매우 쉬움 (입문·초급 추천)','Lv.2 쉬움 (무난함)','Lv.3 보통 (중급)','Lv.3.5 약간 어려움 (중상급)','Lv.4 어려움 (상급자 추천)','Lv.5 매우 어려움 (챔피언십급)'];
+const aiLvOpt = n => AI_LEVEL_OPTS.find(o=>o.indexOf('Lv.'+n+' ')===0) || '';   // 번호(1·2·3·3.5·4·5)로 선택지 찾기
 function aiSlopeOf(rating){ const nums = String(typeof rating==='string' && rating.indexOf('<')>=0 ? richToPlain(rating) : (rating||'')).match(/\d+(?:\.\d+)?/g); if (!nums) return null; const sl = nums.map(Number).filter(n=>Number.isInteger(n) && n>=55 && n<=155).pop(); return sl==null ? null : sl; }
-function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? AI_LEVEL_OPTS[1] : (sl<135 ? AI_LEVEL_OPTS[2] : AI_LEVEL_OPTS[3])); }   // 120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4(예전 쉬움·보통·도전적 기준을 그대로 옮김)
+function aiSlopeLevel(rating){ const sl = aiSlopeOf(rating); return sl==null ? '' : (sl<120 ? aiLvOpt('2') : (sl<135 ? aiLvOpt('3') : aiLvOpt('4'))); }   // 120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4(예전 쉬움·보통·도전적 기준을 그대로 옮김)
 // 난이도가 비어 있거나 자동 값(courseLevelAuto)이면 Course Rating · Slope로 다시 정한다. 관리자가 직접 고른 값은 그대로 둔다
 function aiCourseAutoLevel(x){
   if (x.courseLevel && !x.courseLevelAuto) return;
@@ -19968,13 +19969,13 @@ const AI_TERRAIN_OPTS = ['산악형 (Mountain)','구릉형 (Rolling / Hilly)','�
 const AI_TERRAIN_TRAITS = ['강한 언듈레이션 (페어웨이·그린 기복 심함)','블라인드 홀 다수 (티샷 IP 또는 그린 시야 제한)','도그레그 홀 다수 (좌·우 굴절 홀 비중 높음)','포대 그린 / 2단 이상 티어드 그린 (그린 고저·단차 설계)','넓고 개방적인 페어웨이 (티샷 압박감이 적음)','좁고 타이트한 페어웨이 (정교한 샷이 요구됨)','워터 해저드 밀집 (연못·개울 등 물 장애물 비중 높음)','벙커·마운드 강조형 (모래 벙커와 인공 언덕 배치가 특징적임)','업다운이 심한 산악형 (오르막·내리막이 많고 체력 소모가 큼)','완만한 언덕의 구릉형 (적당한 오르내림과 굴곡이 어우러짐)','평탄하고 편안한 평지형 (고저차가 거의 없고 걷기 편함)','바다·바람이 느껴지는 해안형 (오션뷰와 해풍의 영향이 큼)','호수·연못이 많은 수변형 (물 장애물이 많아 정교함이 필요함)','페어웨이 굴곡(언듈레이션)이 심함 (경사 라이에서 치는 샷이 많음)','그린이 보이지 않는 블라인드 홀이 많음 (코스 파악과 거리 계산이 까다로움)','시야가 탁 트이고 페어웨이가 넓음 (티샷 부담이 적고 호쾌함)'];
 const AI_OPT_DESC = {
   elevation:{'산악형 (Mountain)':'표고차 50m 이상, 급경사와 계곡 지형을 활용한 고저차가 큰 코스','구릉형 (Rolling / Hilly)':'표고차 20~50m 수준, 완만한 언덕과 자연 능선이 이어지는 코스','평지형 (Flat / Parkland)':'표고차 20m 미만, 평탄한 내륙 부지에 수목·연못·조형물로 난이도를 부여한 코스','해안·링크스형 (Coastal / Links)':'해안 사구·절벽에 위치하며 수목이 적고 해풍과 원지형 굴곡이 살아있는 코스','수변·레이크형 (Lakeside / Riverside)':'호수·강변·간척지 등 평탄한 수계 주변에 워터 해저드 비중이 높은 코스','임간형 (Forest / Woodland)':'울창한 산림을 따라 홀이 독립적으로 배치된 평탄·완경사 숲속 코스'},
-  courseLevel:{'Lv.1 매우 쉬움 (입문·초급 추천)':'페어웨이가 넓고 장애물이 적어 초보자나 명랑 골프에 적합한 코스','Lv.2 쉬움 (무난함)':'전반적으로 평탄하고 시야가 트여 있어 스코어를 내기 좋은 편안한 코스','Lv.3 보통 (표준)':'적당한 고저차와 해저드·벙커가 조화를 이루어 전략과 샷 정확도가 함께 요구되는 코스','Lv.4 어려움 (상급자 추천)':'좁은 페어웨이, 깊은 벙커, 빠른 그린, 강한 언듈레이션 등으로 정교한 코스 매니지먼트가 필수인 코스','Lv.5 매우 어려움 (챔피언십급)':'긴 전장과 가혹한 장애물·그린 난이도를 갖춘 토너먼트 수준의 도전적인 코스'}
+  courseLevel:{'Lv.1 매우 쉬움 (입문·초급 추천)':'페어웨이가 넓고 장애물이 적어 초보자나 명랑 골프에 적합한 코스','Lv.2 쉬움 (무난함)':'전반적으로 평탄하고 시야가 트여 있어 스코어를 내기 좋은 편안한 코스','Lv.3 보통 (중급)':'적당한 고저차와 해저드·벙커가 조화를 이루어 전략과 샷 정확도가 함께 요구되는 코스','Lv.3.5 약간 어려움 (중상급)':'보통보다 한 단계 어려워 좁은 페어웨이·벙커·그린 난이도 등으로 코스 매니지먼트가 필요하지만, 상급(Lv.4)만큼 가혹하지는 않은 코스','Lv.4 어려움 (상급자 추천)':'좁은 페어웨이, 깊은 벙커, 빠른 그린, 강한 언듈레이션 등으로 정교한 코스 매니지먼트가 필수인 코스','Lv.5 매우 어려움 (챔피언십급)':'긴 전장과 가혹한 장애물·그린 난이도를 갖춘 토너먼트 수준의 도전적인 코스'}
 };
 function aiOptDescSync(sel, k){ const n = sel.closest('.ai-info-f').querySelector('.ai-opt-desc'); if (n) n.textContent = (AI_OPT_DESC[k]||{})[sel.value] || ''; }
 // 종합 난이도 구간 — 고객 조건(쉬운/보통/도전적 코스)용: Lv.1·2 = 쉬움, Lv.3 = 보통, Lv.4·5 = 도전적. 예전 값(쉬움·보통·도전적)도 같은 구간으로 읽는다
 function aiLevelBand(v){
-  const t = String(v||''), m = /^Lv\.?\s*([1-5])/.exec(t);
-  if (m){ const n = Number(m[1]); return n<=2 ? 'easy' : (n===3 ? 'normal' : 'hard'); }
+  const t = String(v||''), m = /^Lv\.?\s*([1-5](?:\.5)?)/.exec(t);
+  if (m){ const n = Number(m[1]); return n<=2 ? 'easy' : (n<=3 ? 'normal' : 'hard'); }   // Lv.3.5(약간 어려움·중상급)는 도전적 쪽으로 본다
   return t==='쉬움' ? 'easy' : (t==='보통' ? 'normal' : (t==='도전적' ? 'hard' : ''));
 }
 function aiLevelShort(v){ return String(v||'').replace(/\s*\(.*\)\s*$/, ''); }
@@ -19991,7 +19992,7 @@ const AI_COURSE_FIELDS = [
   {k:'turfGreen', label:'잔디 상태 · 그린', type:'text', ph:'예: 벤트그라스, 그린 상태 양호', help:'그린 잔디 종류와 최근 확인한 관리 상태.'},
   {k:'elevation', label:'코스 지형 유형', type:'select', opts:AI_TERRAIN_OPTS, wide:true, help:'주 지형 유형(단일 선택 · 입지 및 표고차 기준). 선택하면 아래에 설명이 나타납니다. 예전에 고저차로 입력한 값(평탄·보통·큼)은 \'(예전 값)\'으로 남아 있습니다.'},
   {k:'terrainTraits', label:'세부 지형·설계 특성', type:'multi', opts:AI_TERRAIN_TRAITS, wide:true, help:'플레이 체감 요소(다중 선택). 해당하는 특성만 체크하세요.'},
-  {k:'courseLevel', label:'종합 난이도', type:'select', opts:AI_LEVEL_OPTS, wide:true, help:'Lv.1 매우 쉬움: 페어웨이가 넓고 장애물이 적어 초보자나 명랑 골프에 적합 · Lv.2 쉬움: 전반적으로 평탄하고 시야가 트여 스코어를 내기 좋은 편안한 코스 · Lv.3 보통: 적당한 고저차와 해저드·벙커가 조화를 이루어 전략과 샷 정확도가 함께 요구 · Lv.4 어려움: 좁은 페어웨이, 깊은 벙커, 빠른 그린, 강한 언듈레이션 등으로 정교한 코스 매니지먼트가 필수 · Lv.5 매우 어려움: 긴 전장과 가혹한 장애물·그린 난이도를 갖춘 토너먼트 수준. Course Rating · Slope를 입력하면 Slope 기준(120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4)으로 자동 선택됩니다(직접 고르면 그 값이 우선, \'미확인\'을 고르면 다시 자동 · 예전 쉬움/보통/도전적 값은 \'(예전 값)\'으로 남아 판정에 그대로 쓰입니다).'},
+  {k:'courseLevel', label:'종합 난이도', type:'select', opts:AI_LEVEL_OPTS, wide:true, help:'Lv.1 매우 쉬움: 페어웨이가 넓고 장애물이 적어 초보자나 명랑 골프에 적합 · Lv.2 쉬움: 전반적으로 평탄하고 시야가 트여 스코어를 내기 좋은 편안한 코스 · Lv.3 보통(중급): 적당한 고저차와 해저드·벙커가 조화를 이루어 전략과 샷 정확도가 함께 요구 · Lv.3.5 약간 어려움(중상급): 보통보다 한 단계 어려운 코스 · Lv.4 어려움: 좁은 페어웨이, 깊은 벙커, 빠른 그린, 강한 언듈레이션 등으로 정교한 코스 매니지먼트가 필수 · Lv.5 매우 어려움: 긴 전장과 가혹한 장애물·그린 난이도를 갖춘 토너먼트 수준. Course Rating · Slope를 입력하면 Slope 기준(120 미만 Lv.2 · 120~134 Lv.3 · 135 이상 Lv.4)으로 자동 선택됩니다(직접 고르면 그 값이 우선, \'미확인\'을 고르면 다시 자동 · 예전 쉬움/보통/도전적 값은 \'(예전 값)\'으로 남아 판정에 그대로 쓰입니다).'},
   {k:'famous', label:'명문·대회 개최', type:'yn', help:'프로 투어(KPGA·KLPGA·JGTO·아시안투어·LPGA 등) 정규 대회 개최 이력이 있거나 공신력 있는 골프장 랭킹(국가별 100대 등)에 든 곳이면 \'예\'.'},
   {k:'courseQuality', label:'코스 품질', type:'select', opts:['우수','보통'], help:'우수: 최근 1년 안에 현장 확인 또는 고객 평가로 잔디·그린·시설 관리가 좋다고 확인됨. 근거가 없으면 미확인.'},
   {k:'cartRule', label:'카트 진입 규정', type:'select', opts:['페어웨이 진입 가능','페어웨이 진입 불가'], note:'우천 및 골프 코스 상태에 따라 진입 여부 확인(현장체크)', help:'페어웨이 진입 불가: 카트 도로로만 이동. 평소 운영 기준(우천 등 예외 제외). 카트가 아예 없는 코스(도보)는 \'카트 이용\'에서 \'미운영\'을 고르세요. 예전에 \'카트 없음(도보)\'로 저장된 값은 \'(예전 값)\'으로 남아 판정에 그대로 쓰입니다.'},

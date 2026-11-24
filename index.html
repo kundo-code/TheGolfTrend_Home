@@ -2751,6 +2751,11 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 /* [Phase 3 상품등록 개선] 관리자 패널 복수 선택 칩(다중 선택 항목 공용) */
 .adv-chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 /* [수정] 박수(복수 선택) 아래, 선택한 박수마다 출발 공항 칩 줄 */
+.ai-dur-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.ai-dur-row[hidden],.ai-dur-row [hidden]{display:none!important}
+.ai-dur-row input{flex:1 1 0;width:0;min-width:0;padding:8px 8px;font-size:.88rem}
+.ai-dur-row em{font-style:normal;color:var(--nm-text-soft,#667)}
+.ai-dur-row .ai-dur-suf{flex:0 0 auto;font-size:.8rem;color:var(--nm-text-soft,#667);white-space:nowrap}
 .ai-prox-range{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:nowrap}
 .ai-prox-range[hidden]{display:none}
 .ai-prox-range input{flex:1 1 0;width:0;min-width:0;padding:8px 6px;font-size:.85rem;text-align:center}
@@ -19921,6 +19926,44 @@ const AI_PROX_OPTS = [['in','숙소 안·도보 5분'], ['w10','도보 10분 이
 // 예전 단계 '30분 초과'(far)로 저장된 값은 '차량 1시간 초과'(far60)로 바꿔 저장한다(aiPlacesNorm이 불러올 때 변환, 다음 저장 때 반영)
 const AI_PROX_NEAR = ['in','w10','w15','v15'];
 const AI_PROX_HELP = '숙소에서 출발해 가는 데 걸리는 시간(편도). 숙소 안·도보 5분 / 도보 10분·15분 이내 / 차량 15분 이내까지를 \'가까움\'으로 판정하고, 20분·30분 이내는 \'조금 떨어짐\'으로 안내합니다. 시간이 범위로 알려진 곳은 \'차량/도보 몇 분~몇 분 소요\'를 고르고 분을 직접 입력하세요(최대 15분 이내면 \'가까움\'). 확인 안 되면 미확인.';
+// [추가] 소요 시간 값(골프장까지·공항에서) — 숫자(예전 입력 · 차량 기준 몇 분)는 그대로 두고, 'in:30'(30분 이내)·'vr:40-50'(차량 40~50분 소요)·'wr:10-15'(도보 10~15분 소요)를 같은 칸에 저장한다.
+// 분을 다 입력하기 전('vr:' · 'in:')에는 미확인으로 보고, 조건 판정(10분·30분·60분 이내)은 가장 긴 시간(이내는 그 시간, 범위는 최대)으로 한다
+function aiDurParse(v){
+  if (typeof v==='number' && isFinite(v)) return {mode:'n', a:v, b:''};
+  const t = String(v==null?'':v).trim(); if (!t) return {mode:'n', a:'', b:''};
+  if (/^\d+(?:\.\d+)?$/.test(t)) return {mode:'n', a:Number(t), b:''};
+  let m = /^in:(\d{1,3})?$/.exec(t); if (m) return {mode:'in', a:m[1]===undefined?'':Number(m[1]), b:''};
+  m = /^(vr|wr):(?:(\d{1,3})-(\d{1,3}))?$/.exec(t); if (m) return {mode:m[1], a:m[2]===undefined?'':Number(m[2]), b:m[3]===undefined?'':Number(m[3])};
+  return {mode:'n', a:'', b:'', bad:true};
+}
+function aiDurMax(v){
+  const d = aiDurParse(v);
+  if (d.mode==='vr' || d.mode==='wr') return (d.a!=='' && d.b!=='') ? Math.max(d.a, d.b) : null;
+  return d.a!=='' ? d.a : null;
+}
+function aiDurClean(v){ return aiDurMax(v)==null ? '' : v; }   // 분을 다 입력하지 않았거나 읽을 수 없는 값은 미확인
+function aiDurLabel(v){
+  const d = aiDurParse(v);
+  if (d.mode==='vr' || d.mode==='wr'){
+    if (d.a==='' || d.b==='') return (d.mode==='vr'?'차량':'도보')+' 소요 시간 미입력';
+    const lo = Math.min(d.a,d.b), hi = Math.max(d.a,d.b);
+    return `${d.mode==='vr'?'차량':'도보'} ${lo===hi ? lo : lo+'~'+hi}분 소요`;
+  }
+  if (d.mode==='in') return d.a==='' ? '분 이내 미입력' : `${d.a}분 이내`;
+  return d.a==='' ? String(v==null?'':v) : `약 ${d.a}분`;
+}
+function aiDurCompose(el){
+  const f = el.closest('.ai-info-f'), md = f.querySelector('select').value, a = f.querySelector('.ai-dur-a').value, b = f.querySelector('.ai-dur-b').value;
+  const n = x => Math.max(0, Math.round(Number(x)));
+  if (md==='vr' || md==='wr') return (a!=='' && b!=='') ? `${md}:${n(a)}-${n(b)}` : md+':';
+  if (md==='in') return a!=='' ? `in:${n(a)}` : 'in:';
+  return a!=='' ? Math.max(0, Number(a)) : '';
+}
+function aiDurShow(sel){
+  const f = sel.closest('.ai-info-f'), md = sel.value, rng = (md==='vr' || md==='wr');
+  const b = f.querySelector('.ai-dur-b'), t = f.querySelector('.ai-dur-tilde'), a = f.querySelector('.ai-dur-a'), sf = f.querySelector('.ai-dur-suf');
+  b.hidden = !rng; t.hidden = !rng; a.placeholder = rng ? '최소' : '미확인'; sf.textContent = md==='in' ? '분 이내' : '분 소요';
+}
 // 식사제공(숙소) 선택지 — 포함 / 호텔식 / 클럽식 / 자유식(불포함) / 불포함. 포함·호텔식·클럽식은 '식사 제공', 자유식·불포함은 '식사 미제공'으로 판정
 const AI_MEAL_OPTS = [['y','포함'], ['hotel','호텔식'], ['club','클럽식'], ['free','자유식(불포함)'], ['n','불포함']];
 const AI_MEAL_GIVEN = ['y','hotel','club'];
@@ -19963,8 +20006,8 @@ const AI_LODGE_FIELDS = [
   {k:'roomLayout', label:'객실 구성', type:'multi', opts:['침실1+욕실','침실1+거실+욕실','침실2+거실+주방+욕실','침실3+거실+주방+욕실'], help:'배정 가능한 객실의 공간 구성(여러 개 가능). 침실2+거실+주방+욕실은 콘도·빌라형처럼 일행이 한 객실을 함께 쓰는 구조.'},
   {k:'roomTypes', label:'가능 객실', type:'multi', opts:['1인실','2인실','4인실'], help:'실제로 배정 가능한 객실만 체크. 1인실은 추가요금이 있어도 가능하면 체크.'},
   {k:'breakfast', label:'식사제공', type:'meals3', keys:['breakfast','lunch','dinner'], names:['조식','중식','석식'], help:'숙소가 상품 요금에 포함해 제공하는 식사를 끼니별로 선택(포함 / 호텔식 / 클럽식 / 자유식(불포함) / 불포함). 호텔식·클럽식은 식사가 제공되는 것으로, 자유식은 미제공으로 판정합니다. 확인 안 되는 끼니는 \'미확인\'. 예전에 조식만 입력해 둔 값은 조식 칸에 그대로 남아 있습니다.'},
-  {k:'golfDistance', label:'골프장까지', type:'num', unit:'분', help:'차량 기준 편도 평균 시간. 골프장이 여러 곳이면 가장 자주 가는 곳 기준. 10분 이내·30분 이내 조건에 쓰입니다.'},
-  {k:'airportMin', label:'공항에서', type:'num', only:'overseas', unit:'분', help:'도착 공항→숙소 차량 편도 시간. 60분 이내 조건에 쓰입니다.'},
+  {k:'golfDistance', label:'골프장까지', type:'dur', unit:'분', help:'차량 기준 편도 평균 시간. 골프장이 여러 곳이면 가장 자주 가는 곳 기준. 시간이 범위로 알려졌거나 \'몇 분 이내\'로만 확인되면 입력 방식에서 \'몇 분 이내\'·\'차량/도보 몇 분~몇 분 소요\'를 고르세요. 10분 이내·30분 이내 조건에는 가장 긴 시간(범위는 최대)으로 판정합니다.'},
+  {k:'airportMin', label:'공항에서', type:'dur', only:'overseas', unit:'분', help:'도착 공항→숙소 차량 편도 시간. 범위로 알려졌거나 \'몇 분 이내\'로만 확인되면 입력 방식에서 \'몇 분 이내\'·\'차량/도보 몇 분~몇 분 소요\'를 고르세요. 60분 이내 조건에는 가장 긴 시간(범위는 최대)으로 판정합니다.'},
   {k:'elevator', label:'엘리베이터', type:'yn', yes:'있음', no:'없음', help:'객실 동에 엘리베이터가 있는지.'},
   {k:'nearFood', label:'현지 맛집', type:'prox', help:AI_PROX_HELP},
   {k:'nearCity', label:'시내(번화가)', type:'prox', help:AI_PROX_HELP},
@@ -20257,6 +20300,13 @@ function aiFieldHTML(fd, v, save, saveMulti, extraInput, hint, obj){
     return `<div ${box}>${lab}<div class="rtf-editable ai-rtf ${area?'ai-rtf-area':'ai-rtf-line'}" contenteditable="true" data-placeholder="${escapeAttr(fd.ph||'')}" style="min-height:${minH}px"
       oninput="${save(k,'aiRichNorm(this.innerHTML)')}" ${area?'':`onkeydown="if(event.key==='Enter')event.preventDefault()"`} onblur="if(this.innerHTML==='<br>')this.innerHTML=''">${init}</div></div>`;
   }
+  if (fd.type==='dur'){
+    const D = aiDurParse(v), md = D.mode, rng = (md==='vr' || md==='wr'), done = aiDurMax(v)!=null;
+    const dbox = `class="ai-info-f${done ? ' filled' : ''}${fd.wide ? ' ai-wide' : ''}" data-k="${k}"`;
+    const opts = [['n','몇 분 소요 (차량 기준)'], ['in','몇 분 이내'], ['vr','차량 몇 분~몇 분 소요'], ['wr','도보 몇 분~몇 분 소요']];
+    const inp = (cls, val, ph, hid) => `<input type="number" class="${cls}" min="0" max="999" step="1" inputmode="numeric" value="${val===''?'':escapeAttr(val)}" placeholder="${ph}" ${hid?'hidden':''} oninput="${save(k,'aiDurCompose(this)')}">`;
+    return `<div ${dbox}>${lab}<select data-nofill aria-label="소요 시간 입력 방식" onchange="${save(k,'aiDurCompose(this)')};aiDurShow(this)">${opts.map(([ov,ol])=>`<option value="${ov}" ${md===ov?'selected':''}>${ol}</option>`).join('')}</select><div class="ai-dur-row">${inp('ai-dur-a', D.a, rng?'최소':'미확인', false)}<em class="ai-dur-tilde" ${rng?'':'hidden'}>~</em>${inp('ai-dur-b', D.b, '최대', !rng)}<span class="ai-dur-suf">${md==='in'?'분 이내':'분 소요'}</span></div>${D.bad ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고): ${escapeAttr(String(v))}</small>` : ''}</div>`;
+  }
   if (fd.type==='num') return `<div ${box}>${lab}<input type="number" min="0" step="1" value="${aiInfoFilled(dv)?escapeAttr(dv):''}" placeholder="미확인" oninput="${save(k,"this.value===''?'':Number(this.value)")}"></div>`;
   return `<div ${box}>${lab}<input type="text" value="${escapeAttr(v||'')}" placeholder="${escapeAttr(fd.ph||'')}" oninput="${save(k,'this.value')}${extraInput||''}"></div>`;
 }
@@ -20341,7 +20391,7 @@ if (document.readyState==='loading') document.addEventListener('DOMContentLoaded
 document.addEventListener('input', aiFieldFillSync, true);
 document.addEventListener('change', aiFieldFillSync, true);
 function aiPlaceSummary(kind, x){
-  const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiInfoFilled(x.golfDistance) ? `골프장 ${x.golfDistance}분` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', aiLevelShort(x.courseLevel), x.famous==='y' ? '명문' : ''];
+  const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiDurMax(x.golfDistance)!=null ? `골프장 ${aiDurLabel(x.golfDistance).replace(/^약 /,'')}` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', aiLevelShort(x.courseLevel), x.famous==='y' ? '명문' : ''];
   return bits.filter(Boolean).join(' · ');
 }
 // 연결된 숙소·골프장 — 칩 목록 + 등록부에서 선택 + 새로 등록 + 각 항목 편집 카드(등록부 공용)
@@ -20383,7 +20433,7 @@ function aiLegacyBoxHTML(p, kind){
   if (!leg) return '';
   const word = kind==='lodge' ? '숙소' : '골프장';
   const fields = aiPlaceFields(kind);
-  const items = Object.keys(leg).filter(k=>k!=='legacy' && k!=='name' && aiInfoFilled(leg[k])).map(k=>{ const fd = fields.find(f=>f.k===k); const v = leg[k]; return `${fd?fd.label:k}: ${Array.isArray(v)?v.join('·'):(fd && fd.type==='prox' ? aiProxLabel(v) : (v==='y'?'예':(v==='n'?'아니오':aiPlainText(v))))}`; });
+  const items = Object.keys(leg).filter(k=>k!=='legacy' && k!=='name' && aiInfoFilled(leg[k])).map(k=>{ const fd = fields.find(f=>f.k===k); const v = leg[k]; return `${fd?fd.label:k}: ${Array.isArray(v)?v.join('·'):(fd && fd.type==='prox' ? aiProxLabel(v) : (fd && fd.type==='dur' ? aiDurLabel(v) : (v==='y'?'예':(v==='n'?'아니오':aiPlainText(v)))))}`; });
   return `<div class="ai-legacy"><b>이 상품에 직접 입력해 둔 ${word} 정보${leg.name?` (${escapeAttr(leg.name)})`:''}</b><p>${escapeAttr(items.join(' · '))}</p><button type="button" class="apc-btn-sm" onclick="aiMigrateLegacy('${kind}')">${word} 등록부로 옮기고 연결</button><span class="ai-info-note"> 옮기기 전까지도 추천 판정에는 그대로 쓰입니다.</span></div>`;
 }
 function aiAutoValTxt(fd, v){ return Array.isArray(v) ? v.join('·') : (fd && fd.type==='yn' ? (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) : aiPlainText(v)); }
@@ -23070,7 +23120,7 @@ function aiDetailTest(key, F){
   if (key==='dep_weekend' || key==='dep_weekday'){ if (!F.days.length) return {v:null, t:'출발 요일 미등록'}; const d = aiDaySet(F.days);
     const ok = key==='dep_weekend' ? ['금','토','일','공휴일'].some(x=>d.has(x)) : ['월','화','수','목'].some(x=>d.has(x)); return {v:ok, t:`출발 요일: ${F.days.join('·')}`}; }
   if (key==='short_flight'){ if (F.dom) return {v:null, t:'국내 상품 — 비행 없음'}; if (F.flightMin==null) return {v:null, t:'비행시간 미등록'}; return {v:F.flightMin<=180, t:`비행시간 약 ${Math.floor(F.flightMin/60)}시간${F.flightMin%60?` ${F.flightMin%60}분`:''}`}; }
-  if (key==='near_golf'){ const lr = aiMulti(F.lodges||[], x=>x.golfDistance, v=>Number(v)<=30, v=>`골프장까지 약 ${v}분`); if (lr) return lr; if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'}; if (F.golfMin==null) return {v:null, t:'숙소↔골프장 이동시간 미등록'}; return {v:F.golfMin<=30, t:`숙소↔골프장 약 ${F.golfMin}분`}; }
+  if (key==='near_golf'){ const lr = aiMulti(F.lodges||[], x=>aiDurClean(x.golfDistance), v=>aiDurMax(v)<=30, v=>`골프장까지 ${aiDurLabel(v)}`); if (lr) return lr; if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'}; if (F.golfMin==null) return {v:null, t:'숙소↔골프장 이동시간 미등록'}; return {v:F.golfMin<=30, t:`숙소↔골프장 약 ${F.golfMin}분`}; }
   if (key==='many_rounds' || key==='relaxed_rounds'){ if (F.perNight==null) return {v:null, t:'라운드·박수 정보 부족'}; const ok = key==='many_rounds' ? F.perNight>=1.5 : F.perNight<=1; return {v:ok, t:`1박당 약 ${F.perNight.toFixed(1)}라운드 (${F.roundsTxt.trim()})`}; }
   if (key==='meals_incl'){ if (!F.meals.trim()) return {v:null, t:'식사 정보 미등록'}; return {v:/중식|석식|전\s*일정|3식|올인클|all/i.test(F.meals), t:`식사: ${F.meals.slice(0,40)}`}; }
   if (key==='premium'){ const g = F.grade; if (!g || g.gradeIsDefault) return {v:null, t:'상품 등급 미지정'}; return {v:g.grade>=4, t:`상품 등급 ${g.gradeName}`}; }
@@ -23191,9 +23241,9 @@ function aiInfoTest(key, F){
   if (key==='meal:free'){ if (mealsSet) return {v:!(mealsSet.includes('중식') && mealsSet.includes('석식')), t:`포함 식사: ${mealsSet.join('·')} (나머지 자유식)${sfx('mealsIncl')}`}; return aiKwRes(F, ['자유식'], true, '식사 정보 미등록 — 상담 시 확인'); }
   if (key==='free_time') return yn('freeTime', '자유시간', ['자유시간','자유 시간','자유일정','자유 일정'], true);
   if (key==='move:apt60' && F.dom) return {v:null, t:'국내 상품 — 공항 이동 해당 없음'};
-  if (key==='move:apt60') return aiMulti(L, x=>x.airportMin, v=>Number(v)<=60, v=>`공항에서 약 ${v}분`) || {v:null, t:'공항↔숙소 이동시간 미등록 — 상담 시 확인'};
+  if (key==='move:apt60') return aiMulti(L, x=>aiDurClean(x.airportMin), v=>aiDurMax(v)<=60, v=>`공항에서 ${aiDurLabel(v)}`) || {v:null, t:'공항↔숙소 이동시간 미등록 — 상담 시 확인'};
   if (key==='move:golf10'){
-    const r = aiMulti(L, x=>x.golfDistance, v=>Number(v)<=10, v=>`골프장까지 약 ${v}분`); if (r) return r;
+    const r = aiMulti(L, x=>aiDurClean(x.golfDistance), v=>aiDurMax(v)<=10, v=>`골프장까지 ${aiDurLabel(v)}`); if (r) return r;
     if (F.lodge==='inside') return {v:true, t:'골프장 안 숙박'};
     if (F.golfMin!=null) return {v:F.golfMin<=10, t:`숙소↔골프장 약 ${F.golfMin}분`};
     return {v:null, t:'숙소↔골프장 이동시간 미등록 — 상담 시 확인'};

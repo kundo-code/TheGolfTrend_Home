@@ -1,6 +1,6 @@
 # THE GOLF TREND (더골프트렌드)
 
-> (주)더골프트렌드가 상담·예약을 받는 국내·해외 골프여행 패키지 28개의 안내입니다. 상품마다 일정·요금·포함 사항·골프장과 숙소 정보를 확인할 수 있습니다. 요금·일정은 변동될 수 있으니 상담 시 최종 확인이 필요합니다. (등록 정보 기준일 2026-11-20)
+> (주)더골프트렌드가 상담·예약을 받는 국내·해외 골프여행 패키지 28개의 안내입니다. 상품마다 일정·요금·포함 사항·골프장과 숙소 정보를 확인할 수 있습니다. 요금·일정은 변동될 수 있으니 상담 시 최종 확인이 필요합니다. (등록 정보 기준일 2026-11-24)
 
 ## 회사·상담
 
@@ -23,11 +23,10 @@
 
 ## 해외 골프여행
 
-### [일본](https://thegolftrend.co.kr/golf/japan/) (3개)
+### [일본](https://thegolftrend.co.kr/golf/japan/) (2개)
 
 - [구마모토 시내숙박 & 3색 골프 여행 【10~12월】](https://thegolftrend.co.kr/golf/japan/p-mvm8ojp62o4pit/): 3박 · 그린피·3R · 골프장 外 숙박 · 항공 포함 · 999,000원 ~부터
-- [누마즈시 2색 골프&온천+시내호텔 【동계시즌(12~2월) · 3·11월】](https://thegolftrend.co.kr/golf/japan/p-mvm8ojp6o6jfd2/): 3박 · 그린피·3R + 카트·3회 · 골프장 外 숙박 · 항공 포함 · 1,690,000원 ~부터
-- [후지산 고텐바 다색 골프&리조트 호텔 【3~11월】](https://thegolftrend.co.kr/golf/japan/p-mvm8ojp6hd5qmr/): 3박 / 4박 · 그린피·3R/4R · 골프장 外 숙박 · 990,000원 ~부터
+- [누마즈시 2색 골프&온천+시내호텔(8인 이상 기준 요금) 【동계시즌(12~2월) · 3·11월】](https://thegolftrend.co.kr/golf/japan/p-mvm8ojp6o6jfd2/): 3박 · 그린피·3R + 카트·3회 · 골프장 外 숙박 · 항공 포함 · 1,590,000원 ~부터
 
 ### [중국](https://thegolftrend.co.kr/golf/china/) (2개)
 
@@ -46,10 +45,11 @@
 - [이스턴 스타 C.C. 골프 & 리조트 【동계시즌(12~2월)】](https://thegolftrend.co.kr/golf/thailand/p-mvm8ojp730zy2a/): 3박 · 그린피·3R · 골프장 內 숙박 · 항공 불포함 · 별도문의
 - [명문 골프장 & 시내 숙박 - 프리미엄 【동계시즌(12~2월)】](https://thegolftrend.co.kr/golf/thailand/p-mvm8ojp7c0nad6/): 3박 · 그린피·3R · 골프장 外 숙박 · 항공 불포함 · 별도문의
 
-### [말레이시아](https://thegolftrend.co.kr/golf/malaysia/) (2개)
+### [말레이시아](https://thegolftrend.co.kr/golf/malaysia/) (3개)
 
-- [사우자나 임피안cc_단박일정 【1~2월】](https://thegolftrend.co.kr/golf/malaysia/p-mvm8ojp77h163g/): 3박 / 4박 / 5박 · 그린피·3R / 4R / 5R · 골프장 外 숙박 · 항공 포함 · 1,400,000원 ~부터
+- [사우자나 임피안cc & 시내호텔 한달살기~! 【1~2월】](https://thegolftrend.co.kr/golf/malaysia/p-mwszkr9x1wb9gm/): 25박 / 장박 · 그린피·1R (1박 기준) · 골프장 外 숙박 · 항공 포함 · 4,490,000원
 - [사우자나 임피안cc & 시내호텔_ 7박 이상 【1~2월】](https://thegolftrend.co.kr/golf/malaysia/p-mvm8ojp7oqm7kz/): 장박 · 그린피·1R (1박 기준) · 골프장 外 숙박 · 항공 불포함 · 170,000원
+- [사우자나 임피안cc_단박일정 【1~2월】](https://thegolftrend.co.kr/golf/malaysia/p-mvm8ojp77h163g/): 3박 / 4박 / 5박 · 그린피·3R / 4R / 5R · 골프장 外 숙박 · 항공 포함 · 1,400,000원 ~부터
 
 ## 국내 골프여행
 

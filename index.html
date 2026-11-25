@@ -1052,6 +1052,8 @@ section.block{padding:100px 24px;position:relative}
 .pd-gallery-nav.prev{left:12px}.pd-gallery-nav.next{right:12px}
 .pd-cap{position:absolute;right:12px;bottom:12px;z-index:3;max-width:calc(100% - 24px);padding:6px 12px;border-radius:10px;background:rgba(0,0,0,.31);backdrop-filter:blur(6px);color:#fff;font-size:.82rem;font-weight:600;line-height:1.35;text-align:right;letter-spacing:.02em;display:none;overflow-wrap:anywhere} /* 사진별 설명 — 우측 하단(예전 "1 / N" 자리), 어두운 반투명 배경 */
 .pd-cap.active{display:block}
+/* [수정] 모바일: 이미지 위 사진 설명 영역(박스·글자)을 지금보다 80% 크기로 */
+@media(max-width:780px){.pd-cap{right:9.6px;bottom:9.6px;max-width:calc(100% - 19.2px);padding:4.8px 9.6px;border-radius:8px;font-size:.656rem}}
 /* "1 / N" 페이지 표시 — 이미지 갤러리 제목 줄 우측 끝 */
 .pd-gallery-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pd-gallery-title-txt{min-width:0}
@@ -1303,6 +1305,13 @@ section.block{padding:100px 24px;position:relative}
 .pd-pe-departure-day-label .dd-value{color:#000}
 /* [추가] "출발 요일"과 선택한 요일 값 사이 구분선 — 가독성 향상 */
 .pd-pe-departure-day-label .dd-divider{width:1px;align-self:stretch;background:rgba(37,99,235,.25)}
+.pd-pe-departure-day-label .dd-label{white-space:nowrap}
+/* [수정] 카드 대표 요금의 "출발 요일"·"적용 기간" — 한 줄에 다 넣으면 좁은 화면에서 글자가 잘리므로 두 줄(각 줄: 레이블 | 값)로 나눠 보여 준다 */
+.pd-pe-departure-day-label.dd-two{display:flex;flex-direction:column;align-items:stretch;gap:8px;box-sizing:border-box;max-width:100%}
+.pd-pe-departure-day-label.dd-two .dd-row{display:flex;align-items:center;gap:9px;min-width:0}
+.pd-pe-departure-day-label.dd-two .dd-label{flex:0 0 auto;min-width:6em}
+.pd-pe-departure-day-label.dd-two .dd-value{min-width:0;overflow-wrap:anywhere}
+@media(max-width:480px){.pd-pe-departure-day-label.dd-two .dd-value{font-size:10pt}.pd-pe-departure-day-label.dd-two{padding:8px 10px}}
 /* 요금 항목이 없는 상품의 통합 요금표 — 요일별·공휴일 요금표는 예전 "출발 요일별 요금" 섹션과 같은 폭·간격으로(카드 안쪽 여백만큼 바깥으로 넓혀 왼쪽으로 쏠리지 않게) */
 .pd-price-entry.pd-price-merged .pd-day-price-table,.pd-price-entry.pd-price-merged .pd-holiday-price-row{margin-left:-13px;margin-right:-13px}
 .pd-price-entry.pd-price-head{cursor:default}
@@ -7368,7 +7377,9 @@ function extraFeesDetailHTML(list){
   return out;
 }
 function dpTitleEmpty(t){ t=String(t||''); return !(/<[a-z]/i.test(t) ? richToPlain(t) : t).trim(); }
-function dpRenderSections(list, cellFn, valid, wrapFn, lead){
+// xcls: 부제목·간격 줄에도 붙이는 클래스 — 요금 항목 카드의 "화면용/공유 캡처용" 이중 렌더(pe-only-screen / pe-only-capture)에서 캡처용 부제목이 화면에 새어 나오지 않게 한다
+function dpRenderSections(list, cellFn, valid, wrapFn, lead, xcls){
+  const X = xcls ? ' '+xcls : '';
   const L=list||[];
   if (!L.some(dpIsMarker)){ const cells=L.filter(valid).map(cellFn); return cells.length ? wrapFn(cells) : ''; }
   const segs=[]; let gaps=[], seg=null;
@@ -7391,18 +7402,18 @@ function dpRenderSections(list, cellFn, valid, wrapFn, lead){
       if (!els.some(e=>e.c!==undefined)) return;
     }
     // lead: 바로 위에 다른 요금표(출발 요일별 요금)가 있으면 맨 앞 구분선도 그 사이 간격으로 남긴다
-    if (!first || lead) out += pend.map(line=>`<div class="pd-dp-gap${line?' dp-line':''}"></div>`).join('');
+    if (!first || lead) out += pend.map(line=>`<div class="pd-dp-gap${line?' dp-line':''}${X}"></div>`).join('');
     pend=[]; first=false;
     let run=[];
     const flush=()=>{ if (run.length){ out+=wrapFn(run); run=[]; } };
     els.forEach(e=>{
-      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)){ const bs=e.box?cardTagBoxStyle(e.bg):''; out+=`<div class="pd-dp-sub${e.box?' pd-dp-box':''}${e.box&&e.shadow?' pd-dp-shade':''}${e.ind?' dp-ind-'+e.ind:''}"${bs?` style="${bs}"`:''}>${dpTitleHTML(e.t)}</div>`; } }
+      if (e.t!==undefined){ flush(); if (!dpTitleEmpty(e.t)){ const bs=e.box?cardTagBoxStyle(e.bg):''; out+=`<div class="pd-dp-sub${e.box?' pd-dp-box':''}${e.box&&e.shadow?' pd-dp-shade':''}${e.ind?' dp-ind-'+e.ind:''}${X}"${bs?` style="${bs}"`:''}>${dpTitleHTML(e.t)}</div>`; } }
       else run.push(e.c);
     });
     flush();
   });
   // 맨 아래 구분선(과 금액이 없어 숨겨진 구간 뒤의 구분선)도 입력한 개수만큼 아래쪽 간격으로 남긴다(선 노출을 켠 것만 선 표시)
-  if (!first) out += pend.concat(gaps).map(line=>`<div class="pd-dp-gap${line?' dp-line':''}"></div>`).join('');
+  if (!first) out += pend.concat(gaps).map(line=>`<div class="pd-dp-gap${line?' dp-line':''}${X}"></div>`).join('');
   return out;
 }
 // 특정일 지정 — 출발 요일 값("월" · "월~목" · "매일출발")에 해당 요일이 포함되는지
@@ -7487,7 +7498,7 @@ function dayPriceSectionsHTML(list, cls, dd){
   return dpRenderSections(list, d=>{
     const dcls = d.day==='토' ? 'sat' : (d.day==='일' ? 'sun' : (d.day==='금' ? 'fri' : '')); // 구간(일~화 등)·여러 요일은 요일 글자만 각자 색
     return `<div class="pd-day-price-cell ${dcls}"><div class="d${dpDayList(d.day).length>1?' multi':''}">${dpDayDisplayHTML(d.day)}</div><div class="v">${fmtPrice(d.price)}<span class="unit">${curUnit(d.currency)}</span></div>${priceDiscountPct(d.original, d.price) ? `<div class="was"><s>${fmtMoney(d.original, d.currency)}</s><em>${priceDiscountPct(d.original, d.price)}% ↓</em></div>` : ''}${specificDatesHTML(d.day, dd, d)}</div>`;
-  }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table dp-n${cells.length>=3?'m':cells.length}${cls?' '+cls:''}">${cells.join('')}</div>`);
+  }, d=>d.day && d.price, cells=>`<div class="pd-day-price-table dp-n${cells.length>=3?'m':cells.length}${cls?' '+cls:''}">${cells.join('')}</div>`, false, cls);
 }
 // 공휴일 요금 한 칸의 금액 부분(외화 추가요금은 원화 환산 값, 할인 표시 포함)
 function holValueHTML(h){
@@ -7514,7 +7525,7 @@ function holidaySectionsHTML(list, cls, lead){
       return `<div class="pd-holiday-price-row hol-same${cls?' '+cls:''}"><div class="hs-dates">${lines}</div><div class="hs-price">${items[0].v}</div></div>`;
     }
     return `<div class="pd-holiday-price-row${items.some(it=>it.range)?' hol-lines':''}${cls?' '+cls:''}">${items.map(it=>`<div class="pd-holiday-price-item${it.range?' is-range':''}"><span class="dt">${escapeAttr(it.label)}</span>${it.v}</div>`).join('')}</div>`;
-  }, lead);
+  }, lead, cls);
 }
 // 일정은 Tee Off Time(레이블에 저장됨)과 한 묶음으로 비교한다. 노출 체크를 끈 일정은 "값 없음"
 function _peSchKey(v){
@@ -16700,9 +16711,9 @@ function renderProductDetail(p,cat,idx){
     const fbTopHTML = `<div class="prices">
             ${fbInquiry ? `<span class="price-sale">${priceInquiryHTML(p)}</span>` : (fbFrom>0 ? `<span class="price-sale">${fmtPrice(fbFrom)}<span class="unit">${curUnit(p.fromCurrency)}${p.fromLabel!==false?' ~부터':''}</span></span>${priceDiscountPct(p.fromOriginal, fbFrom) ? `<span class="price-original">${fmtMoney(p.fromOriginal, p.fromCurrency)}${p.fromLabel!==false?' ~부터':''}</span><span class="discount">${priceDiscountPct(p.fromOriginal, fbFrom)}% ↓</span>` : ''}` : '')}
           </div>
-          ${(!fbInquiry && fbFrom>0 && (fbDays.length || fbPeriod)) ? `<div class="pd-pe-departure-day-label">
-            ${fbDays.length?`<span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span>`:''}
-            ${fbPeriod?`<span class="dd-label" style="margin-left:${fbDays.length?'12px':'0'}">🗓 적용 기간</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(fbPeriod)}</span>`:''}
+          ${(!fbInquiry && fbFrom>0 && (fbDays.length || fbPeriod)) ? `<div class="pd-pe-departure-day-label dd-two">
+            ${fbDays.length?`<div class="dd-row"><span class="dd-label">📅 출발 요일</span><span class="dd-divider"></span><span class="dd-value">${depDayHTML(fbDays)}</span></div>`:''}
+            ${fbPeriod?`<div class="dd-row"><span class="dd-label">🗓 적용 기간</span><span class="dd-divider"></span><span class="dd-value">${escapeAttr(fbPeriod)}</span></div>`:''}
           </div>` : ''}`;
     const fbSpecificHTML = !plan.departureDay.key ? specificDatesRowHTML(leftoverSpecificDates(p.commonDayPrices, p.commonDayDates), '') : '';
     if (!visiblePriceEntries.length){

@@ -19486,7 +19486,7 @@ function advDetailsAttrs(key, dflt){
 }
 // [수정] 상품 고급 편집의 6개 큰 항목(그룹)은 한 번에 하나만 펼친다 — 하나를 펼치면 나머지(이전에 수정하던 항목)는 자동으로 접힌다.
 // "모두 펼치기"를 누른 동안에는 이 동작을 잠시 멈춘다. 항목 안쪽 세부 섹션·요금 항목은 영향 없음
-const ADV_GROUP_KEYS = ['g-card','g-expose','g-title','g-detail','g-entries','g-ai'];
+const ADV_GROUP_KEYS = ['g-card','g-expose','g-price','g-title','g-detail','g-entries','g-ai'];
 let advAccordionPaused = false;
 function advSaveOpenState(){ try{ localStorage.setItem(ADV_OPEN_KEY, JSON.stringify(advOpenState)); }catch(e){} }
 // 방금 연 그룹(el) 말고 펼쳐진 그룹을 모두 접는다 — 접힌 그룹 중 el보다 위에 있던 것이 있으면 true(그만큼 el이 위로 밀리므로 위치를 다시 맞춰야 함)
@@ -19556,8 +19556,10 @@ function advBasicHTML(p){
   const f = v => advFilled(v) ? 1 : 0;
   // ── 상태 배지 계산 ──
   const exposeN = f(p.editorsPick) + f(productEffMonths(p).length ? 'y' : '');
-  const cardKeys = [p.titleMedia&&p.titleMedia.url, p.from, p.checkpoint1, cardTagsOf(p).length?'y':'', p.checkpoint2||p.commonPrecautions];
+  const cardKeys = [p.titleMedia&&p.titleMedia.url];
   const cardN = cardKeys.filter(advFilled).length;
+  const priceKeys = [p.from, p.checkpoint1, cardTagsOf(p).length?'y':'', p.checkpoint2||p.commonPrecautions];   // 💰 가격 · 태그 · 체크포인트 그룹
+  const priceN = priceKeys.filter(advFilled).length;
   const titleKeys = [p.title, p.titleRegion, p.titleSub, p.metaDesc, p.nights];
   const titleN = titleKeys.filter(advFilled).length;
   const basicN = [p.minPeople, p.rounds, (p.airfareIncluded&&p.airfareIncluded!=='none')?'y':'', p.stay, p.meals].filter(advFilled).length;
@@ -19577,6 +19579,7 @@ function advBasicHTML(p){
     <div class="adv-quicknav">
       <button type="button" onclick="advJump('g-card')">🃏 상품 카드</button>
       <button type="button" onclick="advJump('g-expose')">⚙️ 노출 설정</button>
+      <button type="button" onclick="advJump('g-price')">💰 가격 · 태그</button>
       <button type="button" onclick="advJump('g-title')">📝 제목 · 기본 정보</button>
       <button type="button" onclick="advJump('g-detail')">📄 자세히 보기</button>
       <button type="button" onclick="advJump('g-entries')">💳 요금 항목 <b>${nEntries}</b></button>
@@ -19595,7 +19598,7 @@ function advBasicHTML(p){
 
     <!-- ═══ 🃏 상품 카드 — 상품 목록 카드에 노출되는 항목 ═══ -->
     <details class="adv-group" ${advDetailsAttrs('g-card', false)}>
-      <summary><span class="adv-g-title">🃏 상품 카드</span><span class="adv-where">이미지 · 레이블 · 가격 · 태그 · 체크포인트</span>${advFillBadge(cardN, cardKeys.length)}</summary>
+      <summary><span class="adv-g-title">🃏 상품 카드</span><span class="adv-where">이미지 · 레이블</span>${advFillBadge(cardN, cardKeys.length)}</summary>
       <div class="adv-group-body">
         ${sub('🖼 이미지')}
         <!-- [Phase 3 상품등록 개선] 타이틀 이미지 — 카드·자세히 보기 상단 대표 이미지 -->
@@ -19629,6 +19632,41 @@ function advBasicHTML(p){
           </div>
         </details>
 
+
+
+
+
+      </div>
+    </details>
+
+    <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-expose', false)}>
+      <summary><span class="adv-g-title">⚙️ 노출 · 분류 설정</span><span class="adv-where">EDITOR'S PICK · 추천 판매 시기</span>${advFillBadge(exposeN, 2)}</summary>
+      <div class="adv-group-body">
+        <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px;margin:0">
+            <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
+            <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
+          </label>
+          <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
+          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
+            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
+            <span class="toggle-slider"></span>
+            <span class="pt-lbl">팝업 노출</span>
+          </label>
+        </div>
+        <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
+        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsMulti(${val})`)}
+        <div class="season-chip-row">${chipMultiHTML(SEASON_TAGS.map(t=>[t.key,t.label]), p.seasonTags, val=>`toggleProductSeasonTag('${val}')`)}</div>
+        <div class="file-hint" style="margin-top:4px">시즌 버튼을 고르면 상품 카드 제목 우측 "【 … 】" 자리에 시즌 이름이 그대로 나오고, 그 시즌에 속한 달도 기간별 소팅·자동 비노출 판단에 함께 쓰입니다</div>
+      </div>
+    </details>
+
+    <!-- ═══ 💰 가격 · 태그 · 체크포인트 — 상품 카드의 가격·카드 태그·체크포인트1·2 (노출 · 분류 설정 아래로 분리) ═══ -->
+    <details class="adv-group" ${advDetailsAttrs('g-price', false)}>
+      <summary><span class="adv-g-title">💰 가격 · 태그 · 체크포인트</span><span class="adv-where">카드 표시 최저가 · 카드 태그 · 체크포인트1·2</span>${advFillBadge(priceN, priceKeys.length)}</summary>
+      <div class="adv-group-body">
         ${sub('💰 가격 · 태그')}
         <!-- [수정] "카드 표시 최저가" 항목만 박스+음영으로 감싸 다른 필드와 시각적으로 구분 -->
         <div class="cardprice-box">
@@ -19704,32 +19742,6 @@ function advBasicHTML(p){
             <button type="button" class="apc-btn-sm" onclick="advJumpCp('checkpoint2')">"포함 · 불포함 · 참고사항"에서 ${(p.checkpoint2||p.commonPrecautions)?'수정':'입력'} →</button>
           </div>
         </div>
-
-
-      </div>
-    </details>
-
-    <!-- ═══ ⚙️ 노출 · 분류 설정 ═══ -->
-    <details class="adv-group" ${advDetailsAttrs('g-expose', false)}>
-      <summary><span class="adv-g-title">⚙️ 노출 · 분류 설정</span><span class="adv-where">EDITOR'S PICK · 추천 판매 시기</span>${advFillBadge(exposeN, 2)}</summary>
-      <div class="adv-group-body">
-        <!-- [Phase 3 상품등록 개선] EDITOR'S PICK 등록 -->
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:rgba(221,179,103,.08);border:1px solid rgba(221,179,103,.3);border-radius:10px">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:220px;margin:0">
-            <input type="checkbox" style="width:auto;flex-shrink:0" ${p.editorsPick?'checked':''} onchange="updateEditorsPick(this.checked)">
-            <span style="font-size:.85rem;font-weight:700;color:var(--gold);text-transform:none;letter-spacing:normal">✨ EDITOR'S PICK 등록 — 히어로 "이번 주 추천"에 국내/해외로 구분 노출</span>
-          </label>
-          <!-- [수정] EDITOR'S PICK 등록 상품 카드를 홈 진입 시 팝업으로도 노출할지 설정 (항목별 요금표 팝업과 별개) -->
-          <label class="popup-toggle ${!p.editorsPick?'locked':''}" title="${!p.editorsPick?"EDITOR'S PICK으로 등록해야 팝업 노출을 설정할 수 있습니다":'홈 진입 시 이 상품 카드를 팝업으로 노출'}">
-            <input type="checkbox" ${p.editorsPickPopup?'checked':''} ${!p.editorsPick?'disabled':''} onchange="updateAdvField('editorsPickPopup',this.checked)">
-            <span class="toggle-slider"></span>
-            <span class="pt-lbl">팝업 노출</span>
-          </label>
-        </div>
-        <label>추천 판매 시기 ${hint('(복수 선택 가능 · 미선택 시 모든 시기에 노출 · 권역별=월 단위, 국가별=시즌 단위 소팅에 사용)')}</label>
-        ${chipMultiHTML(MONTH_OPTS.map(m=>[m,monthChipLabel(m)]), p.months, val=>`toggleProductMonthsMulti(${val})`)}
-        <div class="season-chip-row">${chipMultiHTML(SEASON_TAGS.map(t=>[t.key,t.label]), p.seasonTags, val=>`toggleProductSeasonTag('${val}')`)}</div>
-        <div class="file-hint" style="margin-top:4px">시즌 버튼을 고르면 상품 카드 제목 우측 "【 … 】" 자리에 시즌 이름이 그대로 나오고, 그 시즌에 속한 달도 기간별 소팅·자동 비노출 판단에 함께 쓰입니다</div>
       </div>
     </details>
 
@@ -20715,10 +20727,10 @@ function cpResetBg(btn){
   const ed=btn.closest('.cp-editor').querySelector('.rtf-editable');
   ed.setAttribute('style', (ed.getAttribute('style')||'').replace(/background:[^;]*;?|border-color:[^;]*;?|(^|;)color:[^;]*;?/g,'$1'));
 }
-// 체크포인트 편집기로 이동 — checkpoint1(주의사항)은 상품 카드 그룹, checkpoint2(참고사항)는 "포함 · 불포함 · 참고사항"에 있다
+// 체크포인트 편집기로 이동 — checkpoint1(주의사항)은 "가격 · 태그 · 체크포인트" 그룹, checkpoint2(참고사항)는 "포함 · 불포함 · 참고사항"에 있다
 function advJumpCp(field){
   const open = k=>{ const d=document.querySelector(`#advBody details[data-ck="${k}"]`); if (d) d.open=true; return d; };
-  if (field==='checkpoint2'){ const g = open('g-detail'); open('d-inc'); if (g){ advOpenState['g-detail']=true; advCloseOtherGroups(g); } } else { const g = open('g-card'); if (g){ advOpenState['g-card']=true; advCloseOtherGroups(g); } }
+  if (field==='checkpoint2'){ const g = open('g-detail'); open('d-inc'); if (g){ advOpenState['g-detail']=true; advCloseOtherGroups(g); } } else { const g = open('g-price'); if (g){ advOpenState['g-price']=true; advCloseOtherGroups(g); } }
   const el=document.querySelector(`#advBody .cp-editor[data-field="${field}"]`); if (!el) return;
   const body=document.getElementById('advBody'), nav=body.querySelector('.adv-sticky-head');
   body.scrollTo({top: body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav?nav.offsetHeight:0) - 10, behavior:'smooth'});

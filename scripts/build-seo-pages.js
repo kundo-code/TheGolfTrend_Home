@@ -114,6 +114,7 @@ function extractInPage() {
     if (Array.isArray(v)) { const sub = f.sub ? '' : ''; return v.join(', ') + sub; }
     if (f.type === 'yn') return v === 'y' ? (f.yes || '예') : (f.no || '아니오');
     if (f.type === 'num') return v + (f.unit || '');
+    if (f.type === 'dur') return /^\d+(\.\d+)?$/.test(String(v)) ? v + (f.unit || '') : aiDurLabel(v);   // 소요 시간: 숫자는 "22분", 이내·범위는 "30분 이내"·"차량 40~50분 소요"
     return typeof v === 'string' && v.indexOf('<') >= 0 ? plain(v) : String(v);   // 서식(HTML)이 들어간 값은 글자만
   };
   const placeFacts = (fields, place, skip) => {
@@ -121,6 +122,7 @@ function extractInPage() {
     fields.forEach(f => {
       if (skip.includes(f.k) || f.type === 'prox' || f.type === 'cat') return;
       let v = place[f.k]; if (f.k === 'practice') { if (!filled(v)) return; const items = place.practiceItems; out.push([f.label, v === 'y' ? ((items && items.length ? items.join(', ') : f.yes || '있음')) : (f.no || '없음')]); return; }
+      if (f.type === 'dur' && aiDurMax(v) == null) return;   // 분을 다 입력하지 않은 소요 시간은 쓰지 않는다
       if (!filled(v)) return; out.push([f.label, fmtField(f, v)]);
     });
     return out;

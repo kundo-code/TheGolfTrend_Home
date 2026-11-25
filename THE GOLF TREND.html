@@ -20148,7 +20148,7 @@ function aiAutoInfo(p, pe, dom){
   }
   // 출발 가능 인원 — 최소 인원
   const mp = /(\d+)/.exec(String(eff('minPeople')||''));
-  if (mp){ const n = Number(mp[1]); set('paxOk', ['2인','3인','4인'].filter(x=>parseInt(x,10)>=n), '최소 출발 인원');   // 8인은 관리자가 직접 체크한 값만 쓴다(최소 인원으로 자동 추정하지 않음) }
+  if (mp){ const n = Number(mp[1]); set('paxOk', ['2인','3인','4인'].filter(x=>parseInt(x,10)>=n), '최소 출발 인원'); /* 8인은 관리자가 직접 체크한 값만 쓴다(최소 인원으로 자동 추정하지 않음) */ }
   // 상품 구성 — 요금 항목 강조 태그(실속·특가·일반) 또는 상품 문구의 '올인원'
   const emphOf = e => Array.isArray(e.emphasis) ? e.emphasis : (e.emphasis ? [e.emphasis] : []);
   const pkgOf = ems => ems.some(t=>String(t).startsWith('특가')) ? '특가' : (ems.includes('실속') ? '실속형' : (ems.includes('일반') ? '일반형' : ''));

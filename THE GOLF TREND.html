@@ -12089,42 +12089,37 @@ function rtfPickBox(el, c){
   document.documentElement.style.setProperty('--rtf-cur-box', c);
   rtfCmd(el, 'box', c);
 }
-// 선택 영역의 글자 조각마다 <span class="rtf-box" style="background-color:…">로 감싼다(이미 박스 안이면 색만 바꾸고, 바로 이웃한 같은 색 박스는 하나로 합친다).
+// 선택한 글자 전체를 하나의 <span class="rtf-box" style="background-color:…">로 통째로 감싼다 — 줄바꿈(Enter·Shift+Enter)이 섞여 있어도 줄마다 쪼개지지 않고
+// 하나의 박스가 된다. 이미 박스 안의 글자만 선택했으면 그 박스의 색만 바꾸고, 선택 안에 들어 있던 기존 박스는 풀어서 하나로 합친다.
 // color가 없으면(박스✕) 선택 영역에 걸친 박스를 풀어 준다
 function rtfBoxApply(editable, color){
   const sel = window.getSelection();
   if (!sel || !sel.rangeCount){ rtfNoTargetHint('박스로 감쌀 글자를 먼저 선택하세요'); return; }
   const range = sel.getRangeAt(0);
   if (range.collapsed || !editable.contains(range.commonAncestorContainer)){ rtfNoTargetHint('박스로 감쌀 글자를 먼저 선택하세요'); return; }
-  const root = range.commonAncestorContainer.nodeType===3 ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer;
-  const parts = [];
-  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let t; while ((t = w.nextNode())){
-    if (!range.intersectsNode(t) || !t.nodeValue.length) continue;
-    const st = t===range.startContainer ? range.startOffset : 0, en = t===range.endContainer ? range.endOffset : t.nodeValue.length;
-    if (en>st) parts.push({t, st, en});
+  const boxOf = n => { const el = n.nodeType===3 ? n.parentNode : n; return el && el.closest ? el.closest('.rtf-box') : null; };
+  if (!color){   // 박스 지우기 — 선택 영역에 걸친 박스를 모두 풀어 준다
+    const hit = new Set();
+    const root = range.commonAncestorContainer.nodeType===3 ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer;
+    const sb = boxOf(range.startContainer), eb = boxOf(range.endContainer);
+    if (sb && editable.contains(sb)) hit.add(sb);
+    if (eb && editable.contains(eb)) hit.add(eb);
+    root.querySelectorAll('.rtf-box').forEach(bx=>{ if (range.intersectsNode(bx)) hit.add(bx); });
+    const rb = boxOf(root); if (rb && editable.contains(rb)) hit.add(rb);
+    hit.forEach(bx=>bx.replaceWith(...bx.childNodes));
+    return;
   }
-  const made = [];
-  parts.reverse().forEach(({t, st, en})=>{
-    let node = t;
-    if (en < node.nodeValue.length) node.splitText(en);
-    if (st > 0) node = node.splitText(st);
-    const boxed = node.parentNode && node.parentNode.closest ? node.parentNode.closest('.rtf-box') : null;
-    if (!color){ if (boxed && editable.contains(boxed)) boxed.replaceWith(...boxed.childNodes); return; }
-    if (!/\S/.test(node.nodeValue)) return;   // 공백뿐인 조각은 박스로 감싸지 않는다
-    if (boxed && editable.contains(boxed)){ boxed.style.backgroundColor = color; made.push(boxed); return; }
-    // 굵게·밑줄 같은 서식 요소가 이 글자만 품고 있으면 그 요소째 감싸, 서식이 바뀌는 자리에서 박스가 둘로 쪼개지지 않게 한다
-    let target = node;
-    while (target.parentNode && target.parentNode!==editable && /^(B|I|U|S|STRONG|EM|STRIKE|FONT|SPAN)$/.test(target.parentNode.tagName) && target.parentNode.childNodes.length===1 && !target.parentNode.classList.contains('rtf-box')) target = target.parentNode;
-    const sp = document.createElement('span');
-    sp.className = 'rtf-box'; sp.style.backgroundColor = color;
-    target.parentNode.insertBefore(sp, target); sp.appendChild(target);
-    made.push(sp);
-  });
-  made.forEach(b=>{   // 바로 이웃한(사이에 글자가 없는) 같은 색 박스는 하나로 합친다
-    const prev = b.previousSibling;
-    if (prev && prev.nodeType===1 && prev.classList.contains('rtf-box') && prev.style.backgroundColor===b.style.backgroundColor){ while (b.firstChild) prev.appendChild(b.firstChild); b.remove(); }
-  });
+  const sb = boxOf(range.startContainer);
+  if (sb && editable.contains(sb) && sb===boxOf(range.endContainer)){ sb.style.backgroundColor = color; return; }   // 박스 안의 글자만 선택 → 색만 바꾼다
+  const frag = range.extractContents();
+  frag.querySelectorAll('.rtf-box').forEach(bx=>bx.replaceWith(...bx.childNodes));   // 선택 안의 기존 박스는 하나로 합친다
+  if (!frag.textContent.replace(/\s/g,'') && !frag.querySelector('br,img')){ range.insertNode(frag); return; }   // 공백뿐이면 감싸지 않는다
+  const sp = document.createElement('span');
+  sp.className = 'rtf-box'; sp.style.backgroundColor = color;
+  sp.appendChild(frag);
+  range.insertNode(sp);
+  editable.querySelectorAll('div,p').forEach(d=>{ if (!d.firstChild && !sp.contains(d)) d.remove(); });   // 줄 일부를 잘라 내고 남은 빈 줄 정리
+  const r = document.createRange(); r.selectNodeContents(sp); sel.removeAllRanges(); sel.addRange(r);
 }
 document.documentElement.style.setProperty('--rtf-cur-bg', _rtfBg);
 // [추가] 공용 색상 팔레트 — 관리자 패널의 모든 색상 변경(글자 색상·태그/체크포인트/대표 문구 박스 색상·화면 테마·위젯 글자색)이

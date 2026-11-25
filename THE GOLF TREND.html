@@ -1270,7 +1270,7 @@ section.block{padding:100px 24px;position:relative}
    공항" 레이블 줄과 같은 왼쪽 기준선에 맞춰지도록, 그리고 가로 폭을 더 넓게 쓸 수 있도록). 대신 옅은
    accent 색상의 세로선을 일자 번호(pd-sch-day-num) 뒤로 지나가는 타임라인 형태로 그린다 */
 .pd-pe-more-sub .pd-check-list{padding:0}
-.pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:10px;padding:0}
+.pd-pe-more-sub .pd-sch-days{display:flex;flex-direction:column;gap:24px;padding:0}
 .pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days{position:relative;z-index:0}
 .pd-pe-more-sub.pd-pe-sch-accent .pd-sch-days::before{content:'';position:absolute;z-index:-1;left:11.5px;top:12px;bottom:12px;width:1px;border-radius:1px;background:var(--pe-accent-pale, rgba(47,111,237,.25))}
 /* [Phase] 포함/불포함/참고사항 세 항목을 하나의 묶음으로 시각적으로 구분 — 위아래 구분선과 옅은
@@ -1390,7 +1390,7 @@ section.block{padding:100px 24px;position:relative}
 /* [수정] 타이틀은 검정색 볼드 + 1.2배 크기로 강조, 요금은 1.2배 크기 + 프레임 우측 끝으로 정렬 */
 .pd-sch-group-head .t{font-size:.84rem;color:#000000;font-weight:700;letter-spacing:.04em;min-width:0;flex:1}
 .pd-sch-group-head .h{font-size:1.14rem;font-weight:700;color:var(--pine-deep);text-align:right;flex-shrink:0}
-.pd-sch-days{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
+.pd-sch-days{padding:12px 16px;display:flex;flex-direction:column;gap:26px}   /* 일자 사이 간격: 한 글자(약 14px) 더 넓힘 */
 .pd-sch-day{display:flex;gap:10px}
 /* [추가] 공통 일정 요약 타임라인도 요금 항목별 타임라인과 같이 일자 번호 사이를 세로선으로 연결 —
    번호(24px 원) 중앙(왼쪽 여백 16px + 12px)을 지나는 옅은 금색 선을 번호 뒤에 그린다
@@ -1406,7 +1406,7 @@ section.block{padding:100px 24px;position:relative}
 .pd-sch-meals{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
 /* [수정] 식사 칩 — 칩 자신(직계 span)만 알약 모양. 입력값 안의 서식 span까지 알약 배경·여백이 겹쳐 글자가 띄어 보이던 문제 수정.
    글자 크기는 10.5pt로 통일, 포함은 주황 계열 · 불포함(자유식 포함)은 빨간 글자 + 연한 회색 바탕. 칩 안의 글자색·크기·배경은 칩 기준으로 통일 */
-.pd-sch-meals > span{font-size:10.5pt;line-height:1.35;padding:3px 10px;border-radius:100px;background:rgba(249,115,22,.14);color:#c2410c}
+.pd-sch-meals > span{font-size:10.5pt;line-height:1.35;padding:3px 10px;border-radius:100px;background:rgba(249,115,22,.14);color:#c2410c;box-shadow:0 2px 5px rgba(10,23,48,.2),0 0 0 1px rgba(10,23,48,.05)}   /* 조·중·석 칩 모두 음영 */
 .pd-sch-meals > span.meal-no{background:#EEF0F3;color:#DC2626}
 .pd-sch-meals > span *{font-size:inherit!important;color:inherit!important;background:none!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;letter-spacing:normal!important;display:inline!important}
 /* [수정] 일정 내용 글자 크기 11pt */
@@ -2277,6 +2277,14 @@ body.ptr-sorting,body.ptr-sorting *{cursor:grabbing!important;user-select:none!i
 .rtf-bg-t{font-size:.78rem;line-height:1;font-weight:700;color:var(--nm-text)}
 .rtf-bg-bar{display:block;width:16px;height:4px;border-radius:2px;background:var(--rtf-cur-bg,#FFF3A3);box-shadow:0 0 0 1px rgba(10,23,48,.25)}
 .rtf-btn.rtf-bg-more{width:22px;font-size:.62rem;padding:0}
+.rtf-toolbar .rtf-box-group{display:inline-flex;gap:3px;align-items:center;flex-shrink:0}
+.rtf-btn.rtf-box-apply{display:inline-flex;align-items:center;gap:4px;width:auto;padding:0 7px;white-space:nowrap}
+.rtf-box-ic{display:inline-block;padding:0 4px;border-radius:5px;border:1px solid rgba(10,23,48,.3);background:var(--rtf-cur-box,#FED7AA);font-size:.72rem;line-height:1.35;font-weight:700;color:var(--nm-text)}
+.rtf-box-t{font-size:.66rem;font-weight:700}
+.rtf-btn.rtf-box-more{width:22px;font-size:.62rem;padding:0}
+.rtf-btn.rtf-box-clear{width:auto;padding:0 6px;font-size:.66rem;white-space:nowrap}
+/* 선택한 글자를 감싸는 박스(편집기·고객 화면 공통) — 줄이 바뀌어도 줄 사이 틈 없이 하나의 둥근 사각형으로 통째로 감싼다 */
+.rtf-box{display:inline-block;max-width:100%;box-sizing:border-box;padding:2px 9px;margin:1px 1px;border-radius:10px;border:1px solid rgba(10,23,48,.22);vertical-align:baseline;white-space:normal;overflow-wrap:anywhere}
 .rtf-btn.rtf-bg-clear{width:auto;padding:0 6px;font-size:.66rem;white-space:nowrap}
 .rtf-toolbar .rtf-color-group{flex-wrap:nowrap;align-items:center}
 .rtf-color-pop{position:fixed;z-index:3000;display:grid;grid-template-columns:repeat(8,24px);gap:6px;padding:10px;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(10,23,48,.22),0 0 0 1px rgba(10,23,48,.08)}
@@ -12047,6 +12055,11 @@ function rtfToolbarHTML(opts){
       <button type="button" class="rtf-btn rtf-clear" title="서식 지우기" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'removeFormat')">서식✕</button>
       ${opts.link?`<button type="button" class="rtf-btn rtf-link-btn" title="링크 — 텍스트를 선택한 뒤 누르면 선택한 글자에 주소(URL)를 걸어 클릭 시 바로 이동" onmousedown="event.preventDefault()" onclick="rtfLinkOpen(this)">🔗링크</button>`:''}
       ${opts.noSub?'':`<button type="button" class="rtf-btn rtf-sub-btn" title="하위서식 — 지금 줄을 윗줄의 하위 항목으로 1.5글자 들여쓰기 (한 번 더 누르면 2단계, 또 누르면 해제). 표 안에 커서가 있으면 표 전체를 한 단계(1.5글자)씩 들여쓰기(최대 3단계). 상세 페이지에서는 ✓·•·✕ 표시 없이 들여쓰기로 노출" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this)">↳하위서식</button><button type="button" class="rtf-btn rtf-nosub-btn" title="들여쓰기 없음 — 지금 줄(선택한 줄들)·표의 하위서식·들여쓰기를 해제" onmousedown="event.preventDefault()" onclick="rtfToggleSub(this,'off')">들여쓰기 없음</button>`}
+      <span class="rtf-box-group" title="박스 — 선택한 글자들을 색 박스로 감쌉니다">
+        <button type="button" class="rtf-btn rtf-box-apply" title="박스 — 선택한 글자들을 지정한 색의 박스로 감쌈. 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'box',_rtfBox)"><span class="rtf-box-ic">가</span><span class="rtf-box-t">박스</span></button>
+        <button type="button" class="rtf-btn rtf-box-more" title="박스 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="박스 색상(선택한 글자 감싸기)" data-apply="rtfPickBox(el,__C__)">▾</button>
+        <button type="button" class="rtf-btn rtf-box-clear" title="박스 지우기 — 선택한 글자를 감싼 박스를 없앰" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'boxClear')">박스✕</button>
+      </span>
       <span class="rtf-color-group">
         <button type="button" class="rtf-btn rtf-bg-apply" title="바탕 칠하기 — 선택한 영역(글자)의 뒤 바탕에 형광펜처럼 색을 칠함. 같은 색을 몇 번이든 다시 적용" onmousedown="event.preventDefault()" onclick="rtfCmd(this,'hiliteColor',_rtfBg)"><span class="rtf-bg-t">가</span><span class="rtf-bg-bar"></span></button>
         <button type="button" class="rtf-btn rtf-bg-more" title="바탕 색상 고르기 — 색을 고른 뒤 [확인완료]를 눌러야 적용" onmousedown="event.preventDefault()" onclick="openColorPalette(this)" data-title="바탕 색상(선택 영역 칠하기)" data-apply="rtfPickBg(el,__C__)">▾</button>
@@ -12068,6 +12081,51 @@ document.documentElement.style.setProperty('--rtf-cur-color', _rtfColor);
 // [추가] 선택 영역 바탕 칠하기(형광펜) — 마지막으로 쓴 바탕색을 기억해 같은 색을 반복 적용
 const RTF_BG_COLORS = ['#FFF3A3','#FDE68A','#FED7AA','#FECACA','#FBCFE8','#DDD6FE','#BFDBFE','#A7F3D0'];
 let _rtfBg = '#FFF3A3';
+// [추가] 선택한 글자들을 감싸는 박스 — 마지막으로 쓴 박스 색을 기억해 같은 색을 반복 적용
+let _rtfBox = '#FED7AA';
+document.documentElement.style.setProperty('--rtf-cur-box', _rtfBox);
+function rtfPickBox(el, c){
+  _rtfBox = c;
+  document.documentElement.style.setProperty('--rtf-cur-box', c);
+  rtfCmd(el, 'box', c);
+}
+// 선택 영역의 글자 조각마다 <span class="rtf-box" style="background-color:…">로 감싼다(이미 박스 안이면 색만 바꾸고, 바로 이웃한 같은 색 박스는 하나로 합친다).
+// color가 없으면(박스✕) 선택 영역에 걸친 박스를 풀어 준다
+function rtfBoxApply(editable, color){
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount){ rtfNoTargetHint('박스로 감쌀 글자를 먼저 선택하세요'); return; }
+  const range = sel.getRangeAt(0);
+  if (range.collapsed || !editable.contains(range.commonAncestorContainer)){ rtfNoTargetHint('박스로 감쌀 글자를 먼저 선택하세요'); return; }
+  const root = range.commonAncestorContainer.nodeType===3 ? range.commonAncestorContainer.parentNode : range.commonAncestorContainer;
+  const parts = [];
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let t; while ((t = w.nextNode())){
+    if (!range.intersectsNode(t) || !t.nodeValue.length) continue;
+    const st = t===range.startContainer ? range.startOffset : 0, en = t===range.endContainer ? range.endOffset : t.nodeValue.length;
+    if (en>st) parts.push({t, st, en});
+  }
+  const made = [];
+  parts.reverse().forEach(({t, st, en})=>{
+    let node = t;
+    if (en < node.nodeValue.length) node.splitText(en);
+    if (st > 0) node = node.splitText(st);
+    const boxed = node.parentNode && node.parentNode.closest ? node.parentNode.closest('.rtf-box') : null;
+    if (!color){ if (boxed && editable.contains(boxed)) boxed.replaceWith(...boxed.childNodes); return; }
+    if (!/\S/.test(node.nodeValue)) return;   // 공백뿐인 조각은 박스로 감싸지 않는다
+    if (boxed && editable.contains(boxed)){ boxed.style.backgroundColor = color; made.push(boxed); return; }
+    // 굵게·밑줄 같은 서식 요소가 이 글자만 품고 있으면 그 요소째 감싸, 서식이 바뀌는 자리에서 박스가 둘로 쪼개지지 않게 한다
+    let target = node;
+    while (target.parentNode && target.parentNode!==editable && /^(B|I|U|S|STRONG|EM|STRIKE|FONT|SPAN)$/.test(target.parentNode.tagName) && target.parentNode.childNodes.length===1 && !target.parentNode.classList.contains('rtf-box')) target = target.parentNode;
+    const sp = document.createElement('span');
+    sp.className = 'rtf-box'; sp.style.backgroundColor = color;
+    target.parentNode.insertBefore(sp, target); sp.appendChild(target);
+    made.push(sp);
+  });
+  made.forEach(b=>{   // 바로 이웃한(사이에 글자가 없는) 같은 색 박스는 하나로 합친다
+    const prev = b.previousSibling;
+    if (prev && prev.nodeType===1 && prev.classList.contains('rtf-box') && prev.style.backgroundColor===b.style.backgroundColor){ while (b.firstChild) prev.appendChild(b.firstChild); b.remove(); }
+  });
+}
 document.documentElement.style.setProperty('--rtf-cur-bg', _rtfBg);
 // [추가] 공용 색상 팔레트 — 관리자 패널의 모든 색상 변경(글자 색상·태그/체크포인트/대표 문구 박스 색상·화면 테마·위젯 글자색)이
 // 같은 팔레트를 쓴다. 색을 눌러 고르기만 해서는 아무것도 바뀌지 않고(팔레트 안 미리보기만 바뀜), [확인완료]를 눌러야 그 색이 적용된다.
@@ -12108,13 +12166,13 @@ function openColorPalette(anchor){
   const reopen = _colorPal && _colorPal.anchor===anchor;
   colorPalClose();
   if (reopen) return; // 같은 버튼을 다시 누르면 닫기
-  let cur = String(anchor.classList.contains('rtf-color-more') ? _rtfColor : anchor.classList.contains('rtf-bg-more') ? _rtfBg : (anchor.dataset.value||'')).trim();
+  let cur = String(anchor.classList.contains('rtf-color-more') ? _rtfColor : anchor.classList.contains('rtf-bg-more') ? _rtfBg : anchor.classList.contains('rtf-box-more') ? _rtfBox : (anchor.dataset.value||'')).trim();
   if (!/^#[0-9a-f]{6}$/i.test(cur)) cur = '#FFFFFF';
   const el = document.createElement('div');
   el.className = 'color-pal';
   el.innerHTML = `
     <div class="cpal-title">${escapeAttr(anchor.dataset.title||'색상 선택')}</div>
-    <div class="cpal-grid">${(anchor.classList.contains('rtf-bg-more') ? RTF_BG_COLORS.concat(COLOR_PAL_LIGHT, RTF_COLORS) : RTF_COLORS.concat(COLOR_PAL_LIGHT)).map(c=>`<button type="button" class="cpal-sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div>
+    <div class="cpal-grid">${((anchor.classList.contains('rtf-bg-more') || anchor.classList.contains('rtf-box-more')) ? RTF_BG_COLORS.concat(COLOR_PAL_LIGHT, RTF_COLORS) : RTF_COLORS.concat(COLOR_PAL_LIGHT)).map(c=>`<button type="button" class="cpal-sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div>
     <label class="cpal-custom" title="팔레트에 없는 색 직접 고르기"><input type="color" value="${cur}">🎨 직접 선택</label>
     <div class="cpal-preview"><span class="cp-old" style="background:${cur};color:${colorPalDark(cur)?'#fff':'#0A1730'}">현재</span><span class="cpal-arrow">→</span><span class="cp-new">선택</span><span class="cp-hex"></span></div>
     <div class="cpal-actions"><button type="button" class="cpal-cancel">취소</button><button type="button" class="cpal-ok">확인완료</button></div>`;
@@ -12328,6 +12386,8 @@ function rtfCmdRun(btnEl, cmd, val){
         if (!sp.getAttribute('style')) sp.replaceWith(...sp.childNodes);
       });
     }
+  } else if (cmd==='box' || cmd==='boxClear'){
+    rtfBoxApply(editable, cmd==='box' ? val : null);
   } else {
     document.execCommand(cmd, false, val);
   }

@@ -4898,19 +4898,20 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-len-conv:empty{display:none}
 .ai-sub{padding:6px 0 0;gap:6px 12px}
 /* ── AI 추천 정보 입력칸 색상(첨부 템플릿 기준) ──
+   입력된 값의 바탕(--ai-val-bg): 'HTML 저장' 버튼 색(왼쪽 연한 금색 → 오른쪽 아래 짙은 금색)
    입력된 칸: 흰 카드·회색 점선 테두리 + 크림 바탕·금색(#c6a36a) 테두리 입력창·굵은 값 / 숙소명·국가권역: 초록 카드 / 미확인(비어 있음): 연회색 입력창
    예전의 초록 막대·✓ 표시는 쓰지 않는다 */
+:root{--ai-val-bg:linear-gradient(120deg,#ddcc9f 0%,#bd9f6b 100%)}
 .ai-info-f,.ai-info-f.filled{border:1px dashed #c9ced6;background:#fff;box-shadow:none}
 .ai-info-f.has-auto{border-color:rgba(37,99,235,.35);background:rgba(239,246,255,.7)}
 .adv-body .ai-info-f>.ai-info-lab,.ai-info-f>.ai-info-lab,.adv-body .ai-info-f.filled>.ai-info-lab,.ai-info-f.filled>.ai-info-lab,.ai-combos-box.has-combos>.ai-info-lab{color:#0b1530;font-weight:800}
 .ai-info-f.filled>.ai-info-lab::before,.ai-combos-box.has-combos>.ai-info-lab::before{content:none;display:none}
-.ai-info-f.filled select,.ai-info-f.filled input[type=text],.ai-info-f.filled input[type=number],.ai-info-f.filled textarea:not(.ai-note),.ai-info-f.filled .rtf-editable.ai-rtf{border:1.5px solid #c6a36a;color:#0b1530;font-weight:700;background:linear-gradient(#fff,#fdfbf7)}
+.ai-info-f.filled select,.ai-info-f.filled input[type=text],.ai-info-f.filled input[type=number],.ai-info-f.filled textarea:not(.ai-note),.ai-info-f.filled .rtf-editable.ai-rtf{border:1.5px solid #c6a36a;color:#0b1530;font-weight:700;background:var(--ai-val-bg)}
 .ai-info-f:not(.filled) select,.ai-info-f:not(.filled) input[type=text],.ai-info-f:not(.filled) input[type=number],.ai-info-f:not(.filled) textarea:not(.ai-note),.ai-info-f:not(.filled) .rtf-editable.ai-rtf{border:1px solid #d5d9e0;color:#8a94a6;background:#f7f7fa}
 .ai-info-f.filled .rtf-editable.ai-rtf,.ai-info-f.filled textarea:not(.ai-note){font-weight:600}
-.ai-info-f.filled .ai-len select{font-weight:700;background:linear-gradient(#fff,#fdfbf7)!important}
+.ai-info-f.filled .ai-len select{font-weight:700;background:var(--ai-val-bg)!important}
 .ai-info-f[data-k="name"].filled,.ai-info-f[data-k="cat"].filled{border:1px solid #8ed0a3;background:#e8f5ec}
-.ai-info-f[data-k="cat"].filled select{border:1.5px solid #1f8a4c;color:#14532d;background:#fff}
-.ai-info-f[data-k="name"].filled input[type=text]{background:#fff}
+.ai-info-f[data-k="cat"].filled select{border:1.5px solid #1f8a4c;color:#0b1530;background:var(--ai-val-bg)}
 .ai-info-multi input[type=checkbox]{accent-color:#a67c3d}
 .ai-info-multi label:has(input:checked){color:#0b1530;font-weight:800}
 .ai-info-f:not(.filled) .ai-info-multi label{color:#6b7587}
@@ -4947,7 +4948,7 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-imp-bar i{display:block;height:100%;background:#c6a36a;transition:width .25s}
 .ai-imp-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
 .ai-imp-top label{flex:1;display:flex;flex-direction:column;gap:4px;font-weight:700}
-.ai-imp-top input{padding:9px 10px;border-radius:10px;border:1.5px solid #c6a36a;background:#fffdf7;font-size:.95rem;font-weight:700;font-family:inherit}
+.ai-imp-top input{padding:9px 10px;border-radius:10px;border:1.5px solid #c6a36a;background:var(--ai-val-bg);font-size:.95rem;font-weight:700;font-family:inherit}
 .ai-imp-top label{min-width:0}.ai-imp-top input{width:100%;box-sizing:border-box;min-width:0}
 @media(max-width:520px){.ai-imp-thumb{display:none}}
 .ai-imp-thumb{width:84px;max-height:84px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid #d5d9e0}

@@ -5007,8 +5007,12 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-place-card{margin:8px 0 0;background:#fff}
 .ai-place-card>summary{font-size:.88rem}
 .ai-place-sum{font-size:.76rem;color:var(--nm-text-soft,#667);font-weight:400}
-.ai-place-acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:6px 2px 4px}
-.ai-place-acts .ai-del{color:#b42318}
+/* 접힌 상태에서도 바로 쓸 수 있게 '이 상품에서 빼기'·'영구 삭제' 버튼을 카드 제목 줄 오른쪽 끝에 둔다 */
+.ai-place-card>summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.ai-place-card>summary::before{flex:none}
+.ai-place-sumacts{display:flex;gap:6px;margin-left:auto;flex:none}
+.ai-place-sumacts .apc-btn-sm{padding:4px 10px;font-size:.74rem;white-space:nowrap}
+.ai-place-sumacts .ai-del{color:#b42318}
 .ai-legacy{margin:8px 0;padding:10px 12px;border-radius:10px;background:#fff6dc;border:1px solid #e3c383;font-size:.8rem}
 .ai-legacy p{margin:4px 0 8px;color:#5a4208}
 .ai-sub-l{margin:14px 2px 0;font-size:.78rem;font-weight:700;color:var(--nm-text-soft,#667)}
@@ -20601,12 +20605,11 @@ function aiPlaceLinkHTML(p, kind){
         const save = (k, expr) => `updateAiPlace('${kind}','${x.id}','${k}',${expr})`;
         const saveMulti = (k, o) => `updateAiPlaceMulti('${kind}','${x.id}','${k}','${escapeAttr(o)}',this.checked)`;
         return `<details class="pe-labels ai-place-card" ${advDetailsAttrs('aiP-'+x.id, false)}>
-          <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
+          <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}<span class="ai-place-sumacts"><button type="button" class="apc-btn-sm" onclick="event.preventDefault();event.stopPropagation();aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 빼기</button><button type="button" class="apc-btn-sm ai-del" onclick="event.preventDefault();event.stopPropagation();aiDeletePlace('${kind}','${x.id}')">영구 삭제</button></span></summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
           ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
           ${(()=>{ const shown = fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))); return `<div class="ai-place-head">${kind==='lodge' ? '📋 호텔 정보' : '📋 골프장 정보'} <em>(${shown.length}항목)</em></div><div class="ai-info-grid">${aiPlaceGridHTML(shown, x, kind, save, saveMulti)}</div>`; })()}
           ${aiPlaceRetiredNote(kind, x)}
-          <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 빼기</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">영구 삭제</button></div>
         </details>`;
       }).join('')}
     </div>`;
@@ -21401,7 +21404,7 @@ function aiUnlinkPlace(kind, id){
 function aiDeletePlace(kind, id){
   const x = aiFindPlace(kind, id); if (!x) return;
   const used = aiPlaceUseCount(kind, id), word = kind==='lodge' ? '숙소' : '골프장';
-  if (!confirm(`'${x.name||'(이름 없음)'}' ${word}를 영구 삭제할까요?${used ? ` 연결된 상품 ${used}개에서도 빠지며, 되돌릴 수 없습니다.` : ' 되돌릴 수 없습니다.'}`)) return;
+  if (!confirm(`'${x.name||'(이름 없음)'}' ${word}${kind==='lodge' ? '를' : '을'} 영구 삭제할까요?${used ? ` 연결된 상품 ${used}개에서도 빠지며, 되돌릴 수 없습니다.` : ' 되돌릴 수 없습니다.'}`)) return;
   const key = aiPlaceIdsKey(kind);
   if (kind==='lodge') aiPlaces.lodges = aiPlaces.lodges.filter(o=>o.id!==id); else aiPlaces.courses = aiPlaces.courses.filter(o=>o.id!==id);
   Object.keys(productOverrides||{}).forEach(c=>(productOverrides[c]||[]).forEach(p=>{ if (p && p.aiInfo && Array.isArray(p.aiInfo[key])){ p.aiInfo[key] = p.aiInfo[key].filter(v=>v!==id); if (!p.aiInfo[key].length) delete p.aiInfo[key]; } }));

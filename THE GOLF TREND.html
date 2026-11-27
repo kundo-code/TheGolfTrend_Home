@@ -20606,7 +20606,7 @@ function aiPlaceLinkHTML(p, kind){
           ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
           ${(()=>{ const shown = fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))); return `<div class="ai-place-head">${kind==='lodge' ? '📋 호텔 정보' : '📋 골프장 정보'} <em>(${shown.length}항목)</em></div><div class="ai-info-grid">${aiPlaceGridHTML(shown, x, kind, save, saveMulti)}</div>`; })()}
           ${aiPlaceRetiredNote(kind, x)}
-          <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
+          <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 빼기</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">영구 삭제</button></div>
         </details>`;
       }).join('')}
     </div>`;
@@ -21401,7 +21401,7 @@ function aiUnlinkPlace(kind, id){
 function aiDeletePlace(kind, id){
   const x = aiFindPlace(kind, id); if (!x) return;
   const used = aiPlaceUseCount(kind, id), word = kind==='lodge' ? '숙소' : '골프장';
-  if (!confirm(`'${x.name||'(이름 없음)'}' ${word}를 등록부에서 삭제할까요?${used ? `\n연결된 상품 ${used}개에서도 연결이 해제됩니다.` : ''}`)) return;
+  if (!confirm(`'${x.name||'(이름 없음)'}' ${word}를 영구 삭제할까요?${used ? ` 연결된 상품 ${used}개에서도 빠지며, 되돌릴 수 없습니다.` : ' 되돌릴 수 없습니다.'}`)) return;
   const key = aiPlaceIdsKey(kind);
   if (kind==='lodge') aiPlaces.lodges = aiPlaces.lodges.filter(o=>o.id!==id); else aiPlaces.courses = aiPlaces.courses.filter(o=>o.id!==id);
   Object.keys(productOverrides||{}).forEach(c=>(productOverrides[c]||[]).forEach(p=>{ if (p && p.aiInfo && Array.isArray(p.aiInfo[key])){ p.aiInfo[key] = p.aiInfo[key].filter(v=>v!==id); if (!p.aiInfo[key].length) delete p.aiInfo[key]; } }));

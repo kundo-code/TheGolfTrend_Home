@@ -18606,7 +18606,7 @@ function adminEnterTabs(){
     const idx=adminPosResolveIdx(activeProductCat);
     if (idx>=0){
       const advTab=adminPos.advTab, advScroll=adminPos.advScroll||0;
-      openAdvEditor(activeProductCat, idx);
+      openAdvEditor(activeProductCat, idx, true);
       if (advTab && advTab!=='basic') switchAdvTab(advTab);
       const body=document.getElementById('advBody');
       requestAnimationFrame(()=>{ body.scrollTop=advScroll; setTimeout(()=>{ body.scrollTop=advScroll; }, 300); });
@@ -19461,20 +19461,25 @@ function renderLinkAdminGroup(group){
 }
 
 // ========== ADVANCED PRODUCT EDITOR ==========
-function openAdvEditor(catId, idx){
+function openAdvEditor(catId, idx, resume){
   currentAdv={catId, idx}; activeAdvTab='basic'; _ctagPending=null; // 편집창을 새로 열면 입력 안 한 빈 태그 칸은 없앤다
+  const lastRec = resume ? null : advLastEditGet(catId, idx);   // 저장하고 닫았던 상품이면 마지막으로 수정한 위치(탭·펼친 항목·칸)
   adminPosRememberProduct(catId, idx); adminPosSave({tab:'products', adv:true, advTab:'basic', advScroll:0});
   advResetEntryOpenState(); // 요금 항목 펼침 상태는 상품마다 따로 — 다른 상품을 열면 초기화
   ADV_GROUP_KEYS.forEach(k=>{ advOpenState[k] = false; }); advSaveOpenState(); // 큰 항목 6개는 편집창을 열 때마다 모두 접힌 상태로 시작
+  if (!resume){ advOpenState = {}; advSaveOpenState(); }   // 이전 작업에서 펼쳐 둔 항목은 모두 접힌 상태로 시작(마지막으로 수정한 항목만 아래에서 다시 펼침)
   const cat=findCat(catId);
   const products=getProducts(catId);
   const p=products[idx];
-  document.querySelectorAll('.adv-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.atab==='basic'));
+  if (lastRec && lastRec.tab && lastRec.tab!=='basic'){ activeAdvTab = lastRec.tab; adminPosSave({advTab:lastRec.tab}); }
+  document.querySelectorAll('.adv-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.atab===activeAdvTab));
   renderAdvBody();
   document.getElementById('advOverlay').classList.add('show');
   tgtScrollLock('adv', true);
+  if (!resume) advApplyStartState(lastRec);
 }
 function closeAdvEditor(){
+  advLastEditFlush();   // 마지막으로 수정한 위치 저장
   document.getElementById('advOverlay').classList.remove('show');
   if (currentAdv) adminPosRememberProduct(currentAdv.catId, currentAdv.idx);
   adminPosSave({adv:false});
@@ -19660,6 +19665,75 @@ function advRememberToggle(el){
     if (advCloseOtherGroups(el)) advAlignGroup(el, false);
   }
   advSaveOpenState();
+}
+// ── 마지막으로 수정한 위치 기억 ──
+// 고급 편집에서 값을 입력·선택·버튼으로 바꿀 때마다 '어느 탭의 어느 항목(펼친 묶음 전체)의 어느 칸'인지 상품별로 저장해 두고,
+// 저장하고 닫은 뒤 같은 상품의 고급 편집을 다시 열면 그 항목만 펼친 채 그 칸 근처에서 시작한다. 그 밖에 이전에 펼쳐 둔 항목은 모두 접힌 상태.
+// 다른 상품을 열거나 수정한 적이 없는 상품은 모두 접힌 상태로 시작한다(이 기억은 이 기기에만 저장)
+const ADV_LAST_KEY = 'kundo_adv_last_v1';
+let advLastMap = (()=>{ try{ return JSON.parse(localStorage.getItem(ADV_LAST_KEY)||'{}')||{}; }catch(e){ return {}; } })();
+let _advLastPending = null, _advLastTimer = null;
+function advLastKey(catId, idx){ const p = (getProducts(catId)||[])[idx]; return p ? catId+'|'+(p.uid || p.title || idx) : ''; }
+function advLastEditGet(catId, idx){ const k = advLastKey(catId, idx); return k && advLastMap[k] ? advLastMap[k] : null; }
+function advLastEditFlush(){
+  clearTimeout(_advLastTimer);
+  if (!_advLastPending) return;
+  const {key, rec} = _advLastPending; _advLastPending = null;
+  if (!key) return;
+  advLastMap[key] = rec;
+  const keys = Object.keys(advLastMap);
+  if (keys.length>40) keys.sort((a,b)=>(advLastMap[a].at||0)-(advLastMap[b].at||0)).slice(0, keys.length-40).forEach(k=>{ delete advLastMap[k]; });
+  try{ localStorage.setItem(ADV_LAST_KEY, JSON.stringify(advLastMap)); }catch(e){}
+}
+const ADV_CTL_SEL = 'input,select,textarea,[contenteditable="true"]';
+function advNoteEdit(e){
+  if (!currentAdv) return;
+  const body = document.getElementById('advBody'), t = e.target;
+  if (!body || !t || !t.closest || !body.contains(t)) return;
+  if (t.closest('.rtf-toolbar,.adv-sticky-head,.adv-titlebar,summary')) return;
+  if (e.type==='click' && !t.closest('button,.adv-chip,[role=button],label')) return;   // 클릭은 버튼·칩·체크 같은 조작일 때만 수정으로 본다
+  const key = advLastKey(currentAdv.catId, currentAdv.idx); if (!key) return;
+  const all = [...body.querySelectorAll('details')], chain = [];
+  for (let d = t.closest('details'); d && body.contains(d); d = d.parentElement ? d.parentElement.closest('details') : null){
+    const sm = d.querySelector(':scope>summary');
+    chain.unshift({ck:d.dataset.ck||'', i:all.indexOf(d), t:sm ? sm.textContent.replace(/\s+/g,' ').trim().slice(0,40) : ''});
+  }
+  const host = t.closest('[contenteditable="true"]') || t.closest(ADV_CTL_SEL) || t;
+  const ctls = [...body.querySelectorAll(ADV_CTL_SEL)];
+  _advLastPending = {key, rec:{tab:activeAdvTab, chain, ci:ctls.indexOf(host), st:body.scrollTop, at:Date.now()}};
+  clearTimeout(_advLastTimer); _advLastTimer = setTimeout(advLastEditFlush, 500);
+}
+// 편집창을 연 직후 — 마지막으로 수정한 항목만 펼치고 그 칸 위치로 이동(기록이 없으면 모두 접힌 상태 그대로)
+function advApplyStartState(rec){
+  const body = document.getElementById('advBody'); if (!body) return;
+  advAccordionPaused = true;
+  const keep = new Set();
+  if (rec && Array.isArray(rec.chain)){
+    const all = [...body.querySelectorAll('details')];
+    rec.chain.forEach(c=>{
+      let d = c.ck ? body.querySelector(`details[data-ck="${c.ck}"]`) : null;
+      if (!d && all[c.i]){ const sm = all[c.i].querySelector(':scope>summary'); if (sm && sm.textContent.replace(/\s+/g,' ').trim().slice(0,40)===c.t) d = all[c.i]; }
+      if (d) keep.add(d);
+    });
+  }
+  body.querySelectorAll('details').forEach(d=>{
+    const want = keep.has(d);
+    if (d.open!==want) d.open = want;
+    const ck = d.dataset.ck;
+    if (ck){ if (ck.startsWith('pe')) advEntryOpenState[ck] = want; else advOpenState[ck] = want; }
+  });
+  advSaveOpenState();
+  setTimeout(()=>{ advAccordionPaused = false; }, 400);
+  if (!rec) return;
+  const go = ()=>{
+    const ctls = [...body.querySelectorAll(ADV_CTL_SEL)], el = ctls[rec.ci];
+    if (el && keep.size){
+      const nav = body.querySelector('.adv-sticky-head');
+      const top = body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top - (nav ? nav.offsetHeight : 0) - body.clientHeight*0.25;
+      body.scrollTop = Math.max(0, top);
+    } else if (typeof rec.st==='number') body.scrollTop = rec.st;
+  };
+  requestAnimationFrame(()=>{ go(); setTimeout(go, 300); });
 }
 // 요금 항목을 삭제·복제·순서변경하면 인덱스 기반 키가 다른 항목을 가리키게 되므로 초기화
 function advResetEntryOpenState(){ advEntryOpenState = {}; }
@@ -20555,6 +20629,8 @@ function advFillInit(){
   const body = document.getElementById('advBody'); if (!body || body._fillObs) return;
   body._fillObs = new MutationObserver(advFillSchedule); body._fillObs.observe(body, {childList:true, subtree:true});
   body.addEventListener('input', advFillSchedule, true); body.addEventListener('change', advFillSchedule, true);
+  ['input','change','click'].forEach(ev=>body.addEventListener(ev, advNoteEdit, true));
+  window.addEventListener('pagehide', advLastEditFlush);
 }
 if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', advFillInit); else advFillInit();
 document.addEventListener('input', aiFieldFillSync, true);

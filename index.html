@@ -4897,6 +4897,75 @@ body.widgets-compact .widget-box{--widget-default-fc:#000}
 .ai-len-conv{font-size:.72rem;color:#2563eb;font-weight:600;min-height:0}
 .ai-len-conv:empty{display:none}
 .ai-sub{padding:6px 0 0;gap:6px 12px}
+/* ── AI 추천 정보 입력칸 색상(첨부 템플릿 기준) ──
+   입력된 칸: 흰 카드·회색 점선 테두리 + 크림 바탕·금색(#c6a36a) 테두리 입력창·굵은 값 / 숙소명·국가권역: 초록 카드 / 미확인(비어 있음): 연회색 입력창
+   예전의 초록 막대·✓ 표시는 쓰지 않는다 */
+.ai-info-f,.ai-info-f.filled{border:1px dashed #c9ced6;background:#fff;box-shadow:none}
+.ai-info-f.has-auto{border-color:rgba(37,99,235,.35);background:rgba(239,246,255,.7)}
+.adv-body .ai-info-f>.ai-info-lab,.ai-info-f>.ai-info-lab,.adv-body .ai-info-f.filled>.ai-info-lab,.ai-info-f.filled>.ai-info-lab,.ai-combos-box.has-combos>.ai-info-lab{color:#0b1530;font-weight:800}
+.ai-info-f.filled>.ai-info-lab::before,.ai-combos-box.has-combos>.ai-info-lab::before{content:none;display:none}
+.ai-info-f.filled select,.ai-info-f.filled input[type=text],.ai-info-f.filled input[type=number],.ai-info-f.filled textarea:not(.ai-note),.ai-info-f.filled .rtf-editable.ai-rtf{border:1.5px solid #c6a36a;color:#0b1530;font-weight:700;background:linear-gradient(#fff,#fdfbf7)}
+.ai-info-f:not(.filled) select,.ai-info-f:not(.filled) input[type=text],.ai-info-f:not(.filled) input[type=number],.ai-info-f:not(.filled) textarea:not(.ai-note),.ai-info-f:not(.filled) .rtf-editable.ai-rtf{border:1px solid #d5d9e0;color:#8a94a6;background:#f7f7fa}
+.ai-info-f.filled .rtf-editable.ai-rtf,.ai-info-f.filled textarea:not(.ai-note){font-weight:600}
+.ai-info-f.filled .ai-len select{font-weight:700;background:linear-gradient(#fff,#fdfbf7)!important}
+.ai-info-f[data-k="name"].filled,.ai-info-f[data-k="cat"].filled{border:1px solid #8ed0a3;background:#e8f5ec}
+.ai-info-f[data-k="cat"].filled select{border:1.5px solid #1f8a4c;color:#14532d;background:#fff}
+.ai-info-f[data-k="name"].filled input[type=text]{background:#fff}
+.ai-info-multi input[type=checkbox]{accent-color:#a67c3d}
+.ai-info-multi label:has(input:checked){color:#0b1530;font-weight:800}
+.ai-info-f:not(.filled) .ai-info-multi label{color:#6b7587}
+.ai-grp,.ai-grp.has-fill{border:1px solid #c9ced6;background:#fff}
+.ai-grp-title{color:#0b1530}
+.ai-grp .ai-info-f{background:#fff}
+.ai-place-head{display:flex;align-items:baseline;gap:8px;margin:6px 2px 0;padding:0 0 6px;border-bottom:2px solid #c6a36a;font-size:.95rem;font-weight:800;color:#0b1530}
+.ai-place-head em{font-style:normal;font-size:.72rem;font-weight:600;color:#6b7587}
+/* 항목별 근거(작은 글씨) — 이 칸의 값을 어디서 확인했는지. 판정·고객 화면에는 쓰이지 않는다 */
+.ai-info-f textarea.ai-note{min-height:0;height:auto;padding:2px 0;border:none!important;background:transparent!important;box-shadow:none;color:#6b7587!important;font-size:.74rem;font-weight:400!important;line-height:1.45;resize:none;overflow:hidden;field-sizing:content;border-radius:6px}
+.ai-info-f textarea.ai-note::placeholder{color:transparent}
+.ai-info-f:hover textarea.ai-note::placeholder,.ai-info-f textarea.ai-note:focus::placeholder{color:#b3b9c6}
+.ai-info-f textarea.ai-note:focus{background:#fff!important;outline:1px dashed #c6a36a}
+/* 🖼 이미지로 새 숙소·골프장 등록 */
+.ai-imp-btn{border-color:#c6a36a!important;color:#7a5a1d!important;background:#fffaf0!important}
+.ai-imp-modal{position:fixed;inset:0;z-index:200000;background:rgba(10,23,48,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.ai-imp-panel{width:min(760px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;color:#0b1530}
+.ai-imp-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:2px solid #c6a36a;font-size:1rem}
+.ai-imp-x{border:none;background:none;font-size:1.1rem;cursor:pointer;color:#667;padding:4px 8px}
+.ai-imp-body{padding:16px 18px 18px;overflow:auto;font-size:.88rem;line-height:1.55}
+.ai-imp-drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:34px 16px;border:2px dashed #c6a36a;border-radius:14px;background:#fffaf0;cursor:pointer;color:#5b4a22}
+.ai-imp-drop.over,.ai-imp-drop:focus{background:#fdf1d8;outline:none}
+.ai-imp-ico{font-size:2rem}
+.ai-imp-tips{margin:14px 0 0;padding-left:18px;color:#4b5563;font-size:.8rem}
+.ai-imp-tips li{margin:3px 0}
+.ai-imp-err,.ai-imp-warn{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#fdecec;color:#b91c1c;font-weight:600}
+.ai-imp-warn{background:#fff6e0;color:#8a5a0a}
+.ai-imp-info{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:#eaf3ff;color:#1d4ed8}
+.ai-imp-prog{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 10px;text-align:center}
+.ai-imp-prog small{color:#6b7587}
+.ai-imp-spin{width:34px;height:34px;border-radius:50%;border:4px solid #eadcb8;border-top-color:#c6a36a;animation:aiImpSpin 1s linear infinite}
+@keyframes aiImpSpin{to{transform:rotate(360deg)}}
+.ai-imp-bar{width:min(360px,100%);height:8px;border-radius:99px;background:#eee;overflow:hidden}
+.ai-imp-bar i{display:block;height:100%;background:#c6a36a;transition:width .25s}
+.ai-imp-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+.ai-imp-top label{flex:1;display:flex;flex-direction:column;gap:4px;font-weight:700}
+.ai-imp-top input{padding:9px 10px;border-radius:10px;border:1.5px solid #c6a36a;background:#fffdf7;font-size:.95rem;font-weight:700;font-family:inherit}
+.ai-imp-top label{min-width:0}.ai-imp-top input{width:100%;box-sizing:border-box;min-width:0}
+@media(max-width:520px){.ai-imp-thumb{display:none}}
+.ai-imp-thumb{width:84px;max-height:84px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid #d5d9e0}
+.ai-imp-sum{margin:6px 0 8px;color:#4b5563}
+.ai-imp-tablewrap{max-height:46vh;overflow:auto;border:1px solid #d5d9e0;border-radius:12px}
+.ai-imp-table{width:100%;border-collapse:collapse}
+.ai-imp-table td,.ai-imp-table th{padding:7px 9px;border-bottom:1px solid #eceef2;vertical-align:top;text-align:left;font-size:.84rem}
+.ai-imp-table th{width:30%;font-weight:800;white-space:nowrap}
+.ai-imp-table td:first-child{width:28px;padding-right:0}
+.ai-imp-table td small{display:block;color:#6b7587;font-size:.74rem;line-height:1.4;margin-top:2px}
+.ai-imp-table tr.none th{color:#8a94a6;font-weight:600}
+.ai-imp-un{color:#8a94a6}
+.ai-imp-tag{font-style:normal;font-size:.68rem;font-weight:700;margin-left:6px;padding:1px 7px;border-radius:99px;background:#eaf3ff;color:#1d4ed8}
+.ai-imp-tag.warn{background:#fff6e0;color:#8a5a0a}
+.ai-imp-raw{margin-top:10px;font-size:.78rem;color:#6b7587}
+.ai-imp-raw pre{max-height:180px;overflow:auto;white-space:pre-wrap;background:#f7f7fa;border-radius:8px;padding:8px}
+.ai-imp-acts{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px}
+.ai-imp-go{background:#c6a36a!important;border-color:#c6a36a!important;color:#fff!important;font-weight:800}
 /* 상품 고급 편집 — 입력된 칸(초록 테두리·왼쪽 막대·굵은 글씨·라벨 ✓) / 비어 있는 칸(점선) */
 .adv-body .adv-empty{outline:1px dashed rgba(10,23,48,.22);outline-offset:-1px}
 .adv-body select.adv-empty{color:#8a94a6}
@@ -19544,6 +19613,8 @@ const CHECKPOINT1_GUIDE = `💰 2인 단독 출발 시 150,000원 추가
 // 지금 편집 중인 상품에 대해서만 메모리에 둔다
 const ADV_OPEN_KEY = 'kundo_adv_open_v1';
 let advOpenState = (()=>{ try{ return JSON.parse(localStorage.getItem(ADV_OPEN_KEY)||'{}')||{}; }catch(e){ return {}; } })();
+// AI 추천 정보 안의 항목(① ~ ⑥ 묶음 · 연결된 숙소/골프장 카드)은 열 때마다 접힌 상태가 기본 — 예전에 펼쳐 둔 기억은 이어받지 않는다(이번 작업 중 펼친 상태는 화면을 다시 그려도 유지)
+Object.keys(advOpenState).forEach(k=>{ if (/^aiP?-/.test(k)) delete advOpenState[k]; });
 let advEntryOpenState = {};
 function advIsOpen(key, dflt){
   const st = key.startsWith('pe') ? advEntryOpenState : advOpenState;
@@ -20489,7 +20560,13 @@ function aiPlaceSummary(kind, x){
 }
 // 숙소·골프장 카드의 입력 칸들 — grp이 같은 연속 항목(예: 숙소의 객실 묶음)은 하나의 묶음 카드 안에 모아서 보여 준다
 function aiPlaceGridHTML(list, x, kind, save, saveMulti){
-  const one = fd=>aiFieldHTML(fd, x[fd.k], (fd.k==='cat' || fd.k==='holes') ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x);
+  const one = fd=>{
+    const h = aiFieldHTML(fd, x[fd.k], (fd.k==='cat' || fd.k==='holes') ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x);
+    if (fd.type==='combos') return h;
+    // 칸마다 '근거(작은 글씨)' — 값을 어디서 확인했는지 적어 두는 칸(판정·고객 화면에는 쓰이지 않음)
+    const note = x.notes && typeof x.notes[fd.k]==='string' ? x.notes[fd.k] : '';
+    return h.replace(/<\/div>\s*$/, `<textarea class="ai-note" rows="1" data-nofill maxlength="600" aria-label="${escapeAttr(fd.label)} 근거" placeholder="근거·출처 (선택)" oninput="aiNoteGrow(this);updateAiPlaceNote('${kind}','${x.id}','${fd.k}',this.value)">${escapeHtmlText(note)}</textarea></div>`);
+  };
   let out = '', i = 0;
   while (i < list.length){
     const fd = list[i];
@@ -20516,17 +20593,18 @@ function aiPlaceLinkHTML(p, kind){
       <div class="ai-link-acts">
         <select onchange="if(this.value){aiLinkPlace('${kind}',this.value)}"><option value="">＋ 등록부에서 ${word} 선택 (${rest.length}곳)</option>${same.length?`<optgroup label="${escapeAttr(aiCatName(cat)||'같은 지역')}">${same.map(opt).join('')}</optgroup>`:''}${other.length?`<optgroup label="${isDomesticCat(cat)?'다른 국내 권역':'다른 해외 국가'} · 지역 미지정">${other.map(opt).join('')}</optgroup>`:''}</select>
         <button type="button" class="apc-btn-sm" onclick="aiNewPlace('${kind}')">＋ 새 ${word} 등록</button>
+        <button type="button" class="apc-btn-sm ai-imp-btn" onclick="aiImgOpen('${kind}')" title="${word} 정보 카드 이미지를 올리면 글자를 읽어 항목을 자동으로 채워 새 ${word}로 등록합니다">🖼 이미지로 새 ${word} 등록</button>
       </div>
       ${kind==='course' && pdom ? (kgaLoad(), `<div class="kga-search"><input type="search" placeholder="🔍 골프장 이름으로 찾기 — 고르면 홀 수·전장·Rating·Slope 자동 입력${_kga ? ` (KGA ${_kga.clubs.length}곳)` : ''}" oninput="aiKgaSearch(this)" onfocus="aiKgaSearch(this)" onblur="setTimeout(()=>{const b=this.parentNode&&this.parentNode.querySelector('.kga-results');if(b)b.innerHTML=''},200)" autocomplete="off"><div class="kga-results"></div></div>`) : ''}
       ${linked.map(x=>{
         const used = aiPlaceUseCount(kind, x.id);
         const save = (k, expr) => `updateAiPlace('${kind}','${x.id}','${k}',${expr})`;
         const saveMulti = (k, o) => `updateAiPlaceMulti('${kind}','${x.id}','${k}','${escapeAttr(o)}',this.checked)`;
-        return `<details class="pe-labels ai-place-card" ${advDetailsAttrs('aiP-'+x.id, !x.name)}>
+        return `<details class="pe-labels ai-place-card" ${advDetailsAttrs('aiP-'+x.id, false)}>
           <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
           ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
-          <div class="ai-info-grid">${aiPlaceGridHTML(fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))), x, kind, save, saveMulti)}</div>
+          ${(()=>{ const shown = fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))); return `<div class="ai-place-head">${kind==='lodge' ? '📋 호텔 정보' : '📋 골프장 정보'} <em>(${shown.length}항목)</em></div><div class="ai-info-grid">${aiPlaceGridHTML(shown, x, kind, save, saveMulti)}</div>`; })()}
           ${aiPlaceRetiredNote(kind, x)}
           <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
         </details>`;
@@ -20673,6 +20751,16 @@ function removeAiCombo(id, i){
   x.courseCombos.splice(i,1); if (!x.courseCombos.length) delete x.courseCombos;
   x.updatedAt = new Date().toISOString(); saveAiPlaces(); renderAdvBody();
 }
+// 항목별 근거(작은 글씨) 저장 — x.notes[항목키]. 비우면 지운다
+function updateAiPlaceNote(kind, id, k, v){
+  const x = aiFindPlace(kind, id); if (!x) return;
+  const t = String(v==null?'':v).slice(0, 600);
+  if (!x.notes || typeof x.notes!=='object') x.notes = {};
+  if (t.trim()) x.notes[k] = t; else delete x.notes[k];
+  if (!Object.keys(x.notes).length) delete x.notes;
+  x.updatedAt = new Date().toISOString(); saveAiPlaces();
+}
+function aiNoteGrow(el){ if (!(window.CSS && CSS.supports && CSS.supports('field-sizing','content'))){ el.style.height = 'auto'; el.style.height = el.scrollHeight+'px'; } }
 function updateAiPlaceMulti(kind, id, k, opt, on){
   const x = aiFindPlace(kind, id); if (!x) return;
   if (typeof x[k]==='string' && x[k].trim()){ x[k+'Legacy'] = x[k]; delete x[k]; }   // 글자로 입력했던 예전 값(예: 침대 구성)은 사라지지 않게 따로 보관
@@ -20698,6 +20786,533 @@ function aiNewPlace(kind, seed){
   setTimeout(()=>{ const el = document.querySelector(`#advBody details[data-ck="aiP-${x.id}"] input[type=text]`); if (el && !x.name) el.focus(); }, 50);
   return x;
 }
+// ═══ 🖼 이미지로 새 숙소·새 골프장 등록 ═══
+// 숙소·골프장 정보 카드를 캡처한 이미지를 올리면, 이 브라우저 안에서 글자를 읽어(OCR · 이미지는 서버로 보내거나 저장하지 않음)
+// 항목 이름(라벨)에 맞는 값·근거를 찾아 미리 보여 주고, 확인하면 새 숙소·새 골프장으로 등록한다.
+//  · 이미지에 있는 값만 쓴다 — 읽지 못한 칸·'미확인'(회색) 칸은 비워 둔다. 값은 등록 후 카드에서 얼마든지 고칠 수 있다
+//  · 이미지는 저장하지 않는다(값과 근거 글만 등록부에 저장) — 이미지를 보관하면 동기화 용량만 늘고, 읽은 글이 틀렸을 때의 확인은 미리보기 화면에서 끝나기 때문
+const AI_OCR_DIR = 'assets/vendor/tesseract/';
+let _aiOcrWorker = null, _aiOcrProgress = null;
+function aiOcrLoadScript(){
+  return new Promise((res, rej)=>{
+    if (window.Tesseract) return res();
+    const s = document.createElement('script'); s.src = AI_OCR_DIR+'tesseract.min.js'; s.onload = ()=>res(); s.onerror = ()=>rej(new Error('글자 인식 엔진을 불러오지 못했습니다'));
+    document.head.appendChild(s);
+  });
+}
+async function aiOcrWorkerGet(){
+  if (_aiOcrWorker) return _aiOcrWorker;
+  await aiOcrLoadScript();
+  const abs = p=>new URL(p, location.href).href;
+  const w = await Tesseract.createWorker('kor+eng', 1, {workerPath:abs(AI_OCR_DIR+'worker.min.js'), corePath:abs(AI_OCR_DIR), langPath:abs(AI_OCR_DIR+'lang/'), gzip:true, logger:m=>{ if (_aiOcrProgress) _aiOcrProgress(m); }});
+  await w.setParameters({preserve_interword_spaces:'1', tessedit_pageseg_mode:'11'});
+  _aiOcrWorker = w; return w;
+}
+// ── 글자 비교 도구 ──
+function aiImgNorm(t){ return String(t==null?'':t).toLowerCase().replace(/[ㄱ-ㆎ]/g,'').replace(/[^0-9a-z가-힣+]/g,''); }
+function aiImgBigrams(s){ const a = []; for (let i=0;i<s.length-1;i++) a.push(s.slice(i,i+2)); return a; }
+function aiImgDice(a, b){
+  if (!a || !b) return 0; if (a===b) return 1;
+  if (a.length<2 || b.length<2) return a===b ? 1 : 0;
+  const A = aiImgBigrams(a), B = aiImgBigrams(b), cnt = {}; B.forEach(g=>{ cnt[g] = (cnt[g]||0)+1; });
+  let hit = 0; A.forEach(g=>{ if (cnt[g]>0){ hit++; cnt[g]--; } });
+  return 2*hit/(A.length+B.length);
+}
+// 선택 항목 후보 중 가장 비슷한 것(0.55 미만이면 없음)
+function aiImgBestOpt(text, opts){
+  const t = aiImgNorm(text); if (!t) return null;
+  let best = null, bs = 0;
+  opts.forEach(o=>{
+    const n = aiImgNorm(o[1]); if (!n) return;
+    let sc = t===n ? 1 : (t.includes(n) ? 0.95 : (n.includes(t) && t.length>=3 ? 0.9 : aiImgDice(t, n)));
+    if (sc>bs){ bs = sc; best = o; }
+  });
+  return bs>=0.55 ? best : null;
+}
+function aiImgCleanTxt(t){
+  return String(t==null?'':t).replace(/[✔✓☑]/g,' ').replace(/[<>]/g,'').replace(/\s*[|ㅣ]\s*$/,'').replace(/^[\s|ㅣ\[\]()·.,:;'"`~_-]+/,'').replace(/\s+/g,' ').replace(/\s*ㆍ\s*/g,' · ').trim();
+}
+// ── 이미지 → 글자 줄(위치·글자 진하기 포함) ──
+async function aiImgLoad(file){
+  const url = URL.createObjectURL(file), img = new Image(); img.src = url;
+  await img.decode();
+  const W = img.naturalWidth, H = img.naturalHeight;
+  let sc = W<1500 ? 1800/W : 1; if (sc>3.2) sc = 3.2; if (W*sc>2600) sc = 2600/W; if (H*sc>9000) sc = 9000/H;
+  const c = document.createElement('canvas'); c.width = Math.round(W*sc); c.height = Math.round(H*sc);
+  const ctx = c.getContext('2d', {willReadFrequently:true}); ctx.imageSmoothingQuality = 'high'; ctx.fillStyle = '#fff'; ctx.fillRect(0,0,c.width,c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+  // 글자 인식용 사본 — 흑백(색 바탕·금색 테두리가 있는 칸의 글자를 더 잘 읽는다)
+  const g = document.createElement('canvas'); g.width = c.width; g.height = c.height;
+  const gx = g.getContext('2d'), id = ctx.getImageData(0, 0, c.width, c.height), d = id.data;
+  for (let i=0;i<d.length;i+=4){ const v = 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2], o = v; d[i] = d[i+1] = d[i+2] = o; d[i+3] = 255; }
+  gx.putImageData(id, 0, 0);
+  return {url, canvas:c, ctx, ocr:g, scale:sc};
+}
+// 글자 진하기 — 칸 안 가장 어두운 4% 픽셀의 평균 밝기(작은 회색 근거 글은 높고, 굵은 값 글자는 낮다)
+function aiImgInk(ctx, b){
+  const cw = ctx.canvas.width, ch = ctx.canvas.height;
+  const x = Math.max(0, Math.floor(b.x0)), y = Math.max(0, Math.floor(b.y0)), w = Math.max(1, Math.min(cw-x, Math.ceil(b.x1-b.x0))), h = Math.max(1, Math.min(ch-y, Math.ceil(b.y1-b.y0)));
+  const d = ctx.getImageData(x, y, w, h).data, lum = [];
+  for (let i=0;i<d.length;i+=4) lum.push(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);
+  lum.sort((p,q)=>p-q); const n = Math.max(1, Math.floor(lum.length*0.04)); let s = 0; for (let i=0;i<n;i++) s += lum[i]; return s/n;
+}
+// 금색·갈색(체크된 칸) 픽셀 수
+function aiImgBrown(ctx, x0, y0, x1, y1){
+  const cw = ctx.canvas.width, ch = ctx.canvas.height;
+  const x = Math.max(0, Math.floor(x0)), y = Math.max(0, Math.floor(y0)), w = Math.min(cw-x, Math.ceil(x1-x0)), h = Math.min(ch-y, Math.ceil(y1-y0)); if (w<=0 || h<=0) return 0;
+  const d = ctx.getImageData(x, y, w, h).data; let n = 0;
+  for (let i=0;i<d.length;i+=4){ const r = d[i], g = d[i+1], b = d[i+2]; if (r>115 && r<235 && r-b>45 && r-g>12 && g>55) n++; }
+  return n;
+}
+function aiImgSegments(data, ctx, off){
+  const segs = [], W = ctx.canvas.width, gapThr = Math.max(40, W*0.028), dx = off ? off.dx : 0, dy = off ? off.dy : 0;
+  (data.blocks||[]).forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>{
+    const ws = (l.words||[]).filter(w=>w.text && w.text.trim()).slice().sort((a,b)=>a.bbox.x0-b.bbox.x0);
+    if (!ws.length) return;
+    let cur = [ws[0]], split = false;
+    const flush = ()=>{
+      const bb = {x0:Math.min(...cur.map(w=>w.bbox.x0)), y0:Math.min(...cur.map(w=>w.bbox.y0)), x1:Math.max(...cur.map(w=>w.bbox.x1)), y1:Math.max(...cur.map(w=>w.bbox.y1))};
+      const lh = bb.y1-bb.y0; let tx = '';
+      if (!split && l.text && l.text.trim()) tx = l.text.replace(/\s+/g,' ');
+      else cur.forEach((w,i)=>{ if (i && w.bbox.x0-cur[i-1].bbox.x1 > lh*0.14) tx += ' '; tx += w.text.trim(); });
+      segs.push({t:tx.trim(), words:cur.map(w=>({n:aiImgNorm(w.text), x0:w.bbox.x0, x1:w.bbox.x1})), x0:bb.x0, y0:bb.y0, x1:bb.x1, y1:bb.y1, conf:cur.reduce((s,w)=>s+(w.confidence||0),0)/cur.length});
+    };
+    for (let i=1;i<ws.length;i++){ if (ws[i].bbox.x0 - ws[i-1].bbox.x1 > gapThr){ flush(); cur = [ws[i]]; split = true; } else cur.push(ws[i]); }
+    flush();
+  })));
+  segs.forEach(s=>{ s.x0 += dx; s.x1 += dx; s.y0 += dy; s.y1 += dy; s.words.forEach(w=>{ w.x0 += dx; w.x1 += dx; }); s.n = aiImgNorm(s.t); s.ink = aiImgInk(ctx, s); s.dark = s.ink < AI_IMG_DARK; });
+  return segs.sort((a,b)=>a.y0-b.y0||a.x0-b.x0);
+}
+const AI_IMG_DARK = 112;   // 이보다 어두우면 굵은 값 글자, 이상이면 회색(근거·미확인)
+// ── 항목 이름(라벨) 찾기 ──
+function aiImgFindLabels(segs, fields, kind){
+  const cands = [];
+  fields.forEach(fd=>{
+    if (fd.type==='combos') return;
+    const ln = aiImgNorm(fd.label);
+    segs.forEach((s, si)=>{
+      const n = s.n; if (!n || n.length>ln.length+4) return;
+      let sc = 0;
+      if (n===ln) sc = 1; else if (n.startsWith(ln) && n.length<=ln.length+3) sc = 0.97; else if (n.length>=2) sc = aiImgDice(n, ln);
+      if (sc>=0.62) cands.push({fd, si, sc});
+    });
+  });
+  // 읽지 못한 라벨 — 단위가 있는 칸은 "(분)"이 보이면 그 칸으로 본다(예: '골프장까지 (분)')
+  cands.sort((a,b)=>b.sc-a.sc);
+  const usedS = new Set(), usedF = new Set(), out = [];
+  cands.forEach(c=>{ if (usedS.has(c.si) || usedF.has(c.fd.k)) return; usedS.add(c.si); usedF.add(c.fd.k); out.push({fd:c.fd, seg:segs[c.si], si:c.si, sc:c.sc}); });
+  fields.filter(fd=>fd.unit && !usedF.has(fd.k) && fd.type!=='combos').forEach(fd=>{
+    const re = new RegExp('\\(\\s*'+fd.unit+'\\s*\\)');
+    const hit = segs.map((s,si)=>({s,si})).filter(o=>!usedS.has(o.si) && re.test(o.s.t) && o.s.n.length<=8 && o.s.dark).sort((a,b)=>a.s.y0-b.s.y0||a.s.x0-b.s.x0);
+    // 같은 단위 칸이 둘 이상이면 화면 순서(위→아래, 왼쪽→오른쪽)에 맞춰 짝을 짓는다
+    const sameUnit = fields.filter(f=>f.unit===fd.unit && !usedF.has(f.k));
+    const idx = sameUnit.findIndex(f=>f.k===fd.k);
+    if (hit[idx]){ usedS.add(hit[idx].si); usedF.add(fd.k); out.push({fd, seg:hit[idx].s, si:hit[idx].si, sc:0.6}); }
+  });
+  return out;
+}
+// 묶음 제목·바닥글처럼 라벨은 아니지만 값 범위를 끊어 주는 줄
+function aiImgBarriers(segs, fields){
+  const titles = Object.keys(AI_GRP_TITLE).map(k=>aiImgNorm(AI_GRP_TITLE[k].replace(/<[^>]+>/g,' ')));
+  return segs.map((s,si)=>({s,si})).filter(o=>{
+    const n = o.s.n;
+    if (/진한글씨|확인된항목|확인하지못했거나/.test(n)) return true;
+    if (/^(호텔|골프장)정보\d*항목?/.test(n) || /^(호텔|골프장)정보/.test(n)) return true;
+    return titles.some(t=>n.length>=6 && aiImgDice(n, t)>=0.6);
+  }).map(o=>o.si);
+}
+// ── 값 해석 ──
+const AI_IMG_UNCONF = /^미확인$|^미확인\W*$/;
+function aiImgParseProx(darkTxt, noteTxt){
+  const dt = aiImgNorm(darkTxt);
+  const opts = AI_PROX_OPTS.concat(AI_PROX_RANGE_OPTS).map(o=>[o[0], o[1]]);
+  if (/^없음|불가|없다/.test(dt) && !/있음/.test(dt)) return {v:'none', how:'dark'};
+  // 사이트 선택지 문구(예: 도보 10분 이내) 그대로면 그 값
+  const hit = aiImgBestOpt(darkTxt, opts.filter(o=>o[0]!=='vr' && o[0]!=='wr'));
+  if (hit && !/^있음$/.test(dt)) return {v:hit[0], how:'dark'};
+  const r = /(도보|차량)\s*(?:약\s*)?(\d{1,3})\s*분/.exec(darkTxt);
+  if (r) return {v:`${r[1]==='도보'?'wr':'vr'}:${r[2]}-${r[2]}`, how:'dark'};
+  if (/있음|있다|가능/.test(dt)){
+    const note = String(noteTxt||'');
+    if (/(호텔|숙소)\s*(안|내|\d+\s*층|[0-9]F|B\d)|객실\s*내|숙소\s*안/.test(note)) return {v:'in', how:'derived'};
+    const all = [], re = /(도보|차량)\s*(?:약\s*)?(\d{1,3})\s*분/g; let m;
+    while ((m = re.exec(note))) all.push({mode:m[1]==='도보'?'wr':'vr', n:Number(m[2])});
+    if (all.length){ all.sort((a,b)=>a.n-b.n || (a.mode==='wr'?-1:1)); const b = all[0]; return {v:`${b.mode}:${b.n}-${b.n}`, how:'derived'}; }
+    return {v:'', how:'unclear'};   // 있음이지만 거리를 알 수 없음 → 비워 둔다
+  }
+  return null;
+}
+function aiImgParseField(fd, reg, ctx, xl){
+  const dark = reg.filter(s=>s.dark), gray = reg.filter(s=>!s.dark && !AI_IMG_UNCONF.test(s.n));   // 회색 '미확인'은 선택칸에 보이는 글자라 근거 글에서 뺀다
+  const darkTxt = dark.map(s=>s.t).join(' '), grayTxt = gray.map(s=>aiImgCleanTxt(s.t)).filter(Boolean).join(' ');
+  const res = {fd, value:undefined, extra:null, note:grayTxt, how:'dark', raw:darkTxt};
+  const t = fd.type;
+  if (t==='text' || t==='area'){
+    let v = aiImgCleanTxt(darkTxt); if (v && !AI_IMG_UNCONF.test(aiImgNorm(v))) res.value = v;
+    if (fd.k==='roomSize' && res.value){   // 면적 — 'm'·'m2'는 ㎡로, 단위가 보이지 않는 숫자는 확인이 필요한 값으로 표시
+      const m = /^(\d{1,3}(?:\.\d)?)\s*(m2|m²|㎡|m)?$/i.exec(res.value);
+      if (m){ res.value = m[1]+'㎡'; if (!m[2]) res.unitUnsure = true; }
+    }
+    return res;
+  }
+  if (t==='cat'){
+    const n = aiImgNorm(darkTxt);
+    const c = CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>n && (n.includes(aiImgNorm(c.ko)) || (c.koFull && n.includes(aiImgNorm(c.koFull)))));
+    if (c){ res.value = c.id; }
+    else if (n) res.unmatched = aiImgCleanTxt(darkTxt);
+    return res;
+  }
+  if (t==='num'){ const m = /\d{2,3}/.exec(darkTxt); if (m) res.value = Number(m[0]); return res; }
+  if (t==='len'){
+    const m = /(\d{1,2}[,.]?\d{3})/.exec(darkTxt);
+    if (m){
+      const n = Number(m[1].replace(/[,.]/g,'')), iy = darkTxt.search(/yds?\b|야드/i), im2 = darkTxt.search(/미터|(^|[\s\d])m([\s(]|$)/i);
+      const yd = iy>=0 && (im2<0 || iy<im2), mt = im2>=0 && !yd;   // 단위가 둘 다 보이면(환산 안내 글자 등) 먼저 나온 단위
+      res.value = `${n.toLocaleString('en-US')}${yd ? 'yd' : 'm'}`;
+      if (iy<0 && im2<0) res.unitUnsure = true;   // 단위(yd/m)를 읽지 못함 — 확인 필요
+    }
+    return res;
+  }
+  if (t==='dur'){
+    const nums = (darkTxt.match(/\d{1,3}/g)||[]).map(Number);
+    if (!nums.length) return res;
+    const dt = aiImgNorm(darkTxt);
+    if (/이내/.test(dt)) res.value = `in:${nums[0]}`;
+    else if (nums.length>=2 && /도보|차량/.test(dt)) res.value = `${/도보/.test(dt)?'wr':'vr'}:${Math.min(nums[0],nums[1])}-${Math.max(nums[0],nums[1])}`;
+    else if (/도보/.test(dt)) res.value = `wr:${nums[0]}-${nums[0]}`;
+    else res.value = String(nums[0]);
+    return res;
+  }
+  if (t==='prox'){
+    let r = aiImgParseProx(darkTxt, grayTxt);
+    // 선택칸의 글자(있음)를 못 읽었어도 '미확인'이 아니고 근거에 거리가 적혀 있으면 있음으로 보고 근거에서 읽는다
+    if (!r && !darkTxt.trim() && !reg.some(s=>/미확인/.test(s.n))) r = aiImgParseProx('있음', grayTxt);
+    if (r){ if (r.v) { res.value = r.v; res.how = r.how; } else res.unclear = true; }
+    return res;
+  }
+  if (t==='yn'){
+    const dt = aiImgNorm(darkTxt), yes = aiImgNorm(fd.yes||'예'), no = aiImgNorm(fd.no||'아니오');
+    if (dt && (dt.includes('있음') || dt===yes || /^예/.test(dt) || dt.includes(yes))) res.value = 'y';
+    else if (dt && (dt.includes('없음') || dt===no || /^아니/.test(dt) || dt.includes(no))) res.value = 'n';
+    if (fd.sub) res.extra = aiImgParseChecks(fd.subOpts, reg, ctx, xl);
+    return res;
+  }
+  if (t==='select'){
+    if (fd.k==='holes'){ const m = /(\d{2})/.exec(darkTxt); if (m){ const h = Number(m[1]); res.value = h>=45 ? '45+' : String(h); if (!fd.opts.includes(res.value)) delete res.value; } return res; }
+    if (fd.k==='courseLevel'){ const m = /Lv\.?\s*([1-5](?:\.5)?)/i.exec(darkTxt); if (m){ const o = fd.opts.find(o=>o.startsWith('Lv.'+m[1]+' ')); if (o){ res.value = o; return res; } } }
+    const o = aiImgBestOpt(darkTxt, fd.opts.map(o=>[o,o]));
+    if (o) res.value = o[0];
+    return res;
+  }
+  if (t==='multi'){
+    const r = aiImgParseChecks(fd.opts, reg, ctx, xl);
+    if (r.items.length) res.value = r.items;
+    res.note = r.rest.map(s=>aiImgCleanTxt(s.t)).filter(Boolean).join(' ');
+    return res;
+  }
+  if (t==='sel2'){
+    const txt = dark.map(s=>s.t).join(' ');
+    const got = {};
+    fd.names.forEach((nm,i)=>{ const re = new RegExp(nm+'\\s*[:\\-]?\\s*([^\\s·,]+)'); const m = re.exec(txt); if (m){ const o = aiImgBestOpt(m[1], fd.optList); if (o) got[fd.keys[i]] = o[0]; } });
+    if (Object.keys(got).length) res.value = got;
+    return res;
+  }
+  if (t==='meals3'){
+    const txt = dark.map(s=>s.t).join(' '), got = {};
+    fd.names.forEach((nm,i)=>{ const m = new RegExp(nm+'\\s*[:\\-]?\\s*([^\\s·,]+)').exec(txt); if (m){ const o = aiImgBestOpt(m[1], AI_MEAL_OPTS); if (o) got[fd.keys[i]] = o[0]; } });
+    if (Object.keys(got).length) res.value = got;
+    return res;
+  }
+  return res;
+}
+// 체크칸 목록 — 선택지 글자를 찾고, 그 왼쪽의 금색·갈색 칸(체크됨) 여부로 선택을 읽는다.
+// 한 줄에 선택지가 여럿 이어진 경우(넓은 화면)도 줄 안에서 선택지 글자의 위치를 찾아 각각 판정한다
+function aiImgWordX(seg, idx){   // seg.n 안 글자 위치(idx)에 해당하는 낱말의 왼쪽 x
+  let c = 0; for (const w of (seg.words||[])){ if (idx < c + w.n.length) return w.x0; c += w.n.length; }
+  return seg.x0 + (idx/Math.max(1, seg.n.length))*(seg.x1-seg.x0);
+}
+function aiImgParseChecks(opts, reg, ctx, xl){
+  const hits = [];   // {oi, seg, x, sc, whole}
+  opts.forEach((o, oi)=>{
+    const on = aiImgNorm(o); if (!on) return;
+    reg.forEach(s=>{
+      const n = s.n; if (!n) return;
+      if (n.length<=on.length+3){
+        const sc = n===on ? 1 : (n.endsWith(on) ? 0.97 : aiImgDice(n, on));
+        if (sc>=0.6) hits.push({oi, seg:s, x:s.x0, sc, whole:true});
+      }
+      if (n.length>on.length+3 || (n.length<=on.length+3 && !hits.some(h=>h.oi===oi && h.seg===s))){
+        const i = n.indexOf(on); if (i>=0 && n.length>on.length+3) hits.push({oi, seg:s, x:aiImgWordX(s, i), sc:0.9, whole:false});
+      }
+    });
+  });
+  hits.sort((a,b)=>b.sc-a.sc);
+  const pick = {}, usedWhole = new Set();
+  hits.forEach(h=>{ if (pick[h.oi]) return; if (h.whole && usedWhole.has(h.seg)) return; pick[h.oi] = h; if (h.whole) usedWhole.add(h.seg); });
+  const picked = Object.keys(pick);
+  const brown = {};
+  picked.forEach(oi=>{ const h = pick[oi], s = h.seg, hh = s.y1 - s.y0; brown[oi] = aiImgBrown(ctx, Math.max(xl, h.x-100), s.y0-hh*0.2, h.x+8, s.y1+hh*0.2) + (h.whole ? aiImgBrown(ctx, h.x, s.y0-hh*0.2, h.x+Math.max(30, hh*2), s.y1+hh*0.2) : 0); });
+  const anyBrown = picked.some(k=>brown[k]>=120);
+  const items = [];
+  opts.forEach((o, oi)=>{
+    const h = pick[oi]; if (!h) return;
+    const on = anyBrown ? brown[oi]>=120 : (h.seg.dark && h.seg.ink < AI_IMG_DARK-40);   // 색으로 체크 여부를 못 알아보면 굵게(진하게) 쓴 선택지를 체크로 본다
+    if (on) items.push(o);
+  });
+  const segUsed = new Set(picked.map(k=>pick[k].seg));
+  return {items, rest:reg.filter(s=>!segUsed.has(s) && !s.dark), recognized:picked.length};
+}
+// ── 전체 해석 ──
+// 라벨을 읽지 못한 칸 — 라벨 자리(같은 세로줄·진한 짧은 글자)에 읽힌 글자 조각을 화면 순서(위→아래, 왼쪽→오른쪽)에 따라 비어 있는 항목에 짝지어 준다.
+// 앞뒤로 읽힌 라벨 사이에서 빈 항목 수와 라벨 자리 수가 같을 때만 짝짓는다(어긋나면 짝짓지 않고 건너뜀)
+const AI_IMG_VALUE_WORDS = /^(있음|없음|미확인|예|아니오|포함|불포함|필수|선택|노캐디|우수|보통|차량기준|도보)$/;
+function aiImgInferLabels(segs, fields, labels, usedSi, W, H){
+  if (labels.length<3) return labels;
+  const xs = []; labels.forEach(l=>{ if (!xs.some(x=>Math.abs(x-l.seg.x0)<W*0.014)) xs.push(l.seg.x0); });
+  const tol = W*0.014, labelSi = new Set(labels.map(l=>l.si));
+  const likely = segs.map((s,si)=>({s,si})).filter(o=>{
+    const s = o.s; if (labelSi.has(o.si) || usedSi.has(o.si)) return false;
+    if (s.ink>=75 || s.n.length<3 || s.n.length>14 || /^\d+$/.test(s.n) || AI_IMG_VALUE_WORDS.test(s.n)) return false;
+    if (!xs.some(x=>Math.abs(x-s.x0)<=tol)) return false;
+    // 같은 세로줄 바로 위(200px 이내)에 읽힌 라벨이 있으면 그 칸의 값 글자
+    return !labels.some(l=>Math.abs(l.seg.x0-s.x0)<=tol*1.6 && s.y0>l.seg.y0 && s.y0-l.seg.y0 < W*0.075);
+  });
+  const slots = labels.map(l=>({kind:'l', l, seg:l.seg, si:l.si})).concat(likely.map(o=>({kind:'u', seg:o.s, si:o.si})));
+  const rowH = Math.max(...labels.map(l=>l.seg.y1-l.seg.y0)) || 40;
+  slots.sort((a,b)=>{ const dy = a.seg.y0-b.seg.y0; return Math.abs(dy)<rowH*1.2 ? a.seg.x0-b.seg.x0 : dy; });
+  const order = fields.filter(f=>f.type!=='combos');
+  const idxOf = l=>order.findIndex(f=>f.k===l.fd.k);
+  const anchors = slots.map((sl,i)=>({sl,i})).filter(o=>o.sl.kind==='l');
+  for (let a=0;a<anchors.length-1;a++){
+    const A = anchors[a], B = anchors[a+1];
+    const fa = idxOf(A.sl.l), fb = idxOf(B.sl.l); if (fa<0 || fb<0 || fb<=fa) continue;
+    const missingF = order.slice(fa+1, fb).filter(f=>!labels.some(l=>l.fd.k===f.k) && (!f.when));
+    const gapSlots = slots.slice(A.i+1, B.i);
+    if (missingF.length && missingF.length===gapSlots.length) missingF.forEach((f,j)=>{ labels.push({fd:f, seg:gapSlots[j].seg, si:gapSlots[j].si, sc:0.5, inferred:true}); });
+  }
+  // 마지막 라벨 뒤(바닥글 앞)에 남은 항목 — 마지막 항목 뒤에도 같은 방식으로
+  return labels;
+}
+// 값 글자가 읽히지 않은 칸만 잘라 다시 읽는다 — 초록·금색 글자는 밝기 변환에서 흐려지므로 '가장 어두운 색 채널' 기준으로(그다음 이진화로) 시도
+async function aiImgRescan(worker, im, x0, y0, x1, y1, accept){
+  const w = Math.max(8, Math.round(x1-x0)), h = Math.max(8, Math.round(y1-y0)), dx = Math.round(x0), dy = Math.round(y0);
+  const base = document.createElement('canvas'); base.width = w; base.height = h;
+  const bx = base.getContext('2d'); bx.drawImage(im.canvas, dx, dy, w, h, 0, 0, w, h);
+  const id = bx.getImageData(0, 0, w, h);
+  const mk = hard=>{
+    const g = new Uint8ClampedArray(w*h);
+    for (let i=0, j=0;i<id.data.length;i+=4, j++){ const v = Math.min(id.data[i], id.data[i+1], id.data[i+2]); g[j] = hard ? (v<150 ? 0 : 255) : v; }
+    // 입력 상자의 테두리(길고 곧은 어두운 줄)는 지우고, 가장자리에 흰 여백을 둔다 — 글자 인식이 테두리에 방해받지 않도록
+    const rowN = new Array(h).fill(0), colN = new Array(w).fill(0);
+    for (let y=0;y<h;y++) for (let x=0;x<w;x++) if (g[y*w+x]<150){ rowN[y]++; colN[x]++; }
+    for (let y=0;y<h;y++) if (rowN[y]>w*0.55) for (let x=0;x<w;x++) g[y*w+x] = 255;
+    for (let x=0;x<w;x++) if (colN[x]>h*0.55) for (let y=0;y<h;y++) g[y*w+x] = 255;
+    const pad = 24, c = document.createElement('canvas'); c.width = w+pad*2; c.height = h+pad*2;
+    const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0,0,c.width,c.height);
+    const out = new Uint8ClampedArray(w*h*4); for (let j=0;j<w*h;j++){ out[j*4] = out[j*4+1] = out[j*4+2] = g[j]; out[j*4+3] = 255; }
+    cx.putImageData(new ImageData(out, w, h), pad, pad); return c;
+  };
+  try{
+    for (const [hard, psm] of [[false,'6'], [true,'6'], [true,'7']]){
+      await worker.setParameters({tessedit_pageseg_mode:psm});
+      const r = await worker.recognize(mk(hard), {}, {blocks:true});
+      const segs = aiImgSegments(r.data, im.ctx, {dx:dx-24, dy:dy-24}).filter(s=>s.n.length>=1 && s.conf>=10);
+      segs.sort((a,b)=>a.y0-b.y0||a.x0-b.x0); if (segs.length){ const f = segs[0], lim = f.y0+(f.y1-f.y0)*0.9; for (let i=segs.length-1;i>0;i--) if (segs[i].y0>=lim) segs.splice(i,1); }   // 첫 줄만(아래 근거 글자 제외)
+      segs.forEach(s=>{ s.dark = true; s.rescan = true; });
+      if (segs.length && (!accept || accept(segs))) return segs;
+    }
+  } finally { await worker.setParameters({tessedit_pageseg_mode:'11'}); }
+  return [];
+}
+async function aiImgParse(segs, im, kind, worker){
+  const ctx = im.ctx, W = ctx.canvas.width, H = ctx.canvas.height;
+  const sets = {lodge:AI_LODGE_FIELDS, course:AI_COURSE_FIELDS};
+  const rawText = segs.map(s=>s.t).join('\n');
+  // '호텔 정보 (21항목)' · '골프장 정보' 제목 위쪽(이름·선호 스타일 등)은 항목 칸이 아니므로 뺀다
+  const head = segs.find(s=>/^(호텔|골프장)정보/.test(s.n));
+  if (head) segs = segs.filter(s=>s.y0 >= head.y1-4);
+  const found = {lodge:aiImgFindLabels(segs, sets.lodge, 'lodge'), course:aiImgFindLabels(segs, sets.course, 'course')};
+  const score = k=>found[k].length + (found[k].some(l=>l.fd.k==='name') ? 2 : 0) + (found[k].some(l=>l.fd.k==='cat') ? 1 : 0);
+  let useKind = kind;
+  const other = kind==='lodge' ? 'course' : 'lodge';
+  if (score(other) > score(kind)+1 && found[other].length>=3) useKind = other;
+  let labels = found[useKind];
+  const barrierIdx = new Set(aiImgBarriers(segs, sets[useKind]));
+  const usedSi = new Set(labels.map(l=>l.si)); barrierIdx.forEach(i=>usedSi.add(i));
+  labels = aiImgInferLabels(segs, sets[useKind], labels, usedSi, W, H);
+  const labelSi = new Set(labels.map(l=>l.si));
+  const out = [];
+  const pool = segs.map((s,si)=>({s,si})).filter(o=>{
+    const s = o.s; if (labelSi.has(o.si) || barrierIdx.has(o.si)) return false;
+    if (s.conf<28) return false; if (s.n.length<2 && !/\d/.test(s.n)) return false; return true;
+  });
+  const stops = labels.map(l=>l.seg).concat([...barrierIdx].map(i=>segs[i]));
+  for (const l of labels){
+    const L = l.seg, h = L.y1-L.y0;
+    const sameRow = labels.filter(o=>o!==l && Math.abs(o.seg.y0-L.y0)<h*1.2 && o.seg.x0>L.x0+W*0.06);
+    const xr = sameRow.length ? Math.min(...sameRow.map(o=>o.seg.x0))-W*0.012 : W;
+    const xl = L.x0 - W*0.026;
+    const below = stops.filter(s=>s!==L && s.y0>L.y0+h*1.5 && (s.x0+s.x1)/2>=xl-W*0.03 && s.x0<xr);
+    const yb = below.length ? Math.min(...below.map(s=>s.y0)) - 2 : Math.min(H, L.y1 + h*14);
+    let reg = pool.map(o=>o.s).filter(s=>s.y0>=L.y1-h*0.4 && s.y0<yb && (s.x0+s.x1)/2>=xl && (s.x0+s.x1)/2<xr).sort((a,b)=>a.y0-b.y0||a.x0-b.x0);
+    // 값을 읽지 못했고 '미확인'(회색)도 아니면 — 이 칸만 잘라 한 번 더 읽는다
+    const fd = l.fd, canRescan = fd.type!=='multi' && fd.type!=='area' && fd.type!=='sel2' && fd.type!=='meals3';
+    let r = aiImgParseField(fd, reg, ctx, xl);
+    if (worker && canRescan && r.value===undefined && !reg.some(s=>/미확인/.test(s.n))){
+      try{
+        const accept = segs=>aiImgParseField(fd, reg.filter(s=>!s.dark).concat(segs), ctx, xl).value!==undefined;
+        const re = await aiImgRescan(worker, im, xl, L.y1+h*0.1, Math.min(W, xr), Math.min(yb, L.y1+Math.min(h*2.7, W*0.06)), accept);
+                if (re.length){ reg = reg.filter(s=>!s.dark).concat(re).sort((a,b)=>a.y0-b.y0||a.x0-b.x0); r = aiImgParseField(fd, reg, ctx, xl); }
+      }catch(e){}
+    }
+    r.label = fd.label; r.k = fd.k; r.inferred = !!l.inferred;
+    const confs = reg.filter(s=>s.dark).map(s=>s.conf); r.lowConf = r.value!==undefined && (r.unitUnsure || (confs.length && Math.min(...confs)<72));
+    out.push(r);
+  }
+  const order = sets[useKind].map(f=>f.k); out.sort((a,b)=>order.indexOf(a.k)-order.indexOf(b.k));
+  return {kind:useKind, rows:out, labelCount:labels.length, switched:useKind!==kind, rawText, dbg:labels.map(l=>[l.fd.k, Math.round(l.seg.x0), Math.round(l.seg.y0), l.seg.t, !!l.inferred])};
+}
+// 읽은 결과 → 등록부 항목 값(seed)
+function aiImgSeed(kind, rows){
+  const seed = {}, notes = {};
+  rows.forEach(r=>{
+    const fd = r.fd; if (r.skip) return;
+    if (r.note && fd.type!=='combos') notes[fd.k] = r.note.slice(0, 600);
+    if (r.value===undefined) return;
+    if (fd.type==='multi'){ seed[fd.k] = r.value; return; }
+    if (fd.type==='sel2' || fd.type==='meals3'){ Object.assign(seed, r.value); return; }
+    seed[fd.k] = r.value;
+    if (fd.sub && r.extra && r.extra.items.length && r.value==='y') seed[fd.sub] = r.extra.items;
+  });
+  if (Object.keys(notes).length) seed.notes = notes;
+  return seed;
+}
+function aiImgDisplay(r){
+  const fd = r.fd, v = r.value; if (v===undefined) return '';
+  if (fd.type==='multi') return v.join(' · ');
+  if (fd.type==='yn') return (v==='y' ? (fd.yes||'예') : (fd.no||'아니오')) + (r.extra && r.extra.items.length ? ` (${r.extra.items.join('·')})` : '');
+  if (fd.type==='cat'){ const c = CATEGORIES.domestic.concat(CATEGORIES.overseas).find(c=>c.id===v); return c ? c.ko : v; }
+  if (fd.type==='prox') return aiProxLabel(v);
+  if (fd.type==='dur') return aiDurLabel(v);
+  if (fd.type==='sel2') return fd.names.map((n,i)=>v[fd.keys[i]] ? `${n} ${v[fd.keys[i]]}` : '').filter(Boolean).join(' · ');
+  if (fd.type==='meals3') return fd.names.map((n,i)=>v[fd.keys[i]] ? `${n} ${aiMealLabel(v[fd.keys[i]])}` : '').filter(Boolean).join(' · ');
+  return String(v);
+}
+// ── 화면(모달) ──
+let _aiImp = null;
+function aiImgOpen(kind){
+  if (!getAdvProduct()) return;
+  aiImgClose(true);
+  _aiImp = {kind, rows:[], busy:false};
+  const word = kind==='lodge' ? '숙소' : '골프장';
+  const m = document.createElement('div'); m.id = 'aiImpModal'; m.className = 'ai-imp-modal'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true');
+  m.innerHTML = `<div class="ai-imp-panel">
+    <div class="ai-imp-head"><b>🖼 이미지로 새 ${word} 등록</b><button type="button" class="ai-imp-x" aria-label="닫기" onclick="aiImgClose()">✕</button></div>
+    <div class="ai-imp-body" id="aiImpBody"></div></div>`;
+  m.addEventListener('mousedown', e=>{ if (e.target===m && !(_aiImp && _aiImp.busy)) aiImgClose(); });
+  document.body.appendChild(m);
+  document.addEventListener('paste', aiImgPaste);
+  aiImgStageUpload();
+}
+function aiImgClose(silent){
+  document.removeEventListener('paste', aiImgPaste);
+  const m = document.getElementById('aiImpModal'); if (m) m.remove();
+  if (_aiImp && _aiImp.url){ try{ URL.revokeObjectURL(_aiImp.url); }catch(e){} }
+  _aiOcrProgress = null; _aiImp = null;
+}
+function aiImgPaste(e){
+  const it = [...(e.clipboardData && e.clipboardData.items || [])].find(i=>i.type && i.type.indexOf('image/')===0);
+  if (it && _aiImp && !_aiImp.busy){ e.preventDefault(); aiImgRun(it.getAsFile()); }
+}
+function aiImgStageUpload(msg){
+  const word = _aiImp.kind==='lodge' ? '숙소' : '골프장';
+  document.getElementById('aiImpBody').innerHTML = `
+    ${msg ? `<p class="ai-imp-err">${escapeAttr(msg)}</p>` : ''}
+    <label class="ai-imp-drop" id="aiImpDrop" tabindex="0">
+      <input type="file" accept="image/*" hidden onchange="if(this.files[0])aiImgRun(this.files[0])">
+      <span class="ai-imp-ico">🖼</span>
+      <b>${word} 정보 카드 이미지를 올려 주세요</b>
+      <span>여기를 눌러 파일 선택 · 끌어다 놓기 · 캡처한 이미지를 붙여넣기(Ctrl+V)</span>
+    </label>
+    <ul class="ai-imp-tips">
+      <li>항목 이름(숙소명·숙소 유형…)과 값이 함께 보이는 카드 캡처를 올리면 칸마다 값과 근거(작은 글씨)를 읽어 옵니다.</li>
+      <li>글자 인식은 <b>이 브라우저 안에서만</b> 처리합니다 — 이미지는 서버로 보내지도, 저장하지도 않습니다(등록되는 것은 값과 근거 글뿐).</li>
+      <li>이미지에 없거나 회색 <b>미확인</b>인 칸은 비워 두고, 읽은 값은 등록 전에 아래 미리보기에서 확인합니다. 등록 후에도 카드에서 모두 고칠 수 있습니다.</li>
+    </ul>`;
+  const d = document.getElementById('aiImpDrop');
+  ['dragenter','dragover'].forEach(ev=>d.addEventListener(ev, e=>{ e.preventDefault(); d.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev=>d.addEventListener(ev, e=>{ e.preventDefault(); d.classList.remove('over'); }));
+  d.addEventListener('drop', e=>{ const f = [...(e.dataTransfer.files||[])].find(f=>/^image\//.test(f.type)); if (f) aiImgRun(f); });
+}
+const AI_IMG_STATUS = {'loading tesseract core':'글자 인식 엔진 준비 중…', 'initializing tesseract':'글자 인식 엔진 준비 중…', 'loading language traineddata':'한국어 글자 데이터 불러오는 중…', 'initializing api':'글자 인식 엔진 준비 중…', 'recognizing text':'글자 읽는 중…'};
+async function aiImgRun(file){
+  if (!_aiImp || _aiImp.busy) return;
+  if (!file || !/^image\//.test(file.type||'')){ aiImgStageUpload('이미지 파일(PNG·JPG 등)을 올려 주세요.'); return; }
+  const imp = _aiImp; imp.busy = true;
+  const body = document.getElementById('aiImpBody');
+  body.innerHTML = `<div class="ai-imp-prog"><div class="ai-imp-spin"></div><b id="aiImpStatus">이미지 불러오는 중…</b><div class="ai-imp-bar"><i id="aiImpBar" style="width:3%"></i></div><small>처음에는 글자 인식 데이터(약 5MB)를 내려받느라 1분 정도 걸릴 수 있어요. 다음부터는 빨라집니다.</small></div>`;
+  _aiOcrProgress = m=>{
+    const st = document.getElementById('aiImpStatus'), bar = document.getElementById('aiImpBar'); if (!st) return;
+    st.textContent = AI_IMG_STATUS[m.status] || st.textContent;
+    if (bar && typeof m.progress==='number') bar.style.width = Math.max(3, Math.round(m.progress*100))+'%';
+  };
+  try{
+    const im = await aiImgLoad(file); imp.url = im.url; imp.im = im;
+    const w = await aiOcrWorkerGet();
+    document.getElementById('aiImpStatus').textContent = '글자 읽는 중…';
+    const r = await w.recognize(im.ocr, {}, {blocks:true});
+    const segs = aiImgSegments(r.data, im.ctx);
+    const P = await aiImgParse(segs, im, imp.kind, w);
+    imp.busy = false; if (!_aiImp) return;
+    imp.parsed = P; imp.kind = P.kind; imp.segs = segs;
+    aiImgStagePreview(P);
+  }catch(err){
+    imp.busy = false; if (!_aiImp) return;
+    aiImgStageUpload('이미지를 읽지 못했습니다: '+(err && err.message ? err.message : err));
+  }
+}
+function aiImgStagePreview(P){
+  const imp = _aiImp, kind = imp.kind, word = kind==='lodge' ? '숙소' : '골프장';
+  const body = document.getElementById('aiImpBody');
+  if (P.labelCount<3){
+    aiImgStageUpload(`항목 이름을 충분히 읽지 못했습니다(${P.labelCount}개). 글자가 선명한 카드 캡처(가로 600px 이상 권장)를 올려 주세요.`);
+    return;
+  }
+  const nameRow = P.rows.find(r=>r.k==='name');
+  imp.name = nameRow && nameRow.value ? nameRow.value : '';
+  const filled = P.rows.filter(r=>r.value!==undefined);
+  const dup = imp.name && aiPlaceList(kind).find(x=>aiImgNorm(x.name)===aiImgNorm(imp.name));
+  const rowHTML = P.rows.map((r,i)=>{
+    const dsp = aiImgDisplay(r);
+    const tag = r.lowConf ? '<em class="ai-imp-tag warn" title="글자가 흐리거나 작아 잘못 읽었을 수 있습니다">확인 필요</em>' : r.how==='derived' ? '<em class="ai-imp-tag" title="근거 글에서 거리를 읽어 정한 값">근거에서 읽음</em>' : (r.unmatched ? `<em class="ai-imp-tag warn" title="등록된 권역 목록에 없습니다">권역 목록에 없음: ${escapeAttr(r.unmatched)}</em>` : (r.unclear ? '<em class="ai-imp-tag warn">거리를 알 수 없어 비워 둠</em>' : ''));
+    return `<tr class="${r.value===undefined ? 'none' : ''}"><td><input type="checkbox" data-i="${i}" ${(r.value!==undefined || r.note) ? 'checked' : ''} aria-label="${escapeAttr(r.label)} 적용"></td><th>${escapeAttr(r.label)}</th><td>${r.value!==undefined ? `<b>${escapeAttr(dsp)}</b>${tag}` : '<span class="ai-imp-un">미확인 · 비워 둠</span>'}${r.note ? `<small>${escapeAttr(r.note)}</small>` : ''}</td></tr>`;
+  }).join('');
+  body.innerHTML = `
+    ${(()=>{ const c = P.rows.find(r=>r.k==='cat'); return c && c.value===undefined ? `<p class="ai-imp-info">국가·권역을 읽지 못해 <b>지금 편집 중인 상품의 권역(${escapeAttr(aiCatName(currentAdv ? currentAdv.catId : '')||'미지정')})</b>으로 등록합니다. 다르면 등록 후 카드에서 바꾸세요.</p>` : ''; })()}
+    ${P.switched ? `<p class="ai-imp-info">이 이미지는 ${word} 정보 카드로 읽혀서 <b>새 ${word}</b>로 등록합니다.</p>` : ''}
+    <div class="ai-imp-top"><label>${word} 이름<input type="text" id="aiImpName" value="${escapeAttr(imp.name)}" placeholder="이름을 확인해 주세요"></label>
+      <img class="ai-imp-thumb" src="${imp.url}" alt="올린 이미지"></div>
+    ${dup ? `<p class="ai-imp-warn">⚠ 같은 이름의 ${word}가 이미 등록되어 있습니다(${escapeAttr(dup.name)}). 계속하면 새 항목이 하나 더 만들어집니다 — 기존 항목은 바뀌지 않습니다.</p>` : ''}
+    <p class="ai-imp-sum">항목 ${P.rows.length}개 중 <b>${filled.length}개</b>의 값을 읽었습니다. 체크한 항목만 등록합니다 — 글자가 잘못 읽혔다면 등록 후 카드에서 고치세요.</p>
+    <div class="ai-imp-tablewrap"><table class="ai-imp-table"><tbody>${rowHTML}</tbody></table></div>
+    <details class="ai-imp-raw"><summary>인식된 원문 보기</summary><pre>${escapeAttr(P.rawText)}</pre></details>
+    <div class="ai-imp-acts"><button type="button" class="apc-btn-sm" onclick="aiImgStageUpload()">다른 이미지 올리기</button><button type="button" class="apc-btn-sm" onclick="aiImgClose()">취소</button><button type="button" class="apc-btn-sm ai-imp-go" onclick="aiImgApply()">✔ 새 ${word}로 등록</button></div>`;
+}
+function aiImgApply(){
+  const imp = _aiImp; if (!imp || !imp.parsed) return;
+  const kind = imp.kind, P = imp.parsed;
+  const on = new Set([...document.querySelectorAll('#aiImpBody .ai-imp-table input[type=checkbox]:checked')].map(c=>Number(c.dataset.i)));
+  const rows = P.rows.filter((r,i)=>on.has(i));
+  const seed = aiImgSeed(kind, rows);
+  const nm = (document.getElementById('aiImpName') || {}).value;
+  if (nm !== undefined) seed.name = nm.trim().slice(0, 200);
+  seed.importedAt = new Date().toISOString();
+  if (kind==='course') aiCourseNorm(seed);
+  aiImgClose();
+  const x = aiNewPlace(kind, seed);
+  if (x && kind==='course') aiCourseNorm(x);
+  return x;
+}
+
 // ── KGA 코스레이팅 목록(assets/kga-course-ratings.json, 대한민국 2023-05-24) — 국내 골프장은 이름을 고르면 홀 수·전장·Course Rating·Slope를 자동 입력 ──
 // 기준 티는 레귤러(남성 화이트). 화이트·레귤러 티가 없으면 남성 티 중 가운데 길이의 티. 코스 조합·티는 카드에서 바꿀 수 있다.
 // 홀 수는 KGA에 등록된 코스 조합으로 계산한 값(예: Birch+Maple·Maple+Pine·Pine+Birch → 27홀). PAR는 목록에 없어 직접 입력

@@ -184,7 +184,7 @@ function extractInPage() {
         priceInquiry: strip(priceInquiry), from, fromCur: curOf(p.fromCurrency), fromLabel: p.fromLabel !== false,
         entries, commonDayPrices: dayRows(p.commonDayPrices), commonHolidayPrices: holRows(p.commonHolidayPrices), commonDates: dateList(p.commonDayDates),
         included: lines(p.commonIncluded), notIncluded: lines(p.commonNotIncluded), precautions: lines(p.commonPrecautions), notes: lines(p.notes), booking: lines(p.bookingPolicy),
-        aiFacts: { packageType: info.packageType || '', mealsIncl: info.mealsIncl || [], mealCount: plain(info.mealCount), paxOk: info.paxOk || [],
+        aiFacts: { packageType: info.packageType || '', mealsIncl: info.mealsIncl || [], mealCount: plain(info.mealCount), mealGiven: [['mealB', '조식'], ['mealL', '중식'], ['mealD', '석식']].filter(([k]) => info[k]).map(([k, l]) => `${l} ${aiMealLabel(info[k])}`), paxOk: info.paxOk || [],
           audience: info.audience || [], ageGroups: info.ageGroups || [], cartCaddie: info.cartCaddie || '',
           pros: lines(info.pros), cons: lines(info.cons), rainCancel: lines(info.rainCancel) },
         courses, lodges, images
@@ -379,7 +379,7 @@ function productPage(p, data, stateDate) {
   add('항공', p.airfare); add('출발 공항', p.departAirports.join(', ')); add('도착 공항', p.arrAirport); add('항공편', p.flightNo);
   add('비행 시간', p.flightTime); add(p.transferLabel + ' 이동', p.transferTime); add('호텔→골프장 이동', p.hotelToGolfTime);
   add('최소 출발 인원', p.minPeople ? `${p.minPeople}명 이상` : ''); add('항공 발권', p.ticket);
-  add('상품 구성', p.aiFacts.packageType); add('포함 식사', p.aiFacts.mealsIncl.join(', ')); add('포함 식사 횟수', p.aiFacts.mealCount); add('출발 가능 인원', p.aiFacts.paxOk.join(', '));
+  add('상품 구성', p.aiFacts.packageType); add('포함 식사', p.aiFacts.mealsIncl.join(', ')); add('식사제공', p.aiFacts.mealGiven.join(', ')); add('포함 식사 횟수', p.aiFacts.mealCount); add('출발 가능 인원', p.aiFacts.paxOk.join(', '));
   add('추천 대상', p.aiFacts.audience.join(', ')); add('추천 연령대', p.aiFacts.ageGroups.join(', ')); add('카트·캐디 방식', p.aiFacts.cartCaddie);
   add(p.priceInquiry ? '요금' : '최저가', priceText(p));
   if (!p.priceInquiry && p.from > 0 && (p.from !== lowestPrice(p) || p.fromCur !== lowestCur(p))) add('홈페이지 표시 대표가', `${money(p.from, p.fromCur)}${p.fromLabel ? ' ~부터' : ''}`);

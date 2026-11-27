@@ -2779,6 +2779,11 @@ table.rtf-table.rtf-tind3{margin-left:4.5em!important;width:calc(100% - 4.5em)!i
 .ai-dur-row input{flex:1 1 0;width:0;min-width:0;padding:8px 8px;font-size:.88rem}
 .ai-dur-row em{font-style:normal;color:var(--nm-text-soft,#667)}
 .ai-dur-row .ai-dur-suf{flex:0 0 auto;font-size:.8rem;color:var(--nm-text-soft,#667);white-space:nowrap}
+.ai-grp{grid-column:1/-1;padding:10px 10px 12px;border-radius:14px;border:1px solid rgba(10,23,48,.14);background:rgba(255,255,255,.5)}
+.ai-grp.has-fill{border-color:rgba(22,163,74,.4)}
+.ai-grp-title{font-size:.86rem;font-weight:800;color:var(--nm-blue-deep);margin:0 2px 8px}
+.ai-grp-title em{font-style:normal;font-size:.72rem;font-weight:600;color:var(--nm-text-soft,#667);margin-left:6px}
+.ai-grp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 16px}
 .ai-prox-range{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:nowrap}
 .ai-prox-range[hidden]{display:none}
 .ai-prox-range input{flex:1 1 0;width:0;min-width:0;padding:8px 6px;font-size:.85rem;text-align:center}
@@ -20080,21 +20085,22 @@ function aiProxCompose(el){
 function aiProxRangeShow(sel){
   const r = sel.closest('.ai-info-f').querySelector('.ai-prox-range'); if (r) r.hidden = !(sel.value==='vr' || sel.value==='wr');
 }
-// 숙소 등록부 항목
+// 숙소 등록부 항목 — grp 값이 같은 연속 항목은 한 묶음(카드)으로 보여 준다
+const AI_GRP_TITLE = {room:'🛏 객실 <em>가능 객실 · 객실 구성 · 침대 구성 · 객실 크기</em>'};
+const AI_LODGE_STAR_SRC_DEFAULT = '호텔 공식 홈페이지 · 구글지도';
 const AI_LODGE_FIELDS = [
   {k:'name', label:'숙소명', type:'text', plain:true, help:'예약 확정서에 쓰는 공식 명칭. 같은 숙소를 두 번 등록하지 않도록 먼저 목록에서 찾아 주세요.'},
   {k:'cat', label:'국가·권역', type:'cat', help:'상품에서 숙소를 고를 때 같은 국가·권역의 숙소를 먼저 보여 줍니다.'},
-  {k:'lodgeType', label:'숙소 유형', type:'select', opts:['골프텔','리조트','풀빌라','시내호텔','기타'], help:'골프텔: 골프장 부지 안 숙박 전용 시설 · 리조트: 수영장·스파 등 부대시설을 갖춘 휴양형 · 풀빌라: 객실(동)마다 전용 수영장이 있는 독채형 · 시내호텔: 도심·번화가에 있는 호텔'},
+  {k:'subRegion', label:'세부권역', type:'text', plain:true, ph:'예: 푸꾸옥, 오키나와 본섬, 다낭 시내', help:'국가·권역 안의 더 좁은 지역(도시·섬·리조트 지구 등)을 직접 입력합니다. 비워 두어도 됩니다.'},
+  {k:'lodgeType', label:'숙소 유형', type:'select', opts:['골프텔','리조트','풀빌라','시내호텔','비즈니스 호텔','기타'], help:'골프텔: 골프장 부지 안 숙박 전용 시설 · 리조트: 수영장·스파 등 부대시설을 갖춘 휴양형 · 풀빌라: 객실(동)마다 전용 수영장이 있는 독채형 · 시내호텔: 도심·번화가에 있는 호텔 · 비즈니스 호텔: 출장·단기 체류 중심의 실속형 호텔'},
   {k:'lodgeStar', label:'숙박 등급', type:'select', opts:['3성급','4성급','5성급'], help:'정부·관광청 공식 등급 또는 주요 예약 사이트 표기 등급. 둘이 다르면 낮은 쪽, 확인 안 되면 미확인. 아래에 확인 출처를 꼭 적어 주세요.'},
-  {k:'lodgeStarSrc', label:'등급 확인 출처', type:'text', ph:'예: 호텔 공식 사이트, 관광청', help:'등급을 확인한 곳(사이트·문서). 고객 안내 근거로 함께 보여 줍니다.'},
-  {k:'roomSize', label:'객실 크기', type:'text', ph:'예: 32㎡', help:'상품에 배정되는 기본 객실의 면적(㎡).'},
-  {k:'bedType', label:'침대 구성', type:'multi', opts:['트윈 2베드','더블 1베드','트리플 3베드','쿼드 4베드'], help:'기본 객실 기준 침대 구성(여러 개 선택 가능). 예전에 글자로 입력해 둔 값은 \'예전 입력값\'으로 남아 있습니다.'},
-  {k:'roomLayout', label:'객실 구성', type:'multi', opts:['침실1+욕실','침실1+거실+욕실','침실2+거실+주방+욕실','침실3+거실+주방+욕실'], help:'배정 가능한 객실의 공간 구성(여러 개 가능). 침실2+거실+주방+욕실은 콘도·빌라형처럼 일행이 한 객실을 함께 쓰는 구조.'},
-  {k:'roomTypes', label:'가능 객실', type:'multi', opts:['1인실','2인실','4인실'], help:'실제로 배정 가능한 객실만 체크. 1인실은 추가요금이 있어도 가능하면 체크.'},
-  {k:'breakfast', label:'식사제공', type:'meals3', keys:['breakfast','lunch','dinner'], names:['조식','중식','석식'], help:'숙소가 상품 요금에 포함해 제공하는 식사를 끼니별로 선택(포함 / 호텔식 / 클럽식 / 자유식(불포함) / 불포함). 호텔식·클럽식은 식사가 제공되는 것으로, 자유식은 미제공으로 판정합니다. 확인 안 되는 끼니는 \'미확인\'. 예전에 조식만 입력해 둔 값은 조식 칸에 그대로 남아 있습니다.'},
+  {k:'lodgeStarSrc', label:'등급 확인 출처', type:'text', ph:'예: 호텔 공식 홈페이지 · 구글지도', help:'등급을 확인한 곳(사이트·문서). 대부분 호텔 공식 홈페이지나 구글지도에서 확인하므로 새로 등록하거나 숙박 등급을 고르면 \'호텔 공식 홈페이지 · 구글지도\'가 기본으로 들어가며, 다르면 고쳐 쓰세요. 고객 안내 근거로 함께 보여 줍니다.'},
+  {grp:'room', k:'roomTypes', label:'가능 객실', type:'multi', opts:['1인실','2인실','4인실'], help:'실제로 배정 가능한 객실만 체크. 1인실은 추가요금이 있어도 가능하면 체크.'},
+  {grp:'room', k:'roomLayout', label:'객실 구성', type:'multi', opts:['침실1+욕실','침실1+거실+욕실','침실2+거실+주방+욕실','침실3+거실+주방+욕실'], help:'배정 가능한 객실의 공간 구성(여러 개 가능). 침실2+거실+주방+욕실은 콘도·빌라형처럼 일행이 한 객실을 함께 쓰는 구조.'},
+  {grp:'room', k:'bedType', label:'침대 구성', type:'multi', opts:['트윈 2베드','더블 1베드','트리플 3베드','쿼드 4베드'], help:'기본 객실 기준 침대 구성(여러 개 선택 가능). 예전에 글자로 입력해 둔 값은 \'예전 입력값\'으로 남아 있습니다.'},
+  {grp:'room', k:'roomSize', label:'객실 크기', type:'text', ph:'예: 32㎡', help:'상품에 배정되는 기본 객실의 면적(㎡).'},
   {k:'golfDistance', label:'골프장까지', type:'dur', unit:'분', help:'차량 기준 편도 평균 시간. 골프장이 여러 곳이면 가장 자주 가는 곳 기준. 시간이 범위로 알려졌거나 \'몇 분 이내\'로만 확인되면 입력 방식에서 \'몇 분 이내\'·\'차량/도보 몇 분~몇 분 소요\'를 고르세요. 10분 이내·30분 이내 조건에는 가장 긴 시간(범위는 최대)으로 판정합니다.'},
   {k:'airportMin', label:'공항에서', type:'dur', only:'overseas', unit:'분', help:'도착 공항→숙소 차량 편도 시간. 범위로 알려졌거나 \'몇 분 이내\'로만 확인되면 입력 방식에서 \'몇 분 이내\'·\'차량/도보 몇 분~몇 분 소요\'를 고르세요. 60분 이내 조건에는 가장 긴 시간(범위는 최대)으로 판정합니다.'},
-  {k:'elevator', label:'엘리베이터', type:'yn', yes:'있음', no:'없음', help:'객실 동에 엘리베이터가 있는지.'},
   {k:'nearFood', label:'현지 맛집', type:'prox', help:AI_PROX_HELP},
   {k:'nearCity', label:'시내(번화가)', type:'prox', help:AI_PROX_HELP},
   {k:'nearSpot', label:'유명 관광지', type:'prox', help:AI_PROX_HELP},
@@ -20152,7 +20158,8 @@ const AI_INFO_SCHEMA = [
     {k:'multiNight', label:'연박(2박 이상) 가능', type:'yn', only:'domestic', def:'n', help:'국내 상품은 1박 2일이 대부분이라 2박 이상으로 연장 예약이 가능하면 \'예\'. 고객의 \'장박\' 조건은 국내 상품에서 이 값으로 판정합니다.'}]},
   {key:'course', label:'② 골프코스·라운드', place:'course', fields:[
     {k:'multiCourse', label:'다색 골프(여러 골프장)', type:'yn', help:'일정 중 2곳 이상 골프장을 돌면 \'예\'. 연결된 골프장이 2곳 이상이면 비워 둬도 자동으로 \'예\'로 판정.'}]},
-  {key:'meal', label:'③ 식사·관광·쇼핑', note:'맛집·관광지·쇼핑몰·온천 등 주변 시설의 가까운 정도와 숙소의 식사제공은 ① 숙소 등록부에서 입력합니다. 포함 식사·횟수는 일자별 상세 일정·기본 정보의 식사 문구·숙소 식사제공에서 자동으로 읽습니다(요금 항목별 예전 입력값은 판정에 그대로 쓰입니다).', fields:[
+  {key:'meal', label:'③ 식사·관광·쇼핑', note:'맛집·관광지·쇼핑몰·온천 등 주변 시설의 가까운 정도는 ① 숙소 등록부에서 입력합니다. 식사제공은 숙소가 아니라 상품 단위라서 여기에서 입력하며, 포함 식사·횟수는 일자별 상세 일정·기본 정보의 식사 문구에서도 자동으로 읽습니다(요금 항목별 예전 입력값은 판정에 그대로 쓰입니다).', fields:[
+    {k:'mealB', label:'식사제공', type:'meals3', keys:['mealB','mealL','mealD'], names:['조식','중식','석식'], help:'이 상품 요금에 포함해 제공하는 식사를 끼니별로 선택(포함 / 호텔식 / 클럽식 / 자유식(불포함) / 불포함). 호텔식·클럽식은 식사가 제공되는 것으로, 자유식·불포함은 제공되지 않는 것으로 판정합니다. 확인 안 되면 미확인.'},
     {k:'mealChoice', label:'식사 선택권', type:'yn', yes:'있음', no:'없음', help:'포함 식사의 메뉴·식당을 고를 수 있으면 \'있음\'.'},
     {k:'freeTime', label:'자유시간', type:'yn', yes:'있음', no:'없음', help:'골프·이동 외에 반나절 이상 자유 일정이 있으면 \'있음\'.'}]},
   {key:'move', label:'④ 이동·일정 편의', note:'숙소→골프장 시간(해외는 공항→숙소 포함)은 ① 숙소 등록부에서, 티오프 시간대(주중·주말)는 ② 골프장 등록부에서 입력합니다.', fields:[
@@ -20480,6 +20487,19 @@ function aiPlaceSummary(kind, x){
   const bits = kind==='lodge' ? [x.lodgeType, x.lodgeStar, aiDurMax(x.golfDistance)!=null ? `골프장 ${aiDurLabel(x.golfDistance).replace(/^약 /,'')}` : ''] : [aiInfoFilled(x.holes) ? x.holes+'홀' : '', aiLevelShort(x.courseLevel), x.famous==='y' ? '명문' : ''];
   return bits.filter(Boolean).join(' · ');
 }
+// 숙소·골프장 카드의 입력 칸들 — grp이 같은 연속 항목(예: 숙소의 객실 묶음)은 하나의 묶음 카드 안에 모아서 보여 준다
+function aiPlaceGridHTML(list, x, kind, save, saveMulti){
+  const one = fd=>aiFieldHTML(fd, x[fd.k], (fd.k==='cat' || fd.k==='holes') ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x);
+  let out = '', i = 0;
+  while (i < list.length){
+    const fd = list[i];
+    if (!fd.grp){ out += one(fd); i++; continue; }
+    const g = []; while (i < list.length && list[i].grp===fd.grp){ g.push(list[i]); i++; }
+    const n = g.filter(f=>aiInfoFilled(x[f.k])).length;
+    out += `<div class="ai-grp${n ? ' has-fill' : ''}" data-grp="${fd.grp}"><div class="ai-grp-title">${AI_GRP_TITLE[fd.grp]||''}</div><div class="ai-grp-grid">${g.map(one).join('')}</div></div>`;
+  }
+  return out;
+}
 // 연결된 숙소·골프장 — 칩 목록 + 등록부에서 선택 + 새로 등록 + 각 항목 편집 카드(등록부 공용)
 function aiPlaceLinkHTML(p, kind){
   const ai = p.aiInfo || {}, ids = Array.isArray(ai[aiPlaceIdsKey(kind)]) ? ai[aiPlaceIdsKey(kind)] : [];
@@ -20506,7 +20526,7 @@ function aiPlaceLinkHTML(p, kind){
           <summary>${ico} <span data-place-name="${x.id}">${escapeAttr(x.name||'(이름 없음)')}</span> <span class="ai-place-sum">${escapeAttr(aiPlaceSummary(kind, x))}</span> ${advBadge(`상품 ${used}개 연결`, used>1?'ok':'')}</summary>
           ${used>1 ? `<p class="ai-info-note">이 ${word} 정보를 고치면 연결된 상품 ${used}개에 모두 반영됩니다.</p>` : ''}
           ${kind==='course' && _kga && (!x.cat || isDomesticCat(x.cat)) ? aiKgaBoxHTML(x) : ''}
-          <div class="ai-info-grid">${fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))).map(fd=>aiFieldHTML(fd, x[fd.k], (fd.k==='cat' || fd.k==='holes') ? (k, expr)=>`${save(k, expr)};renderAdvBody()` : save, saveMulti, fd.k==='name' ? `;aiPlaceNameSync('${x.id}',this.value)` : '', kind==='course' && fd.k==='courseLevel' ? aiLevelHint(x) : '', x)).join('')}</div>
+          <div class="ai-info-grid">${aiPlaceGridHTML(fields.filter(fd=>aiFieldShown(fd, x.cat ? isDomesticCat(x.cat) : pdom) && (!fd.when || fd.when(x))), x, kind, save, saveMulti)}</div>
           ${aiPlaceRetiredNote(kind, x)}
           <div class="ai-place-acts"><button type="button" class="apc-btn-sm" onclick="aiUnlinkPlace('${kind}','${x.id}')">이 상품에서 연결 해제</button><button type="button" class="apc-btn-sm ai-del" onclick="aiDeletePlace('${kind}','${x.id}')">등록부에서 삭제</button></div>
         </details>`;
@@ -20538,7 +20558,7 @@ function advAiInfoHTML(p){
   const withDef = fd => defOf(fd)!==undefined ? Object.assign({}, fd, {defShow:defOf(fd)}) : fd;
   const autoList = Object.keys(auto.out).filter(k=>!aiInfoFilled(ai[k])).map(k=>{ const fd = allF.find(x=>x.k===k); return fd && shown(fd) ? `${escapeAttr(fd.label)}(${escapeAttr(auto.src[k])})` : ''; }).filter(Boolean);
   const nL = Array.isArray(ai.lodgeIds) ? ai.lodgeIds.length : 0, nC = Array.isArray(ai.courseIds) ? ai.courseIds.length : 0;
-  const filled = AI_INFO_SCHEMA.reduce((n,g)=>n+g.fields.filter(fd=>shown(fd) && aiInfoFilled(ai[fd.k])).length, 0);
+  const filled = AI_INFO_SCHEMA.reduce((n,g)=>n+g.fields.filter(fd=>shown(fd) && aiFieldHas(fd, ai)).length, 0);
   const badge = (nL||nC||filled) ? advBadge(`숙소 ${nL} · 골프장 ${nC} · 항목 ${filled}`, 'ok') : (autoList.length ? advBadge(`🔄 자동 ${autoList.length}`, 'ok') : advBadge('비어 있음','empty'));
   const save = (k, expr) => `updateAiInfo('${k}',${expr})`, saveMulti = (k, o) => `updateAiInfoMulti('${k}','${escapeAttr(o)}',this.checked)`;
   return `
@@ -20549,13 +20569,13 @@ function advAiInfoHTML(p){
         ${autoList.length ? `<div class="ai-auto-banner">🔄 <b>이미 입력된 상품 정보로 자동 판정 중</b> — ${autoList.join(' · ')}. 이 항목들은 따로 입력하지 않아도 되며, 실제와 다를 때만 입력하세요.${vis.length>1 ? ' 요금 항목별 값은 각 요금 항목의 "🤖 AI 추천 정보"에서 확인할 수 있습니다.' : ''}</div>` : ''}
         <div class="pe-inh-banner"><div class="pe-inh-banner-text"><b>💡 숙소·골프장은 등록부에 한 번만 등록하고, 상품에서는 골라서 연결만 하세요.</b><br>${dom ? '이 상품은 <b>국내 상품</b>이라 공항 이동·한식당·관광 송영처럼 해외에만 해당하는 항목은 숨기고, 장박 대신 <b>연박(2박 이상)</b>을 받습니다.' : '이 상품은 <b>해외 상품</b> 기준 항목으로 표시합니다.'}<br>등록부 정보를 고치면 연결된 모든 상품에 반영됩니다. 모든 항목은 선택 입력이며, 비워 둔 항목은 '미확인'으로 처리돼 감점되지 않습니다. 각 항목의 ⓘ를 누르면 판단 기준이 보입니다. <b>요금 항목마다 식사·상품 구성·인원·숙소가 다르면</b> 여기에는 공통값만 두고, 각 요금 항목의 "🤖 AI 추천 정보"에 그 항목 값을 입력하세요(추천은 항목별로 판정해 가장 잘 맞는 항목을 안내). 입력한 값은 추천 근거로 고객에게 그대로 안내되므로 확인된 정보만 넣어 주세요.</div></div>
         ${AI_INFO_SCHEMA.map(g=>{
-          const n = g.fields.filter(fd=>shown(fd) && aiInfoFilled(ai[fd.k])).length + (g.place ? (g.place==='lodge' ? nL : nC) : 0);
+          const n = g.fields.filter(fd=>shown(fd) && aiFieldHas(fd, ai)).length + (g.place ? (g.place==='lodge' ? nL : nC) : 0);
           return `<details class="pe-labels" ${advDetailsAttrs('ai-'+g.key, false)}>
             <summary>${g.label} ${n ? advBadge(`✓ ${n}`, 'ok') : (g.fields.some(fd=>shown(fd) && autoOnly(fd)) ? advBadge(`🔄 자동 ${g.fields.filter(fd=>shown(fd) && autoOnly(fd)).length}`, 'ok') : advBadge('비어 있음','empty'))}</summary>
             ${g.place ? aiPlaceLinkHTML(p, g.place) + aiLegacyBoxHTML(p, g.place) : ''}
             ${g.note ? `<p class="ai-info-note">${escapeAttr(g.note)}</p>` : ''}
             ${g.place ? `<div class="ai-sub-l">이 상품의 일정 정보</div>` : ''}
-            <div class="ai-info-grid">${g.fields.filter(shown).map(fd=>aiFieldHTML(withDef(fd), ai[fd.k], save, saveMulti, '', autoHint(fd))).join('')}</div>
+            <div class="ai-info-grid">${g.fields.filter(shown).map(fd=>aiFieldHTML(withDef(fd), ai[fd.k], save, saveMulti, '', autoHint(fd) || (fd.type==='meals3' ? aiLodgeMealHint(p, ai) : ''), ai)).join('')}</div>
             ${aiRetiredNoteHTML(g.key, ai)}
           </details>`;
         }).join('')}
@@ -20566,12 +20586,25 @@ function advAiInfoHTML(p){
 const AI_RETIRED = {lodge:[['lodgeChanges','숙소 변경 횟수']], meal:[['mealsIncl','포함 식사'],['mealCount','포함 식사 횟수'],['tourIncluded','관광 포함 여부'],['localExtra','현지 추가 비용']], party:[['paxSurcharge','인원별 추가요금'],['dealPeriod','특가 기간']], move:[['pickupTime','공항 픽업시간'],['dailyMove','날짜별 골프장 이동시간'],['teeOff','티오프 시간대'],['moveSupport','이동 지원 범위']]};
 // 숙소 등록부에서 정리된 항목(셔틀) — 이미 입력한 값은 참고용으로 보여 준다
 function aiPlaceRetiredNote(kind, x){
-  if (kind!=='lodge' || !x || !aiInfoFilled(x.shuttle)) return '';
-  return `<small class="ai-inh ai-legacy-val">예전 입력값(참고 · 입력칸에서 정리된 항목): 셔틀: ${x.shuttle==='y' ? '있음' : (x.shuttle==='n' ? '없음' : escapeAttr(aiPlainText(x.shuttle)))}</small>`;
+  if (kind!=='lodge' || !x) return '';
+  const items = [];
+  if (aiInfoFilled(x.shuttle)) items.push(`셔틀: ${x.shuttle==='y' ? '있음' : (x.shuttle==='n' ? '없음' : escapeAttr(aiPlainText(x.shuttle)))}`);
+  if (aiInfoFilled(x.elevator)) items.push(`엘리베이터: ${x.elevator==='y' ? '있음' : (x.elevator==='n' ? '없음' : escapeAttr(aiPlainText(x.elevator)))}`);
+  const meals = aiMealsLegacyTxt(x); if (meals) items.push(`식사제공: ${escapeAttr(meals)} (식사제공은 상품의 "③ 식사·관광·쇼핑"에서 입력 — 이 값은 상품 쪽에 입력하기 전까지 판정에 쓰입니다)`);
+  return items.length ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고 · 입력칸에서 정리된 항목): ${items.join(' · ')}</small>` : '';
 }
 function aiRetiredNoteHTML(gKey, ai){
   const items = (AI_RETIRED[gKey]||[]).filter(([k])=>aiInfoFilled(ai[k])).map(([k,l])=>`${l}: ${escapeAttr(Array.isArray(ai[k]) ? ai[k].join('·') : aiPlainText(ai[k]))}`);
   return items.length ? `<small class="ai-inh ai-legacy-val">예전 입력값(참고 · 입력칸에서 정리된 항목): ${items.join(' · ')}</small>` : '';
+}
+// 칸 하나에 값이 있는지 — 식사제공처럼 여러 키(조·중·석)를 쓰는 칸은 하나라도 있으면 입력된 것
+function aiFieldHas(fd, ai){ return fd.keys ? fd.keys.some(k=>aiInfoFilled(ai[k])) : aiInfoFilled(ai[fd.k]); }
+// 숙소 등록부에 예전에 입력돼 있던 식사제공 값 — 숙소 항목에서 빠졌지만 지우지 않고, 이 상품에 직접 입력하기 전까지는 판정에도 그대로 쓰인다
+function aiMealsLegacyTxt(x){ return [['breakfast','조식'],['lunch','중식'],['dinner','석식']].filter(([k])=>aiInfoFilled(x[k])).map(([k,l])=>`${l} ${aiMealLabel(x[k])}`).join(' · '); }
+function aiLodgeMealHint(p, ai){
+  if (['mealB','mealL','mealD'].some(k=>aiInfoFilled(ai[k]))) return '';
+  const items = aiLinkedPlaces(p, 'lodge', ai).filter(x=>!x.legacy).map(x=>{ const t = aiMealsLegacyTxt(x); return t ? `${escapeAttr(x.name||'(이름 없음)')}: ${escapeAttr(t)}` : ''; }).filter(Boolean);
+  return items.length ? `🏨 숙소 등록부에 예전에 입력된 값(판정에 사용 중): ${items.join(' / ')} — 여기에 입력하면 이 값이 우선합니다` : '';
 }
 function aiInfoOf(p){ if (!p.aiInfo || typeof p.aiInfo!=='object' || Array.isArray(p.aiInfo)) p.aiInfo = {}; return p.aiInfo; }
 function updateAiInfo(k, v){
@@ -20600,6 +20633,11 @@ function updateAiPlace(kind, id, k, v){
     aiCourseAutoLevel(x); aiLevelDomSync(x);
   }
   x.updatedAt = new Date().toISOString();
+  // 숙박 등급을 고르면 확인 출처가 비어 있을 때 기본값(호텔 공식 홈페이지 · 구글지도)을 넣는다 — 이미 적어 둔 출처는 그대로
+  if (kind==='lodge' && k==='lodgeStar' && x.lodgeStar && !aiInfoFilled(x.lodgeStarSrc)){
+    x.lodgeStarSrc = AI_LODGE_STAR_SRC_DEFAULT;
+    document.querySelectorAll(`#advBody details[data-ck="aiP-${id}"] .ai-info-f[data-k="lodgeStarSrc"]`).forEach(f=>{ const inp = f.querySelector('input[type=text]'), ed = f.querySelector('.rtf-editable'); if (inp) inp.value = x.lodgeStarSrc; if (ed) ed.innerHTML = escapeHtmlText(x.lodgeStarSrc); f.classList.add('filled'); f.classList.remove('has-auto'); });
+  }
   saveAiPlaces();
 }
 function aiLevelHint(x){
@@ -20653,7 +20691,7 @@ function aiLinkPlace(kind, id, noRender){
 }
 function aiNewPlace(kind, seed){
   const p=getAdvProduct(); if (!p) return;
-  const x = Object.assign({id:aiNewPlaceId(kind), name:'', cat:currentAdv ? currentAdv.catId : '', createdAt:new Date().toISOString()}, seed||{});
+  const x = Object.assign({id:aiNewPlaceId(kind), name:'', cat:currentAdv ? currentAdv.catId : '', createdAt:new Date().toISOString()}, kind==='lodge' ? {lodgeStarSrc:AI_LODGE_STAR_SRC_DEFAULT} : {}, seed||{});
   aiPlaceList(kind).push(x); saveAiPlaces();
   advOpenState['aiP-'+x.id] = true; advOpenState['ai-'+(kind==='lodge'?'lodge':'course')] = true;
   aiLinkPlace(kind, x.id, true); renderAdvBody();
@@ -23316,12 +23354,16 @@ function aiInfoTest(key, F){
   }
   const MEAL = {'meal:b':'조식', 'meal:l':'중식', 'meal:d':'석식'};
   const mealsSet = Array.isArray(ai.mealsIncl) && ai.mealsIncl.length ? ai.mealsIncl : null;
+  const pMeal = ['mealB','mealL','mealD'].map(k=>ai[k]);   // 상품의 "식사제공"(조·중·석) — 직접 입력한 값이 있으면 가장 먼저 쓴다
   if (MEAL[key]){
+    { const pk = {'meal:b':'mealB','meal:l':'mealL','meal:d':'mealD'}[key]; if (pk && aiInfoFilled(ai[pk])) return {v:AI_MEAL_GIVEN.includes(ai[pk]), t:`식사제공 ${MEAL[key]}: ${aiMealLabel(ai[pk])}${sfx(pk)}`}; }
     if (mealsSet) return {v:mealsSet.includes(MEAL[key]), t:`포함 식사: ${mealsSet.join('·')}${sfx('mealsIncl')}`};
     if (F.meals.includes(MEAL[key]) || F.inc.includes(MEAL[key])) return {v:true, t:`식사: ${(F.meals||MEAL[key]).slice(0,40)}`};
     { const lk = {'meal:b':'breakfast','meal:l':'lunch','meal:d':'dinner'}[key]; const r = aiMulti(L, x=>x[lk], v=>AI_MEAL_GIVEN.includes(v), v=>`숙소 ${MEAL[key]} ${aiMealLabel(v)}`); if (r) return r; }
     return {v:null, t:'식사 정보 미등록 — 상담 시 확인'};
   }
+  if (key==='meal:all' && pMeal.some(aiInfoFilled)){ if (pMeal.some(v=>aiInfoFilled(v) && !AI_MEAL_GIVEN.includes(v))) return {v:false, t:`식사제공: ${['조식','중식','석식'].map((l,i)=>aiInfoFilled(pMeal[i]) ? l+' '+aiMealLabel(pMeal[i]) : '').filter(Boolean).join(' · ')}${sfx('mealB')}`}; if (pMeal.every(aiInfoFilled)) return {v:true, t:`식사제공: 조식·중식·석식 모두 제공${sfx('mealB')}`}; }
+  if (key==='meal:free' && aiInfoFilled(pMeal[1]) && aiInfoFilled(pMeal[2])) return {v:!(AI_MEAL_GIVEN.includes(pMeal[1]) && AI_MEAL_GIVEN.includes(pMeal[2])), t:`식사제공: 중식 ${aiMealLabel(pMeal[1])} · 석식 ${aiMealLabel(pMeal[2])}${sfx('mealB')}`};
   if (key==='meal:all'){ if (mealsSet) return {v:['조식','중식','석식'].every(m=>mealsSet.includes(m)), t:`포함 식사: ${mealsSet.join('·')}${sfx('mealsIncl')}`};
     if (/전\s*일정|3식|전식|올인클|all/i.test(F.meals) || ['조식','중식','석식'].every(m=>F.meals.includes(m))) return {v:true, t:`식사: ${F.meals.slice(0,40)}`}; return {v:null, t:'식사 정보 미등록 — 상담 시 확인'}; }
   if (key==='meal:free'){ if (mealsSet) return {v:!(mealsSet.includes('중식') && mealsSet.includes('석식')), t:`포함 식사: ${mealsSet.join('·')} (나머지 자유식)${sfx('mealsIncl')}`}; return aiKwRes(F, ['자유식'], true, '식사 정보 미등록 — 상담 시 확인'); }

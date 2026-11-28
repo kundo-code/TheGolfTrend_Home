@@ -5242,7 +5242,7 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 /* [추가] 상품 카드(모바일·데스크탑 공통) — 📍숙소위치 위쪽 기본정보와 가격만 보이고, 그 아래(비행·이동 정보·체크포인트·태그)는 기본으로 접어 두며 "펼쳐보기"로 펼친다 */
 .product.expanded .pmd-main{display:none}   /* 펼치면 아래쪽 요약 설명은 숨기고 위쪽(항공·이동 정보 위)에서만 보인다 */
 .product-metadesc.pmd-fold{margin-top:4px}
-.product-metadesc.pmd-titlesub{margin:0 0 calc(6px + 1.5 * (.85rem + 1pt) - 1pt)}   /* 제목보조 — 인원·항공·기간 칸 바로 위. 아래 간격은 한 줄(약 22px)만큼 넓게 하되 1pt 좁힘 */
+.product-metadesc.pmd-titlesub{margin:0 0 calc(6px - 1pt)}   /* 제목보조 — 인원·항공·기간 칸 바로 위(아래 간격 약 4.7px) */
 .product-metadesc.pmd-titlesub .pmd-line{font-weight:700;font-size:calc(.85rem + 1pt)}   /* 요약 설명보다 1pt 크게 · 굵게 */
 .product-visual-title.has-sub{margin-bottom:.5pt}   /* 제목보조가 있으면 제목(추천 판매 시기 포함)과 제목보조 사이 간격을 좁게(0.5pt) */
 .product.has-cp:not(.expanded) .card-fold,

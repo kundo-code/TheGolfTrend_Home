@@ -5242,6 +5242,7 @@ input::placeholder,textarea::placeholder{color:var(--nm-placeholder);opacity:1}
 /* [추가] 상품 카드(모바일·데스크탑 공통) — 📍숙소위치 위쪽 기본정보와 가격만 보이고, 그 아래(비행·이동 정보·체크포인트·태그)는 기본으로 접어 두며 "펼쳐보기"로 펼친다 */
 .product.expanded .pmd-main{display:none}   /* 펼치면 아래쪽 요약 설명은 숨기고 위쪽(항공·이동 정보 위)에서만 보인다 */
 .product-metadesc.pmd-fold{margin-top:4px}
+.product-metadesc.pmd-titlesub{margin:2px 0 6px}   /* 제목보조 — 인원·항공·기간 칸 바로 위 */
 .product.has-cp:not(.expanded) .card-fold,
 .product.has-cp:not(.expanded) .product-checkpoint1,
 .product.has-cp:not(.expanded) .product-divider-cp1,
@@ -14201,7 +14202,10 @@ function productCardHTML(p, catId, idx){
   // [Phase] "카드에 노출"을 켠 레이블 이미지를 등록된 모서리별로 쌓아서 노출
   const cardLabelOverlay = cardLabelOverlayHTML(p.cardLabels);
   // [추가] 제목 위 한 줄(지역명 + 제목보조) · "펼쳐보기" 위 요약 설명 — 입력한 값만 표시(비어 있으면 줄 자체를 만들지 않음). 줄이 넘어가면 글자 크기만 줄여 한 줄로 맞춘다(fitCardLines)
-  const kickerHTML = productKickerHTML(p, 'product-kicker');
+  // 상품 카드에서는 제목 위 줄에 지역명만 두고, 제목보조는 인원·항공·기간 칸 바로 위에 요약 설명과 같은 서식으로 노출한다(자세히 보기·팝업은 기존처럼 지역명 오른쪽)
+  const kickerHTML = productKickerHTML(p, 'product-kicker', true);
+  const _subT = String(p.titleSub||'').trim();
+  const titleSubHTML = _subT ? `<div class="product-metadesc pmd-titlesub"><div class="pmd-line"><span class="pmd-fit">${escapeAttr(_subT)}</span></div></div>` : '';
   // 요약 설명(서식·여러 줄 가능) — 줄마다 한 줄로 표시(길면 글자 크기만 줄임)
   const _metaLines = aiLinesLv(p.metaDesc);
   const _metaInner = _metaLines.map(o=>`<div class="pmd-line${o.lv?` pmd-sub${o.lv}`:''}"><span class="pmd-fit">${o.h}</span></div>`).join('');
@@ -14230,6 +14234,7 @@ function productCardHTML(p, catId, idx){
     <div class="product-visual-title"><h4>${p.title}${productMonthsTag(p)?`<span class="pt-months">${productMonthsTag(p)}</span>`:''}</h4></div>
     <!-- [수정] 제목 바로 아래 줄 — 왼쪽에 최소 인원 + 바로 오른쪽에 항공 포함 여부, 오른쪽 끝에 기간.
          (박수는 최소 인원이 있던 아래 줄로 이동) -->
+    ${titleSubHTML}
     <div class="product-period-row-top">
       <span class="prt-left">${p.minPeople?`<span class="product-minpeople-box">👥 ${escapeAttr(fmtMinPeople(p.minPeople))}</span>`:''}${airfareText?`<span class="product-minpeople-box ${p.airfareIncluded==='excluded'?'airfare-excluded':'airfare-normal'}">✈️ ${escapeAttr(airfareText)}</span>`:''}</span>
       <span class="prt-right">${p.nights?`<span class="product-period-box"${periodBoxStyle(p)?` style="${periodBoxStyle(p)}"`:''}>🗓 ${p.nights}</span>`:''}</span>
@@ -14249,12 +14254,12 @@ function productCardHTML(p, catId, idx){
   </article>`;
 }
 // 지역명 · 제목보조 한 줄(상품 카드·EDITOR'S PICK·팝업·자세히 보기 공통) — 입력한 값만, 비어 있으면 ''. cls: 곳마다 다른 글자색·크기용 클래스
-function productKickerInner(p){
-  const r = String(p && p.titleRegion || '').trim(), sb = String(p && p.titleSub || '').trim();
+function productKickerInner(p, regionOnly){
+  const r = String(p && p.titleRegion || '').trim(), sb = regionOnly ? '' : String(p && p.titleSub || '').trim();
   if (!r && !sb) return '';
   return `<span class="pk-fit">${r?`<span class="pk-region">${escapeAttr(r)}</span>`:''}${r&&sb?'<span class="pk-dot">·</span>':''}${sb?`<span class="pk-sub">${escapeAttr(sb)}</span>`:''}</span>`;
 }
-function productKickerHTML(p, cls){ const i = productKickerInner(p); return i ? `<div class="${cls}">${i}</div>` : ''; }
+function productKickerHTML(p, cls, regionOnly){ const i = productKickerInner(p, regionOnly); return i ? `<div class="${cls}">${i}</div>` : ''; }
 // [추가][성능] 상품 카드 사진(.pv-bg.lazy-bg) 지연 로딩 — data-bg-src를 가진 요소가 화면(또는
 // 캐러셀의 실제 보이는 영역) 근처로 들어올 때만 background-image를 지정한다. 카드가 많은
 // 카테고리를 펼쳐도 화면에 보이지도 않는 카드의 사진까지 한꺼번에 디코딩하지 않아 초기 렌더링
@@ -19889,7 +19894,7 @@ function advBasicHTML(p){
         <!-- [추가] 제목 위 한 줄: 지역명(왼쪽) + 제목보조(Sub-Title)(지역명 바로 오른쪽) — 상품 카드 제목 위에 같은 크기로 이어 보인다 -->
         <div class="grid-2">
           <div><label>지역명 ${hint('(카드 제목 위 왼쪽 · 예: 말레이시아-쿠알라룸푸르)')}</label><input type="text" value="${escapeAttr(p.titleRegion||'')}" placeholder="예: 말레이시아-쿠알라룸푸르" oninput="updateAdvField('titleRegion',this.value)"></div>
-          <div><label>제목보조(Sub-Title) ${hint('(지역명 오른쪽 · 예: 2027 항공포함 패키지)')}</label><input type="text" value="${escapeAttr(p.titleSub||'')}" placeholder="예: 2027 항공포함 패키지" oninput="updateAdvField('titleSub',this.value)"></div>
+          <div><label>제목보조(Sub-Title) ${hint('(상품 카드: 인원·항공·기간 칸 바로 위에 요약 설명과 같은 서식으로 노출 · 자세히 보기·팝업은 지역명 오른쪽 · 예: 2027 항공포함 패키지)')}</label><input type="text" value="${escapeAttr(p.titleSub||'')}" placeholder="예: 2027 항공포함 패키지" oninput="updateAdvField('titleSub',this.value)"></div>
         </div>
         <label>제목(Title)</label><input type="text" value="${escapeAttr(p.title)}" oninput="updateAdvField('title',this.value)">
         <!-- [추가] 제목 아래 한 줄: 요약 설명(Meta Description) — 상품 카드의 "펼쳐보기" 위, 공유 문구, 정적 페이지 설명에 쓴다 -->

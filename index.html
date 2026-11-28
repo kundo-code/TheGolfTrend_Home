@@ -1041,6 +1041,9 @@ section.block{padding:100px 24px;position:relative}
 .pd-info-row{display:flex;gap:14px;font-size:10.5pt;line-height:1.5}
 .pd-info-row .k{flex:0 0 86px;color:var(--gold-deep);font-weight:600;font-size:11pt;line-height:1.5;letter-spacing:.02em}
 .pd-info-row .v{flex:1;color:rgba(10,23,48,.82)}
+.pd-info-row .v.pi-title-v{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;min-width:0}
+.pd-info-row .v.pi-title-v .pi-title{flex:0 1 auto;max-width:100%;min-width:0;font-size:11pt;font-weight:700;word-break:keep-all;overflow-wrap:anywhere}   /* 제목: 한 단계(10.5pt → 11pt) 크게 + 굵게, 줄은 띄어쓰기에서 바꿔 글자 중간에서 끊기지 않게 */
+.pd-info-row .v.pi-title-v .pi-months{flex:0 0 auto;margin-left:auto;text-align:right;white-space:nowrap}   /* 추천 판매 시기: 제목과 한 줄에 안 들어가면 다음 줄 오른쪽 끝 */
 .pd-note-block{padding:4px 20px 18px;font-size:.85rem;line-height:1.7;color:rgba(10,23,48,.72);white-space:pre-line}
 .pd-gallery{padding:0}
 .pd-gallery-main{aspect-ratio:16/10;position:relative;overflow:hidden;background:#0A1730}
@@ -16802,7 +16805,8 @@ function renderProductDetail(p,cat,idx){
   const commonOverrideNote = fields => pdHasOverride(plan, p, visiblePes, fields)
     ? `<div class="pd-common-note">※ 일부 요금 항목은 해당 항목에 따로 표기된 내용이 적용됩니다</div>` : '';
   const infoRows=[];
-  if (p.title) infoRows.push(['제목', p.title + (productMonthsTag(p)?`<span class="pt-months"> ${productMonthsTag(p)}</span>`:'')]);
+  // 제목은 굵게·한 단계 크게, 추천 판매 시기는 따로 분리 — 제목과 한 줄에 다 들어가면 같은 줄, 아니면 제목 다음 줄 오른쪽 끝에 노출
+  if (p.title) infoRows.push(['제목', `<span class="pi-title">${p.title}</span>` + (productMonthsTag(p)?`<span class="pt-months pi-months">${productMonthsTag(p)}</span>`:''), 'pi-title-v']);
   if (p.nights) infoRows.push(['기간', p.nights]);
   if (plan.minPeople.key) infoRows.push(['최소 인원', escapeAttr(fmtMinPeople(plan.minPeople.value))]);
   if (plan.rounds.key) infoRows.push(['라운드', escapeAttr(plan.rounds.value)]);
@@ -16810,7 +16814,7 @@ function renderProductDetail(p,cat,idx){
   if (plan.meals.key) infoRows.push(['식사', escapeAttr(plan.meals.value)]);
   if (infoRows.length){
     html += `<div class="pd-slot"><div class="pd-section-title">📋 상품기본정보</div>
-      <div class="pd-info-table">${infoRows.map(([k,v])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>
+      <div class="pd-info-table">${infoRows.map(([k,v,c])=>`<div class="pd-info-row"><span class="k">${k}</span><span class="v${c?' '+c:''}">${v}</span></div>`).join('')}</div>
       ${commonOverrideNote(['minPeople','rounds','stay','meals'])}
     </div>`;
   }

@@ -1208,17 +1208,17 @@ section.block{padding:100px 24px;position:relative}
 .pd-holiday-price-item:nth-child(3n),.pd-holiday-price-item:last-child{border-right:none}
 .pd-holiday-price-item .dt{font-size:.86rem;font-weight:600;color:#DC2626}
 /* [수정] 기간(시작일~종료일)처럼 날짜가 긴 항목이 있으면 날짜와 금액이 겹치지 않도록 한 줄에 하나씩(날짜 왼쪽 · 금액 오른쪽) 보여 준다 */
-.pd-holiday-price-row.hol-same{display:flex;align-items:stretch;justify-content:space-between;gap:14px;padding:8px 14px}
+.pd-holiday-price-row.hol-same{display:flex;align-items:stretch;justify-content:space-between;gap:14px;padding:8px 0 8px 14px}   /* 금액 칸은 오른쪽 끝까지 — 아래 .hs-price가 위쪽 요일별 요금표의 셋째 칸 구분선에 맞춰 폭을 잡는다 */
 .pd-holiday-price-row.hol-same .hs-dates{display:flex;flex-direction:column;justify-content:center;gap:6px;min-width:0;flex:1 1 auto}
 .pd-holiday-price-row.hol-same .hs-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
 .pd-holiday-price-row.hol-same .hs-ds{display:flex;flex-wrap:wrap;gap:2px 10px;min-width:0}
 .pd-holiday-price-row.hol-same .hs-m{flex:0 0 auto;min-width:4.2em;text-align:center;box-sizing:border-box;font-size:.68rem;font-weight:700;color:#fff;background:#DC2626;border-radius:10px;padding:1px 8px;line-height:1.5}
 .pd-holiday-price-row.hol-same .dt{font-size:.86rem;font-weight:600;color:#DC2626;white-space:nowrap}
-.pd-holiday-price-row.hol-same .hs-price{flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;text-align:right;padding-left:14px;border-left:1px dashed rgba(10,23,48,.22)} /* 날짜와 금액 사이 구분선 */
-.pd-holiday-price-row.hol-same .hs-price .v{min-width:5.4em;text-align:right;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.05rem;line-height:1.1;font-weight:500;color:#DC2626;white-space:nowrap}
+.pd-holiday-price-row.hol-same .hs-price{flex:0 0 calc((100% + 14px) / 3);box-sizing:border-box;min-width:0;display:flex;align-items:center;justify-content:flex-end;text-align:right;padding:0 14px 0 14px;border-left:1px dashed rgba(10,23,48,.22)} /* 날짜와 금액 사이 구분선 — 요일별 요금표(3칸)의 2·3번째 칸 사이 구분선과 같은 위치(전체 폭의 2/3), 금액 칸은 전체의 1/3 */
+.pd-holiday-price-row.hol-same .hs-price .v{min-width:0;text-align:right;font-family:'Bebas Neue','Noto Sans KR',sans-serif;font-size:2.05rem;line-height:1.1;font-weight:500;color:#DC2626;white-space:nowrap}
 .pd-holiday-price-row.hol-same .hs-price .v .unit{font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:.93rem;color:#DC2626;font-weight:500;margin-left:2px}
 .pd-holiday-price-row.hol-same .hs-price .v .was{display:block;font-size:.8rem}
-@media(max-width:560px){.pd-holiday-price-row.hol-same .dt{white-space:normal}.pd-holiday-price-row.hol-same .hs-line{flex-direction:column;align-items:flex-start;gap:2px}.pd-holiday-price-row.hol-same .hs-price .v{font-size:1.725rem}.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:.8rem}.pd-holiday-price-row.hol-same .hs-price{padding-left:10px}.pd-holiday-price-row.hol-same .dt{font-size:.78rem}}
+@media(max-width:560px){.pd-holiday-price-row.hol-same .hs-line{gap:2px 8px}.pd-holiday-price-row.hol-same .hs-ds{gap:2px 8px}.pd-holiday-price-row.hol-same .hs-price .v{font-size:1.725rem}.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:.8rem}.pd-holiday-price-row.hol-same .hs-price{padding:0 10px}.pd-holiday-price-row.hol-same .dt{font-size:.78rem}}   /* 모바일에서도 '월' 배지와 날짜를 한 줄에(넘칠 때만 날짜가 아래 줄로) */
 /* [수정] 공휴일 요금의 화폐 기호(원·¥·$ 등)를 요금표 요일별 금액의 "원"과 같은 색상(금색)·글자 크기로 통일 */
 .pd-holiday-price-row .pd-holiday-price-item .v .unit,.pd-holiday-price-row.hol-same .hs-price .v .unit{color:var(--gold-deep);font-size:calc(.775rem * 1.2)}
 @media(max-width:560px){.pd-holiday-price-row .pd-holiday-price-item .v .unit,.pd-holiday-price-row.hol-same .hs-price .v .unit{font-size:calc(.675rem + 1.25pt)}}
